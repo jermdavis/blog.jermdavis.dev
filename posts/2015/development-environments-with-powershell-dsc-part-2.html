@@ -1,0 +1,581 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="author" content="Jeremy Davis">
+
+    <title>Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;2</title>
+
+    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-2">
+    <meta name="robots" content="noindex, nofollow">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+
+    
+    <meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;2">
+        <meta property="og:image" content="/img/featured/development-environments-with-powershell-dsc-part-2-social.png">
+    <meta property="og:description" content="">
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-2">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <link href="https://unpkg.com/tailwindcss@2.2.11/dist/tailwind.min.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+
+    
+
+    
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="h-12 mt-2 w-auto lg:h-14" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="-mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="h-12 mt-2 w-auto" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="-mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-1 pb-1">
+        Development environments with PowerShell DSC – Part&nbsp;2
+        </h1>
+            <div class="meta">Published 19 October 2015</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+                    <a href="/tags/powershell-dsc" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell DSC</a>
+                    <a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md"> Installation</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>I kicked off this series last week with <a href="/posts/2015/development-environments-with-powershell-dsc-part-1" target="_blank">a look at what PowerShell DSC is</a>. This week I'm going to look at scripts you can use for basic configuration of Windows itself for a hypothetical development environment. I'll cover basic Windows features, a few issues you might encounter and helpful tweaks like being able to disable IE's "enhanced security" mode if you're working on a server.<!--more--></p>
+<p><i>(<b>Edited to add:</b> Links to all posts in this series: <a href="/posts/2015/development-environments-with-powershell-dsc-part-1" target="_blank">1:Introduction to DSC</a> – 2:Windows Features – <a href="/posts/2015/development-environments-with-powershell-dsc-part-3" target="_blank">3:Mongo DB</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-4" target="_blank">4:SQL Server</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">5:Sitecore</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-6" target="_blank">6:Coveo CES</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-7" target="_blank">7:Coveo REST API &amp; Coveo for Sitecore</a>)</i></p>
+<blockquote>
+<i>Before I get going, couple of notes about the examples I'm including in this series of posts: They all have a call to `Start-DSCConfiguration` using the "-Force" flag to make DSC run this configuration immediately in "push" mode. However, the `Configuration` blocks declared should all work in pull configurations. Writing the scripts this way just makes them easier for people to try out without any other setup effort. Also the examples are all pretty much self-contained, so the overall configuration of a server using them would rely on many separate scripts. You don't necessarily need to have as many as I'm showing here. It's more to keep the examples clear and usable than to represent the "right" architecture. You're free to merge things together, or even break them apart further if that suits you.</i>
+</blockquote>
+<h2>Operating systems</h2>
+<p>The beginning of the setup for any machine involves getting the basic O/S installed. I'm going to leave this step out of this post, as it's so dependent on your particular flavour of virtualisation technology or hardware. You can install Windows on physical machines from a CD, from an ISO image, or from a USB drive. If you're virtualising your machine you can use most VM software to clone an existing base VM image, use tools like <a href="https://www.packer.io/" target="_blank" rel="noopener noreferrer">Packer</a> to build images for you, or just install from a CD/ISO/USB as well.</p>
+<p>Whichever way you choose to go, the rest of my write-up assumes you have a base install of Windows Server 2012. Many of these techniques will work on other versions of Windows (client and server) – you just need to ensure that your base install includes PowerShell 4 and WMI 4.</p>
+<h2>Getting your OS Features sorted out</h2>
+<p>When you set up a copy of Windows Server, the default behaviour these days is to install the basics, but to leave the setup of any specific features you need to the Server Manager UI after your first boot.</p>
+<p>So in order to sort this out for things like IIS and .Net frameworks, we need to have a core setup script. As we saw with last week's post, asking DSC to install a Windows Feature for us is pretty easy with the <code>WindowsFeature</code> resource. You just need to know Windows' internal code name for the feature you want to add. So how do we work those out?</p>
+<p>The answer is <a href="https://msdn.microsoft.com/en-us/library/ee662312.aspx" target="_blank" rel="noopener noreferrer">the <code>Get-WindowsFeature</code> CommandLet in PowerShell</a>. This returns a helpful list of all the features available, along with their current state and their internal name. After running that you might see:</p>
+<p><a href="/img/2015/2015-10-get-windowsfeature.png" target="_blank"><img alt="Get-WindowsFeature" src="/img/2015/2015-10-get-windowsfeature.png"></a></p>
+<p>Armed with that data, you can go through the requirements you have for features your dev environment will need, and sort out a list to transform into a set of DSC resource requests. Most of these are simple. You just end up with a pretty long script, as you often have to install quite a few features and sub-features.</p>
+<p>Depending on what your install critera are, you may be able to <a href="https://technet.microsoft.com/en-gb/library/dn282127.aspx" target="_blank" rel="noopener noreferrer">simplify this with the <code>IncludeAllSubFeature</code> property</a> of the <code>WindowsFeature</code> resource. This allows you to specify the top-level feature and have DSC install every one of its child features. However if you explicitly need to install just some features, you do seem to need to list them out one by one.</p>
+<p>You might end up with something like:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration WindowsFeatureInstall
+{
+    Node $AllNodes.where{ $_.Role.Contains("WindowsFeatures") }.NodeName
+    {
+        WindowsFeature WebServer
+        {
+            Name = "Web-Server"
+            Ensure = "Present"
+        }
+        
+        WindowsFeature WebWebServer
+        {
+            Name = "Web-WebServer"
+            Ensure = "Present"
+        }
+        
+        WindowsFeature WebCommonHttp
+        {
+            Name = "Web-Common-Http"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebDefaultDoc
+        {
+            Name = "Web-Default-Doc"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebDirBrowsing
+        {
+            Name = "Web-Dir-Browsing"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebHttpErrors
+        {
+            Name = "Web-Http-Errors"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebStaticContent
+        {
+            Name = "Web-Static-Content"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebHttpRedirect
+        {
+            Name = "Web-Http-Redirect"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebDavPublishing
+        {
+            Name = "Web-DAV-Publishing"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebHttpLogging
+        {
+            Name = "Web-Http-Logging"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebLogLibraries
+        {
+            Name = "Web-Log-Libraries"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebRequestMonitor
+        {
+            Name = "Web-Request-Monitor"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebHttpTracing
+        {
+            Name = "Web-Http-Tracing"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebPerformance
+        {
+            Name = "Web-Performance"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebStaticCompression
+        {
+            Name = "Web-Stat-Compression"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebDynamicCompression
+        {
+            Name = "Web-Dyn-Compression"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebSecurity
+        {
+            Name = "Web-Security"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebFiltering
+        {
+            Name = "Web-Filtering"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebBasicAuth
+        {
+            Name = "Web-Basic-Auth"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebCertProvider
+        {
+            Name = "Web-CertProvider"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebClientAuth
+        {
+            Name = "Web-Client-Auth"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebDigestAuth
+        {
+            Name = "Web-Digest-Auth"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebUrlAuth
+        {
+            Name = "Web-Url-Auth"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebWindowsAuth
+        {
+            Name = "Web-Windows-Auth"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebAppDev
+        {
+            Name = "Web-App-Dev"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebNetExt
+        {
+            Name = "Web-Net-Ext"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebNetExt45
+        {
+            Name = "Web-Net-Ext45"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebAspNet
+        {
+            Name = "Web-Asp-Net"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebAspNet45
+        {
+            Name = "Web-Asp-Net45"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebIsapiExt
+        {
+            Name = "Web-ISAPI-Ext"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebIsapiFilter
+        {
+            Name = "Web-ISAPI-Filter"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebMgmtConsole
+        {
+            Name = "Web-Mgmt-Console"
+            Ensure = "Present"
+        }
+
+        WindowsFeature NetFrameworkFeatures
+        {
+            Name = "NET-Framework-Features"
+            Ensure = "Present"
+        }
+
+        WindowsFeature NETFrameworkCore
+        {
+            Name = "NET-Framework-Core"
+            Ensure = "Present"
+        }
+
+        WindowsFeature NETFramework45Features
+        {
+            Name = "NET-Framework-45-Features"
+            Ensure = "Present"
+        }
+
+        WindowsFeature NETFramework45Core
+        {
+            Name = "NET-Framework-45-Core"
+            Ensure = "Present"
+        }
+
+        WindowsFeature NETFramework45ASPNET
+        {
+            Name = "NET-Framework-45-ASPNET"
+            Ensure = "Present"
+        }
+    }
+}
+
+WindowsFeatureInstall -ConfigurationData "configData.psd1"
+Start-DscConfiguration -Path .\WindowsFeatureInstall -Verbose -Wait -Force
+</pre>
+<p>This (big) example is ensuring you have key IIS features and the ASP.Net v4 runtime features ready for running websites.</p>
+<p>It's making reference to a config data file. <a href="/posts/2015/development-environments-with-powershell-dsc-part-1" target="_blank">I talked a bit about this last week</a>, but for the purposes of the examples in this post, all it needs to define is the server / role data I talked about before. For example:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
+    AllNodes = @(
+        @{
+            NodeName = "WIN-AQEKG7L9SE8"
+            Role = "Setup, DesktopExperience, WindowsFeatures, IE, SqlServer, MongoDB, Sitecore"
+         }
+    );
+}
+</pre>
+<p>Future posts will extend this with more data. But for the moment, that can be saved as <code>configData.psd1</code> and the examples here will consume it.</p>
+<h2>Windows Feature edge cases</h2>
+<p>Some features are a little bit more tricky however. One specific one that's an issue for Sitecore developers is the "Desktop Experience" feature. This seems a bit oddly named, but if you're <a href="https://divamatrix.wordpress.com/2011/10/10/sitecore-install-error-web-client-service-is-unavailable/" target="_blank" rel="noopener noreferrer">running Sitecore on a Windows Server OS it is required to make the WebDAV-based drag-and drop uploading of Media Library resources</a> work. As the linked post suggests, you can just ignore it. But if you need WebDAV to work, beware that this feature seems to always require a reboot.</p>
+<p>In the short time I've spent with DSC so far, I have not managed to work out a "nice" DSC-based approach to handling this reboot work. There are a variety of tricks you can use, mostly based around breaking out these reboot-requiring features to a separate script. It only requires one feature, so it's a trivial script:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration DesktopExperienceInstall
+{
+    Node $AllNodes.where{ $_.Role.Contains("DesktopExperience") }.NodeName
+    {
+        WindowsFeature WebDavDesktopExperience
+        {
+            Name = "Desktop-Experience"
+            Ensure="Present"
+        }
+    }
+}
+
+DesktopExperienceInstall -ConfigurationData "configData.psd1"
+Start-DscConfiguration -Path .\DesktopExperienceInstall -Verbose -Wait -Force
+</pre>
+<p>You can execute this, trigger a reboot (either manually or via the <code>Restart-Computer</code> CommandLet) and then run your other scripts to finish the process. A colleague of mine has put together some interesting script that makes use of workflows to enable this without user-interaction. However I plan to come back to this issue to discover the "proper DSC" approach when I've had some more time to work on it.</p>
+<h2>Adding 3rd party extensions to DSC</h2>
+<p>Sometimes DSC can't do all the things you need it to by default.</p>
+<p>The default install of Windows Server has Internet Explorer configured in a strongly locked-down state. (Referred to as IE's "<a href="https://msdn.microsoft.com/en-us/library/ms537180(v=vs.85).aspx" target="_blank" rel="noopener noreferrer">Enhanced Security Configuration</a>") This makes sense if the machine is going to run as a proper server, as it helps to reduce the surface area for attacks. But it's a bit of a pain if you're using a server for development tasks, as it makes IE very difficult to use to test your websites. Hence turning this feature off can be helpful for setting up a development machine.</p>
+<p>Now, out of the box DSC doesn't have a resource for making this config change. But an extension exists to enable it. So this is a good example for showing how you can add 3rd party resources into your DSC-based processes. These extensions are just PowerShell Modules that implement a DSC Resource, so they can be installed simply via DSC. For example, the extension that contains the resource for disabling IE's security config is called <code>xSystemSecurity</code>. Generally DSC extensions prefixed with "x" are "experimental" bits of code that Microsoft are considering adding into the core of DSC in future versions. The module <a href="https://gallery.technet.microsoft.com/scriptcenter/xSystemSecurity-PowerShell-42ad87eb" target="_blank" rel="noopener noreferrer">can be downloaded from the Technet Gallery</a>.</p>
+<p>So to make this configuration change we need to do two things on our target server. First we need to install the <code>xSystemSecurity</code> module and then we need to make use of it.</p>
+<p>This is the first point where we've come across a DSC script having a dependency on an extrnal file, so it's a good point to introduce an approach to dealing with these. Generally, you'll want to have a central location for any files your scripts depend on. That way we can pass in this location, and have the scripts download their dependencies onto whatever machine they're executing on. Achieving this needs us to make a one important change to how we're working.</p>
+<p>A DSC <code>Configuration</code> can use exactly the same syntax for passing in command-line parameters as an ordinary PowerShell script function. So we can declare a <code>-PackagePath</code> parameter. This can then be used to locate the <code>xSystemSecurity</code> package (which happens to be supplied as a zip file) and uncompress it to the right location.</p>
+<p>A DSC script to achieve this might look like:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration SetupInstall
+{
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $PackagePath
+    )
+
+    Node $AllNodes.where{ $_.Role.Contains("Setup") }.NodeName
+    {
+        Archive AddxSystemSecurity
+        {
+            Path = "$PackagePath\xSystemSecurity_1.0.zip"
+            Destination = "$Env:ProgramFiles\WindowsPowerShell\Modules"
+        }
+    }
+}
+
+SetupInstall -ConfigurationData "configData.psd1" -PackagePath "\\VBoxSvr\dsc\Setup"
+Start-DscConfiguration -Path .\SetupInstall -Verbose -Wait -Force
+</pre>
+<p>The <code>param()</code> declares a required paramater of type string called <code>$PackagePath</code> which we can refer to elsewhere in our script. The <code>Archive</code> resource type knows how to unzip an archive file for us. We specify the source path using our <code>$PackagePath</code> variable, and the target path using the special PowerShell syntax for accessing Environment Variables. This allows us to find the machines's "Program Files" folder without worrying about it's actual path.</p>
+<p>Note that the call to invoke <code>SetupInstall</code> now takes this extra parameter specifying where our central repository of files is. That means the parameter's data is available when the <code>.MOF</code> file is being generated by DSC.</p>
+<p>It's worth noting that you have to be a bit careful about disk permissions with your shares here. The underlying engine which runs the DSC Scripts is always running as the "System" account. Hence if you have a remote share that implements security you will need to pass <code>-Credential</code> parameter that the <code>Configuration</code> accepts when you invoke it. The value of <a href="http://blogs.msdn.com/b/koteshb/archive/2010/02/13/powershell-creating-a-pscredential-object.aspx" target="_blank" rel="noopener noreferrer">the parameter needs to be a <code>System.Management.Automation.PSCredential</code> object</a> for a user account which does have permissions to access the share.</p>
+<h2>Back to IE Enhanced Security Configuration</h2>
+<p>So now we've added the extra DSC feature required to modify the security settings in IE, how do we actually change them? Simple. You just need to tell DSC you're importing an external Resource and then use it:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIEEsc
+{
+    Import-DSCResource -Module xSystemSecurity -Name xIEEsc
+
+    Node $AllNodes.where{ $_.Role.Contains("IE") }.NodeName
+    {
+        xIEEsc EnableIEEscAdmin
+        {
+            IsEnabled = $false
+            UserRole  = "Administrators"
+        }
+
+        xIEEsc EnableIEEscUser
+        {
+            IsEnabled = $false
+            UserRole  = "Users"
+        }
+    }
+
+}
+
+EnableIEEsc -ConfigurationData "configData.psd1"
+Start-DscConfiguration -Path .\EnableIEEsc -Verbose -Wait -Force
+</pre>
+<p>The <code>Import-DSCResource</code> CommandLet tells DSC where to find the external code we're calling. And from then on the new <code>xIEEsc</code> resource is available to use. Here we're calling it twice to turn off enhanced security for both admin and ordinary users on the server.</p>
+<p>With that done we can start to think about the other pre-requisites of Sitecore. So next week's post will look at adapting my previous work on automating a  MongoDB install using DSC.</p>
+
+
+            </div>
+            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section>
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+    <div class="bg-white mb-2 p-2"><img src="/img/mvp/2021.jpg" alt="2021 MVP Badge"></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (192)</a>
+                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
+                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (12)</a>
+                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
+                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2021-01">2021 - January</a></div>
+                <div><a class="text-lg" href="/posts/2021-02">2021 - February</a></div>
+                <div><a class="text-lg" href="/posts/2021-03">2021 - March</a></div>
+                <div><a class="text-lg" href="/posts/2021-04">2021 - April</a></div>
+                <div><a class="text-lg" href="/posts/2021-05">2021 - May</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right"><a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/tools">Published using Statiq</a></div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 text-center align-middle">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner') ? (docCookies.getItem('hide_banner') == 'true') : false;" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">This website uses Google Analytics, and its cookies.
+              <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank" class="whitespace-nowrap">Learn more</a>
+            </div>
+
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/alpinejs" defer=""></script>    
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '{BTN_RAW}{BTN_COPY}',
+            toolbarBottom: ''
+        });
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
+    
+
+    
+
+
+
+</body></html>

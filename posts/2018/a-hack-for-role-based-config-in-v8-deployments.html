@@ -1,0 +1,393 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="author" content="Jeremy Davis">
+
+    <title>Jeremy Davis - A hack for role-based config in v8&nbsp;deployments</title>
+
+    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2018/a-hack-for-role-based-config-in-v8-deployments">
+    <meta name="robots" content="noindex, nofollow">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+
+    
+    <meta property="og:title" content="Jeremy Davis - A hack for role-based config in v8&nbsp;deployments">
+        <meta property="og:image" content="/img/featured/a-hack-for-role-based-config-in-v8-deployments-social.png">
+    <meta property="og:description" content="">
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/a-hack-for-role-based-config-in-v8-deployments">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <link href="https://unpkg.com/tailwindcss@2.2.11/dist/tailwind.min.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+
+    
+
+    
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="h-12 mt-2 w-auto lg:h-14" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="-mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="h-12 mt-2 w-auto" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="-mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-1 pb-1">
+        A hack for role-based config in v8&nbsp;deployments
+        </h1>
+            <div class="meta">Published 22 January 2018</div>
+            <div class="flex py-1">
+                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>It's a pretty common requirement that deploying instances of Sitecore will require slightly different configuration on different servers. Different roles, like content management and content deployment, will require different settings and features to work. So it's not surprising that there are a variety of approaches to how you manage this configuration in your projects.</p>
+<p>In the past I've often made use of separate config files, where you have a file for "config changes needed on all servers" and then further files for "config changes needed for CM servers", and even down to the level of "config changes needed on server CD01" if necessary. This works fine if your deployment process understands which files should go on which servers.</p>
+<p>Recently, however, Sitecore have started to offer a "role based configuration" approach in the configuration of v9 – so you can deploy a single config file and the server can pick and choose sections of its configuration based on what role it is performing. But back in the real world, most of us are still supporting V8 (and older) sites, so is it possible for them to adopt something similar to this idea? Here's one approach that achieves something similar: <!--more--></p>
+<h2>The big picture</h2>
+<p>Changing how Sitecore's internal configuration framework processes config files is a bit of a tall order, so I decided to try an experiment by making this part of my deployment process. Since picking and choosing config at runtime wasn't practical, I thought I'd try to have a single configuration file where you could mark which sections were not relevant to particular server role. The release process could then examine these as it dealt with the deployment and remove configuration that was not needed...</p>
+<h2>Markingup the config</h2>
+<p>Since the configurtaion data for a site is XML, the most obvious way to address the need to remove bits of config that aren't relevant to a particular server is to declare a new namespace and add a "RemoveOn" attribute to any element that's not needed in certain places. So a very simple patch file might look like this:</p>
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:role="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+  &lt;sitecore&gt;
+    &lt;settings&gt;
+      &lt;setting name="CD-Only-Setting" role:RemoveOn="CM"&gt;
+        &lt;patch:attribute name="value"&gt;some value&lt;/patch:attribute&gt;
+      &lt;/setting&gt;
+    &lt;/settings
+  &lt;/sitecore&gt;
+&lt;/configuration&gt;
+</pre>
+<p>Using a namespace ensures our changes to the XML won't clash with anything else that's in the file – though it does make processing it a bit trickier, as I'll get to later.</p>
+<h2>Removing unwanted elements</h2>
+<p>So once a file gets copied to a target server the deployment needs to do something to get rid of the elements that aren't required. A bit of PowerShell can sort that out, and is easy to trigger during a deployment. The process is pretty simple: It can take a file and the roles this server performs, and search the config for elements decorated with <code>RemoveOn</code> attributes. These can be removed and the file saved again. That can be done with a function like so:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Update-ConfigFile
+{
+  param
+  (
+    [string]$configFile,
+    [string[]]$roles
+  )
+
+  process
+  {
+    $xml = New-Object System.Xml.XmlDocument
+    $xml.Load($configFile)
+
+    $xns = New-Object System.Xml.XmlNamespaceManager $xml.NameTable
+    $xns.AddNamespace("role", "RoleManagement")
+
+    $elements = $xml.DocumentElement.SelectNodes("descendant::*[@role:RemoveOn]", $xns)
+
+    Write-Host "Found $($elements.Count) elements to process in $configFile"
+
+    $count = 0
+    foreach($element in $elements)
+    {
+      $value = $element.SelectSingleNode("@role:RemoveOn", $xns).Value
+
+      if($roles -match $value)
+      {
+        $count = $count + 1
+        $element.ParentNode.RemoveChild($element) | Out-Null
+      }
+      else
+      {
+        $element.Attributes.RemoveNamedItem("RemoveOn", "RoleManagement") | Out-Null
+      }
+    }
+
+    Write-Host "Made $count removals in $configFile"
+
+    $xml.Save($configFile)
+  }
+}
+</pre>
+<p>It takes a path to a config file, and an array of role names that this server performs. The config file gets loaded into memory as an <code>XmlDocument</code>, and the custom namespace gets registered. This is necessary, because without an <code>XmlNamespaceManager</code> which knows about the namespaces you're dealing with, any xpath queries you try to run that use your namespace will fail.</p>
+<p>The code can then select any element which has a <code>role:RemoveOn</code> attribute, across the whole document. For each element found, it checks if that value is contained in the set of roles passed in. If there's a match, the entire element can be removed. However if there isn't a match then all that needs removing is the custom attribute.</p>
+<p>And finally, once all the changes have been made, the file can be saved.</p>
+<p>So running this code against the sample above on a "CM" sever gets:</p>
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:role="RemoveOn" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+  &lt;sitecore&gt;
+    &lt;settings&gt;
+    &lt;/settings&gt;
+  &lt;/sitecore&gt;
+&lt;/configuration&gt;
+</pre>
+<h2>Tidying up</h2>
+<p>In theory that should be enough to sort out the config, but in the real world life is actually a bit trickier. If you're generating the config files you deploy using XDT in your Visual Studio project than you can end up with your custom namespace messed up. You may see something like this after your XDT transform completes:</p>
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:d3p1="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+  &lt;sitecore&gt;
+    &lt;settings&gt;
+      &lt;setting name="CD-Only-Setting" d3p1:RemoveOn="CM"&gt;
+        &lt;patch:attribute name="value"&gt;some value&lt;/patch:attribute&gt;
+      &lt;/setting&gt;
+    &lt;/settings
+  &lt;/sitecore&gt;
+&lt;/configuration&gt;
+</pre>
+<p>That's still perfectly valid XML, but Sitecore doesn't like having any of this left in the config files. So any left-over custom namespace stuff needs to be tidied up. Normally XML processing would be the right way to go about this, but because the custom namespace ends up with an unpredictable name if you run XDT, plain old text processing ends up easier:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Remove-UnwantedNamespaces
+{
+  param
+  (
+    [string]$file
+  )
+  process
+  {
+    $txt = Get-Content $file
+    
+    $expr = '(xmlns:[^=]*="RoleManagement"\s*)|([\w]*:RemoveOn=".*?"\s*)'
+
+    $result = $txt -replace $expr, ""
+    $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
+    [System.IO.File]::WriteAllLines($file, $result, $Utf8NoBomEncoding)
+  }
+}
+</pre>
+<p>This loads the text out of the file specified, runs a regular expression over it, and then saves the data back to disk being explicit about saving the file without a UTF8 byte order mark – since I found that Sitecore gets unhappy if that's not done correctly.</p>
+<p>The regular expression looks a bit complicated, but it's just checking for one of two terms. It will match either the <code>xmlns</code> declaration at the top of the file, no matter what namespace name is declared, or it will match an instance of the custom <code>RemoveOn</code> attribute no matter what namespace prefix is used. If either of these is found, the entire attribute will be removed including its value.</p>
+<h2>Pulling it all together</h2>
+<p>The deployment script needs to deal with running the code above across all the required set of config files. It also needs to cope with the fact that the easiest way of passing in the roles a server performs is as a string (coming from whatever release process is running this script). So the functions above can be called from something like:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
+  [Parameter(Mandatory=$true)]
+  [string]$configFolder,
+  [Parameter(Mandatory=$true)]
+  [string]$configPattern,
+  [Parameter(Mandatory=$true)]
+  [string]$currentRoles
+)
+
+function Split-RoleString
+{
+  param
+  (
+    [string] $roleString
+  )
+  process
+  {
+    $splitString = $roleString -split ","
+    return $splitString | % { $_.Trim() }
+  }
+}
+
+$roles = Split-RoleString $currentRoles
+$filesToProcess = Get-ChildItem -Path $configFolder -Filter $configPattern -Recurse | Select-Object -ExpandProperty FullName
+
+Write-Host "Start: Updating config files to remove instance-specific features"
+foreach($file in $filesToProcess)
+{
+  Update-ConfigFile $file $roles
+  Remove-UnwantedNamespaces $file
+}
+Write-Host "Done: Updating config files to remove instance-specific features"
+</pre>
+<p>The script takes three parameters: The folder config files live in, the naming pattern for finding the relevant files and the roles this server performs.</p>
+<p>The roles can be a comma-separated string, and the <code>Split-RoleString</code> splits that out into an array of roles. Since the logic here works on the basis removing things that match, if you have servers with mixed roles you need to name them with a special role name. Passing "CD,CM" will cause config to be deleted that match either "CD" or "CM".</p>
+<p>The code can then fetch the set of files to process (by saying "find all files matching the supplied pattern, in any folder under the path provided). Each of these files can then be processed in turn, buy calling the main replacement function and the function to remove any left-over custom XML.</p>
+<p>So the release process can run the code with something like:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">.\ConfigServerRole.ps1 "c:\inetpub\mysite\website\App_Config\" "*.config" "CM"
+</pre>
+<h2>Conclusions...</h2>
+<p>As a first pass at an idea, there are probably some scenarios this doesn't cope with as easily as I might like. The obvious place it's trickier than it should be at the moment is where servers have mixed roles – tagging content as "remove on CM and CD, but not processing". But despite that, it proves that, given a bit of polish it could be a useful addition to my deployment approaches.</p>
+<p>If you want to experiment with the code above, <a href="https://gist.github.com/jermdavis/80e0f04d2f6cb574da7eb352c949e437" rel="noopener" target="_blank">it's all available as a gist</a>.</p>
+<blockquote>
+<b>Editied to add:</b> <a href="https://twitter.com/AgileStCyr" rel="noopener" target="_blank">Jason St-Cyr</a> points out that <a href="https://twitter.com/AlenPelin" rel="noopener" target="_blank">Alen Pelin</a> did some interesting work on <a href="https://github.com/Sitecore/Sitecore-Configuration-Roles" rel="noopener" target="_blank">how config roles could apply to older versions of Sitecore</a> via the "change Sitecore" route. That may be of interest to you too...
+</blockquote>
+
+
+            </div>
+            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section>
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+    <div class="bg-white mb-2 p-2"><img src="/img/mvp/2021.jpg" alt="2021 MVP Badge"></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (192)</a>
+                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
+                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (12)</a>
+                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
+                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2021-01">2021 - January</a></div>
+                <div><a class="text-lg" href="/posts/2021-02">2021 - February</a></div>
+                <div><a class="text-lg" href="/posts/2021-03">2021 - March</a></div>
+                <div><a class="text-lg" href="/posts/2021-04">2021 - April</a></div>
+                <div><a class="text-lg" href="/posts/2021-05">2021 - May</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right"><a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/tools">Published using Statiq</a></div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 text-center align-middle">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner') ? (docCookies.getItem('hide_banner') == 'true') : false;" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">This website uses Google Analytics, and its cookies.
+              <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank" class="whitespace-nowrap">Learn more</a>
+            </div>
+
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/alpinejs" defer=""></script>    
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '{BTN_RAW}{BTN_COPY}',
+            toolbarBottom: ''
+        });
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
+    
+
+    
+
+
+
+</body></html>

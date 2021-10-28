@@ -1,0 +1,484 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="author" content="Jeremy Davis">
+
+    <title>Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;3</title>
+
+    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-3">
+    <meta name="robots" content="noindex, nofollow">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+
+    
+    <meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;3">
+        <meta property="og:image" content="/img/featured/development-environments-with-powershell-dsc-part-3-social.png">
+    <meta property="og:description" content="">
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-3">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <link href="https://unpkg.com/tailwindcss@2.2.11/dist/tailwind.min.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+
+    
+
+    
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="h-12 mt-2 w-auto lg:h-14" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="-mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="h-12 mt-2 w-auto" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="-mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-1 pb-1">
+        Development environments with PowerShell DSC – Part&nbsp;3
+        </h1>
+            <div class="meta">Published 26 October 2015</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/mongodb" class="p-1 mr-1 bg-gray-100 rounded-md"> MongoDB</a>
+                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+                    <a href="/tags/powershell-dsc" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell DSC</a>
+                    <a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md"> Installation</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>After last week's <a href="/posts/2015/development-environments-with-powershell-dsc-part-2" target="_blank">look at the basic setup of Windows features via PowerShell DSC</a>, this week I'm looking at adding MongoDB into the mix. I wrote a post a while back <a href="/posts/2015/automating-a-development-mongodb-install" target="_blank">about installing MongoDB via ordinary PowerShell</a>, this post can re-purpose that logic in a new form...<!--more--></p>
+<p><i>(<b>Edited to add:</b> Links to all posts in this series: <a href="/posts/2015/development-environments-with-powershell-dsc-part-1" target="_blank">1:Introduction to DSC</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-2" target="_blank">2:Windows Features</a> – 3:Mongo DB – <a href="/posts/2015/development-environments-with-powershell-dsc-part-4" target="_blank">4:SQL Server</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">5:Sitecore</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-6" target="_blank">6:Coveo CES</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-7" target="_blank">7:Coveo REST API &amp; Coveo for Sitecore</a>)</i></p>
+<blockquote>
+<i>Before I get going, couple of notes about the examples I'm including in this series of posts: They all have a call to `Start-DSCConfiguration` using the "-Force" flag to make DSC run this configuration immediately in "push" mode. However, the `Configuration` blocks declared should all work in pull configurations. Writing the scripts this way just makes them easier for people to try out without any other setup effort. Also the examples are all pretty much self-contained, so the overall configuration of a server using them would rely on many separate scripts. You don't necessarily need to have as many as I'm showing here. It's more to keep the examples clear and usable than to represent the "right" architecture. You're free to merge things together, or even break them apart further if that suits you.</i>
+</blockquote>
+<p>The MongoDB install I'm aiming for needs three main steps:</p>
+<ul>
+<li>Installing the core database engine</li>
+<li>Running the engine as a service</li>
+<li>Adding the RoboMongo management tools</li>
+</ul>
+<h2>Configuration for this installation</h2>
+<p>There are various bits of the Mongo installation that it would be useful to make configurable.</p>
+<p>We'll need somewhere to stick temporary files used by the installation, and we'll need assorted settings for MongoDB itself. We can extend the basic configuration data with the right new things:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
+    AllNodes = @(
+        @{
+            NodeName = "WIN-AQEKG7L9SE8"
+            Role = "Setup, WindowsFeatures, IE, SqlServer, MongoDB, Sitecore"
+            
+            TempFolder = "c:\dsc"
+
+            Mongo = @{
+                DataFolder = "c:\MongoDataFolder"
+                ConfigFile = "mongod.cfg"
+                MSIFile = "mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi"
+                InstallerAppName = "MongoDB 3.0.6 2008R2Plus SSL (64 bit)"
+                ServiceExe = "MongoDB\Server\3.0\bin\mongod.exe"
+                RoboZip = "Robomongo-0.8.5-i386.zip"
+                UserForLink = "Administrator"
+            }
+         }
+    );
+}
+</pre>
+<p>The <code>TempFolder</code> path will be the place we stick any files we need to copy over as part of the installation. Under the <code>Mongo</code> dictionary entry are all the setting for MongoDB and its components. I'll explain these as they're used below.</p>
+<h2>The overall script</h2>
+<p>This is basically the same as we saw last week – it needs a <code>Configuration</code>, it needs the parameter for finding the dependencies, and it needs the <code>Node</code> that works out what servers the resources we're defining will be used on:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration MongoDBInstall
+{
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $PackagePath
+    )
+
+    Node $AllNodes.where{ $_.Role.Contains("MongoDB") }.NodeName
+    {
+         #
+         # We'll put the resources here
+         #
+    }
+}
+
+MongoDBInstall -ConfigurationData "\\vboxsvr\dsc\configData.psd1" -PackagePath "\\VBOXSVR\dsc\Mongo"
+Start-DscConfiguration -Path .\MongoDBInstall -Verbose -Wait -Force
+</pre>
+<p>The resources in the examples below can all be added into the <code>Node</code> block here.</p>
+<h2>Adding the database engine</h2>
+<p>First of all, MongoDB needs folders to store its data in. The <code>File</code> resource in DSC can be used both for copying files and folders, or for creating them. So combining that with the configuration above we can create the right folders:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File MongoDataFolders
+{
+    Type = "Directory"
+    DestinationPath = "$($Node.Mongo.DataFolder)\db"
+    Ensure = "Present"
+}
+
+File MongoLogFolders
+{
+    Type = "Directory"
+    DestinationPath = "$($Node.Mongo.DataFolder)\log"
+    Ensure = "Present"
+}
+</pre>
+<p>By not supplying a <code>Source</code> for these resources and by setting <code>Type</code> to "Directory" we're telling DSC to create the folders specified by the <code>DestinationPath</code>. The value of that path comes from the configuration properties above. (I wrote a previous <a href="/posts/2015/config-variables-in-powershell-dsc-can-confuse" target="_blank">post about how DSC resolves these variables</a>, which will help explain that)</p>
+<p>The next thing we'll need is the config file for the MongoDB service. In my previous script I was generating that directly as the script ran, but for this version I've made this file a dependency of the script. Hence we can use another <code>File</code> resource to copy it over to our Mongo data directory:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File MongoConfigFile
+{
+    SourcePath = "$PackagePath\mongod.cfg"
+    DestinationPath = "$($Node.Mongo.DataFolder)\mongod.cfg"
+    Type = "File"
+    Ensure = "Present"
+}
+</pre>
+<p>Here the <code>SourcePath</code> is specified using the <code>-PackagePath</code> parameter to our <code>Configuration</code> so we can find the source file. That file includes some variables which need to be resolved though. My basic example config contains:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:
+    destination: file
+    path: $MongoDataFolder\log\mongod.log
+storage:
+    dbPath: $MongoDataFolder\db
+</pre>
+<p>(You can, of course, add whatever extra MongoDB configuration you need here)</p>
+<p>We then need a bit of code to transform the <code>$MongoDataFolder</code> variables here into the correct path. We can do that with a <code>Script</code> resource - these let us run ordinary PowerShell code in our DSC file.</p>
+<p>The first thing to notice here is the use of the <code>DependsOn</code> property of this resource. Usually DSC will work out the order to run resources in on its own, but if you have a scenario where execution order is important, then you can use this property to tell DSC how it should order things. The value of the <code>DependsOn</code> property is a string in the format "[]", as shown below.</p>
+<p>Script resources have three other key properties that we need to fill in. These represent three specific scripts which get run at different times. The <code>GetScript</code> property can be used to return a dictionary of values describing the current state of a resource. The <code>TestScript</code> property contains code that checks whether the resource has any work to do. It returns false if there is work to do, and true if there is not.</p>
+<p>For the purposes of this resource, these two scripts aren't particularly important, so they're not filled in here.</p>
+<p>The final property is <code>SetScript</code>, and this is the one which does all the hard work:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script UpdateMongoConfigFile
+{
+    DependsOn = "[file]MongoConfigFile"
+    GetScript = {
+    }
+    TestScript = {
+        $False
+    }
+    SetScript = {
+        $configFile = $using:Node.Mongo.ConfigFile
+        $mongoDataFolder = $using:Node.Mongo.DataFolder
+
+        $text = Get-Content "$mongoDataFolder\$configFile" | Out-String
+        $text = $text.Replace(`$MongoDataFolder", $mongoDataFolder)
+        $text | Out-File "$mongoDataFolder\$configFile"
+    }
+}
+</pre>
+<p>An important point to note is that these script blocks have an interesting challenge. Because the code in them runs when your <code>.MOF</code> file is executed, not when the DSC script is compiled into the <code>.MOF</code>. Hence you have to be very careful about the scope of the variables you refer to. (<a href="/posts/2015/config-variables-in-powershell-dsc-can-confuse" target="_blank">This is discussed in my previous post on DSC variables</a>) But the key thing here is that when we access config variables that are coming from the <code>$Node</code> dictionary we have to use the special <code>$using:Node</code> syntax to make sure the values are correctly processed.</p>
+<p>Other than that the code's simple – it just reads the base config file from disk, replaces the variable names with their value, and then writes the result back out again...</p>
+<p>So the next step is installing MongoDB itself. That needs two steps. The first is a simple one to copy the installer over from our folder full of dependencies into our local temporary folder:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File MongoMSI
+{
+    SourcePath = "$PackagePath\$($Node.Mongo.MSIFile)"
+    DestinationPath = "$($Node.TempFolder)\$($Node.Mongo.MSIFile)"
+    Type = "File"
+    Ensure = "Present"
+}
+</pre>
+<p>Then we can run the installation. Helpfully DSC has a resource whose purpose is installing <code>.EXE</code> and <code>.MSI</code> packages. While it's a bit restrictive about the packages it can install, MongoDB plays nicely with it, so we can use the <code>Package</code> resource as follows:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Package MongoDB
+{
+    DependsOn = "[file]MongoMSI"
+    Ensure = "Present"
+    Path = "$($Node.TempFolder)\$($Node.Mongo.MSIFile)"
+    Arguments = 'ADDLOCAL="all"'
+    Name = "$($Node.Mongo.InstallerAppName)"
+    ProductId = ""
+}
+</pre>
+<p>Again we have a dependency here - we can't install the package until it's been copied into our temp folder. But there are two other things which need pointing out. The first is the <code>Arguments</code> property, which you use to pass in any parameters for the install package. In this case we're just saying "install everything".</p>
+<p>The second is the <code>Name</code> and <code>ProductID</code> properties. These two are used to specify how DSC can test if your package is installed already or not. (Remember that DSC attempts to avoid repeating tasks it doesn't have to) You only have to specify one of these parameters. <code>Name</code> needs to be the text which appears in the "uninstall programs" list in Windows, and <code>ProductID</code> is the unique package GUID for the installer. Generally, Name is easier to find. I've made it a parameter here, as this will change with different versions of MongoDB – so if we specify a different installer in our config we need to specify a different <code>Name</code> as well.</p>
+<h2>Configuring MongoDB as a service</h2>
+<p>As I discussed in my previous Mongo post, running the installer gets you the executables on disk, but it doesn't install them as a service. Doing that involves two steps. The first is to instruct MongoDB to add itself into the list of services on the machine. That requires some custom code, so we need another <code>Script</code> resource:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script MongoService
+{
+    DependsOn = "[package]MongoDB", "[script]UpdateMongoConfigFile"
+    GetScript = {
+        $instances = gwmi win32_service -computerName localhost | ? { $_.Name -match "mongo*" -and $_.PathName -match "mongod.exe" } | % { $_.Caption }
+        $res = $instances -ne $null -and $instances -gt 0
+        $vals = @{ 
+            Installed = $res; 
+            InstanceCount = $sqlInstances.count 
+        }
+        $vals
+    }
+    TestScript = {
+        $instances = gwmi win32_service -computerName localhost | ? { $_.Name -match "mongo*" -and $_.PathName -match "mongod.exe" } | % { $_.Caption }
+        $res = $instances -ne $null -and $instances -gt 0
+        if ($res) {
+            Write-Verbose "MongoDB is already running as a service"
+        } else {
+            Write-Verbose "MongoDB is not running as a service"
+        }
+        $res
+    }
+    SetScript = {
+        $configFile = $using:Node.Mongo.ConfigFile
+        $dataFolder = $using:Node.Mongo.DataFolder
+        $service = $using:Node.Mongo.ServiceExe
+
+        $MongoExe = "$using:Env:ProgramFiles\$service"
+        $ConfigFile = "$dataFolder\$configFile"
+
+        &amp;$MongoExe --config $ConfigFile --install
+    }
+}
+</pre>
+<p>With this one I've filled in the <code>GetScript</code> with some code that uses a call to the WMI API to ask for a list of any services called "Mongo" that are currently running. It then uses this data to create a dictionary containing a boolean to say whether the service is installed, and how many instances have been found. The <code>TestScript</code> property uses a similar query to decide if the installation needs to proceed or not.</p>
+<p>In the <code>SetScript</code> block, it extracts the various config variables, works out the path to the Mongo executable and its config file, and then it runs the <code>.EXE</code> passing in the <code>--config</code> and <code>--install</code> parameters to tell it to set itself up as a service.</p>
+<p>Once that's done, the second step is that we need to make sure our service is configured to start automatically. Luckily, DSC has a resource called <code>Service</code> which can deal with changing the state of Windows services. All we have to do is specify the name of the service, how we want it to start up and what state it should be in now:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Service StartMongoService
+{
+    DependsOn = "[script]MongoService"
+    StartupType =  "Automatic"
+    Name = "MongoDB"
+    State = "Running"
+}
+</pre>
+<p>With that done, we have MongoDB running as a service in the background.</p>
+<h2>Adding the management tools</h2>
+<p>MongoDB is available as a <code>.EXE</code> installer, but this one isn't well behaved enough to use with the <code>Package</code> resource, so this code uses the <code>.ZIP</code> version of RoboMongo. The first thing to do is to grab a copy of this from our dependencies folder:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File GetRobomongoZip
+{
+    SourcePath = "$PackagePath\$($Node.Mongo.RoboZip)"
+    DestinationPath = "$($Node.TempFolder)\$($Node.Mongo.RoboZip)"
+    Type = "File"
+    Ensure = "Present"
+}
+</pre>
+<p>With the file copied over, then we have to unzip it. Again, DSC provides us a helpful resource: <code>Archive</code> can unpack a zip file. This uses the <code>$Env:ProgramFiles</code> variable to find the appropriate place to unpack the zip to:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Archive UnzipRobomongo
+{
+    DependsOn =  "[file]GetRobomongoZip"
+    Path = "$($Node.TempFolder)\$($Node.Mongo.RoboZip)"
+    Destination = "$Env:ProgramFiles\RoboMongo"
+}
+</pre>
+<p>You can run RoboMongo now, but it's easier if we have an icon to click on rather than having to go find it in the Program Files folder. So we can use another <code>Script</code> resource to add an icon to a user's desktop via the <a href="https://msdn.microsoft.com/en-us/library/aew9yb99(v=vs.84).aspx" target="_blank" rel="noopener noreferrer">Windows Shell's COM API</a>:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script AddRobomongoLink
+{
+    DependsOn = "[archive]UnzipRobomongo"
+    GetScript = {
+        $usr = $using:Node.Mongo.UserForLink
+        $result = Test-Path "C:\Users\$using:usr\Desktop\Robomongo.lnk"
+        @{
+            "Installed" = $result
+        }
+    }
+    TestScript = {
+        $usr = $using:Node.Mongo.UserForLink
+        $result = Test-Path "C:\Users\$using:usr\Desktop\Robomongo.lnk"
+
+        $result
+    }
+    SetScript = {
+        $usr = $using:Node.Mongo.UserForLink
+        $zip = $using:Node.Mongo.RoboZip
+
+        $folder = [io.path]::GetFileNameWithoutExtension($zip)
+
+        $WshShell = New-Object -comObject WScript.Shell
+        $Shortcut = $WshShell.CreateShortcut("C:\Users\$usr\Desktop\Robomongo.lnk")
+        $Shortcut.TargetPath = "$Env:ProgramFiles\RoboMongo\$folder\Robomongo.exe"
+        $Shortcut.Save()
+    }
+}
+</pre>
+<p>Here the <code>GetScript</code> and <code>TestScript</code> code checks to see if the icon file exists with a simple check against the file system.</p>
+<p>The <code>SetScript</code> extracts the correct variables and calculates the location of the user's desktop. It can then create and call the <code>WScript.Shell</code> COM object to create and save the shortcut.</p>
+<p>And with that done, you can fire up RoboMongo and check out what's in your MongoDB data store:</p>
+<p><a href="/img/2015/2015-09-robomongo.png" target="_blank"><img alt="Robo Mongo" src="/img/2015/2015-09-robomongo.png"></a></p>
+<p>Next week, we'll turn out attention to SQL Server.</p>
+
+
+            </div>
+            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section>
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+    <div class="bg-white mb-2 p-2"><img src="/img/mvp/2021.jpg" alt="2021 MVP Badge"></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (192)</a>
+                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
+                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (12)</a>
+                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
+                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2021-01">2021 - January</a></div>
+                <div><a class="text-lg" href="/posts/2021-02">2021 - February</a></div>
+                <div><a class="text-lg" href="/posts/2021-03">2021 - March</a></div>
+                <div><a class="text-lg" href="/posts/2021-04">2021 - April</a></div>
+                <div><a class="text-lg" href="/posts/2021-05">2021 - May</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right"><a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/tools">Published using Statiq</a></div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 text-center align-middle">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner') ? (docCookies.getItem('hide_banner') == 'true') : false;" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">This website uses Google Analytics, and its cookies.
+              <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank" class="whitespace-nowrap">Learn more</a>
+            </div>
+
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/alpinejs" defer=""></script>    
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '{BTN_RAW}{BTN_COPY}',
+            toolbarBottom: ''
+        });
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
+    
+
+    
+
+
+
+</body></html>

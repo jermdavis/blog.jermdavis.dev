@@ -1,0 +1,279 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="author" content="Jeremy Davis">
+
+    <title>Jeremy Davis - Patching Kubernetes config</title>
+
+    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/patching-kubernetes-config">
+    <meta name="robots" content="noindex, nofollow">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+
+    
+    <meta property="og:title" content="Jeremy Davis - Patching Kubernetes config">
+        <meta property="og:image" content="/img/featured/patching-kubernetes-config-social.png">
+    <meta property="og:description" content="">
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/patching-kubernetes-config">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <link href="https://unpkg.com/tailwindcss@2.2.11/dist/tailwind.min.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+
+    
+
+    
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="h-12 mt-2 w-auto lg:h-14" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="-mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="h-12 mt-2 w-auto" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="-mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-1 pb-1">
+        Patching Kubernetes config
+        </h1>
+            <div class="meta">Published 29 March 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/kubernetes" class="p-1 mr-1 bg-gray-100 rounded-md"> Kubernetes</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>Deploying Sitecore (or anything else) in containers has been a big learning curve for me. Every so often I come across a new aspect of the whole business that I've not seen before. This week, another agency's work showed me a new thing which might help with making changes to Kubernetes config. The approaches I'd seen to deployments involved pushing all of the Kubernetes config each time you want to release, but it turns out you may not need to do that...<!--more--></p>
+<h2>The underlying challenge</h2>
+<p>All the early examples I'd seen for running containers releases used the <code>kubectl apply</code> command to send the full set of configuration data out to a Kubernetes cluster. Sitecore provide you with a big pile of config files in their container release:</p>
+<p><a href="/img/2021/2021-03-configfiles.png" target="_blank"><img alt="Config Files" src="/img/2021/2021-03-configfiles.png"></a></p>
+<p>These files specify a load of configuration settings, but a critical one to consider for the release process is the image tag (version) which you want Kubernetes to find and run for each of your roles. In your config files, there's a specific bit of yaml which describes this:</p>
+<p><a href="/img/2021/2021-03-imagetags.png" target="_blank"><img alt="Image Tags" src="/img/2021/2021-03-imagetags.png"></a></p>
+<p>The simplest thing to do here is specify <code>latest</code> as the version tag. So if you deploy this config, Kubernetes will look at your container registry and find the most recent build and deploy that. Which is fine if you're just pushing out the newest thing – but it doesn't work if you need to deploy another version. Maybe you need to roll back? Or maybe your QA team is swapping between different feature builds because they're testing multiple bits of work in a different order that they were built...</p>
+<p>So to be able to release a specific version of your website to Kubernetes, you need to change this config to describe a specific version tag, not a generic one like "latest".</p>
+<h2>Where I'd started from</h2>
+<p>When I first put the deployment process together for this particular project, I went with (what I thought) was a fairly straight forward solution to this challenge.</p>
+<p>When DevOps builds the containers, it tags them with the release details using the build number and the source branch it came from:</p>
+<p><a href="/img/2021/2021-03-applyingtags-1.png" target="_blank"><img alt="Applying Tags" src="/img/2021/2021-03-applyingtags-1.png"></a></p>
+<p>The next build step used a bit of PowerShell to edit the default Kubernetes config files, to replace the default image tag with the same tag that the build just applied to the images. And then the build put all the Kubernetes config files into the release artefact, so they would be available when the release was run.</p>
+<p>So the release pipeline can download the artefact, and apply the config files it contains to get a release of the right set of images for the particular release.</p>
+<h2>An alternative approach?</h2>
+<p>But it turns out this may not be necessary. The <code>kubectl</code> command has <a href="https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#patch" rel="noopener" target="_blank">a feature for patching configuration</a> - changing part of it without deploying everything. So maybe the approach above can be refactored?</p>
+<p>I've not had a chance to try this properly yet but:</p>
+<p>The idea of applying a patch here is that you could separate your configuration into two parts. You can do an initial deployment using the files Sitecore supplies with your platform-related changes in it. This could stick with the <code>latest</code> tag – since for an initial deployment you're not worrying about a particular release.</p>
+<p>But then subsequently, you don't need to apply this full config again. You could create a patch which just sets the image tags. Maybe something like:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">spec:
+  template:
+    spec:
+      containers:
+      - name: sitecore-xp1-cm
+        image: myrepository.azurecr.io/myclient-xp1-cm:8823-example-branch
+</pre>
+<p>Since the image tag is the last bit of this text, it makes it much easier to generate at build time – no need for search-and-replace – string concatenation would work here. And then you can put that fragment into your release artefact instead of the full configuration file. That does a better job of separating your infrastructure config from your release-specifc config, which might be an improvement in the long term...</p>
+<p>The release process can apply this with something like:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl patch deployment cm -n myNamespace --patch-file ThatPatchAbove.yaml
+</pre>
+<p>You can also <a href="https://stackoverflow.com/questions/36920171/how-can-i-edit-a-deployment-without-modify-the-file-manually/36924484#36924484" rel="noopener" target="_blank">do this sort of patching without any disk files</a> it turns out – you have to express your patch as part of the command line: (using a json representation of the schema above)</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl patch deployment cm -n myNamespace -p {"spec":{"template":{"spec":{"containers":[{"name":"sitecore-xp1-cm","myrepository.azurecr.io/myclient-xp1-cm:8823-example-branch"}]}}}}'
+</pre>
+<p>So maybe it would be possible to have a release that didn't need to include any of the Kubernetes config in the release artefact? That's something I need to find time to test...</p>
+<h2>And another thing...</h2>
+<p>Turns out you can also use this trick to acquire a patched version of your config file if you want. You can also specify a "dry run" parameter (so the command doesn't change the config, just works out what the result of the operation would be) and ask <code>kubectl</code> to output the result to the console. That gives you back the result of applying your patch to a specific config. That might be the current state of the deployment (e.g. as specified by <code>patch deployment cm</code> above) or you can specify a source file if you like with the <code>-f</code> parameter.</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl patch -n myNamespace -f cm.yaml -p '{"spec":{"template":{"spec":{"containers":[{"name":"sitecore-xp1-cm","myrepository.azurecr.io/myclient-xp1-cm:8823-example-branch"}]}}}}' --dry-run=client -o yaml &gt; cm-patched.yaml
+</pre>
+<p>And that seems a better solution to getting a file with the right version in it than my hacky "search and replace with PowerShell" original...</p>
+
+
+            </div>
+            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section>
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+    <div class="bg-white mb-2 p-2"><img src="/img/mvp/2021.jpg" alt="2021 MVP Badge"></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (192)</a>
+                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
+                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (12)</a>
+                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
+                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2021-01">2021 - January</a></div>
+                <div><a class="text-lg" href="/posts/2021-02">2021 - February</a></div>
+                <div><a class="text-lg" href="/posts/2021-03">2021 - March</a></div>
+                <div><a class="text-lg" href="/posts/2021-04">2021 - April</a></div>
+                <div><a class="text-lg" href="/posts/2021-05">2021 - May</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right"><a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/tools">Published using Statiq</a></div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 text-center align-middle">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner') ? (docCookies.getItem('hide_banner') == 'true') : false;" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">This website uses Google Analytics, and its cookies.
+              <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank" class="whitespace-nowrap">Learn more</a>
+            </div>
+
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/alpinejs" defer=""></script>    
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '{BTN_RAW}{BTN_COPY}',
+            toolbarBottom: ''
+        });
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
+    
+
+    
+
+
+
+</body></html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="author" content="Jeremy Davis">
+
+    <title>Jeremy Davis - Experimenting with a SolrCloud container for&nbsp;Sitecore</title>
+
+    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2020/experimenting-with-a-solrcloud-container-for-sitecore">
+    <meta name="robots" content="noindex, nofollow">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+
+    
+    <meta property="og:title" content="Jeremy Davis - Experimenting with a SolrCloud container for&nbsp;Sitecore">
+        <meta property="og:image" content="/img/featured/experimenting-with-a-solrcloud-container-for-sitecore-social.png">
+    <meta property="og:description" content="">
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2020/experimenting-with-a-solrcloud-container-for-sitecore">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <link href="https://unpkg.com/tailwindcss@2.2.11/dist/tailwind.min.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+
+    
+
+    
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="h-12 mt-2 w-auto lg:h-14" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="-mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="h-12 mt-2 w-auto" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="-mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-1 pb-1">
+        Experimenting with a SolrCloud container for&nbsp;Sitecore
+        </h1>
+            <div class="meta">Published 03 August 2020</div>
+            <div class="flex py-1">
+                    <a href="/tags/docker" class="p-1 mr-1 bg-gray-100 rounded-md"> Docker</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/solrcloud" class="p-1 mr-1 bg-gray-100 rounded-md"> SolrCloud</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>I've got a project on the cards that I'd like to use docker containers for, but we're talking about using SolrCloud for search. Right now, there isn't a SolrCloud container in the <a href="https://github.com/sitecore/docker-images" rel="noopener" target="_blank">Sitecore community container repo</a>. So I started thinking about what would it take to make one. <!--more--></p>
+<h2>Big picture</h2>
+<p>At their core Solr and SolrCloud are the same software, with some different configuration settings and data storage. So a key part of getting a single-node instance of SolrCloud to run for a developer is adding an extra command-line parameter when you start it up. More complex, however, is creating the indexes Sitecore will need. Ordinary Solr uses Cores, and you can create them easily just by copying files. But SolrCloud uses Collections – which are made up of both cores and data stored by <a href="https://zookeeper.apache.org/index.html" rel="noopener" target="_blank">ZooKeeper</a>. Because the data is split out, you can't easily just drop files to make new collections – you need to use some sort of API.</p>
+<p>As an aside, if you're new to SolrCloud you might want to watch (or read) my Symposium presentation about <a href="/posts/2020/that-solr-presentation-i-did" target="_blank">getting started with SolrCloud and deploying it to production</a>. That explains more about why we have collections, and how they help you.</p>
+<p>What this means is to make SolrCloud work, we're going to need to replace the process that the existing scripts use to create the default set of indexes. I've already spent a load of time on <a href="https://github.com/jermdavis/SolrCloud-Helpers" rel="noopener" target="_blank">some scripts that can automate creating SolrCloud collections</a> as part of the presentation linked to above – so those seem like a good starting point...</p>
+<h2>First step: PowerShell</h2>
+<p>The first thing I noticed was that the base image for the existing Solr container is the standard Microsoft Nanoserver image. That's small – but it doesn't include PowerShell. While I think it would be possible to do this setup using batch files, it would be a lot of effort to re-write my SolrCloud scripts to avoid PowerShell. So the easy answer for me is to find a base image that does have the scripting engine included. Microsoft offer a <a href="https://hub.docker.com/_/microsoft-powershell" rel="noopener" target="_blank">PowerShell-on-top-of-Nanoserver image</a> which seems ideal for this purpose. Swapping over is easy: just change the arguments passed into the Dockerfile that builds the base for the Solr container. That lives in the <a href="https://github.com/Sitecore/docker-images/blob/master/windows/dependencies/sitecore-openjdk/build.json" rel="noopener" target="_blank">"build.json" file for the Java Runtime image that Solr sits on top of</a>:</p>
+<pre data-enlighter-highlight="7" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+  "tags": [
+    {
+      "tag": "sitecore-openjdk:8-nanoserver-${nanoserver_version}",
+      "build-options": [
+        "--build-arg BUILD_IMAGE=mcr.microsoft.com/windows/servercore:${windowsservercore_version}",
+        "--build-arg BASE_IMAGE=mcr.microsoft.com/powershell:nanoserver:${nanoserver_version}"
+      ]
+    }
+  ],
+  "sources": []
+}
+</pre>
+<p>So now when that container builds, PowerShell will be available for use.</p>
+<h2>Don't create cores...</h2>
+<p>In the existing scripts, the core creation is in two parts. The <a href="https://github.com/Sitecore/docker-images/blob/master/windows/9.x.x/sitecore-xp-solr/Dockerfile" rel="noopener" target="_blank">Dockerfile for the Solr image</a> creates the set of empty core files. And then the <a href="https://github.com/Sitecore/docker-images/blob/master/windows/9.x.x/sitecore-xp-solr/Boot.cmd" rel="noopener" target="_blank">entrypoint script that runs when the container starts</a> can copy those files into the Solr folders if no cores exist. So the first step in removing this behaviour is to strip out the bit of the Dockerfile that's creating these base files.</p>
+<p>In the Dockerfile, the change is to remove this bit:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3,4,5,6,7,8,9,10,11" data-enlighter-language="text" style="width:100%; overflow:scroll;">RUN New-Item -Path 'C:\\clean' -ItemType Directory | Out-Null; `
+    Copy-Item -Path 'C:\\solr\\server\\solr\\*' -Destination 'C:\\clean' -Force -Recurse; `
+#    $env:CORE_NAMES -split ',' | ForEach-Object { `
+#        $name = $_.Trim(); `
+#        $schema = @{$true=('C:\\temp\\{0}' -f $env:MANAGED_SCHEMA_XDB_NAME);$false=('C:\\temp\\{0}' -f $env:MANAGED_SCHEMA_DEFAULT_NAME)}[$name -like '*xdb*']; `
+#        Copy-Item -Path 'C:\\clean\\configsets\\_default\\conf' -Destination ('C:\\clean\\{0}\\conf' -f $name) -Recurse -Force; `
+#        Copy-Item -Path $schema -Destination ('C:\\clean\\{0}\\conf\\managed-schema' -f $name); `
+#        Set-Content -Path ('C:\\clean\\{0}\\core.properties' -f $name) -Value ('name={0}{1}config=solrconfig.xml{1}update.autoCreateFields=false{1}dataDir=data' -f $name, [Environment]::NewLine); `
+#        New-Item -Path ('C:\\clean\\{0}\\data' -f $name) -ItemType Directory | Out-Null; `
+#    }; `
+    Remove-Item -Path 'C:\\clean\\README.txt'; `
+    Remove-Item -Path 'C:\\clean\\configsets' -Recurse;
+</pre>
+<p>(It's commented out here, because it's easier to show the change that way – this can be deleted)</p>
+<p>Removing the start-up behaviour that copies these files is easy – because the next step is going to replace the entrypoint anyway...</p>
+<h2>Firing up SolrCloud</h2>
+<p>The simplest way to get Solr to start up in SolrCloud mode for a developer is to add "-c" to the command line for running it. That could be done in the <a href="https://github.com/Sitecore/docker-images/blob/master/windows/9.x.x/sitecore-xp-solr/Boot.cmd" rel="noopener" target="_blank">entrypoint file that already exists</a> – but that's<br>
+a batch file, and we need PowerShell here. So instead, lets change the Dockerfile have a PowerShell entrypoint. If we name this file "Boot.ps1" to match the pattern, it can get copied in. There's a second PowerShell script that includes the business for creating collections later. Plus we need to make the container fire up PowerShell and run the new boot script with the appropriate parameters. That all happens at the end of the Dockerfile:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">...snip...
+
+EXPOSE 8983
+
+COPY Boot.ps1 .
+COPY MakeCollections.ps1 .
+
+CMD ["c:\\program files\\powershell\\pwsh.exe", "-f", "Boot.ps1", "c:\\solr", "8983", "c:\\clean", "c:\\data"]
+</pre>
+<p>The Boot.ps1 file needs to do some of the same stuff that the old batch file did, and we'll extend it. First up, it needs to receive the parameters:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
+	[string]$solrPath,
+	[string]$solrPort,
+	[string]$installPath,
+	[string]$dataPath
+)
+</pre>
+<p>The "copy files" behaviour from the original script can stay, but in PowerShell flavour – and it's doing something with lock files too:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$solrConfig = "$dataPath\solr.xml"
+if(Test-Path $solrConfig)
+{
+	Write-Host "### Config exists!"
+}
+else
+{
+	Write-Host "### Config does not exist, creating..."
+	Copy-Item "$installPath\\*" "$dataPath" -force -recurse
+}
+
+Write-Host "### Preparing Solr cores..."
+
+Push-Location $dataPath
+if(Test-Path "write.lock")
+{
+	Write-Host "### Removing write.lock"
+	Remove-Item "write.lock" -Force
+}
+Pop-Location
+</pre>
+<p>And finally, fire up Solr in Cloud mode:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "### Starting Solr..."
+
+&amp; "$solrPath\bin\solr.cmd" start -port $solrPort -f -c
+</pre>
+<h2>And then we need collections...</h2>
+<p>So earlier, the Dockerfile copied in a second PowerShell script. That is largely <a href="https://github.com/jermdavis/SolrCloud-Helpers/blob/master/SolrCloud-Helpers/Install/007-Configure-SolrCollections.ps1" rel="noopener" target="_blank">my original collection creation script from my SolrCloud scripting</a>. But I've made a couple of changes. First up, is that the Sitecore containers are setup without SSL for Solr – so all the API endpoints in the script need to change from <code>https://</code> to <code>http://</code>. That's a quick search and replace operation. And the secondly, it needs to include the logic to decide what to do when it's run.</p>
+<p>The logic starts by waiting for Solr to be running:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># wait for it to start
+Write-Host "### Waiting on $solrPort..."
+Wait-ForSolrToStart "localhost" $solrPort
+Write-Host "### Started..."
+</pre>
+<p>Because SolrCloud uses both disk and Zookeeper for storing data, we need to be able to call API endpoints to set up collections, so the rest of the script has to wait for Solr to be running. Then we need to check to see if there's any work to do. This should really get refactored out to a function, but it asks the API how many collections exist at present:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># check for collections - /solr/admin/collections?action=LIST&amp;wt=json
+$url = "http://localhost:$solrPort/solr/admin/collections?action=LIST"
+$response = Invoke-WebRequest -UseBasicParsing -Uri $url
+$obj = $response | ConvertFrom-Json
+$collectionCount = $obj.Collections.Length
+Write-Host "Collection count: $collectionCount"
+</pre>
+<p>If there are no collections, then we need to create them. Otherwise, we can assume it's already been done and skip this bit. If we do have to create them, the that calls the function I wrote when I was originally automating SolrCloud. This also needs a bit of further hacking, as the set of collections and aliases created is fixed right now and it should be configured by data passed in from the json config data – but it does the job for a demo:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($collectionCount -eq 0)
+{
+    Write-Host "Need to create"
+    Configure-SolrCollection "c:\clean" "localhost" "$solrPort" 1 1 1 ""
+}
+else
+{
+    Write-Host "Already exists"
+}
+</pre>
+<p>The last step is making sure this script runs. This bit was a bit of a head-scratcher. The script needs to run in parallel with Solr, but Solr has to run with the "-f" flag, which causes it to keep going forever. So the collection creation has to execute before Solr is started, but needs to not block execution of the startup. And it also needs to be able to send its output back to the Docker console, if we're running connected. After a bit of hackery I settled on PowerShell's <code>Start-Process</code> command. That runs the script in parallel, but doesn't wait for it to end. So "Boot.ps1" can be updated:</p>
+<pre data-enlighter-highlight="3" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "### Starting Solr..."
+
+Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\MakeCollections.ps1 $solrPort"
+
+&amp; "$solrPath\bin\solr.cmd" start -port $solrPort -f -c
+</pre>
+<p>It starts the process to make collections in the background, and then starts Solr in the foreground – allowing both parts to run in parallel.</p>
+<h2>Conclusions</h2>
+<p>So we can now build an image for SolrCloud and starting the container gives you a copy of SolrCloud with some collections created. Success!</p>
+<p><a href="/img/2020/2020-07-collections.png" target="_blank"><img alt="Collections" src="/img/2020/2020-07-collections.png"></a></p>
+<p>And the data folder now includes the core data and the Zookeeper data:</p>
+<p><a href="/img/2020/2020-08-data.png" target="_blank"><img alt="Data" src="/img/2020/2020-08-data.png"></a></p>
+<p>(The prefix on the collection names here was part of my testing – it wouldn't be necessary in a real deployment of this)</p>
+<p>But I'm aware there's a load more to do here:</p>
+<ul>
+<li>The collections and aliases need creating based on configuration being passed into the scripts. There's already a <code>CORE_NAMES</code> variable, but it's not used by the code above right now.</li>
+<li>The collections are probably getting created with the wrong core config schema right now. I didn't change what was being used from my original scripts, which were for Sitecore v9.1 – that probably needs updating. There's some core config data in the docker script repo – but it doesn't appear to be the right data for using with the SolrCloud APIs, so there's some further work to do there.</li>
+<li>The collection setup is slower than the creation of cores from before. Maybe that means the other containers need to wait for it to be finished before they run, to avoid errors because they don't exist initially? I've not tested a full startup of Sitecore yet.</li>
+<li>And the other containers need config changes to use SolrCloud as well. Connection strings need to be updated to add the <code>;SolrCloud=true</code> parameter to them for a start.</li>
+<li>I need to work out how to integrate these changes into the main docker scripts properly – should SolrCloud be an option from the initial build script? Something that gets built by default in parallel? Or something added on manually? Not sure at the moment.</li>
+</ul>
+<p>So I need to find some more time to work on this – but it's a promising start...</p>
+
+
+            </div>
+            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section>
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+    <div class="bg-white mb-2 p-2"><img src="/img/mvp/2021.jpg" alt="2021 MVP Badge"></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (192)</a>
+                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
+                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (12)</a>
+                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
+                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2021-01">2021 - January</a></div>
+                <div><a class="text-lg" href="/posts/2021-02">2021 - February</a></div>
+                <div><a class="text-lg" href="/posts/2021-03">2021 - March</a></div>
+                <div><a class="text-lg" href="/posts/2021-04">2021 - April</a></div>
+                <div><a class="text-lg" href="/posts/2021-05">2021 - May</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right"><a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/tools">Published using Statiq</a></div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 text-center align-middle">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner') ? (docCookies.getItem('hide_banner') == 'true') : false;" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">This website uses Google Analytics, and its cookies.
+              <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank" class="whitespace-nowrap">Learn more</a>
+            </div>
+
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/alpinejs" defer=""></script>    
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '{BTN_RAW}{BTN_COPY}',
+            toolbarBottom: ''
+        });
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
+    
+
+    
+
+
+
+</body></html>

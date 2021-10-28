@@ -1,0 +1,601 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="author" content="Jeremy Davis">
+
+    <title>Jeremy Davis - Automatic packages from TFS: #2 – So how can I write a package&nbsp;file?</title>
+
+    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-2-so-how-can-i-write-a-package-file">
+    <meta name="robots" content="noindex, nofollow">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+
+    
+    <meta property="og:title" content="Jeremy Davis - Automatic packages from TFS: #2 – So how can I write a package&nbsp;file?">
+        <meta property="og:image" content="/img/featured/automatic-packages-from-tfs-2-so-how-can-i-write-a-package-file-social.png">
+    <meta property="og:description" content="">
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-2-so-how-can-i-write-a-package-file">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <link href="https://unpkg.com/tailwindcss@2.2.11/dist/tailwind.min.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+
+    
+
+    
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="h-12 mt-2 w-auto lg:h-14" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="-mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="h-12 mt-2 w-auto" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="-mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-1 pb-1">
+        Automatic packages from TFS: #2 – So how can I write a package&nbsp;file?
+        </h1>
+            <div class="meta">Published 11 August 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/team-foundation-server" class="p-1 mr-1 bg-gray-100 rounded-md"> Team Foundation Server</a>
+                    <a href="/tags/packages" class="p-1 mr-1 bg-gray-100 rounded-md"> Packages</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>After <a href="/posts/2014/generate-packages-from-tfs-1-overall-plan" target="_blank">last week's initial thoughts</a> I've been beavering away on my prototype, and now have a working version. Which is good, as this series of blog posts wasn't going anywhere useful without that...</p>
+<p>So this week I'll address the issue of how you can save XML for a package definition without having any references to Sitecore's DLLs. <!--more--></p>
+<p>If you open the XML for a package definition, you'll find a document a bit like this:</p>
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;project&gt;
+	&lt;Metadata&gt;
+		&lt;metadata&gt;
+			&lt;PackageName&gt;Your-Package-Name&lt;/PackageName&gt;
+			&lt;Author&gt;Jeremy Davis&lt;/Author&gt;
+			&lt;Version&gt;1.0&lt;/Version&gt;
+			&lt;Revision/&gt;
+			&lt;License/&gt;
+			&lt;Comment/&gt;
+			&lt;Attributes/&gt;
+			&lt;Readme/&gt;
+			&lt;Publisher/&gt;
+			&lt;PostStep/&gt;
+			&lt;PackageID/&gt;
+		&lt;/metadata&gt;
+	&lt;/Metadata&gt;
+	&lt;SaveProject&gt;True&lt;/SaveProject&gt;
+	&lt;Sources&gt;
+		...
+	&lt;/Sources&gt;
+	&lt;Converter&gt;
+		&lt;TrivialConverter&gt;
+			&lt;Transforms/&gt;
+		&lt;/TrivialConverter&gt;
+	&lt;/Converter&gt;
+	&lt;Include/&gt;
+	&lt;Exclude/&gt;
+	&lt;Name/&gt;
+&lt;/project&gt;
+</pre>
+<p>These elements can be split up into three groups:</p>
+<ul>
+<li>The <code>&lt;Metadata&gt;</code> section describes the textual properties of the package</li>
+<li>The <code>&lt;Sources&gt;</code> section contains a set of either file or item sources</li>
+<li>The remaining elements are properties of the package itself</li>
+</ul>
+<p>I'll come back to the first two later on. But first, the base <code>&lt;project&gt;</code> and its properties - we need some code to model this structure in a helpful way, and allow automatic creation of the XML from the data the model collects.</p>
+<p>Describing the properties themselves is pretty simple. We can create a property for each of the parts of the XML. The complex elements from the XML can be represented by further classes, and the simple elements as basic types.</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageProject
+{
+    public PackageMetadata Metadata { get; private set; }
+    public bool SaveProject { get; set; }
+    public PackageSources Sources { get; private set; }
+    public PackageConverter Converter { get; private set; }
+
+    public PackageProject()
+    {
+        Metadata = new PackageMetadata();
+        SaveProject = true;
+        Sources = new PackageSources();
+        Converter = new PackageConverter();
+    }
+}
+</pre>
+<p>We need to be able to turn this object into XML, and then ensure that we can also repeat the same trick on the child objects to get their XML too. And that sounds like a job for an interface:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IToXml
+{
+    XElement ToXml();
+}
+</pre>
+<p>Each of the classes we define can implement this. We can add it to the <code>PackageProject</code> like so:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public XElement ToXml()
+{
+    XElement xPackage = new XElement("project");
+
+    xPackage.Add(Metadata.Serialise());
+    xPackage.Add(new XElement("SaveProject", SaveProject));
+    xPackage.Add(Sources.ToXml());
+    xPackage.Add(Converter.ToXml());
+    xPackage.Add(new XElement("Include"));
+    xPackage.Add(new XElement("Exclude"));
+    xPackage.Add(new XElement("Name"));
+
+    return xPackage;
+}
+</pre>
+<p>It generates a root element, and then adds the correct children. For the <code>Metadata</code>, <code>Sources</code> and <code>Converter</code> the generation of the XML is delegated to the child objects. For <code>&lt;SaveProject&gt;</code> the property is written out directly. The <code>&lt;Include&gt;</code>, <code>&lt;Exclude&gt;</code> and <code>&lt;Name &gt;</code> elements are left empty, as I've not found their purpose as yet and they are not populated in the example package definitions I've studied.</p>
+<p>This pattern can be repeated for the <code>Metadata</code> class:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageMetadata : IToXml
+{
+    public string Name { get; set; }
+    public string Author { get; set; }
+    public string Version { get; set; }
+    public string Revision { get; set; }
+    public string License { get; set; }
+    public string Comment { get; set; }
+    public string Attributes { get; set; }
+    public string ReadMe { get; set; }
+    public string Publisher { get; set; }
+    public string PostStep { get; set; }
+    public string PackageID { get; set; }
+
+    public XElement ToXml()
+    {
+        XElement xInnerMetadata = new XElement("metadata");
+        XElement xOuterMetadata = new XElement("Metadata", xInnerMetadata);
+
+        xInnerMetadata.Add(new XElement("PackageName", Name));
+        xInnerMetadata.Add(new XElement("Author", Author));
+        xInnerMetadata.Add(new XElement("Version", Version));
+        xInnerMetadata.Add(new XElement("Revision", Revision));
+        xInnerMetadata.Add(new XElement("License", License));
+        xInnerMetadata.Add(new XElement("Comment", Comment));
+        xInnerMetadata.Add(new XElement("Attributes", Attributes));
+        xInnerMetadata.Add(new XElement("ReadMe", ReadMe));
+        xInnerMetadata.Add(new XElement("Publisher", Publisher));
+        xInnerMetadata.Add(new XElement("PostStep", PostStep));
+        xInnerMetadata.Add(new XElement("PackageID", PackageID));
+
+        return xOuterMetadata;
+    }
+}
+</pre>
+<p>This does basically the same thing to generate the XML contained in the <code>&lt;metadata&gt;</code> element. And likewise, the <code>&lt;Converter&gt;</code> element can be created with:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageConverter : IToXml
+{
+    public XElement ToXml()
+    {
+        return new XElement("Converter", 
+                new XElement("TrivialConverter", 
+                        new XElement("Transforms")
+                    )
+            );
+    }
+}
+</pre>
+<p>This doesn't need any properties, as I've not found any options that need to be represented.</p>
+<p>The last property of the overall package is the <code>Sources</code> property. This is a bit different, as it represents a collection. We need to be able to add a number of different source definitions to this. It needs to store the collection and be able to serialise it:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageSources : IToXml
+{
+    private List&lt;IPackageSource&gt; _sources = new List&lt;IPackageSource&gt;();
+
+    public void AddSource(IPackageSource source)
+    {
+        _sources.Add(source);
+    }
+
+    public XElement ToXml()
+    {
+        XElement xSources = new XElement("Sources");
+
+        foreach (IPackageSource src in _sources)
+        {
+            xSources.Add(src.ToXml());
+        }
+
+        return xSources;
+    }
+}
+</pre>
+<p>Since there are two types of source we're interested in modelling here (Static Files and Static Items – I'm not using dynamic sources, though I'm sure those types could be modelled in a similar way if you wanted) we need a base type for our representations of these. The <code>IPackageSource</code> interface describes the two things we need to keep track of - their names, and a mechanism for adding new items to them:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPackageSource : IToXml
+{
+    string Name { get; set; }
+    void Add(string entry);
+}
+</pre>
+<p>It also inherits from our serialisation interface, since as per the pattern above these package sources need to be able to represent themselves as XML.</p>
+<p>Both concrete types for sources are similar (and to be honest I'm looking at these and thinking that there's a refactoring job for me to do here) except that they need to generate slightly different XML. The Sitecore Item source looks like:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageSourceItems : IPackageSource
+{
+    private List&lt;string&gt; _entries = new List&lt;string&gt;();
+
+    public string Name { get; set; }
+    public PackageItemToEntryConverter Converter { get; private set; }
+
+    public PackageSourceItems()
+    {
+        Converter = new PackageItemToEntryConverter();
+    }
+
+    public void Add(string entry)
+    {
+        _entries.Add(entry);
+    }
+
+    public XElement ToXml()
+    {
+        XElement xItems = new XElement("xitems");
+
+        XElement xEntries = new XElement("Entries");
+        foreach (string entry in _entries)
+        {
+            xEntries.Add(new XElement("x-item", entry));
+        }
+        xItems.Add(xEntries);
+
+        xItems.Add(new XElement("SkipVersions", false));
+
+        xItems.Add(Converter.ToXml());
+
+        xItems.Add(new XElement("Include"));
+        xItems.Add(new XElement("Exclude"));
+
+        xItems.Add(new XElement("Name", Name));
+
+        return xItems;
+    }
+}
+</pre>
+<p>and to generate the right XML, the converter type looks like:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageItemToEntryConverter : IToXml
+{
+    public XElement ToXml()
+    {
+        return new XElement("Converter",
+                new XElement("ItemToEntryConverter",
+                        new XElement("Options",
+                                new XElement("BehaviourOptions",
+                                        new XElement("ItemMode", "Undefined"),
+                                        new XElement("ItemMergeMode", "Undefined")
+                                    )
+                            )
+                    )
+            );
+    }
+}
+</pre>
+<p>Similarly the disk files source looks like:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageSourceFiles : IPackageSource
+{
+    private List&lt;string&gt; _entries = new List&lt;string&gt;();
+
+    public string Name { get; set; }
+    public PackageFileToEntryConverter Converter { get; private set; }
+
+    public PackageSourceFiles()
+    {
+        Converter = new PackageFileToEntryConverter();
+    }
+
+    public void Add(string entry)
+    {
+        _entries.Add(entry);
+    }
+
+    public XElement ToXml()
+    {
+        XElement xFiles = new XElement("xfiles");
+
+        XElement xEntries = new XElement("Entries");
+        foreach (string entry in _entries)
+        {
+            xEntries.Add(new XElement("x-item", entry));
+        }
+        xFiles.Add(xEntries);
+
+        xFiles.Add(Converter.ToXml());
+
+        xFiles.Add(new XElement("Include"));
+        xFiles.Add(new XElement("Exclude"));
+
+        xFiles.Add(new XElement("Name", Name));
+
+        return xFiles;
+    }
+}
+</pre>
+<p>and its converter looks like:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageFileToEntryConverter : IToXml
+{
+    public XElement ToXml()
+    {
+        return new XElement("Converter",
+            new XElement("FileToEntryConverter",
+                    new XElement("Root", "/"),
+                    new XElement("Transforms")
+                ));
+    }
+}
+</pre>
+<p>With all that code slotted together, we can write some code that tries to use these assorted types to generate a package definition:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var prj = new PackageProject();
+prj.Metadata.Name = "TestPackage";
+prj.Metadata.Version = "1.0";
+
+var files = new PackageSourceFiles();
+files.Name = "Files to deploy";
+files.Add("/somefolder/file1.css");
+files.Add("/bin/thebinary.dll");
+prj.Sources.AddSource(files);
+
+var items = new PackageSourceItems();
+items.Name = "Items to deploy";
+items.Add("/sitecore/content/something/{DD5E504F-5FF9-477F-A2FB-B3905B76368C}/invariant/0");
+prj.Sources.AddSource(items);
+
+var xml = prj.ToXml();
+</pre>
+<p>And the XML generated comes out as:</p>
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;project&gt;
+  &lt;Metadata&gt;
+    &lt;metadata&gt;
+      &lt;PackageName&gt;TestPackage&lt;/PackageName&gt;
+      &lt;Author /&gt;
+      &lt;Version&gt;1.0&lt;/Version&gt;
+      &lt;Revision /&gt;
+      &lt;License /&gt;
+      &lt;Comment /&gt;
+      &lt;Attributes /&gt;
+      &lt;ReadMe /&gt;
+      &lt;Publisher /&gt;
+      &lt;PostStep /&gt;
+      &lt;PackageID /&gt;
+    &lt;/metadata&gt;
+  &lt;/Metadata&gt;
+  &lt;SaveProject&gt;true&lt;/SaveProject&gt;
+  &lt;Sources&gt;
+    &lt;xfiles&gt;
+      &lt;Entries&gt;
+        &lt;x-item&gt;/somefolder/file1.css&lt;/x-item&gt;
+        &lt;x-item&gt;/bin/thebinary.dll&lt;/x-item&gt;
+      &lt;/Entries&gt;
+      &lt;Converter&gt;
+        &lt;FileToEntryConverter&gt;
+          &lt;Root&gt;/&lt;/Root&gt;
+          &lt;Transforms /&gt;
+        &lt;/FileToEntryConverter&gt;
+      &lt;/Converter&gt;
+      &lt;Include /&gt;
+      &lt;Exclude /&gt;
+      &lt;Name&gt;Files to deploy&lt;/Name&gt;
+    &lt;/xfiles&gt;
+    &lt;xitems&gt;
+      &lt;Entries&gt;
+        &lt;x-item&gt;/sitecore/content/something/{DD5E504F-5FF9-477F-A2FB-B3905B76368C}/invariant/0&lt;/x-item&gt;
+      &lt;/Entries&gt;
+      &lt;SkipVersions&gt;false&lt;/SkipVersions&gt;
+      &lt;Converter&gt;
+        &lt;ItemToEntryConverter&gt;
+          &lt;Options&gt;
+            &lt;BehaviourOptions&gt;
+              &lt;ItemMode&gt;Undefined&lt;/ItemMode&gt;
+              &lt;ItemMergeMode&gt;Undefined&lt;/ItemMergeMode&gt;
+            &lt;/BehaviourOptions&gt;
+          &lt;/Options&gt;
+        &lt;/ItemToEntryConverter&gt;
+      &lt;/Converter&gt;
+      &lt;Include /&gt;
+      &lt;Exclude /&gt;
+      &lt;Name&gt;Items to deploy&lt;/Name&gt;
+    &lt;/xitems&gt;
+  &lt;/Sources&gt;
+  &lt;Converter&gt;
+    &lt;TrivialConverter&gt;
+      &lt;Transforms /&gt;
+    &lt;/TrivialConverter&gt;
+  &lt;/Converter&gt;
+  &lt;Include /&gt;
+  &lt;Exclude /&gt;
+  &lt;Name /&gt;
+&lt;/project&gt;
+</pre>
+<p>Which (other than the fact that those are not real files or items) is a valid package definition.</p>
+<p>Now it's worth emphasising that I'm taking deliberate short-cuts here. I only need this code to be able to produce a simple package containing a set of static files and items. But the tests I've conducted so far suggest that it meets that objective.</p>
+<p>So next week we can move on to thinking about the pipeline and some components for it which can transform the TFS data into valid data for our our package...</p>
+
+
+            </div>
+            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section>
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+    <div class="bg-white mb-2 p-2"><img src="/img/mvp/2021.jpg" alt="2021 MVP Badge"></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (192)</a>
+                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
+                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (12)</a>
+                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
+                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2021-01">2021 - January</a></div>
+                <div><a class="text-lg" href="/posts/2021-02">2021 - February</a></div>
+                <div><a class="text-lg" href="/posts/2021-03">2021 - March</a></div>
+                <div><a class="text-lg" href="/posts/2021-04">2021 - April</a></div>
+                <div><a class="text-lg" href="/posts/2021-05">2021 - May</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right"><a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/tools">Published using Statiq</a></div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 text-center align-middle">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner') ? (docCookies.getItem('hide_banner') == 'true') : false;" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">This website uses Google Analytics, and its cookies.
+              <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank" class="whitespace-nowrap">Learn more</a>
+            </div>
+
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/alpinejs" defer=""></script>    
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '{BTN_RAW}{BTN_COPY}',
+            toolbarBottom: ''
+        });
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
+    
+
+    
+
+
+
+</body></html>

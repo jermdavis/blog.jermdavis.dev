@@ -1,0 +1,447 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="author" content="Jeremy Davis">
+
+    <title>Jeremy Davis - Thinking about errors in code&nbsp;pipelines</title>
+
+    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2019/thinking-about-errors-in-code-pipelines">
+    <meta name="robots" content="noindex, nofollow">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+
+    
+    <meta property="og:title" content="Jeremy Davis - Thinking about errors in code&nbsp;pipelines">
+        <meta property="og:image" content="/img/featured/thinking-about-errors-in-code-pipelines-social.png">
+    <meta property="og:description" content="">
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/thinking-about-errors-in-code-pipelines">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <link href="https://unpkg.com/tailwindcss@2.2.11/dist/tailwind.min.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+
+    
+
+    
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="h-12 mt-2 w-auto lg:h-14" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="-mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="h-12 mt-2 w-auto" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="-mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-1 pb-1">
+        Thinking about errors in code&nbsp;pipelines
+        </h1>
+            <div class="meta">Published 18 February 2019</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+                    <a href="/tags/pipelines" class="p-1 mr-1 bg-gray-100 rounded-md"> Pipelines</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>A while back I wrote <a href="/posts/2016/an-alternative-approach-to-pipelines" target="_blank">a couple</a> <a href="/posts/2016/getting-pipelines-from-config" target="_blank">of posts</a> on the subject of how code pipelines can work in a more functional .Net world. I've made use of those patterns in some code of my own, and I've found these posts have generated quite a lot of questions from readers here and followers on twitter. But I've never been quite happy with the implementation in my own code... <!--more--></p>
+<h2>The challenge</h2>
+<p>The key place I'd made use of these patterns was in my homebrew RSS reader tool. That has two pipelines in its update logic: The first takes a feed URL and transforms it into a set of "post" objects that need processing. The second takes a post object and transforms it (by fetching HTML, removing scripts, working out dates etc) into a complete entry for the content database.</p>
+<p>Now the thing that didn't really fit here was that any attempt to fetch data over the internet can fail, but my original pipeline couldn't really handle that gracefully. You could either throw an exception that was caught outside of the pipeline, or you could include data in the pipeline's output model that specified what had gone wrong. But to my mind, neither of these is really the right way of solving the problem.</p>
+<p>So how could you adapt the original pipeline model to better describe problems?</p>
+<h2>Stealing another idea from Functional programming</h2>
+<p>The world of functional programming tries to solve issues like this with a wrapper type often refered to as "Either". This represents a result that can be one of two types. It's generally used to wrap "Either a success object or a failure object", but it can also be used to handle a situation where you can have two different successful results from an operation. So could we try and redefine the basic pipeline interfaces in terms of receiving and returning <code>Either</code> objects?</p>
+<p>For the sort of pipeline I'm thinking about for my RSS Reader, we're probably thinking about a pipeline that can return either a successful data object, or an error exception that occurred while the data was being processed. So the type looks something like:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public struct Either&lt;SUCCESS, FAILURE&gt;
+{
+    private readonly bool _isSuccess;
+    private readonly SUCCESS _success;
+    private readonly FAILURE _failure;
+
+    public bool IsSuccess =&gt; _isSuccess;
+    public bool IsFailure =&gt; !IsSuccess;
+
+    public SUCCESS SuccessValue =&gt; _success;
+    public FAILURE FailureValue =&gt; _failure;
+
+    public Either(SUCCESS value)
+    {
+        _isSuccess = true;
+        _success = value;
+        _failure = default(FAILURE);
+    }
+
+    public Either(FAILURE value)
+    {
+        _isSuccess = false;
+        _success = default(SUCCESS);
+        _failure = value;
+    }
+}
+</pre>
+<p>So we have a type that can store either a success or a failure, of whatever type is needed, and it's fairly simple. Now another thing that will be helpful for this later is to have some implicit conversions between the <code>Either</code> type and the two types it wraps. The conversion definitions aren't wildly readable to my mind, but to cast the object either way we need:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static implicit operator Either&lt;SUCCESS, FAILURE&gt;(FAILURE value) =&gt; new Either&lt;SUCCESS, FAILURE&gt;(value);
+public static implicit operator Either&lt;SUCCESS, FAILURE&gt;(SUCCESS value) =&gt; new Either&lt;SUCCESS, FAILURE&gt;(value);
+
+public static implicit operator SUCCESS(Either&lt;SUCCESS, FAILURE&gt; value) =&gt; value._success;
+public static implicit operator FAILURE(Either&lt;SUCCESS, FAILURE&gt; value) =&gt; value._failure;
+</pre>
+<p>With that object in place, we need to re-define the basic pipeline step in terms of <code>Either</code>:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IErrorAwarePipelineStep&lt;INPUT, OUTPUT, ERROR&gt;
+{
+    Either&lt;OUTPUT, ERROR&gt; Process(Either&lt;INPUT, ERROR&gt; input);
+}
+</pre>
+<p>The pipeline steps are now defined in terms of their input and output types for the happy path, and their error type when something goes wrong. And the <code>Process()</code> function signature now has its inputs and outputs defined in terms of <code>Either</code>.</p>
+<p>And as before the overall pipeline is defined as having the same interface as an individual step, and having the set of steps collected together:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IErrorAwarePipeline&lt;INPUT, OUTPUT, ERROR&gt; : IErrorAwarePipelineStep&lt;INPUT, OUTPUT, ERROR&gt;
+{
+    Func&lt;Either&lt;INPUT, ERROR&gt;, Either&lt;OUTPUT, ERROR&gt;&gt; PipelineSteps { get; }
+}
+</pre>
+<p>And we can have an abstract base to implement some reusable code for the overall pipeline too:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ErrorAwarePipeline&lt;INPUT, OUTPUT, ERROR&gt; : IErrorAwarePipeline&lt;INPUT, OUTPUT, ERROR&gt;
+{
+    public Func&lt;Either&lt;INPUT, ERROR&gt;, Either&lt;OUTPUT, ERROR&gt;&gt; PipelineSteps { get; protected set; }
+
+    public Either&lt;OUTPUT, ERROR&gt; Process(Either&lt;INPUT, ERROR&gt; input)
+    {
+        return PipelineSteps(input);
+    }
+}
+</pre>
+<p>In the <a href="/posts/2016/an-alternative-approach-to-pipelines" target="_blank">previous implementation</a> we had a helper extension method to make composing the pipeline steps together. That also needs redefining in terms of <code>Either</code>:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class ErrorAwarePipelineStepExtensions
+{
+    public static Either&lt;OUTPUT, ERROR&gt; ErrorAwareStep&lt;INPUT, OUTPUT, ERROR&gt;(this Either&lt;INPUT, ERROR&gt; input, IErrorAwarePipelineStep&lt;INPUT, OUTPUT, ERROR&gt; step)
+    {
+        return step.Process(input);
+    }
+}
+</pre>
+<p>Now for individual steps, the logic changes a bit in this model becauuse they now have to cope with two scenarios. The input to any step can be one of two things: Some happy-path data to process or an error state. That means each step needs to make a decision about which path it's going to go down, and since that's pretty standard logic it seems like a good case for an abstract base type for the steps:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ErrorAwarePipelineStep&lt;INPUT, OUTPUT, ERROR&gt; : IErrorAwarePipelineStep&lt;INPUT, OUTPUT, ERROR&gt;
+{
+    public abstract Either&lt;OUTPUT, ERROR&gt; ProcessSuccessInput(Either&lt;INPUT, ERROR&gt; input);
+
+    public virtual Either&lt;OUTPUT, ERROR&gt; ProcessErrorInput(Either&lt;INPUT, ERROR&gt; input)
+    {
+        return input.FailureValue;
+    }
+
+    public Either&lt;OUTPUT, ERROR&gt; Process(Either&lt;INPUT, ERROR&gt; input)
+    {
+        if (input.IsSuccess)
+        {
+            return ProcessSuccessInput(input);
+        }
+        else
+        {
+            return ProcessErrorInput(input);
+        }
+    }
+}
+</pre>
+<p>The <code>Process()</code> method now just decides whether the input is a success or failure type, and calls the appropriate method on it. Most of the time I think the failure path will just "do nothing and pass on the existing error", so that can be a virtual method with this as default behaviour. But the opposite is true for the success path – pretty much every pipeline step will have some custom logic here, so it makes sense for that to be an abstract method.</p>
+<p>And that's most of the basic logic we need to try this out...</p>
+<h2>An example</h2>
+<p>Lets make up some trivial pipeline steps to try this out. A very simple example of a step that might have an error is parsing a string to a number. So lets try a step that does that:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ErrorAwareStringToIntStep : ErrorAwarePipelineStep&lt;string, int, Exception&gt;
+{
+    public override Either&lt;int, Exception&gt; ProcessSuccessInput(Either&lt;string, Exception&gt; input)
+    {
+        int value;
+        if (int.TryParse(input.SuccessValue, out value))
+        {
+            return value;
+        }
+        else
+        {
+            return new Exception("Can't parse string to integer");
+        }
+    }
+}
+</pre>
+<p>So the step is defined in terms of taking in a string, returning an integer or returning an exception. It doesn't have any behaviour for the "failure" path, so no need to override that method, but the happy path can try to parse the string and return either the integer or the exception.</p>
+<p>(And note that thanks to the explicit conversions we defined before, there's no need to explicitly cast the return values – the compiler sorts that out for us)</p>
+<p>Another simple test component could multiply our result by a float to get a float result:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ErrorAwareMultiplyStep : ErrorAwarePipelineStep&lt;int, float, Exception&gt;
+{
+    public override Either&lt;float, Exception&gt; ProcessSuccessInput(Either&lt;int, Exception&gt; input)
+    {
+        return input * 2.1f;
+    }
+}
+</pre>
+<p>The other things we should try is to do something on the failure path. We can add happy path logic to do nothing, but override the failure path code to do something with the error data:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ErrorStateChangeStep : ErrorAwarePipelineStep&lt;float, float, Exception&gt;
+{
+    public override Either&lt;float, Exception&gt; ProcessSuccessInput(Either&lt;float, Exception&gt; input)
+    {
+        return input;
+    }
+
+    public override Either&lt;float, Exception&gt; ProcessErrorInput(Either&lt;float, Exception&gt; input)
+    {
+        return new Exception("This is a custom exception", input.FailureValue);
+    }
+}
+</pre>
+<p>In this case we're just trivially wrapping up the exception inside another exception – but it gives an indication of what can be done.</p>
+<p>And with that in place we can then compose those components into a simple example pipeline:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleErrorAwarePipeline : ErrorAwarePipeline&lt;string, float, Exception&gt;
+{
+    public ExampleErrorAwarePipeline()
+    {
+        PipelineSteps = input =&gt; input
+            .ErrorAwareStep(new ErrorAwareStringToIntStep())
+            .ErrorAwareStep(new ErrorAwareMultiplyStep())
+            .ErrorAwareStep(new ErrorStateChangeStep());
+    }
+}
+</pre>
+<p>So our pipeline will now take a string and give us back either a float or an exception, depending on what happens...</p>
+<p>Now something else I realised when I started to try and set up some code to test out this example pipeline was that it would be helpful to have an easy way to process the result based on whether the <code>Either</code> represents success or failure. So stealing another pattern from the Functional world, I added a <code>Match()</code> method to <code>Either</code> which you pass a function to for success or failure:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public T Match&lt;T&gt;(Func&lt;SUCCESS, T&gt; successFn, Func&lt;FAILURE, T&gt; failureFn)
+{
+    if(_isSuccess)
+    {
+        return successFn(_success);
+    }
+    else
+    {
+        return failureFn(_failure);
+    }
+}
+</pre>
+<p>And that allows us to write a simple test where we can call the test pipeline defined above with a set of test data to see what happens:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class Program
+{
+    private static IErrorAwarePipeline&lt;string, float, Exception&gt; _pipeline = new ExampleErrorAwarePipeline();
+
+    private static void runPipeline(string input)
+    {
+        Console.WriteLine("Running pipeline:");
+
+        var result = _pipeline
+            .Process(input)
+            .Match(
+                f =&gt; $"Success: Transformed {input}[{input.GetType().Name}] to {f}[{f.GetType().Name}]",
+                f =&gt; $"Error: Transformed {input}[{input.GetType().Name}] to {f}[{f.GetType().Name}]"
+            );
+
+        Console.WriteLine(result);
+        Console.WriteLine();
+    }
+
+    private static void Main(string[] args)
+    {
+        runPipeline("27");
+        runPipeline("0");
+        runPipeline("0.1");
+        runPipeline("hello");
+    }
+}
+</pre>
+<p>Which gives the expected results:</p>
+<p><a href="/img/2019/2019-02-errorpipelineoutput.png" target="_blank"><img alt="Error Pipeline Output" src="/img/2019/2019-02-errorpipelineoutput.png"></a></p>
+<p>Where the pipeline can successfully process the input, the result is the expected data. And where it can't we get an exception wrapped up in the way the final component specified...</p>
+<p>The <a href="https://gist.github.com/jermdavis/0b27c613e7e252e4a1cd68fc530b7d77" rel="noopener noreferrer" target="_blank">code for this is available in a gist</a> if you want it all together.</p>
+<h2>Conclusions</h2>
+<p>It does make the error handling pattern for the pipelines easier, I think – now that there's an explicit path for what happens to error data. I can see a way to recompose my RSS pipelines so that an error message comes out, and then a third pipeline that can translate an exception record from one of those pipelines into the "feed error" record that I want to store in my RSS reader's database. And once the infrastructure described above is in place, the individual pipeline components don't really change that much from what I had before.</p>
+<p>But the counterpoint to that is that the interfaces of the various types involved in the pipeline infrastructure got more complex, and less readable as a result. And I'm not sure I've got to the bottom of the set of type casts and helper methods necessary to ensure that it's easy to use <code>Either</code> in the midst of other code.</p>
+<p>But I'm pretty sure Functional developers have already solved those problems – I just need to work out what the rough edges I need to sort out are. And to be sure of what they are I need to write some more code using this pattern...</p>
+
+
+            </div>
+            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section>
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+    <div class="bg-white mb-2 p-2"><img src="/img/mvp/2021.jpg" alt="2021 MVP Badge"></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (192)</a>
+                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
+                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (12)</a>
+                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
+                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2021-01">2021 - January</a></div>
+                <div><a class="text-lg" href="/posts/2021-02">2021 - February</a></div>
+                <div><a class="text-lg" href="/posts/2021-03">2021 - March</a></div>
+                <div><a class="text-lg" href="/posts/2021-04">2021 - April</a></div>
+                <div><a class="text-lg" href="/posts/2021-05">2021 - May</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right"><a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/tools">Published using Statiq</a></div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 text-center align-middle">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner') ? (docCookies.getItem('hide_banner') == 'true') : false;" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">This website uses Google Analytics, and its cookies.
+              <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank" class="whitespace-nowrap">Learn more</a>
+            </div>
+
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/alpinejs" defer=""></script>    
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '{BTN_RAW}{BTN_COPY}',
+            toolbarBottom: ''
+        });
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
+    
+
+    
+
+
+
+</body></html>

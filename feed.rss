@@ -1,0 +1,998 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0">
+	<channel>
+		<title />
+		<link>https://blog.jermdavis.dev/</link>
+		<description />
+		<copyright>2021</copyright>
+		<managingEditor>Jeremy Davis</managingEditor>
+		<pubDate>Thu, 28 Oct 2021 19:17:01 GMT</pubDate>
+		<lastBuildDate>Thu, 28 Oct 2021 19:17:01 GMT</lastBuildDate>
+		<item>
+			<title>What happened to my “item:deleted” event?</title>
+			<link>https://blog.jermdavis.dev/posts/2021/what-happened-to-my-itemdeleted-event</link>
+			<description>&lt;p&gt;My QA team had a deployment issue recently, where Azure DevOps failed to successfully release to a couple of servers. The reason for the failure wasn't obvious to me immediately, so here's a quick write-up for Google, in the hope it saves some other people.&lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
+			<guid>https://blog.jermdavis.dev/posts/2021/what-happened-to-my-itemdeleted-event</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;My QA team had a deployment issue recently, where Azure DevOps failed to successfully release to a couple of servers. The reason for the failure wasn't obvious to me immediately, so here's a quick write-up for Google, in the hope it saves some other people.&lt;!--more--&gt;&lt;/p&gt;
+&lt;h2&gt;The reported error&lt;/h2&gt;
+&lt;p&gt;The DevOps release pipeline had failed. It was the Unicorn sync step which reported an error, but the error messages were not initially helpful:&lt;/p&gt;
+&lt;a href="/img/2021/releaseerror.png"&gt;
+&lt;img src="https://blog.jermdavis.dev/img/2021/releaseerror.png" alt="Release Error"&gt;
+&lt;/a&gt;
+&lt;p&gt;For Google's benefit, the error is here:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-highlight="15" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;2021-09-06T10:56:24.4434898Z ##[section]Starting: Run Unicorn Sync
+2021-09-06T10:56:24.4576402Z ==============================================================================
+2021-09-06T10:56:24.4576705Z Task         : PowerShell
+2021-09-06T10:56:24.4576990Z Description  : Run a PowerShell script on Linux, macOS, or Windows
+2021-09-06T10:56:24.4577248Z Version      : 2.190.0
+2021-09-06T10:56:24.4577458Z Author       : Microsoft Corporation
+2021-09-06T10:56:24.4577771Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/powershell
+2021-09-06T10:56:24.4578219Z ==============================================================================
+2021-09-06T10:56:25.3011750Z Generating script.
+2021-09-06T10:56:25.3420551Z ========================== Starting Command Output ===========================
+2021-09-06T10:56:25.3660200Z ##[command]"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\azagent\A1\_work\_temp\6a50dc74-9a04-4072-afd1-03306e0b3fb2.ps1'"
+2021-09-06T10:56:25.6931500Z Starting Unicorn sync
+2021-09-06T10:56:26.4749680Z Sync-Unicorn: Executing Sync...
+2021-09-06T10:56:26.7585296Z Sync-Unicorn : Exception calling "GetResponse" with "0" argument(s): "The
+2021-09-06T10:56:26.7585814Z remote server returned an error: (500) Internal Server Error."
+2021-09-06T10:56:26.7586285Z At C:\azagent\A1\_work\_temp\6a50dc74-9a04-4072-afd1-03306e0b3fb2.ps1:9 char:1
+2021-09-06T10:56:26.7586747Z + Sync-Unicorn -ControlPanelUrl 'https://my-server-name/un ...
+2021-09-06T10:56:26.7587192Z + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2021-09-06T10:56:26.7587616Z     + CategoryInfo          : NotSpecified: (:) [Sync-Unicorn], MethodInvocationException
+2021-09-06T10:56:26.7588307Z     + FullyQualifiedErrorId : WebException,Sync-Unicorn
+2021-09-06T10:56:26.7588676Z
+2021-09-06T10:56:26.8984825Z ##[error]PowerShell exited with code '1'.
+2021-09-06T10:56:26.9490148Z ##[section]Finishing: Run Unicorn Sync
+&lt;/pre&gt;
+&lt;p&gt;But basically all it says is that there was a 500 error calling Unicorn's sync endpoint.&lt;/p&gt;
+&lt;h2&gt;A better error&lt;/h2&gt;
+&lt;p&gt;That's not enough to solve the problem, so I needed to get some more details. The obvious thing to try was a manual sync of Unicorn. So loaded up &lt;code&gt;/unicorn.aspx&lt;/code&gt; and told it to sync everything. That told me two things initially: Firstly that the actual seralised items were syncing ok. And secondly that the error was actually happening during the automatic publish afterwards. It failed with this display in the UI:&lt;/p&gt;
+&lt;a href="/img/2021/unicornerror.png"&gt;
+&lt;img src="https://blog.jermdavis.dev/img/2021/unicornerror.png" alt="Detailed error"&gt;
+&lt;/a&gt;
+&lt;p&gt;Again, for Google's benefit:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Message[1]: Ensure definition type did not complete successfully. StatusCode: 500, ReasonPhrase: 'Internal Server Error', Version: 1.1, Content: System.Net.Http.StreamContent, Headers:
+{
+Cache-Control: private
+Date: Mon, 06 Sep 2021 10:56:26 GMT
+Server: Microsoft-IIS/8.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Content-Length: 7903
+Content-Type: text/html; charset=utf-8
+}
+Source[1]: Sitecore.Xdb.Common.Web
+at Sitecore.Xdb.Common.Web.Synchronous.SynchronousExtensions.SuspendContextLock[TResult](Func`1 taskFactory)
+at Sitecore.ExperienceAnalytics.Core.Repositories.ReferenceData.ExperienceAnalyticsSegmentReader.GetDefinitionTypeKey()
+at Sitecore.ExperienceAnalytics.Core.Repositories.ReferenceData.ExperienceAnalyticsSegmentReader.Get(Guid key, NameValueCollection readingPreferences)
+at Sitecore.ExperienceAnalytics.Client.Deployment.Events.SegmentDeployedEventHandler.DeleteSegment(Item deletedItem)
+at Sitecore.Events.Event.EventSubscribers.RaiseEvent(String eventName, Object[] parameters, EventResult result)
+
+101216 11:56:26 ERROR Failed to delete the item. Item ID: {1D54ADFD-3D04-49FF-9FA1-BEC77042AE65}, database: web
+Exception: System.AggregateException
+Message: One or more exceptions occurred while processing the subscribers to the 'item:deleted' event.
+Source: Sitecore.Kernel
+at Sitecore.Events.Event.EventSubscribers.RaiseEvent(String eventName, Object[] parameters, EventResult result)
+at Sitecore.Events.Event.RaiseEvent(String eventName, Object[] parameters)
+at System.EventHandler`1.Invoke(Object sender, TEventArgs e)
+at Sitecore.Data.Engines.EngineCommand`2.RaiseEvent[TArgs](EventHandler`1 handlers, Func`2 argsCreator)
+at Sitecore.Data.Engines.EngineCommand`2.Execute()
+at Sitecore.Data.Engines.DataEngine.DeleteItem(Item item)
+&lt;/pre&gt;
+&lt;p&gt;That error's telling us that what actually happened was that the &lt;code&gt;item:deleted&lt;/code&gt; event has a subscriber that connects to xDB. And that's what's failing here.&lt;/p&gt;
+&lt;h2&gt;A soluition – and some facepalming&lt;/h2&gt;
+&lt;p&gt;I spent a bit of time reading the errors above, before spotting this bit:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Message[1]: Ensure definition type did not complete successfully. StatusCode: 500, ReasonPhrase: 'Internal Server Error'
+&lt;/pre&gt;
+&lt;p&gt;And a bit of Googling pointed me to this article: "&lt;a href="https://andrewwburns.com/2019/02/07/sitecore-system-invalidoperationexception-ensure-definition-type-did-not-complete-successfully/" target="_blank"&gt;SITECORE: SYSTEM.INVALIDOPERATIONEXCEPTION: ENSURE DEFINITION TYPE DID NOT COMPLETE SUCCESSFULLY&lt;/a&gt;" and the sudden realisation that this was actually really obvious...&lt;/p&gt;
+&lt;p&gt;That article points out that the message in the Sitecore logs above correlates to a message in the xConnect logs which is much more obvious:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;[Error] XConnect Web Application Error: “System.ApplicationException:
+Exception trying to intialize Service Collection and Provider for for WebAPI Dependency Resolver, Inner Exception:
+Required license is missing: Sitecore.xDB.Base —&amp;gt; Sitecore.Nexus.Licensing.LicenseException: Required license is missing: Sitecore.xDB.Base
+&lt;/pre&gt;
+&lt;p&gt;Hence the facepalming... This whole business was another "our company's license has expired" issue – &lt;a href="https://blog.jermdavis.dev/posts/2021/sitecore-containers-and-expired-licenses" target="_blank"&gt;like the Docker issues I saw recently&lt;/a&gt;. My colleagues had correctly updated the license file for the XM roles, but it seems they forgot to update xConnect's copy of the license file. Ooops.&lt;/p&gt;
+&lt;p&gt;But, problem solved, as everything sorted itself out when I updated that missed license file. So a big thank you to &lt;a href="https://twitter.com/AndrewWBurns/" rel="noopener" target="_blank"&gt;Andy Burns&lt;/a&gt; for the blog post that helped me here.&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Symposium's vision for SaaS</title>
+			<link>https://blog.jermdavis.dev/posts/2021/symposiums-vision-for-saas</link>
+			<description>&lt;p&gt;There was a lot of interesting information releases during &lt;a href="https://symposium.sitecore.com/" rel="noopener" target="_blank"&gt;Sitecore Symposium&lt;/a&gt; last week. Since I had to summarise this for a work event, I figured I should reuse those thoughts, and write up a brief summary of some of the announcements that caught my attention, and (importantly) Sitecore's vision their future SaaS product: &lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
+			<guid>https://blog.jermdavis.dev/posts/2021/symposiums-vision-for-saas</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;There was a lot of interesting information releases during &lt;a href="https://symposium.sitecore.com/" rel="noopener" target="_blank"&gt;Sitecore Symposium&lt;/a&gt; last week. Since I had to summarise this for a work event, I figured I should reuse those thoughts, and write up a brief summary of some of the announcements that caught my attention, and (importantly) Sitecore's vision their future SaaS product: &lt;!--more--&gt;&lt;/p&gt;
+&lt;h2&gt;There's lots of stuff going on:&lt;/h2&gt;
+&lt;p&gt;Before I get into the SaaS business, it's worth noting it was a busy event for anouncements generally. Some highlights we heard:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;b&gt;Sitecore 10.2 will be released in November&lt;/b&gt;&lt;br&gt;
+Windows Server 2022 support. .Net Core upgraded to V3 for the relevant roles. Analytics reporting improvements. Ability to delete interaction data more easily. New CLI features like field exclusion for serialisation, resource file generation and search index rebuild. (The CLI improvements are also available for 10.1) Plus the usuall collection of bug fixes and performance tweaks.
+&lt;/li&gt;
+&lt;li&gt;
+&lt;b&gt;We now know the new branding for all the recent acquisitions&lt;/b&gt;&lt;br&gt;
+Instead of Boxever, Four51, MooSend and Reflektion, we now have: Sitecore CDP / Sitecore Personalise, Sitecore OrderCloud, Sitecore Send and Sitecore Search / Sitecore Discover. Names we'll be hearing about much more in the future, I suspect.
+&lt;/li&gt;
+&lt;li&gt;
+&lt;b&gt;Content Hub 4.1 in a month or so&lt;/b&gt;&lt;br&gt;
+New schema features for references between content items. More media types supported. Extensibility for media previews.
+&lt;/li&gt;
+&lt;li&gt;
+&lt;b&gt;New headless framework release&lt;/b&gt;&lt;br&gt;
+Updated to newer NextJS and Vue versions. Ability to publish markup from MVC components to headless services.
+&lt;/li&gt;
+&lt;li&gt;
+&lt;b&gt;Updates to SXA in 10.2&lt;/b&gt;&lt;br&gt;
+Scriban template improvements. Better data sharing for multi-site setups. Bootstrap 5 support.
+&lt;/li&gt;
+&lt;li&gt;
+&lt;b&gt;Updates to Horizon in 10.2&lt;/b&gt;&lt;br&gt;
+Improved editing experience for SXA components. Docker image supporting process isolation. UI improvements. New "content explorer" view listing all items.
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;On top of that, the SaaS vision is very interesting:&lt;/h2&gt;
+&lt;p&gt;But the real excitement is with the vision for Sitecore's future SaaS offering. While we've had Content Hub as a SaaS content tool for some time now, it's had some key weak spots compared to what we're used to with classic Sitecore: It's not great with trees of content, and it doesn't provide any way to compose UI components together into a page. Those caveats mean it's not the right choice for a variety of scenarios.&lt;/p&gt;
+&lt;p&gt;So Sitecore have started to talk about an alternative approach: offering a package built around the classic Sitecore XM product, but hosted via SaaS. The phrase Dave O'Flanagan used in his keynote was "The no-compromise CMS" – because it's trying to take the best bits of the traditional model and the best bits of the headless / JAMStack model, and blend them together.&lt;/p&gt;
+&lt;p&gt;The high-level picture he talked about looks like this:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-10-saas-diagram.png" target="_blank"&gt;&lt;img alt="SaaS Diagram" src="https://blog.jermdavis.dev/img/2021/2021-10-saas-diagram.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;So what are all the boxes on this diagram going to do for us?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;Experience Manager Cloud&lt;/b&gt;&lt;br&gt;
+You'll need somewhere to store your content in this model, and the technology in play is based on the classic Sitecore XM platform. It will be wrapped up in some clever SaaS sauce, so instances are automagically managed for you – it will sort out databases and Solr. When you have customisations to deploy, you'll use a GitOps approach to deployment – push to a source control branch, and those changes get deployed to your instance. It will run headless services, which will be key to how it serves content because it will be CM-only, and this won't be exposed to the public internet. Which means it never needs to scale for load – keeping the implementation simpler.
+&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Experience Edge&lt;/b&gt;&lt;br&gt;
+This isn't new (&lt;a href="https://doc.sitecore.com/en/developers/101/developer-tools/sitecore-experience-edge-for-xm.html" rel="noopener" target="_blank"&gt;you can play with it now, with your current JSS/Headless sites&lt;/a&gt;) but it's really fundamental for the new model. Edge is a cloud-scale cache for your Headless Services data. Your CM instance can publish its content, media and layout data to this service, so that your headless front-end code can read the data from here. It replaces the need for the CD servers the "old" JSS approach would have used to do this job. The magic here is that because it's a CDN-style edge cache, it scales to meet the needs of your front-end automatically. So you no longer need to provision content delivery servers.
+&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Content Hub&lt;/b&gt;&lt;br&gt;
+There is a role for Content Hub here, alongside XM – as the DAM for selecting media from.
+&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Symphony&lt;/b&gt;&lt;br&gt;
+This is the brand name they're giving to an enhanced, SaaS-hosted evolution of the Horizon editor. It gives you the full WYSIWYG editing experience for your JAMStack-style sites. It's also integrated with Personalise, to let you manage your personalisation work and examine its outcomes. Sitecore argue that this is an important differentiator for their offering, because it's bringing the editorial flexibility we've been used to with the classic CMS to the JAMStack site.
+&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Personalise&lt;/b&gt;&lt;br&gt;
+Since XM doesn't include any of the old XConnect-powered personalisation, there needs to be something to provide those services in this new model. And the "Personalise" product is a cut-down set of tools from the Boxever suite. We don't know much about what the scope of this product's set of services will be yet, however. So it will be interesting to see what features are available here by default.
+&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Vercel&lt;/b&gt;&lt;br&gt;
+The final thing you need for this system is somewhere to serve the front-end code for your website from. As mentioned, we don't have any CD servers in this world. Experience Cloud has a focus on Next.js for building your site UI, so Sitecore have chosen to partner with &lt;a href="https://vercel.com/" rel="noopener" target="_blank"&gt;Vercel&lt;/a&gt; to give you somewhere to host it. They provide a GitOps way to deploy your code quickly, and CDN-style scaling behaviour to help you cope with load without effort. But critically the infrastructure here understands the build process for your Next.js code – so it can automatically perform tasks like static site generation whenever your code gets update, or when Experience Edge triggers a webhook to signal new content has been published.
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;While the diagram doesn't show the other new systems Sitecore has aquired, it's clear that things like Search, OrderCloud and Send will be integratable with this model too.&lt;/p&gt;
+&lt;p&gt;An interesting point about the approach above, is that it's basically the next step on from what you could do with an XM 10.2 / Headless deployment in Managed Cloud. And Sitecore have said if you can migrate your site over to be able to run in that pattern, it will have a very simple migration path to the SaaS service once it's released.&lt;/p&gt;
+&lt;p&gt;We've got a bit to wait to see the details of this, however – Sitecore are saying we'll see initial releases in spring next year. But this is another driver for me to finally wrap my head around headless development for Sitecore. It seems like it's pretty certain to become the new normal for projects in the future. And it looks a flexible, powerful future too.&lt;/p&gt;
+&lt;p&gt;Exciting times...&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Sitecore containers and expired licenses</title>
+			<link>https://blog.jermdavis.dev/posts/2021/sitecore-containers-and-expired-licenses</link>
+			<description>&lt;p&gt;Sometimes you have a problem that you should absolutely have seen coming. The annual "the company's Sitecore license has expired" fun is very much one of those things. But I'd not thought about this in advance, and the license expired while I was on holiday this year. It caused my team a load of hassle... But I have a plan to avoid this pain in the future: &lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
+			<guid>https://blog.jermdavis.dev/posts/2021/sitecore-containers-and-expired-licenses</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;Sometimes you have a problem that you should absolutely have seen coming. The annual "the company's Sitecore license has expired" fun is very much one of those things. But I'd not thought about this in advance, and the license expired while I was on holiday this year. It caused my team a load of hassle... But I have a plan to avoid this pain in the future: &lt;!--more--&gt;&lt;/p&gt;
+&lt;h2&gt;The issue&lt;/h2&gt;
+&lt;p&gt;When you're running Sitecore in containers, it's not necessarily obvious when your license expires. The containers can start up – but you'll end up with some errors inside them. The identity service will fairly rapidly throw an exception in its logs:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;&amp;lt;Source&amp;gt;EventLog&amp;lt;/Source&amp;gt;&amp;lt;Time&amp;gt;2021-09-03T19:33:25.000Z&amp;lt;/Time&amp;gt;&amp;lt;LogEntry&amp;gt;&amp;lt;Channel&amp;gt;System&amp;lt;/Channel&amp;gt;&amp;lt;Level&amp;gt;Error&amp;lt;/Level&amp;gt;&amp;lt;EventId&amp;gt;701&amp;lt;/EventId&amp;gt;&amp;lt;Message&amp;gt;Task Scheduler service failed to start Task Compatibility module. Tasks may not be able to register on previous Window versions. Additional Data: Error Value: 2147942450.&amp;lt;/Message&amp;gt;&amp;lt;/LogEntry&amp;gt;
+Unhandled Exception: Sitecore.Framework.Runtime.Licensing.Exceptions.SitecoreLicenseInvalidOperationException: Invalid or expired license. [Raw]
+[2021-09-03T19:33:31.000Z][LOGMONITOR] INFO: Entrypoint processs exit code: -532462766
+   at Sitecore.Framework.Runtime.Licensing.LicenseValidator.LoadLicense(License license)
+   at Sitecore.Framework.Runtime.Commands.SitecoreHostCommand.OnExecuteAsync(CommandLineApplication app)
+   at McMaster.Extensions.CommandLineUtils.Conventions.ExecuteMethodConvention.InvokeAsync(MethodInfo method, Object instance, Object[] arguments)
+   at McMaster.Extensions.CommandLineUtils.Conventions.ExecuteMethodConvention.OnExecute(ConventionContext context, CancellationToken cancellationToken)
+   at McMaster.Extensions.CommandLineUtils.Conventions.ExecuteMethodConvention.&amp;lt;&amp;gt;c__DisplayClass0_0.&amp;lt;&amp;lt;Apply&amp;gt;b__0&amp;gt;d.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at McMaster.Extensions.CommandLineUtils.CommandLineApplication.ExecuteAsync(String[] args, CancellationToken cancellationToken)
+   at McMaster.Extensions.CommandLineUtils.CommandLineApplication.ExecuteAsync[TApp](CommandLineContext context, CancellationToken cancellationToken)
+   at Sitecore.Program.&amp;lt;Main&amp;gt;(String[] args)
+&lt;/pre&gt;
+&lt;p&gt;But the CM container will give a less obvious error:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;2021-09-03 19:34:33 ::1 GET /healthz/ready - 80 - ::1 Mozilla/5.0+(Windows+NT;+Windows+NT+10.0;+en-US)+WindowsPowerShell/5.1.17763.1971 - 500 0 0 30804
+2076 20:35:07 INFO  HttpModule is being initialized
+2260 20:35:17 INFO  **************************************************
+2260 20:35:17 WARN  Sitecore shutting down
+2260 20:35:17 WARN  Shutdown message: Initialization Error
+HostingEnvironment initiated shutdown
+2021-09-03 19:35:07 ::1 GET /healthz/ready - 80 - ::1 Mozilla/5.0+(Windows+NT;+Windows+NT+10.0;+en-US)+WindowsPowerShell/5.1.17763.1971 - 500 0 0 4130
+&lt;/pre&gt;
+&lt;p&gt;And if you're running XP, that will get errors for xConnect too:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;2021-09-03 20:34:08.802 +01:00 [Error] XConnect Web Application Error: "System.ApplicationException: Exception trying to initialize Service Collection and Provider for WebAPI Dependency Resolver, Inner Exception: Required license is missing: Sitecore.xDB.Base ---&amp;gt; Sitecore.Nexus.Licensing.LicenseException: Required license is missing: Sitecore.xDB.Base
+   at ?????????????????????????????????????????.(????????????????????????????????????????? , String )
+   at Sitecore.XConnect.Configuration.Extensions.InitializeLicenseCheck(IServiceCollection collection, String licenseFileOrXml)
+   at Sitecore.XConnect.Configuration.Extensions.UseXConnectServiceInitializationConfiguration(IServiceCollection collection, IConfiguration configuration, String[] configurationSectionNames, String initializationSectionName, Boolean validateConfiguration)
+   at Sitecore.XConnect.Web.Host.WebApiConfig.ConfigureServices(HttpConfiguration config)
+   --- End of inner exception stack trace ---
+   at Sitecore.XConnect.Web.Host.WebApiConfig.ConfigureServices(HttpConfiguration config)
+   at System.Web.Http.GlobalConfiguration.Configure(Action`1 configurationCallback)
+   at Sitecore.XConnect.Web.Global.Application_Start(Object sender, EventArgs e)"
+&lt;/pre&gt;
+&lt;p&gt;And because the health service ends up receiving errors, the Traefik container will fail, and the &lt;code&gt;docker-compose up&lt;/code&gt; will return errors in the console too:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-09-failed.png" target="_blank"&gt;&lt;img alt="Failed Start" src="https://blog.jermdavis.dev/img/2021/2021-09-failed.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;For Google's benefit, that set of messages is:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Creating network "sitecore-xp0_default" with the default driver
+Creating sitecore-xp0_mssql_1 ... done
+Creating sitecore-xp0_solr_1  ... done
+Creating sitecore-xp0_id_1        ... done
+Creating sitecore-xp0_solr-init_1 ... done
+Creating sitecore-xp0_xconnect_1  ... done
+Creating sitecore-xp0_cm_1        ... done
+
+ERROR: for cortexprocessingworker  Container "5f077e60de91" is unhealthy.
+
+ERROR: for xdbautomationworker  Container "5f077e60de91" is unhealthy.
+
+ERROR: for xdbsearchworker  Container "5f077e60de91" is unhealthy.
+
+ERROR: for traefik  Container "19caaac9dcea" is unhealthy.
+ERROR: Encountered errors while bringing up the project.
+&lt;/pre&gt;
+&lt;p&gt;Now while someone used to reading logs will fairly quickly spot the underlying cause of the console errors there, one of the benefits of containers is supposed to be that it works easily for everyone in your team. Testers, managers or front-end devs are less likely to understand the business of running containers, and given the "sometimes Docker just doesn't work" issues that we've all encountered (&lt;a href="https://sitecore.stackexchange.com/a/28676/233" rel="noopener" target="_blank"&gt;looking at you AppCmd errors on v10.0&lt;/a&gt;) it's not always obvious to the less hard-core technical amongst us when the issue is "license" and when it's "you didn't apply the right Windows Update and now &lt;a href="https://i.pinimg.com/originals/b2/b4/9a/b2b49a89501c1c7c4fbdfa00966f47b2.gif" rel="noopener" target="_blank"&gt;Docker is UNHAPPY&lt;/a&gt;".&lt;/p&gt;
+&lt;h2&gt;A helpful addition&lt;/h2&gt;
+&lt;p&gt;So after my team crashed into this issue of not realising that license expiry was the problem they were seeing, I wondered if I could help with future problems by making my project's "up" script check if the license has expired before it tries to start any containers...&lt;/p&gt;
+&lt;p&gt;This isn't too hard to do, it turns out. We know that the license you're using is encoded into the &lt;code&gt;.env&lt;/code&gt; file for your project. It's stored as a Base64-encoded GZip stream. (You can &lt;a href="https://github.com/Sitecore/docker-tools/blob/bf850cf7909624dc50c9e78b9a91c0a0593af89c/powershell/src/Public/ConvertTo-CompressedBase64String.ps1#L21" rel="noopener" target="_blank"&gt;look at how this is done by examining the source for the &lt;code&gt;SitecoreDockerTools&lt;/code&gt; module&lt;/a&gt; that the &lt;code&gt;init.ps1&lt;/code&gt; script installs) So to test this, we need some code which can decode the license XML from the environment file field, find the &lt;code&gt;&amp;lt;expiration/&amp;gt;&lt;/code&gt; element and check that date against the current date.&lt;/p&gt;
+&lt;p&gt;A bit of Google and some quick hacking lead me to this function:&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function Validate-LicenseData
+{
+    Param (
+        $EnvironmentFile = ".env",
+        $EnvironmentKey = "SITECORE_LICENSE"
+    )
+
+    $file = Get-Content $EnvironmentFile -Encoding UTF8
+
+    $key = $file | ForEach-Object {
+        if($_ -imatch "^$EnvironmentKey=.*")
+        {
+            return $_.SubString($EnvironmentKey.Length + 1)
+        }
+    }
+    
+    $data = [System.Convert]::FromBase64String($key)
+
+    $memory = [System.IO.MemoryStream]::new()
+    $memory.Write($data, 0, $data.Length)
+    $memory.Flush()   
+    $memory.Seek(0, [System.IO.SeekOrigin]::Begin) | Out-Null
+
+    $gzip = [System.IO.Compression.GZipStream]::new($memory, [System.IO.Compression.CompressionMode]::Decompress)
+    
+    $s = [System.IO.StreamReader]::new($gzip);
+    $xml = $s.ReadToEnd()   
+
+    $s.Dispose();
+    $gzip.Dispose()
+    $memory.Dispose();
+
+    $xml -match '&amp;lt;expiration&amp;gt;(.*?)&amp;lt;/expiration&amp;gt;' | Out-Null
+    $textExpiry = $Matches[1]
+
+    $expiry = [System.DateTime]::ParseExact($textExpiry, "yyyyMMddThhmmss", [System.Globalization.CultureInfo]::InvariantCulture)
+
+    if($expiry -lt [System.DateTime]::Now)
+    {
+        throw "Your Sitecore license has expired."
+    }
+    else
+    {
+        $daysLeft = [int]($expiry - [System.DateTime]::Now).TotalDays
+        Write-Host "You have $daysLeft days left on your license." -ForegroundColor Green
+    }
+}
+&lt;/pre&gt;
+&lt;p&gt;(I'm sure I can make this code better with some more thought – but it's a start)&lt;/p&gt;
+&lt;p&gt;It will decode the license, extract the expiry date and then check it. If the license is expired it will throw (which should stop a script). I've wired that up in the &lt;code&gt;up.ps1&lt;/code&gt; script in the project, so it checks the license before it kicks off the process of starting containers. Missing out the function above, it's something like:&lt;/p&gt;
+&lt;pre data-enlighter-highlight="10" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;Param(
+    [switch]$build = $false,
+    [switch]$attach = $false
+)
+
+try
+{
+	pushd ".\docker"
+
+	Validate-LicenseData
+
+	$buildFlag = ""
+	if($build)
+	{
+		$buildFlag = "--build"
+	}
+
+	Write-Host "Starting: XP=$xp, Build=$build, Attach=$attach"
+
+	$detachFlag = "--detach"
+	if($attach)
+	{
+		$detachFlag = ""
+	}
+
+	docker-compose up $buildFlag $detachFlag
+}
+finally
+{
+	popd
+}
+&lt;/pre&gt;
+&lt;p&gt;(The &lt;a href="https://gist.github.com/jermdavis/25655ee9c095d20d15caf42fa3d27ded" rel="noopener" target="_blank"&gt;full code is available as a gist&lt;/a&gt; if you want to make something of your own from it)&lt;/p&gt;
+&lt;p&gt;So the result of that for an expired license is an error:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-09-badlicense.png" target="_blank"&gt;&lt;img alt="Bad License" src="https://blog.jermdavis.dev/img/2021/2021-09-badlicense.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;And if the license is valid it will report how many days left you have, before carrying on with the normal startup:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-09-goodlicense-1.png" target="_blank"&gt;&lt;img alt="Good License" src="https://blog.jermdavis.dev/img/2021/2021-09-goodlicense-1.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Hopefully that means in the future my developers will know right away if they've hit a license expiry situation, and they can update their &lt;code&gt;.env&lt;/code&gt; file...&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Using ItemService in containers</title>
+			<link>https://blog.jermdavis.dev/posts/2021/using-itemservice-in-containers</link>
+			<description>&lt;p&gt;I was asked to enable Sitecore's ItemService endpoints on a containerised instance of Sitecore recently, and my first pass through this didn't work. Turns out there's a key bit of documentation that seems to be missing for this scenario. Hence a quick post to help get info into Google. So if you need to do this, read on: &lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
+			<guid>https://blog.jermdavis.dev/posts/2021/using-itemservice-in-containers</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;I was asked to enable Sitecore's ItemService endpoints on a containerised instance of Sitecore recently, and my first pass through this didn't work. Turns out there's a key bit of documentation that seems to be missing for this scenario. Hence a quick post to help get info into Google. So if you need to do this, read on: &lt;!--more--&gt;&lt;/p&gt;
+&lt;h2&gt;The issue&lt;/h2&gt;
+&lt;p&gt;Out-of-the-box, the &lt;a href="https://doc.sitecore.com/en/developers/90/sitecore-experience-manager/the-itemservice.html" rel="noopener" target="_blank"&gt;ItemService&lt;/a&gt; endpoints aren't available to external requests. The project I was working on needed this to be available to other apps from the CM role, to allow for some other work that was going on. So &lt;a href="https://doc.sitecore.com/en/developers/90/sitecore-experience-manager/sitecore-services-client-security.html#security-policies_body" rel="noopener" target="_blank"&gt;based on the existing documentation&lt;/a&gt; for this, I added a config patch to the solution:&lt;/p&gt;
+&lt;pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot;?&amp;gt;
+&amp;lt;configuration xmlns:patch=&amp;quot;http://www.sitecore.net/xmlconfig/&amp;quot; xmlns:role=&amp;quot;http://www.sitecore.net/xmlconfig/role/&amp;quot;&amp;gt;
+    &amp;lt;sitecore&amp;gt;
+        &amp;lt;settings&amp;gt;
+            &amp;lt;setting name=&amp;quot;Sitecore.Services.SecurityPolicy&amp;quot; role:require=&amp;quot;ContentManagement&amp;quot;&amp;gt;
+                &amp;lt;patch:attribute name=&amp;quot;value&amp;quot;&amp;gt;Sitecore.Services.Infrastructure.Web.Http.Security.ServicesOnPolicy, Sitecore.Services.Infrastructure&amp;lt;/patch:attribute&amp;gt;
+            &amp;lt;/setting&amp;gt;
+        &amp;lt;/settings&amp;gt;
+    &amp;lt;/sitecore&amp;gt;
+&amp;lt;/configuration&amp;gt;
+&lt;/pre&gt;
+&lt;p&gt;For most IaaS or PaaS deployments, that should be enough. But when you do that in a containerised deployment it doesn't work. If you make a call to the ItemService endpoint you'll get an error back when you try to authenicate. The key part of the response is the body:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;HTTPS is required
+&lt;/pre&gt;
+&lt;p&gt;So what's missing?&lt;/p&gt;
+&lt;h2&gt;The solution&lt;/h2&gt;
+&lt;p&gt;The reason for the error is that when Sitecore runs in the suggested container setup, HTTPS requests have their SSL terminated at the Ingress Controller. (Which is going to be &lt;a href="https://github.com/traefik/traefik" rel="noopener" target="_blank"&gt;Traefik&lt;/a&gt; or &lt;a href="https://www.nginx.com/products/nginx-ingress-controller/" rel="noopener" target="_blank"&gt;Nginx&lt;/a&gt; if you're following the defaults) So when your API request to the ItemService arrives at its controller it's using HTTP not and HTTPS.&lt;/p&gt;
+&lt;p&gt;The root cause of the error above comes from this bit of code in the &lt;code&gt;Sitecore.Services.Infrastructure.Web.Http.Filters&lt;/code&gt; namespace. It's a filter applied to all the endpoints for ItemService:&lt;/p&gt;
+&lt;pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class RequireHttpsFilter : AuthorizationFilterAttribute
+{
+	public override void OnAuthorization(HttpActionContext actionContext)
+	{
+		Assert.ArgumentNotNull(actionContext, &amp;quot;actionContext&amp;quot;);
+		HttpRequestMessage request = actionContext.get_Request();
+		if (!(request.get_RequestUri().Scheme == Uri.UriSchemeHttps) &amp;amp;&amp;amp; !_configurationSettings.get_AllowToLoginWithHttp())
+		{
+			if (request.get_Method().get_Method() == &amp;quot;GET&amp;quot;)
+			{
+				actionContext.set_Response(HttpRequestMessageExtensions.CreateResponse(request, HttpStatusCode.Found));
+				actionContext.get_Response().set_Content((HttpContent)new StringContent(&amp;quot;HTTPS is required&amp;quot;, Encoding.UTF8, &amp;quot;text/html&amp;quot;));
+				UriBuilder uriBuilder = new UriBuilder(request.get_RequestUri())
+				{
+					Scheme = Uri.UriSchemeHttps,
+					Port = 443
+				};
+				actionContext.get_Response().get_Headers().set_Location(uriBuilder.Uri);
+			}
+			else
+			{
+				actionContext.set_Response(HttpRequestMessageExtensions.CreateResponse(request, HttpStatusCode.NotFound));
+				actionContext.get_Response().set_Content((HttpContent)new StringContent(&amp;quot;HTTPS is required&amp;quot;, Encoding.UTF8, &amp;quot;text/html&amp;quot;));
+			}
+		}
+	}
+}
+&lt;/pre&gt;
+&lt;p&gt;And the answer to fixing this is hiding there in the highlighted line. There's a config setting you can supply to disable this &amp;quot;require HTTPS&amp;quot; behaviour.&lt;/p&gt;
+&lt;p&gt;Doing a bit of a search, it turns out that setting has its default set in the &lt;code&gt;Sitecore.Services.Client.config&lt;/code&gt; file. So a second bit of config patching will make all this work happily in the containers:&lt;/p&gt;
+&lt;pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot;?&amp;gt;
+&amp;lt;configuration xmlns:patch=&amp;quot;http://www.sitecore.net/xmlconfig/&amp;quot; xmlns:role=&amp;quot;http://www.sitecore.net/xmlconfig/role/&amp;quot;&amp;gt;
+    &amp;lt;sitecore&amp;gt;
+        &amp;lt;settings&amp;gt;
+            &amp;lt;setting name=&amp;quot;Sitecore.Services.AllowToLoginWithHttp&amp;quot; role:require=&amp;quot;ContentManagement&amp;quot;&amp;gt;
+                &amp;lt;patch:attribute name=&amp;quot;value&amp;quot;&amp;gt;true&amp;lt;/patch:attribute&amp;gt;
+            &amp;lt;/setting&amp;gt;
+        &amp;lt;/settings&amp;gt;
+    &amp;lt;/sitecore&amp;gt;
+&amp;lt;/configuration&amp;gt;
+&lt;/pre&gt;
+&lt;p&gt;Problem solved.&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Recovering from a packaging mistake</title>
+			<link>https://blog.jermdavis.dev/posts/2021/recovering-from-a-packaging-mistake</link>
+			<description>&lt;p&gt;A while back I got a support issue where a client's Content Editor was suddenly very broken. No UI – just a giant YSOD. It's turned out to be the sort of mistake which I could see happening to others, so here's some info on what happened and ways the problem can be resolved.&lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
+			<guid>https://blog.jermdavis.dev/posts/2021/recovering-from-a-packaging-mistake</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;A while back I got a support issue where a client's Content Editor was suddenly very broken. No UI – just a giant YSOD. It's turned out to be the sort of mistake which I could see happening to others, so here's some info on what happened and ways the problem can be resolved.&lt;!--more--&gt;&lt;/p&gt;
+&lt;h2&gt;The report&lt;/h2&gt;
+&lt;p&gt;A bunch of people were working on content entry and migration on a new instance of Sitecore, and suddenly they found Content Editor was broken. Users could log in to Sitecore, the desktop was fine and Experience Editor seemed ok, but as soon as they tried to go to Content Editor it would crash:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-08-broken-ysod.png" target="_blank"&gt;&lt;img alt="Broken Content Editor" src="https://blog.jermdavis.dev/img/2021/2021-08-broken-ysod.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Since that was blocking content creation work it was a Big Issue for the team. So off to the logs I went. The underlying exception was:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-highlight="16" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Exception: System.Reflection.TargetInvocationException
+Message: Exception has been thrown by the target of an invocation.
+Source: mscorlib
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Object[] arguments, Signature sig, Boolean constructor)
+   at System.Reflection.RuntimeMethodInfo.UnsafeInvokeInternal(Object obj, Object[] parameters, Object[] arguments)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Sitecore.Reflection.ReflectionUtil.InvokeMethod(MethodInfo method, Object[] parameters, Object obj)   at Sitecore.Shell.Applications.ContentManager.ContentEditorPage.OnPreRender(EventArgs e)
+   at System.Web.UI.Control.PreRenderRecursiveInternal()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+
+Nested Exception
+
+Exception: System.NullReferenceException
+Message: Object reference not set to an instance of an object.
+Source: Sitecore.Buckets
+   at Sitecore.Buckets.Commands.MakeTemplateBucketable.GetToolTip(CommandContext context, String tooltip)
+   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.FillParamsFromCommand(CommandContext commandContext, RibbonCommandParams ribbonCommandParams)
+   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.GetCommandParameters(Item controlItem, CommandContext commandContext)
+   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderSmallCheckButton(HtmlTextWriter output, Item button, CommandContext commandContext)
+   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderButton(HtmlTextWriter output, Item button, CommandContext commandContext)
+   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderChunk(HtmlTextWriter output, Item chunk, CommandContext commandContext)
+   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderChunk(HtmlTextWriter output, Item chunk, CommandContext commandContext, Boolean isContextual, String id)
+   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderChunk(HtmlTextWriter output, Item chunk, CommandContext commandContext, Boolean isContextual)
+   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderChunks(HtmlTextWriter output, Item strip, CommandContext commandContext, Boolean isContextual)
+   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderStrips(HtmlTextWriter output, Item ribbon, Boolean isContextual, ListString visibleStripList)
+   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderStrips(HtmlTextWriter output, Item defaultRibbon, Item contextualRibbon, ListString visibleStripList)
+   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.Render(HtmlTextWriter output)
+   at System.Web.UI.Control.RenderControlInternal(HtmlTextWriter writer, ControlAdapter adapter)
+   at Sitecore.Web.HtmlUtil.RenderControl(Control ctl)
+   at Sitecore.Shell.Applications.ContentManager.ContentEditorForm.UpdateRibbon(Item folder, Boolean isCurrentItemChanged, Boolean showEditor)
+   at Sitecore.Shell.Applications.ContentManager.ContentEditorForm.Update()
+   at Sitecore.Shell.Applications.ContentManager.ContentEditorForm.OnPreRendered(EventArgs e)
+&lt;/pre&gt;
+&lt;h2&gt;The issue&lt;/h2&gt;
+&lt;p&gt;Thankfully there's a &lt;a href="https://stackoverflow.com/questions/54368811/sitecore-content-editor-throws-server-error-in-application-error" rel="noopener" target="_blank"&gt;fair amount in Google about this error&lt;/a&gt; – it comes down to having an item in your content tree whose template does not exist. The Content Editor UI was not implemented to cope with this (fairly exceptional) situation. Hence the exception...&lt;/p&gt;
+&lt;p&gt;That crash is generally a bit of an issue when it happens with any old item – but it's particularly bad if the item in question happens to be "Home". The first item named "home" found under "/sitecore/content" is the one loaded automatically when Content Editor starts. So if this item is broken, then you're a bit stuffed, because Content Editor can't start up without encountering this crash.&lt;/p&gt;
+&lt;h2&gt;The cause&lt;/h2&gt;
+&lt;p&gt;After doing some digging, the cause of the issue here turned out to be that a whole tree of content had been imported from the "old website" instance of Sitecore. To people migrating content this made sense – it's easier to move stuff about and reformat it if it's in the same content tree as your new site. But unfortunately the editors in this case didn't realise that the new instance of Sitecore didn't have any of the templates from the old instance – so they'd accidentally created a tree of hundreds of items, none of which had valid templates.&lt;/p&gt;
+&lt;h2&gt;So how can this be fixed?&lt;/h2&gt;
+&lt;p&gt;Well the standard answer would be "install a package containing the right templates!" because if you do that, Content Editor will go back to being happy again immediately. But in this case that wasn't the right solution, because we didn't really want to have all the legacy content and templates in the shiny new instance of Sitecore.&lt;/p&gt;
+&lt;p&gt;The alternative is that you need to get rid of the item which is causing all the issues. Not having access to Content Editor makes that slightly less easy, but you still have choices. Maybe you have PowerShell Extensions installed? If so that can be used to call &lt;code&gt;Remove-Item&lt;/code&gt; to perform the deletion. But if you don't, it's time to break out a classic old admin tool: DB Browser! You can access this from the &lt;code&gt;/sitecore/admin/&lt;/code&gt; url on your CM instance, and picking "DB Browser" from the menu:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-08-dbbrowser.png" target="_blank"&gt;&lt;img alt="DB Browser" src="https://blog.jermdavis.dev/img/2021/2021-08-dbbrowser.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;As well as a useful tool, this image actually gives another clue to what's broken. When you look at a working item in DB Browser, it shows you the set of templates the item relies on to the right of the item's path:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-08-working.png" target="_blank"&gt;&lt;img alt="Working Item" src="https://blog.jermdavis.dev/img/2021/2021-08-working.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;But in the case of our issue, (or similarly broken items) you'll see template(s) missing. In this case, since these items had no valid templates, that space to the right of the path was entirely empty:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-08-broken.png" target="_blank"&gt;&lt;img alt="Broken Item" src="https://blog.jermdavis.dev/img/2021/2021-08-broken.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;But with this tool, it's an easy job to remove the broken item, by clicking the "Delete" button in the row of commands. With that done, Content Editor will sort itself out.&lt;/p&gt;
+&lt;p&gt;In my case, that was all that needed doing to resolve the issue – well, that and a bit of user education to ensure everyone understood what had gone wrong...&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>The power of implicit conversions</title>
+			<link>https://blog.jermdavis.dev/posts/2021/the-power-of-implicit-conversions</link>
+			<description>&lt;p&gt;There are bits of the C# language that we don't think about too much when writing websites – and implicit conversions are one of those things. But while I've been messing about with some ray-tracing code in evenings recently, I found a couple of examples they patterns they can be a help with...&lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
+			<guid>https://blog.jermdavis.dev/posts/2021/the-power-of-implicit-conversions</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;There are bits of the C# language that we don't think about too much when writing websites – and implicit conversions are one of those things. But while I've been messing about with some ray-tracing code in evenings recently, I found a couple of examples they patterns they can be a help with...&lt;!--more--&gt;&lt;/p&gt;
+&lt;h2&gt;The challenge&lt;/h2&gt;
+&lt;p&gt;There are various places in a raytracer where you need to deal with angles. The orientation of geometry, working out the directions the rays travel in and how the light reflects and refracts. And wherever your expressing angles you need to choose your units. While a lot of maths is defined in terms of &lt;a href="https://en.wikipedia.org/wiki/Radian" rel="noopener" target="_blank"&gt;radians&lt;/a&gt;, I find that with my &amp;quot;not very good&amp;quot; maths skills, I think in terms of &lt;a href="https://en.wikipedia.org/wiki/Degree_(angle)" rel="noopener" target="_blank"&gt;degrees&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;So how can I write the code so that it the internals work in the &amp;quot;right&amp;quot; angle units for their work, but I have the option to define things as degrees or as radians to suit my thinking?&lt;/p&gt;
+&lt;h2&gt;The traditional approach&lt;/h2&gt;
+&lt;p&gt;A lot of code which does units conversions provides helper methods to convert from one set of units to another. Something like:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public void CalculateSomeAngles(double radians)
+{
+    ...
+}
+
+var radians = Math.ToRadians(45);
+CalculateSomeAngles(radians);
+&lt;/pre&gt;
+&lt;p&gt;That's fine – but it's not really very type safe. Because the method takes a double, you can supply anything. And there's not really anything stopping you accidentally supplying degrees instead of radians.&lt;/p&gt;
+&lt;p&gt;So what else could you do?&lt;/p&gt;
+&lt;h2&gt;Types to the rescue&lt;/h2&gt;
+&lt;p&gt;So what if our CalculateSomeAngles() method was explicit about the units it expected by expressing a type?&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;
+public struct Radians
+{
+    public double Value { get; private set; }
+	
+    public Radians(double value)
+    {
+        Value = value;
+    }
+}
+
+public void CalculateSomeAngles(Radians radians)
+{
+    ...
+}
+
+CalculateSomeAngles(new Radians(1.1));
+&lt;/pre&gt;
+&lt;p&gt;With a wrapper type to be explicit about the units, it's harder to make a mistake. And we can also use this pattern to allow you to pass whatever units you prefer. We can define a struct for degrees too:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public struct Degrees
+{
+    public double Value { get; private set; }
+	
+    public Degrees(double value)
+    {
+        Value = value;
+    }
+}
+&lt;/pre&gt;
+&lt;p&gt;But the magic here is adding some operators to allow the compiler to automatically do some conversions for us. If we add a &amp;quot;to degrees&amp;quot; conversion to the radians struct and the equivalent degrees struct:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public struct Degrees
+{
+    public static implicit operator Radians(Degrees d)
+    {
+        return new Radians(d.Value * Math.PI / 180);
+    }
+}
+
+public struct Radians
+{
+    public static implicit operator Degrees(Radians r)
+    {
+        return new Degrees(r.Value * 180 / Math.PI);
+    }
+}
+&lt;/pre&gt;
+&lt;p&gt;Then the compiler no longer cares which you pass – it will just convert to the one it needs in any situation...&lt;/p&gt;
+&lt;p&gt;So you can write:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;CalculateSomeAngles(new Radians(1.1));
+CalculateSomeAngles(new Degrees(72));
+&lt;/pre&gt;
+&lt;p&gt;And now I don't have to worry about my units.&lt;/p&gt;
+&lt;h2&gt;And there's more...&lt;/h2&gt;
+&lt;p&gt;Using this for unit conversion is one very simple usage for this approach. (And in fact, one you could argue can be solved in other ways) The other place I found this sort of pattern helpful was in implementation animations. I wanted to enable a situation where most (if not all) of the properties of objects in a scene could be animated. Broadly that means &amp;quot;animate the values of a double&amp;quot; or &amp;quot;animate a matrix&amp;quot;. And in both cases the implicit conversions idea can help.&lt;/p&gt;
+&lt;p&gt;The pattern I ended up with for animation was that it needed a mechanism to set which frame is being rendered, and a mechanism to get the value for this point. Something like:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public interface IAnimateable&amp;lt;T&amp;gt;
+{
+    T Value { get; }
+    void SetFrame(int thisFrame, int frameCount);
+}
+&lt;/pre&gt;
+&lt;p&gt;So if we have a material with &amp;quot;shinyness&amp;quot; that can be amimated, we can replace the normal &lt;code&gt;double&lt;/code&gt;-typed property with something which exposes this interface, and when the material gets initialised for a specific frame we just pass that data down to the animateable properties:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class PhongMaterial
+{
+    ....
+    public IAnimateable&amp;lt;double&amp;gt; Shinyness { get; init ; }
+
+    public void SetFrame(int thisFrame, int frameCount)
+    {
+        ....
+        Shinyness.SetFrame(thisFrame, frameCount);
+        ....
+    }
+
+    ....
+}
+&lt;/pre&gt;
+&lt;p&gt;And we can have a whatever implementations of this animatable double we like. So to move between 1 and 100, we might declare something like:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;var someShape = new Sphere() {
+    Material = new PhongMaterial() {
+        Shinyness = new AnimatedRange(1, 100)
+    }
+};
+&lt;/pre&gt;
+&lt;p&gt;But the side effect of doing this is that when we don't need an animated value we still have to pass an object for that value:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;var someShape = new Sphere() {
+    Material = new PhongMaterial() {
+        Shinyness = new StaticValue(25)
+    }
+};
+&lt;/pre&gt;
+&lt;p&gt;But the trick above with implicit conversions can save us some typing here. The definition for the static value can help:&lt;/p&gt;
+&lt;pre data-enlighter-highlight="14,15,16,17" data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class StaticValue : IAnimateable&amp;lt;double&amp;gt;
+{
+    public double Value { get; private set; }
+
+    public StaticValue(double value)
+    {
+        Value = value;
+    }
+
+    public void SetFrame(int thisFrame, int frameCount)
+    {
+    }
+
+    public static implicit operator StaticValue(double value)
+    {
+        return new StaticValue(value);
+    }
+}
+&lt;/pre&gt;
+&lt;p&gt;And now a value which doesn't animate can be declared as:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;var someShape = new Sphere() {
+    Material = new PhongMaterial() {
+        Shinyness = 25
+    }
+};
+&lt;/pre&gt;
+&lt;p&gt;This pattern has ended up very useful for both simple scene properties like above, and for more complex Matrix properties for transformations.&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Repeatable delays from data</title>
+			<link>https://blog.jermdavis.dev/posts/2021/repeatable-delays-from-data</link>
+			<description>&lt;p&gt;I had an interesting discussion recently, about how some code could calculate a "random" but deterministic numeric value based on some data. This made me think of the classic old concept of "checksums" as a possible solution. Here's what I was thinking about:&lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
+			<guid>https://blog.jermdavis.dev/posts/2021/repeatable-delays-from-data</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;I had an interesting discussion recently, about how some code could calculate a "random" but deterministic numeric value based on some data. This made me think of the classic old concept of "checksums" as a possible solution. Here's what I was thinking about:&lt;!--more--&gt;&lt;/p&gt;
+&lt;h2&gt;The problem&lt;/h2&gt;
+&lt;p&gt;The discussion started because of the need to make some scheduled code run in Kubernetes pods, with multiple instances of the same image running at the same time. But we didn't want the scheduled code to end up starting at exactly the same time in each pod. Because the number of replicas running could vary, there was a desire to avoid setting this delay via explicit config, so we were looking for ways of automating this.&lt;/p&gt;
+&lt;h2&gt;One possible solution&lt;/h2&gt;
+&lt;p&gt;Each of these pods has a name which comes through to the code as the machine name in environment variables. So if we can compute a delay value based on the name, then we could probably get a reasonable first pass at this. Names of pods are usually a mix of text and numbers, plus some punctuation. So we'll need a bit of maths...&lt;/p&gt;
+&lt;p&gt;A common code pattern where users need to enter identity data, is to add a digit to the end which represents a checksum. The last digit of a card or account number is a common place to find this – the last digit is computed from the preceding ones to give a reasonable test that all the numbers have been entered correctly. There are a collection of common algorithms for doing this – but I was considering stealing &lt;a href="https://en.wikipedia.org/wiki/Check_digit#UPC" rel="noopener" target="_blank"&gt;the one from "UPC" barcodes&lt;/a&gt;. There, you start with a multi-digit number and:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-07-check-digit-calculation.png" target="_blank"&gt;&lt;img alt="" src="https://blog.jermdavis.dev/img/2021/2021-07-check-digit-calculation.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Add together the values of the odd digits&lt;/li&gt;
+&lt;li&gt;Multiply that value by three&lt;/li&gt;
+&lt;li&gt;Add together the values of the even digits&lt;/li&gt;
+&lt;li&gt;Add together the odd and even sums&lt;/li&gt;
+&lt;li&gt;Take the remainder of dividing that sum by 10&lt;/li&gt;
+&lt;li&gt;If that's not zero subtract it from 10&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So you end up with a number that's based on the source, and that will change if the source changes.&lt;/p&gt;
+&lt;h2&gt;How can that work here?&lt;/h2&gt;
+&lt;p&gt;It could start from the string that is the machine name that the code sees inside the pod:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;var name = System.Net.Dns.GetHostName();
+&lt;/pre&gt;
+&lt;p&gt;And that can be used to work out a value for the delay:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;var delay = CalculateDelay(name);
+&lt;/pre&gt;
+&lt;p&gt;In simple code, calculating that function looks like:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;int CalculateDelay(string name)
+{
+    var integers = name.ToLower().Select(c =&amp;gt; (int)c);
+
+    var odds = integers.Where((c, i) =&amp;gt; i % 2 != 0).Sum() * 3;
+    var evens = integers.Where((c, i) =&amp;gt; i % 2 == 0).Sum();
+
+    var sum = (odds + evens) % 10;
+
+    if(sum &amp;gt; 0)
+    {
+        sum = 10 - sum;
+    }
+
+    return sum;
+}
+&lt;/pre&gt;
+&lt;p&gt;It's probably not ideal to be adding numbers as large as this using the UPC algorithm, but it seems to work. So for any machine name we'll end up with a delay value from zero to ten. Taking a set of possible pod names where the code might run, the outputs look like:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;cm-ae411c6fd6-yttss -&amp;gt; 8s    cm-0625876ce1-ptpdo -&amp;gt; 4s
+cm-33b99ec5f0-hklfy -&amp;gt; 3s    cm-d10b43095b-ofxnf -&amp;gt; 9s
+cm-b61a9a47b4-rhnrz -&amp;gt; 7s    cm-182f39205e-qbgat -&amp;gt; 4s
+cm-99f646c98d-hbfye -&amp;gt; 0s    cm-579c2e34d5-tndcc -&amp;gt; 9s
+cm-5033a8d1bb-dhrnr -&amp;gt; 5s    cm-504e5ccdae-oygnu -&amp;gt; 9s
+cm-8ce2fdf292-ynwid -&amp;gt; 6s    cm-245fd1273e-zwdia -&amp;gt; 2s
+cm-6e2131b125-wcigd -&amp;gt; 4s    cm-135354ddf2-qlhjc -&amp;gt; 1s
+cm-fc84f3b0f6-fifbq -&amp;gt; 4s    cm-3743d96305-fxtto -&amp;gt; 5s
+cm-d1e9220abd-emvke -&amp;gt; 2s    cm-4630ff27d7-qfubm -&amp;gt; 6s
+cm-f4653da2ef-dcehw -&amp;gt; 3s    cm-6f34d6f2c9-ritip -&amp;gt; 9s
+&lt;/pre&gt;
+&lt;p&gt;That gives a reasonable spread of values for whatever string we the code starts from, and they're repeatable rather than random.&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>Revisiting waiting for Kubernetes deployments</title>
+			<link>https://blog.jermdavis.dev/posts/2021/revisiting-waiting-for-kubernetes-deployments</link>
+			<description>&lt;p&gt;Some time back, when &lt;a href="https://blog.jermdavis.dev/posts/2021/waiting-for-kubernetes" target="_blank"&gt;I was looking at how to release containerised Sitecore into Azure Kubernetes Clusters&lt;/a&gt;, I worked through the question of "how do I make DevOps wait for the new images to be deployed", because you might want to run further work after the new containers are spun up. While what I tried back then was mostly working, I've found some reasons to try a different tack since then. &lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
+			<guid>https://blog.jermdavis.dev/posts/2021/revisiting-waiting-for-kubernetes-deployments</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;Some time back, when &lt;a href="https://blog.jermdavis.dev/posts/2021/waiting-for-kubernetes" target="_blank"&gt;I was looking at how to release containerised Sitecore into Azure Kubernetes Clusters&lt;/a&gt;, I worked through the question of "how do I make DevOps wait for the new images to be deployed", because you might want to run further work after the new containers are spun up. While what I tried back then was mostly working, I've found some reasons to try a different tack since then. &lt;!--more--&gt;&lt;/p&gt;
+&lt;h2&gt;The challenge&lt;/h2&gt;
+&lt;p&gt;When I first worked through the problem of "make DevOps wait for Kubernetes to finish an operation", I tried making the DevOps release wait based on the status of pods. A command like:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;kubectl.exe wait --for=condition=Ready pods -l app=cm -n &amp;lt;YourNamespace&amp;gt; --timeout=2700s
+&lt;/pre&gt;
+&lt;p&gt;That seemed to be working OK for a while – but recently I've seen some issues. On some deployments I'd do a release in DevOps which would complete ok, but when I went to smoke-test it afterwards it would be clear that the Unicorn updates were missing. This was odd, as I could see the DevOps logs saying that the step which fired off the Unicorn sync had completed ok:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-07-unicorn.png" target="_blank"&gt;&lt;img alt="Unicorn success" src="https://blog.jermdavis.dev/img/2021/2021-07-unicorn.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;It took me a while to realise that while that step was completing OK, the detailed log for the step showed that the sync had run, but had no changes to apply. And that was clearly wrong – my release definitlely included changes. And if I subsequently went to the Unicorn UI via the Sitecore CM, running "sync everything" from there would do the updates I was expecting.&lt;/p&gt;
+&lt;p&gt;After a certain amount of thinking, it struck me that the most obvious solution to the quandry was "the sync has run on a CM pod which has not been upgraded to the new image". That explains the odd behaviour – if sync ran on an old CM image it would indeed have no changes to apply. But why would it be doing that – DevOps is waiting for the new CM image to be ready before it tries the Unicorn sync.&lt;/p&gt;
+&lt;p&gt;The answer to that was kind of obvious in retrospect. When I sat back and thought about all the deployments I was doing, I could see a clear pattern:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;If the K8s cluster ran a single CM instance, everything was fine.&lt;/li&gt;
+&lt;li&gt;But if the K8s cluster had more than once CM instance, I might see this issue.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;And that lead me to understand what was up:&lt;/p&gt;
+&lt;p&gt;The wait command above works fine when you are releasing a change to a single CM pod. But if you have multiple pods, it can go wrong: The "wait" can complete when only one of the pod replicas has been updated, which means you have a roughly 50% chance that the HTTPS request to sync Unicorn gets routed through the ingress controller to an old pod, rather than a newly updated one.&lt;/p&gt;
+&lt;p&gt;So how can DevOps ensure that all of the CM pods have been updated before it tries the Unicorn Job?&lt;/p&gt;
+&lt;h2&gt;A possible solution&lt;/h2&gt;
+&lt;p&gt;After spending a bit of time with my friend Google, I came across another approach. Instead of waiting on the state of a pod, it turns out you can wait on the state of a deployment:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;kubectl.exe rollout status deployment cm -n &amp;lt;YourNamespace&amp;gt;
+&lt;/pre&gt;
+&lt;p&gt;By default that command will keep waiting until all the changes from an "apply" operation for a deployment called "cm" have finished. Which should include any replicas spinning up.&lt;/p&gt;
+&lt;p&gt;But it's worth noting that timeouts behave differently here than they do with the "wait" command above. In the original pattern, you passed a timeout flag on the command line, kubectl.exe would wait for "the pod to be ready, or that timeout to expire". The "rollout" command doesn't work that way. There's no command line parameter to control the timeout. It is done via the yaml file for the deployment, using a parameter called "progressDeadlineSeconds". It took me a while to get this one right, as the docs say "it's a child of the spec node", but aren't entirely clear which one, because your yaml probably includes more than one. It's the highest level "spec" that needs this setting:&lt;/p&gt;
+&lt;pre data-enlighter-highlight="9" data-enlighter-language="yaml" style="width:100%; overflow:scroll;"&gt;apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cm
+  labels:
+    app: cm
+spec:
+  replicas: 2
+  progressDeadlineSeconds: 1800
+  selector:
+    matchLabels:
+      app: cm
+  template:
+    metadata:
+      labels:
+        app: cm
+    spec:
+      nodeSelector:
+        kubernetes.io/os: windows
+      initContainers:
+        - name: wait-xdbcollection
+          image: mcr.microsoft.com/powershell:lts-nanoserver-1809
+          command: ["pwsh", "-Command", "do { Start-Sleep -Seconds 3 } until ($(try {(iwr http://xdbcollection/healthz/ready).StatusCode -eq 200} catch { $false }));"]
+... etc ...
+&lt;/pre&gt;
+&lt;p&gt;The "&lt;a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds" rel="noopener" target="_blank"&gt;progressDeadlineSeconds&lt;/a&gt;" value controls how long the Kubernetes control code waits for the deployment to complete before it's declared to be in an error state. If that occurs the wait will end and report that error. What happens to the deployment seems to depend on what caused it to take that long. If it's actually failing (maybe the image can't be downloaded?) then the deployment won't complete. But if it's hit that timeout because it's just taking longer, then the deployment will probably finish ok despite the wait receving the "error" state for its length.&lt;/p&gt;
+&lt;p&gt;I've done a few test deployments with this alternative pattern, and they've worked ok. But I think I need to run more real deployments before I'll be confident it is all better. More to come, perhaps...&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>So, are you an Infinidash expert yet?</title>
+			<link>https://blog.jermdavis.dev/posts/2021/so-are-you-an-infinidash-expert-yet</link>
+			<description>&lt;p&gt;It seems everyone is suddenly an expert in this exciting new tech. And if you weren't paying attention, you may have missed the joke behind all of this – that it's an entirely made-up technology. Funny as the twitter shenangans were, I think there's a point hiding here for us as developers. What is it? Well...&lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
+			<guid>https://blog.jermdavis.dev/posts/2021/so-are-you-an-infinidash-expert-yet</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;It seems everyone is suddenly an expert in this exciting new tech. And if you weren't paying attention, you may have missed the joke behind all of this – that it's an entirely made-up technology. Funny as the twitter shenangans were, I think there's a point hiding here for us as developers. What is it? Well...&lt;!--more--&gt;&lt;/p&gt;
+&lt;h2&gt;Hang on a second – what's going on here?&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-07-infinidash.png" target="_blank"&gt;&lt;img alt="Infinidash" src="https://blog.jermdavis.dev/img/2021/2021-07-infinidash.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;So if you're behind the curve here, let me explain. There was a tweet last week where someone joked that (because of the bland and impenetrable naming of many cloud products), you could get a bunch of people to tweet about a completely made-up a new product name, and before too long it would be appearing on job adverts:&lt;/p&gt;
+&lt;div class="embed-twitter"&gt;
+&lt;blockquote class="twitter-tweet" data-width="500" data-dnt="true" data-twitter-extracted-i1634209656654435386="true"&gt;
+&lt;p lang="en" dir="ltr"&gt;I am convinced that a small and dedicated group of twitter devs could tweet hot takes about a completely made up AWS product, idk AWS Infinidash or something, and it would appear as a requirement on job specs within a week
+&lt;/p&gt;&lt;p&gt;— Joe Nash (@jna_sh) &lt;a href="https://twitter.com/jna_sh/status/1410178986978775040?ref_src=twsrc%5Etfw"&gt;June 30, 2021&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt;&lt;/div&gt;
+&lt;p&gt;Now it's a few days later, and we've got an avalanche of people joining in the joke. There have been blog posts, videos, and an whole load of tweets. And, to bring the whole thing full-circle, the recruiters at Signal have given the world a sly wink, and put the made-up tech on a job advert:&lt;/p&gt;
+&lt;!--?# twitter 1411597771287711744 /?--&gt;
+&lt;h2&gt;Why is this anything more than a joke?&lt;/h2&gt;
+&lt;p&gt;I think it emphasises the idea that tech products can be a bit impenetrable to the non-nerds we work with. This is defintely not just an AWS issue. A lot of &lt;a href="https://twitter.com/jna_sh/status/1410995676247363589"&gt;people seemed to read the joke here as mocking recruiters for not understanding the tech products&lt;/a&gt; but in reality we need to remember that almost everyone who's not a subject expert in a particular area has trouble understanding what the terms we use mean much of the time.&lt;/p&gt;
+&lt;p&gt;Look at the current world of Sitecore. There are loads of technical terms that get thrown about in our discussions. In the last week I've used "&lt;a href="https://kubernetes.io/" rel="noopener" target="_blank"&gt;Kubernetes&lt;/a&gt;", "&lt;a href="https://jamstack.org/" rel="noopener" target="_blank"&gt;JAMStack&lt;/a&gt;", "&lt;a href="https://www.bloomreach.com/en/blog/2019/05/caas-what-is-content-as-a-service.html" rel="noopener" target="_blank"&gt;CaaS&lt;/a&gt;", "&lt;a href="https://en.wikipedia.org/wiki/Headless_content_management_system" rel="noopener" target="_blank"&gt;Headless&lt;/a&gt;", "&lt;a href="https://en.wikipedia.org/wiki/Platform_as_a_service" rel="noopener" target="_blank"&gt;PaaS&lt;/a&gt;" and "&lt;a href="https://www.sitecore.com/blog/headless/what-is-mach-architecture" rel="noopener" target="_blank"&gt;MACH&lt;/a&gt;" in conversation – and that's just talking about infrastructure patterns. There are plenty more if we widen the discussion to other topics.&lt;/p&gt;
+&lt;p&gt;So on one hand we these things can cause a recruitment challenge – there's unsurprisingly a sort of vicious circle between technologies getting mentioned in public discussion and them becoming the sort of thing that ends up with a "five years experience in" requirement appearing on lots of job adverts. (Often despite them being less than five years old as a concept) And on the other hand we have a sales challenge, because clients hear terms and start to demand them without really understanding the implications.&lt;/p&gt;
+&lt;p&gt;These are both issues I've experienced directly – and I think they leave us with a problem.&lt;/p&gt;
+&lt;h2&gt;What should we be doing?&lt;/h2&gt;
+&lt;p&gt;I think there are three things that we should be thinking about, as techies:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Firstly:&lt;/strong&gt; Try not to rely on the buzzwords when you're communicating – try to explain things clearly. It's a common problem in discussions that if you say "anyone not understand X?" that people will generally not speak up. So finding ways of weaving the explanation into your discussions can help everyone understand. This will help your fellow developers learn, and increase their knowledge. And it will help your clients understand things more clearly.&lt;/p&gt;
+&lt;p&gt;And don't forget that explaining and teaching are a good thing overall:&lt;/p&gt;
+&lt;!--?# twitter 1411545409726603264 /?--&gt;
+&lt;p&gt;&lt;b&gt;Secondly:&lt;/b&gt; When recruiting don't get obsessed with lists of specific skills. If your job adverts are a tick-box list of 27 different technologies, you're doing it wrong. The best developers I work with are people who are interested in learning. So if they don't know some of the things you need they can pick it up reasonably quickly. And giving those developers the opportunity to expand their skills is also helpful for recruitment. Some managers worry that will lead to people leaving to sell these new skills elsewhere – but &lt;a href="http://hrnews.co.uk/why-employee-training-development-is-an-effective-retention-strategy/" rel="noopener" target="_blank"&gt;HR experts suggest that helping people learn and grow is likely to make them more likely to stay&lt;/a&gt; with you.&lt;/p&gt;
+&lt;p&gt;&lt;b&gt;Thirdly:&lt;/b&gt; Buzzwords don't solve client problems – good requirements and correct technology choices do. It doesn't really matter what the most recent "exciting buzzword" is. If you want to make your clients happy, you need to be making the right technical choices for to solve their business problems. So you need to understand both their needs, and the options. And sometimes you'll need to use your skills at explaining these things to try and help clients understand why the tech they're asking for is not actually right for them.&lt;/p&gt;
+&lt;p&gt;So maybe don't jump on the "Infinidash for Sitecore" bandwagon unless you're &lt;em&gt;&lt;u&gt;really&lt;/u&gt;&lt;/em&gt; sure it will help 😉&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+		<item>
+			<title>A second pass at async pipelines</title>
+			<link>https://blog.jermdavis.dev/posts/2021/a-second-pass-at-async-pipelines</link>
+			<description>&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/posts/2021/pipelines-and-async" target="_blank"&gt;Last time out I was looking at applying async/await patterns to some pipeline patterns for C#&lt;/a&gt;. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...&lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
+			<guid>https://blog.jermdavis.dev/posts/2021/a-second-pass-at-async-pipelines</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/posts/2021/pipelines-and-async" target="_blank"&gt;Last time out I was looking at applying async/await patterns to some pipeline patterns for C#&lt;/a&gt;. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...&lt;!--more--&gt;&lt;/p&gt;
+&lt;h2&gt;Execution ordering and async&lt;/h2&gt;
+&lt;p&gt;Writing code that uses the &lt;code&gt;async&lt;/code&gt;/&lt;code&gt;await&lt;/code&gt; patterns from the previous post can have some interesting effects on the order of execution for some of the code. An example to demonstrate that is fairly simple to construct. Expanding on the example code I started last time, consider a pipeline with three steps:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class ExampleAsyncPipeline : AsyncPipeline&amp;lt;Uri, string&amp;gt;
+{
+	public ExampleAsyncPipeline()
+	{
+		_pipelineSteps = input =&amp;gt; input
+			.Step(new HttpFetchAsyncStep())
+			.Step(new ModifyTextAsyncStep())
+			.Step(new DiskWriteAsyncStep());
+
+	}
+}
+&lt;/pre&gt;
+&lt;p&gt;As the steps say: Grab some data, modify the data, and write it to disk somewhere. And we'll add in some debug output. The first step does the fetch. It outputs some debug data on entry, after the &lt;code&gt;await&lt;/code&gt; returns for the input data, and then just before returning.&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class HttpFetchAsyncStep : IAsyncPipelineStep&amp;lt;Uri, string&amp;gt;
+{
+	private static readonly HttpClient _client = new HttpClient();
+
+	public async Task&amp;lt;string&amp;gt; ProcessAsync(Task&amp;lt;Uri&amp;gt; Input)
+	{
+		Console.WriteLine("Entering HttpFetchAsyncStep #1");
+		
+		var uri = await Input;
+		Console.WriteLine("Have Input HttpFetchAsyncStep #1");
+		
+		Console.WriteLine("Leaving HttpFetchAsyncStep #1");
+		
+		return await _client.GetStringAsync(uri);
+	}
+}
+&lt;/pre&gt;
+&lt;p&gt;The second step just does a simple text replacement to show it did something. And it also outputs debug data at the same points in its execution.&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class ModifyTextAsyncStep : IAsyncPipelineStep&amp;lt;string, string&amp;gt;
+{
+	public async Task&amp;lt;string&amp;gt; ProcessAsync(Task&amp;lt;string&amp;gt; Input)
+	{
+		Console.WriteLine("Entering ModifyTextAsyncStep #2");
+
+		var txt = await Input;
+		Console.WriteLine("Have Input ModifyTextAsyncStep #2");
+
+		var output = txt.Replace("BBC", "Not the BBC");
+
+		Console.WriteLine("Leaving ModifyTextAsyncStep #2");
+
+		return output;
+	}
+}
+&lt;/pre&gt;
+&lt;p&gt;And finally, with the same debug output pattern, the third step works out where the desktop folder is and writes the data it receives to that folder.&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class DiskWriteAsyncStep : IAsyncPipelineStep&amp;lt;string, string&amp;gt;
+{
+	public async Task&amp;lt;string&amp;gt; ProcessAsync(Task&amp;lt;string&amp;gt; Input)
+	{
+		Console.WriteLine("Entering DiskWriteAsyncStep #3");
+		
+		var data = await Input;
+		Console.WriteLine("Have Input DiskWriteAsyncStep #3");
+		
+		var desktopFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+		var fileName =  System.IO.Path.Combine(desktopFolder, "test.txt");
+
+		await System.IO.File.WriteAllTextAsync(fileName, data);
+
+		Console.WriteLine("Leaving DiskWriteAsyncStep #3");
+
+		return fileName;
+	}
+}
+&lt;/pre&gt;
+&lt;p&gt;So if we run that pipeline, passing in a valid url, then the debug output looks interesting:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-highlight="4,5,6,7" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Entering HttpFetchAsyncStep #1
+Have Input HttpFetchAsyncStep #1
+Leaving HttpFetchAsyncStep #1
+Entering ModifyTextAsyncStep #2
+Entering DiskWriteAsyncStep #3
+Have Input ModifyTextAsyncStep #2
+Leaving ModifyTextAsyncStep #2
+Have Input DiskWriteAsyncStep #3
+Leaving DiskWriteAsyncStep #3
+&lt;/pre&gt;
+&lt;p&gt;The first step proceeds as we'd expect – entering, getting data, and returning. But then the second step enters, and then immediately the third step enters. Then the second step gets its input and leaves before the third step does the same...&lt;/p&gt;
+&lt;p&gt;Initially that seems wrong – why would parts of step two and three appear to happen out of order? But I think this is actually a side-effect of how async code works. A statement which awaits a task is going to do one of two things. Either the task is complete and the value is returned immediately, or the task is not complete and the code tries to find something else to do in order to fill its time. In our case, the first step's &lt;code&gt;await&lt;/code&gt; is of the first case - the input task already has its value, because the source uri was provided at the start of the pipeline. So that just runs through linearly that code without any distractions.&lt;/p&gt;
+&lt;p&gt;But when we get to step two, its input is the task to read from the remote website. The code enters that step as usual, but the &lt;code&gt;await&lt;/code&gt; cannot immediately resolve into downloaded html. So the compiler's clever rewriting takes over. This bit of code gets "parked" while it waits for the promise-of-future-data to resolve, and the flow of execution moves on to something else that can be run. In this case, it tries to start the third step, and prints its debug data because that doesn't depend on anything else. But once it gets to awaiting step three's input, the execution has to stall again because that &lt;code&gt;await&lt;/code&gt; depends on step two's output. So now the flow of execution has nothing else to do but wait for step two's input to resolve, so it can then finish that step, and then finish step three.&lt;/p&gt;
+&lt;p&gt;And that's what we're seeing in the output above...&lt;/p&gt;
+&lt;h2&gt;Here be dragons!&lt;/h2&gt;
+&lt;p&gt;Now broadly that's not an issue – the code does end up doing all its work in the right order.&lt;/p&gt;
+&lt;p&gt;But after I sat and thought about this a bit harder, I realised that it would be possible to cause some really interesting bugs with this approach. Any code that runs before the &lt;code&gt;await&lt;/code&gt; in a pipeline step might happen some undefined amount of time before the remainder of the code.&lt;/p&gt;
+&lt;p&gt;Imagine if the code took a lock on a database table, awaited the input of a really long-running network operation, and then carried on to write something to the database. That code would almost certainly run ok on a developer's computer. But under load in the real world, you could end up with some horrible performance issues where nobody else can do anything to the database table while this bit of code sits and waits for async operations to complete. In broad strokes:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class CauseAnIssueAsyncStep : IAsyncPipelineStep&amp;lt;string, string&amp;gt;
+{
+    public async Task&amp;lt;string&amp;gt; ProcessAsync(Task&amp;lt;string&amp;gt; Input)
+    {
+        TakeOutSomeLocks();
+
+        var data = FetchSomeSynchronousData();
+		
+        var slowThingThatTakesAges = await Input;
+		
+        var result = FurtherWork(data, slowThingThatTakesAges);
+
+        return result;
+    }
+}
+&lt;/pre&gt;
+&lt;p&gt;And with just the right "wrong code" happening before that initial await I'm pretty sure it would be possible to cause deadlocks, and really mess up your day.&lt;/p&gt;
+&lt;p&gt;Clearly this code pattern is not great. So how can we resolve this issue?&lt;/p&gt;
+&lt;h2&gt;Tweaking the pattern to address that&lt;/h2&gt;
+&lt;p&gt;Having sat and thought about all this, I realised there was a better way to express all of this. If the code changes so that the &lt;code&gt;await&lt;/code&gt; behaviour for the &lt;code&gt;Task&lt;/code&gt; is moved out of the individual pipeline steps then it's not possible for people writing steps to make a mistake with this.&lt;/p&gt;
+&lt;p&gt;I've tried a couple of attempts at this. My first pass worked on the basis that you could have an abstract base type for pipeline steps which dealt with the awaiting of the inputs. But I didn't want to restrict the pipeline steps to inheriting a base class – that didn't look quite right to me. so I tried a second attempt.&lt;/p&gt;
+&lt;p&gt;The basic pipleline component interface goes back to having a &lt;code&gt;TIn&lt;/code&gt; and a &lt;code&gt;Task&amp;lt;T&amp;gt;&lt;/code&gt; result:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public interface IAsyncPipelineStep&amp;lt;TIn, TOut&amp;gt;
+{
+	Task&amp;lt;TOut&amp;gt; ProcessAsync(TIn Input);
+}
+&lt;/pre&gt;
+&lt;p&gt;And the type for the overall pipeline keeps a &lt;code&gt;Func&amp;lt;TIn, Task&amp;gt;&lt;/code&gt; for the steps, and exposes the &lt;code&gt;Task ProcessAsync(TIn Input)&lt;/code&gt; method for executing the complete pipeline:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public abstract class AsyncPipeline&amp;lt;TIn, TOut&amp;gt; : IAsyncPipelineStep&amp;lt;TIn, TOut&amp;gt;
+{
+	public Func&amp;lt;TIn, Task&amp;lt;TOut&amp;gt;&amp;gt; _pipelineSteps { get; protected set; }
+
+	public Task&amp;lt;TOut&amp;gt; ProcessAsync(TIn Input)
+	{
+		return _pipelineSteps(Input);
+	}
+}
+&lt;/pre&gt;
+&lt;p&gt;The extension class for composing the steps needs two methods now. One takes a &lt;code&gt;TIn&lt;/code&gt; input, and runs the step on it directly. And the other takes a &lt;code&gt;Task&lt;/code&gt; and awaits the result before running the step over this value:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public static class AsyncPipelineStepExtensions
+{
+	public async static Task&amp;lt;TOut&amp;gt; Step&amp;lt;TIn, TOut&amp;gt;(this Task&amp;lt;TIn&amp;gt; Input, IAsyncPipelineStep&amp;lt;TIn, TOut&amp;gt; Step)
+	{
+		var input = await Input;
+		return await Step.ProcessAsync(input);
+	}
+
+	public async static Task&amp;lt;TOut&amp;gt; Step&amp;lt;TIn, TOut&amp;gt;(this TIn Input, IAsyncPipelineStep&amp;lt;TIn, TOut&amp;gt; Step)
+	{
+		return await Step.ProcessAsync(Input);
+	}
+}
+&lt;/pre&gt;
+&lt;p&gt;With all those changes, the three example steps look largely the same. But now theydon't need to &lt;code&gt;await&lt;/code&gt; their input now, because that bit of boilerplate has been abstracted away:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class HttpFetchAsyncStep : IAsyncPipelineStep&amp;lt;Uri, string&amp;gt;
+{
+	private static readonly HttpClient _client = new HttpClient();
+
+	public async Task&amp;lt;string&amp;gt; ProcessAsync(Uri Input)
+	{
+		Console.WriteLine("Entering HttpFetchAsyncStep #1");
+		
+		Console.WriteLine("Leaving HttpFetchAsyncStep #1");
+		
+		return await _client.GetStringAsync(Input);
+	}
+}
+
+public class ModifyTextAsyncStep : IAsyncPipelineStep&amp;lt;string, string&amp;gt;
+{
+	public async Task&amp;lt;string&amp;gt; ProcessAsync(string Input)
+	{
+		Console.WriteLine("Entering ModifyTextAsyncStep #2");
+
+		var output = Input.Replace("BBC", "Not the BBC");
+
+		Console.WriteLine("Leaving ModifyTextAsyncStep #2");
+
+		return output;
+	}
+}
+
+public class DiskWriteAsyncStep : IAsyncPipelineStep&amp;lt;string, string&amp;gt;
+{
+	public async Task&amp;lt;string&amp;gt; ProcessAsync(string Input)
+	{
+		Console.WriteLine("Entering DiskWriteAsyncStep #3");
+		
+		var desktopFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+		var fileName =  System.IO.Path.Combine(desktopFolder, "test.txt");
+
+		await System.IO.File.WriteAllTextAsync(fileName, Input);
+
+		Console.WriteLine("Leaving DiskWriteAsyncStep #3");
+
+		return fileName;
+	}
+}
+&lt;/pre&gt;
+&lt;p&gt;The definition of the overall pipeline doesn't change, despite the changes to the underlying types:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class ExampleAsyncPipeline : AsyncPipeline&amp;lt;Uri, string&amp;gt;
+{
+	public ExampleAsyncPipeline()
+	{
+		_pipelineSteps = input =&amp;gt; input
+			.Step(new HttpFetchAsyncStep())
+			.Step(new ModifyTextAsyncStep())
+			.Step(new DiskWriteAsyncStep());
+
+	}
+}
+&lt;/pre&gt;
+&lt;p&gt;To my eye, that approach looks better. It's only a small change really, but it's taken away the ability to make a mistake, without changing the core of how it works.&lt;/p&gt;
+&lt;p&gt;And running it produces the output we'd expect:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-06-executionorder.png" target="_blank"&gt;&lt;img alt="Pipeline results" src="https://blog.jermdavis.dev/img/2021/2021-06-executionorder.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;As before, &lt;a href="https://gist.github.com/jermdavis/49ecd692a16b10899eb2ee2b50770499" rel="noopener" target="_blank"&gt;this version of the code is available as a gist&lt;/a&gt; if you want to play with it.&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
+	</channel>
+</rss>

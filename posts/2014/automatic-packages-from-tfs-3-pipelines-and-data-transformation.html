@@ -1,0 +1,420 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="author" content="Jeremy Davis">
+
+    <title>Jeremy Davis - Automatic packages from TFS: #3 – Pipelines and data&nbsp;transformation</title>
+
+    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-3-pipelines-and-data-transformation">
+    <meta name="robots" content="noindex, nofollow">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+
+    
+    <meta property="og:title" content="Jeremy Davis - Automatic packages from TFS: #3 – Pipelines and data&nbsp;transformation">
+        <meta property="og:image" content="/img/featured/automatic-packages-from-tfs-3-pipelines-and-data-transformation-social.png">
+    <meta property="og:description" content="">
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-3-pipelines-and-data-transformation">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <link href="https://unpkg.com/tailwindcss@2.2.11/dist/tailwind.min.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+
+    
+
+    
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="h-12 mt-2 w-auto lg:h-14" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="-mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="h-12 mt-2 w-auto" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="-mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-1 pb-1">
+        Automatic packages from TFS: #3 – Pipelines and data&nbsp;transformation
+        </h1>
+            <div class="meta">Published 17 August 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/team-foundation-server" class="p-1 mr-1 bg-gray-100 rounded-md"> Team Foundation Server</a>
+                    <a href="/tags/packages" class="p-1 mr-1 bg-gray-100 rounded-md"> Packages</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>In the first two posts in this series we've looked at <a href="/posts/2014/generate-packages-from-tfs-1-overall-plan" target="_blank">commandline parameters and fetching data</a>, and then <a href="/posts/2014/automatic-packages-from-tfs-2-so-how-can-i-write-a-package-file" target="_blank">saving package files</a>. This week, we'll look at how the fetched data can be transformed into the package data. <!--more--></p>
+<p>I said back in the first post that I wanted to build this tool using a pipeline-style architecture. The approach is good because it's flexible – the set of pipeline components that can be run and the order that they are executed in can be configurable. That means the one tool can use config settings (and potentially extensions) to support different projects. So for this blog post I'll look at the code to configure and run the pipeline, and the set of components I've managed to come up with so far for my prototype.</p>
+<h2>Running the components</h2>
+<p>The code to run the pipeline is very simple:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ProcessingPipeline
+{
+    private ProjectConfiguration _config;
+
+    public ProcessingPipeline(ProjectConfiguration config)
+    {
+        _config = config;
+    }
+
+    public PackageProject Run(IDictionary&lt;string, SourceControlActions&gt; input)
+    {
+        PipelineData pd = new PipelineData();
+        pd.Configuration = _config;
+        pd.Input = input;
+        pd.Output = new PackageProject();
+
+        foreach (IPipelineComponent cmp in _config.PipelineComponents)
+        {
+            cmp.Run(pd);
+        }
+
+        return pd.Output;
+    }
+}
+</pre>
+<p>To create an instance of the pipeline we pass in the <code>ProjectConfiguration</code> (more of that later). When we run the pipeline, the input is the data that came back from Source Control, and the output is a <code>PackageProject</code> like the one we saw last week.</p>
+<p>The input is used to create a helper data object <code>PipelineData</code> - and it's this object that's handed to the individual pipeline components in turn. It's pretty trivial:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PipelineData
+{
+    public IDictionary&lt;string, SourceControlActions&gt; Input { get; set; }
+    public PackageProject Output { get; set; }
+    public ProjectConfiguration Configuration { get; set; }
+}
+</pre>
+<p>All it does is store the input data, the configuration data and the output project in one convenient object. Hence each pipeline component needs to implement a simple interface:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineComponent
+{
+    void Run(PipelineData data);
+}
+</pre>
+<p>All you need to be able to do is pass it the <code>PipelineData</code> for it to process.</p>
+<h2>Revisiting configuration</h2>
+<p>Since I made the first post in this series, I've revised the configuration approach for the code a bit. And one side effect of that is that have now moved most of the Sitecore-project-specific configuration into an external XML file which is read at runtime. That allows specifying assorted settings, but the key part for today is the pipeline components and their config.</p>
+<p>An example of the XML for the config file might be:</p>
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration&gt;
+  &lt;input type="Sitecore.TFS.PackageGenerator.Inputs.TFSCommandLine,Sitecore.TFS.PackageGenerator"/&gt;
+  &lt;workingFolder&gt;C:\ClientName&lt;/workingFolder&gt;
+  &lt;pipelineComponents&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.SetPackageMetadata,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.RemoveUnwantedItems,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.RenameFiles,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractFilesToDeploy,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractItemsToDeploy,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractBinariesToDeploy,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractDeletionsToDeploy,Sitecore.TFS.PackageGenerator"/&gt;
+  &lt;/pipelineComponents&gt;
+  &lt;settings&gt;
+    &lt;setting name="TFSCommandLine.ToolPath" value="C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE\TF.exe"/&gt;
+    &lt;setting name="SetPackageMetadata.PackageName" value="GeneratedPackage" /&gt;
+    &lt;setting name="RemoveUnwantedItems.ExtensionsToIgnore" value=".scproj,.csproj,.sln,.vspscc,.tds,.sql,web.config,web.debug.config,web.release.config,packages.config"/&gt;
+    &lt;setting name="RemoveUnwantedItems.FoldersToIgnore" value="/deployments/,.TDS_Debug.,/css/includes/,/externalpackages/,/buildconfig/"/&gt;
+    &lt;setting name="RenameFiles.Extensions" value=".less|.css"/&gt;
+    &lt;setting name="ExtractFilesToDeploy.WebProjectFolder" value="/ClientName/ProjectName/Main/Source/Client.Project.Website"/&gt;
+    &lt;setting name="ExtractBinariesToDeploy.ProjectPathMap" value="Client.Project.Website|/bin/Client.Project.Website.dll|/bin/Client.Project.Website.pdb" /&gt;
+  &lt;/settings&gt;
+  &lt;output type="Sitecore.TFS.PackageGenerator.Outputs.SaveXmlToDisk,Sitecore.TFS.PackageGenerator"/&gt;
+&lt;/configuration&gt;
+</pre>
+<p>The two bits of this we're interested in for the moment is the <code>&lt;pipelineComponents/&gt;</code> and the <code>&lt;settings&gt;</code> elements.</p>
+<p>The config here is processed by the <code>ProjectConfiguration</code> class. It's created via a static method, which is called with the path of the config XML to load:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ProjectConfiguration
+{
+    public string WorkingFolder { get; private set; }
+    public IList&lt;IPipelineComponent&gt; PipelineComponents { get; private set; }
+    public IDictionary&lt;string, string&gt; Settings { get; private set; }
+    public IInput Input { get; private set; }
+    public IOutput Output { get; private set; }
+    public ConsoleLog Log { get; private set; }
+
+    private ProjectConfiguration()
+    {
+        PipelineComponents = new List&lt;IPipelineComponent&gt;();
+        Settings = new Dictionary&lt;string, string&gt;(StringComparer.CurrentCultureIgnoreCase);
+        Log = new ConsoleLog();
+    }
+
+    public static ProjectConfiguration Load(string file)
+    {
+        ProjectConfiguration pc = new ProjectConfiguration();
+
+        using (var xr = new System.Xml.XmlTextReader(file))
+        {
+            var xml = XDocument.Load(xr);
+            pc.parse(xml);
+        }
+
+        return pc;
+    }
+}
+</pre>
+<p>Parsing the XML is done via:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    private void parse(XDocument xml)
+    {
+        XElement root = xml.Element("configuration");
+
+        string inputType = root.Element("input").Attribute("type").Value;
+        Input = createInstance&lt;IInput&gt;(inputType);
+
+        string outputType = root.Element("output").Attribute("type").Value;
+        Output = createInstance&lt;IOutput&gt;(outputType);
+
+        WorkingFolder = root.Element("workingFolder").Value;
+
+        foreach (var component in root.Element("pipelineComponents").Elements("component"))
+        {
+            string type = component.Attribute("type").Value;
+
+            Type t = Type.GetType(type);
+            System.Reflection.ConstructorInfo ci = t.GetConstructor(System.Type.EmptyTypes);
+            IPipelineComponent cmp = ci.Invoke(null) as IPipelineComponent;
+
+            PipelineComponents.Add(cmp);
+        }
+
+        foreach (var item in root.Element("settings").Elements("setting"))
+        {
+            Settings.Add(item.Attribute("name").Value, item.Attribute("value").Value);
+        }
+    }
+</pre>
+<p>This uses the Linq-to-XML APIs to extract the appropriate elements, and process their values. (The non-prototype version of this code will need better error handling here, of course) In this version of the code, the input (getting changes from TFS) and the output (saving the package XML to disk) have been abstracted out to plugin types – with a view to perhaps supporting multiple input and output options in the future. the XML for both of these elements contains a .Net type descriptor – and the <code>createInstance()</code> method attempts to convert that from the string description into a valid object:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private T createInstance&lt;T&gt;(string type)
+{
+    Type t = Type.GetType(type);
+    System.Reflection.ConstructorInfo ci = t.GetConstructor(System.Type.EmptyTypes);
+    return (T)ci.Invoke(null);
+}
+</pre>
+<p>It parses the type descriptor, extracts the parameterless constructor, and then invokes it to generate an object - and it uses generic type parameters to cast this object to the correct type.</p>
+<p>For the pipeline components in the config XML, the code just repeats the same pattern looping over the elements describing each component, and adds them to a collection. For the settings, the name and value pairs are extracted to a dictionary.</p>
+<p>So we can update some of the code from the first post in this series, and load the pipelines and settings configuration, then run the pipeline as follows:</p>
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ProjectConfiguration config = ProjectConfiguration.Load(pathToConfigFile);
+
+config.Input.Initialise(config);
+var data = config.Input.ProcessWorkItems(config.WorkingFolder, cmdParams.StartChangeSet, cmdParams.EndChangeSet);
+
+ProcessingPipeline pp = new ProcessingPipeline(config);
+var packageData = pp.Run(data);
+
+var xml = packageData.ToXml();
+
+config.Output.Initialise(config);
+config.Output.Store(xml, cmdParams.PackageFileName);
+</pre>
+<h2>So what pipeline steps are needed?</h2>
+<p>Working through the set of operations required, my prototype makes use of the following steps so far:</p>
+<ul>
+<li><strong>Set Package Metadata</strong>
+This fills in a few of the core bits of metadata, such as the package name and author.</li>
+<li><strong>Remove Unwanted Items</strong>
+Some items found via TFS do not need to go into packages – such as Visual Studio project files, or folders relating to build configuration. This operation removes those from the list of discovered changes so they are ignored.</li>
+<li><strong>Rename Files</strong>
+Some files may have a different name or extension in Source Control compared to the name / extension that needs to go in the package. In my case a checked in change to a <code>.less</code> file needs to be deployed as a <code>.css</code> file - and this operation will transform the name.</li>
+<li><strong>Extract Files to Deploy</strong>
+This component iterates the list of changes and finds the remaining things that are not serialised Sitecore items and are not C# files, and adds them to the package as disk files to deploy.</li>
+<li><strong>Extract Items to Deploy</strong>
+Likewise, this component will find all of the <code>.item</code> changes reported by TFS and transform their name in order to add them correctly to the package as Sitecore Items.</li>
+<li><strong>Extract Binaries to Deploy</strong>
+This component finds the C# changes reported by TFS, and matches them against the names of projects included in the configuration to generate the correct set of binary files to add to the package.</li>
+<li><strong>Extract Deletions to deploy</strong>
+Finally, any Source Control operations marked as "delete" are found by this code and enumerated in the package "Read Me" metadata – since there is no automated way to delete individual files or items through a package.</li>
+</ul>
+<p>At the back of my mind I'm considering the possibility of <a href="/posts/2014/late-to-the-post-step-party" target="_blank">post deployment steps</a> for automatically deleting, running SQL scripts etc. But those are still just ideas at this stage.</p>
+<p>Next week, I plan to drill down into the code for these individual pipeline components to show how they work, and how they interact with the configuration data.</p>
+
+
+            </div>
+            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section>
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+    <div class="bg-white mb-2 p-2"><img src="/img/mvp/2021.jpg" alt="2021 MVP Badge"></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (192)</a>
+                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
+                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (12)</a>
+                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
+                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2021-01">2021 - January</a></div>
+                <div><a class="text-lg" href="/posts/2021-02">2021 - February</a></div>
+                <div><a class="text-lg" href="/posts/2021-03">2021 - March</a></div>
+                <div><a class="text-lg" href="/posts/2021-04">2021 - April</a></div>
+                <div><a class="text-lg" href="/posts/2021-05">2021 - May</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right"><a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/tools">Published using Statiq</a></div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 text-center align-middle">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner') ? (docCookies.getItem('hide_banner') == 'true') : false;" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">This website uses Google Analytics, and its cookies.
+              <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank" class="whitespace-nowrap">Learn more</a>
+            </div>
+
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/alpinejs" defer=""></script>    
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '{BTN_RAW}{BTN_COPY}',
+            toolbarBottom: ''
+        });
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
+    
+
+    
+
+
+
+</body></html>

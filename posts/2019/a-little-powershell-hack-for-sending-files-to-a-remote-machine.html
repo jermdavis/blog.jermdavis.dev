@@ -1,0 +1,338 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="author" content="Jeremy Davis">
+
+    <title>Jeremy Davis - A little PowerShell hack for sending files to a remote&nbsp;machine</title>
+
+    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2019/a-little-powershell-hack-for-sending-files-to-a-remote-machine">
+    <meta name="robots" content="noindex, nofollow">
+
+            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+
+    
+    <meta property="og:title" content="Jeremy Davis - A little PowerShell hack for sending files to a remote&nbsp;machine">
+        <meta property="og:image" content="/img/featured/a-little-powershell-hack-for-sending-files-to-a-remote-machine-social.png">
+    <meta property="og:description" content="">
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/a-little-powershell-hack-for-sending-files-to-a-remote-machine">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <link href="https://unpkg.com/tailwindcss@2.2.11/dist/tailwind.min.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+
+    
+
+    
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="h-12 mt-2 w-auto lg:h-14" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="-mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="h-12 mt-2 w-auto" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="-mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-1 pb-1">
+        A little PowerShell hack for sending files to a remote&nbsp;machine
+        </h1>
+            <div class="meta">Published 10 June 2019</div>
+            <div class="flex py-1">
+                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>I was asked to do some configuration on a remote computer recently, and discovered that the security-concious network admins had locked down the ability for me to share my local computer's files with the server via RDP and the ability to get to services like OneDrive. I had a collection of config files I had been asked to deploy, and manually creating each file on the server and copying over its contents seemed like a lot of hassle. So I tried a trick with PowerShell to make my life easier...<!--more--></p>
+<blockquote>
+<b><i>Please note:</i></b> I'm not condoning breaking network security policies here – don't use this in a way that would get you into trouble!
+</blockquote>
+<p>Ages ago I wrote a post about how you can <a href="/posts/2017/embedding-resources-in-powershell-scripts" target="_blank">embed files directly into PowerShell scripts</a> using Base64 encoding. Since that idea can turn an arbitrary file into text that you can save in a script, it can also be used to encode an arbitrary file and place it onto the clipboard. And that gives you a route to move the file over an RDP session's shared clipboard – which looked like it might be an approach to making my situation easier. So I hacked up a little PowerShell module that can be used to achieve this...</p>
+<p>So on one machine we're going to need to send a specific file to the clipboard. That entails a commandlet that takes the path to a file, checks it exists and sends the file to the clipboard:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Send-ClipboardFile
+{
+    param(
+        [string]$file
+    )
+    
+    if(!(Test-Path $file))
+    {
+        throw "Specified file '$file' cannot be found"
+    }
+
+    $fileName = Split-Path $file -leaf
+
+    $data = Base64Encode-File $file
+    "$fileName`b$data" | Set-Clipboard
+
+    Write-Host "File `$file` encoded to clipboard in $($data.Length) bytes"
+}
+</pre>
+<p>Having checked the file exists, the code uses <code>Split-Path</code> to make sure it has just the file name, ignoring any relative path that may have been passed in. It then turns the file into a base64 string. Finally it sends a string to the clipboard that combines the file name and the encoded data and writes some output.</p>
+<p>Encoding the file to a base64 string is pretty simple:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Base64Encode-File
+{
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]$file
+  )
+  process
+  {
+    $c = Get-Content $file -Encoding Byte 
+    return [System.Convert]::ToBase64String($c)
+  }
+}
+</pre>
+<p>All it needs to do is read the contents of the file, and call the .Net function to convert the value into base64.</p>
+<p>The other end of the process involves receiving the data from the clipboard:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Receive-ClipboardFile
+{
+    param(
+        [string]$alternativeName = $null
+    )
+
+    $clip = Get-Clipboard
+
+    $bits = $clip.Split(`b")
+
+    if($bits.Length -ne 2)
+    {
+        throw "Data error. Expected 2 items of data on clipboard, but got $($bits.Length)"
+    }
+
+    $file = $bits[0]
+    if($alternativeName -ne $null -and $alternativeName.Length -gt 0)
+    {
+        $file = $alternativeName
+    }
+    $data = $bits[1]
+
+    Write-Host "Receiving file `$file` from $($clip.Length) bytes of data"
+
+    Write-EmbeddedFile $data $file
+}
+</pre>
+<p>This bit of code grabs the data that's on the clipboard, and tries to split it using the separator character that was used in the sending routine above. It checks to see that it got exactly two items from that. If not, that implies an error. Otherwise you have a filename and a block of encoded data. If the user passed the optional alternative file name parameter then it uses that, otherwise it uses the original file name sent over the clipboard. Then it can write some output, and then turn the clipboard data back into a disk file.</p>
+<p>And again, writing the data out to disk is pretty simple:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Write-EmbeddedFile
+{
+  param
+  (
+    [string]$base64,
+    [string]$targetFile
+  )
+  process
+  {
+    $Content = [System.Convert]::FromBase64String($base64)
+    Set-Content -Path ".\$targetFile" -Value $Content -Encoding Byte
+  }
+}
+</pre>
+<p>Finally, the module file can export the two key functions for use:</p>
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Export-ModuleMember -Function "Receive-ClipboardFile"
+Export-ModuleMember -Function "Send-ClipboardFile"
+</pre>
+<p>And with that, all you have to do is drop this script (I named it <code>ClipboardFileTransfer.psm1</code>) into a suitably named folder in your modules directory or locally and you can import it and send some files...</p>
+<p>For example, if you have the module in a local directory on the local machine you might run:</p>
+<p><a href="/img/2019/2019-05-sendafile.png" target="_blank"><img alt="Send A File" src="/img/2019/2019-05-sendafile.png"></a></p>
+<p>And on the remote one you can run:</p>
+<p><a href="/img/2019/2019-05-receiveafile.png" target="_blank"><img alt="Receive A File" src="/img/2019/2019-05-receiveafile.png"></a></p>
+<p>And magically the file is transferred... (And of course you can do it in the opposite direction too)</p>
+<p>[Note to self: tweak script so that the bytes reported at both ends measure the same thing... 😉 ]</p>
+<p>You need to get this one script onto both of your machines, but if you can do that, this allows for easy transfers of other files. And it made my day a lot simpler.</p>
+<p>If you think this might be useful, <a href="https://gist.github.com/jermdavis/aa3d1cda2875167ef59feaceae6b0961" rel="noopener" target="_blank">the script is available as a gist</a> for you to use.</p>
+
+
+            </div>
+            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section>
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+    <div class="bg-white mb-2 p-2"><img src="/img/mvp/2021.jpg" alt="2021 MVP Badge"></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (192)</a>
+                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
+                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (12)</a>
+                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
+                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2021-01">2021 - January</a></div>
+                <div><a class="text-lg" href="/posts/2021-02">2021 - February</a></div>
+                <div><a class="text-lg" href="/posts/2021-03">2021 - March</a></div>
+                <div><a class="text-lg" href="/posts/2021-04">2021 - April</a></div>
+                <div><a class="text-lg" href="/posts/2021-05">2021 - May</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right"><a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/tools">Published using Statiq</a></div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 text-center align-middle">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner') ? (docCookies.getItem('hide_banner') == 'true') : false;" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">This website uses Google Analytics, and its cookies.
+              <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank" class="whitespace-nowrap">Learn more</a>
+            </div>
+
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/alpinejs" defer=""></script>    
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '{BTN_RAW}{BTN_COPY}',
+            toolbarBottom: ''
+        });
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
+    
+
+    
+
+
+
+</body></html>
