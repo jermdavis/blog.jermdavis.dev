@@ -7,7 +7,82 @@
 	</author>
 	<link rel="self" href="https://blog.jermdavis.dev/" />
 	<rights>2021</rights>
-	<updated>2021-11-07T20:14:47Z</updated>
+	<updated>2021-11-09T21:41:25Z</updated>
+	<entry>
+		<id>https://blog.jermdavis.dev/posts/2021/shipping-custom-logs-from-your-v10-containers</id>
+		<title>Shipping custom logs from your v10 containers</title>
+		<author>
+			<name>Jeremy Davis</name>
+		</author>
+		<link href="https://blog.jermdavis.dev/posts/2021/shipping-custom-logs-from-your-v10-containers" />
+		<link rel="enclosure" type="image" href="https://blog.jermdavis.dev/" />
+		<updated>0001-01-01T00:00:00Z</updated>
+		<content>&lt;p&gt;My work on a container-based v10.0 project keeps raising interesting challenges – things that don’t work quite the same way in Docker or Kubernetes, compared to the old world of "bare metal" installs of Sitecore. Custom log files are an example here...&lt;!--more--&gt;&lt;/p&gt;
+&lt;p&gt;I realised recently that we had some custom code in our solution, whose log data was not appearing in the Docker streamed logs. (And hence wasn’t visible in the Kubernetes container log output either) After a bit of digging I released this was because the developers had quite sensibly moved these log entries to a separate log file. Turns out that the log streaming does not pick up all logs – you have to be specific:&lt;/p&gt;
+&lt;h2&gt;How does it work?&lt;/h2&gt;
+&lt;p&gt;Inside your containers, a tool called &lt;code&gt;LogMonitor.exe&lt;/code&gt; is running. It uses disk monitoring (and other techniques, potentially) to monitor log data, and when it sees changes it streams these to “standard output".&lt;/p&gt;
+&lt;p&gt;Your container orchestrator is picking up that streamed data, and sending it to whatever console or log aggregation framework your using. That might be AppInsights or Prometheus from Kubernetes in production, and it might be the Visual Studio containers window or a console under Docker.&lt;/p&gt;
+&lt;p&gt;By default, this is set up to stream IIS logs and the main Sitecore log. So what do we do if we want other log files?&lt;/p&gt;
+&lt;h2&gt;Extending this&lt;/h2&gt;
+&lt;p&gt;If you look inside your Sitecore CM or CD containers, LogMonitor sits in a folder under the root:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-10-logmonitor.png" target="_blank"&gt;&lt;img alt="Log Monitor" src="https://blog.jermdavis.dev/img/2021/2021-10-logmonitor.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;By default it’s started by the entrypoint script for the container, and it reads is configuration settings from that &lt;code&gt;json&lt;/code&gt; file sitting next to it.&lt;/p&gt;
+&lt;p&gt;It's default state is:&lt;/p&gt;
+&lt;pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;"&gt;{
+    "LogConfig": {
+      "sources": [
+        {
+          "type": "EventLog",
+          "startAtOldestRecord": false,
+          "eventFormatMultiLine": false,
+          "channels": [
+            {
+              "name": "system",
+              "level": "Error"
+            }
+          ]
+        },
+        {
+          "type": "File",
+          "directory": "c:\\inetpub\\logs",
+          "filter": "*.log",
+          "includeSubdirectories": true
+        },
+        {
+          "type": "File",
+          "directory": "c:\\inetpub\\wwwroot\\App_data\\logs",
+          "filter": "log.*.txt",
+          "includeSubdirectories": false
+        }
+      ]
+    }
+  }
+}
+&lt;/pre&gt;
+&lt;p&gt;So to add extra log files we can modify this. There’s some &lt;a href="https://github.com/microsoft/windows-container-tools/wiki/Authoring-a-Config-File" rel="noopener" target="_blank"&gt;documentation available on GitHub&lt;/a&gt; because it’s not just disk files you can process here. But I’m only interested in other Sitecore logs for the moment...&lt;/p&gt;
+&lt;p&gt;So we could change the existing pattern there to "&lt;code&gt;*.txt&lt;/code&gt;" to bring in everything from the logs folder. But I wanted to be a bit more subtle. I tried adding an extra source which would cover just the files I care about:&lt;/p&gt;
+&lt;pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;"&gt;{
+    "type": "File",
+    "directory": "c:\\inetpub\\wwwroot\\App_data\\logs",
+    "filter": "MyCustomFile.log.*.txt",
+    "includeSubdirectories": false
+}
+&lt;/pre&gt;
+&lt;p&gt;That block gets appended after the file source for the main Sitecore logs, as part of the array for "sources".&lt;/p&gt;
+&lt;p&gt;But to make this work, we need to get this into our container images. How do we manage that? Extending the base image build...&lt;/p&gt;
+&lt;p&gt;The &lt;a href="https://github.com/Sitecore/docker-examples/tree/develop/custom-images/docker/build/cm" rel="noopener" target="_blank"&gt;example container setup for Sitecore includes a DockerFile&lt;/a&gt; for extending the base CM container. (You may want to do this on other roles too, of course – similar patterns apply)&lt;/p&gt;
+&lt;p&gt;We can extend that file to overwrite the default config with out version. Use the VS container browser shown above to find the file and right-click "open" it to see the contents. You can then modify this, and save a copy of your changes in your docker image build folder.&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-10-dockerfile.png" target="_blank"&gt;&lt;img alt="DockerFile" src="https://blog.jermdavis.dev/img/2021/2021-10-dockerfile.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;You can then add a simple "copy" operation into your Dockerfile:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;# Update Log Monitor config
+COPY CustomLogMonitorConfig.json C:\LogMonitor\LogMonitorConfig.json
+&lt;/pre&gt;
+&lt;p&gt;That will ensure your modified file will end up in the container, ready to run on startup. Note that you will need to rebuild your container images for that to take effect.&lt;/p&gt;
+&lt;p&gt;But once that’s done, the extra data should appear in your streamed logs:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-10-extralogs.png" target="_blank"&gt;&lt;img alt="Extra Logs" src="https://blog.jermdavis.dev/img/2021/2021-10-extralogs.png"&gt;&lt;/a&gt;&lt;/p&gt;
+</content>
+		<summary>&lt;p&gt;My work on a container-based v10.0 project keeps raising interesting challenges – things that don’t work quite the same way in Docker or Kubernetes, compared to the old world of "bare metal" installs of Sitecore. Custom log files are an example here...&lt;/p&gt;</summary>
+	</entry>
 	<entry>
 		<id>https://blog.jermdavis.dev/posts/2021/what-happened-to-my-itemdeleted-event</id>
 		<title>What happened to my “item:deleted” event?</title>
@@ -778,230 +853,15 @@ spec:
 &lt;p&gt;I think there are three things that we should be thinking about, as techies:&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Firstly:&lt;/strong&gt; Try not to rely on the buzzwords when you're communicating – try to explain things clearly. It's a common problem in discussions that if you say "anyone not understand X?" that people will generally not speak up. So finding ways of weaving the explanation into your discussions can help everyone understand. This will help your fellow developers learn, and increase their knowledge. And it will help your clients understand things more clearly.&lt;/p&gt;
 &lt;p&gt;And don't forget that explaining and teaching are a good thing overall:&lt;/p&gt;
-&lt;!--?# twitter 1411545409726603264 /?--&gt;
+&lt;div class="embed-twitter"&gt;
+&lt;blockquote class="twitter-tweet" data-width="500" data-dnt="true"&gt;
+&lt;p lang="en" dir="ltr"&gt;If you share your knowledge and help others learn and grow, everyone levels up, and we all get to keep learning from each other and level each other up more! It's pretty cool 😌
+&lt;/p&gt;&lt;p&gt;— Ian Coldwater 📦💥 (@IanColdwater) &lt;a href="https://twitter.com/IanColdwater/status/1411545409726603264?ref_src=twsrc%5Etfw"&gt;July 4, 2021&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;&lt;b&gt;Secondly:&lt;/b&gt; When recruiting don't get obsessed with lists of specific skills. If your job adverts are a tick-box list of 27 different technologies, you're doing it wrong. The best developers I work with are people who are interested in learning. So if they don't know some of the things you need they can pick it up reasonably quickly. And giving those developers the opportunity to expand their skills is also helpful for recruitment. Some managers worry that will lead to people leaving to sell these new skills elsewhere – but &lt;a href="http://hrnews.co.uk/why-employee-training-development-is-an-effective-retention-strategy/" rel="noopener" target="_blank"&gt;HR experts suggest that helping people learn and grow is likely to make them more likely to stay&lt;/a&gt; with you.&lt;/p&gt;
 &lt;p&gt;&lt;b&gt;Thirdly:&lt;/b&gt; Buzzwords don't solve client problems – good requirements and correct technology choices do. It doesn't really matter what the most recent "exciting buzzword" is. If you want to make your clients happy, you need to be making the right technical choices for to solve their business problems. So you need to understand both their needs, and the options. And sometimes you'll need to use your skills at explaining these things to try and help clients understand why the tech they're asking for is not actually right for them.&lt;/p&gt;
 &lt;p&gt;So maybe don't jump on the "Infinidash for Sitecore" bandwagon unless you're &lt;em&gt;&lt;u&gt;really&lt;/u&gt;&lt;/em&gt; sure it will help 😉&lt;/p&gt;
-</content>
+&lt;/div&gt;</content>
 		<summary>&lt;p&gt;It seems everyone is suddenly an expert in this exciting new tech. And if you weren't paying attention, you may have missed the joke behind all of this – that it's an entirely made-up technology. Funny as the twitter shenangans were, I think there's a point hiding here for us as developers. What is it? Well...&lt;/p&gt;</summary>
-	</entry>
-	<entry>
-		<id>https://blog.jermdavis.dev/posts/2021/a-second-pass-at-async-pipelines</id>
-		<title>A second pass at async pipelines</title>
-		<author>
-			<name>Jeremy Davis</name>
-		</author>
-		<link href="https://blog.jermdavis.dev/posts/2021/a-second-pass-at-async-pipelines" />
-		<link rel="enclosure" type="image" href="https://blog.jermdavis.dev/" />
-		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/posts/2021/pipelines-and-async" target="_blank"&gt;Last time out I was looking at applying async/await patterns to some pipeline patterns for C#&lt;/a&gt;. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...&lt;!--more--&gt;&lt;/p&gt;
-&lt;h2&gt;Execution ordering and async&lt;/h2&gt;
-&lt;p&gt;Writing code that uses the &lt;code&gt;async&lt;/code&gt;/&lt;code&gt;await&lt;/code&gt; patterns from the previous post can have some interesting effects on the order of execution for some of the code. An example to demonstrate that is fairly simple to construct. Expanding on the example code I started last time, consider a pipeline with three steps:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class ExampleAsyncPipeline : AsyncPipeline&amp;lt;Uri, string&amp;gt;
-{
-	public ExampleAsyncPipeline()
-	{
-		_pipelineSteps = input =&amp;gt; input
-			.Step(new HttpFetchAsyncStep())
-			.Step(new ModifyTextAsyncStep())
-			.Step(new DiskWriteAsyncStep());
-
-	}
-}
-&lt;/pre&gt;
-&lt;p&gt;As the steps say: Grab some data, modify the data, and write it to disk somewhere. And we'll add in some debug output. The first step does the fetch. It outputs some debug data on entry, after the &lt;code&gt;await&lt;/code&gt; returns for the input data, and then just before returning.&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class HttpFetchAsyncStep : IAsyncPipelineStep&amp;lt;Uri, string&amp;gt;
-{
-	private static readonly HttpClient _client = new HttpClient();
-
-	public async Task&amp;lt;string&amp;gt; ProcessAsync(Task&amp;lt;Uri&amp;gt; Input)
-	{
-		Console.WriteLine("Entering HttpFetchAsyncStep #1");
-		
-		var uri = await Input;
-		Console.WriteLine("Have Input HttpFetchAsyncStep #1");
-		
-		Console.WriteLine("Leaving HttpFetchAsyncStep #1");
-		
-		return await _client.GetStringAsync(uri);
-	}
-}
-&lt;/pre&gt;
-&lt;p&gt;The second step just does a simple text replacement to show it did something. And it also outputs debug data at the same points in its execution.&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class ModifyTextAsyncStep : IAsyncPipelineStep&amp;lt;string, string&amp;gt;
-{
-	public async Task&amp;lt;string&amp;gt; ProcessAsync(Task&amp;lt;string&amp;gt; Input)
-	{
-		Console.WriteLine("Entering ModifyTextAsyncStep #2");
-
-		var txt = await Input;
-		Console.WriteLine("Have Input ModifyTextAsyncStep #2");
-
-		var output = txt.Replace("BBC", "Not the BBC");
-
-		Console.WriteLine("Leaving ModifyTextAsyncStep #2");
-
-		return output;
-	}
-}
-&lt;/pre&gt;
-&lt;p&gt;And finally, with the same debug output pattern, the third step works out where the desktop folder is and writes the data it receives to that folder.&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class DiskWriteAsyncStep : IAsyncPipelineStep&amp;lt;string, string&amp;gt;
-{
-	public async Task&amp;lt;string&amp;gt; ProcessAsync(Task&amp;lt;string&amp;gt; Input)
-	{
-		Console.WriteLine("Entering DiskWriteAsyncStep #3");
-		
-		var data = await Input;
-		Console.WriteLine("Have Input DiskWriteAsyncStep #3");
-		
-		var desktopFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-		var fileName =  System.IO.Path.Combine(desktopFolder, "test.txt");
-
-		await System.IO.File.WriteAllTextAsync(fileName, data);
-
-		Console.WriteLine("Leaving DiskWriteAsyncStep #3");
-
-		return fileName;
-	}
-}
-&lt;/pre&gt;
-&lt;p&gt;So if we run that pipeline, passing in a valid url, then the debug output looks interesting:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-highlight="4,5,6,7" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Entering HttpFetchAsyncStep #1
-Have Input HttpFetchAsyncStep #1
-Leaving HttpFetchAsyncStep #1
-Entering ModifyTextAsyncStep #2
-Entering DiskWriteAsyncStep #3
-Have Input ModifyTextAsyncStep #2
-Leaving ModifyTextAsyncStep #2
-Have Input DiskWriteAsyncStep #3
-Leaving DiskWriteAsyncStep #3
-&lt;/pre&gt;
-&lt;p&gt;The first step proceeds as we'd expect – entering, getting data, and returning. But then the second step enters, and then immediately the third step enters. Then the second step gets its input and leaves before the third step does the same...&lt;/p&gt;
-&lt;p&gt;Initially that seems wrong – why would parts of step two and three appear to happen out of order? But I think this is actually a side-effect of how async code works. A statement which awaits a task is going to do one of two things. Either the task is complete and the value is returned immediately, or the task is not complete and the code tries to find something else to do in order to fill its time. In our case, the first step's &lt;code&gt;await&lt;/code&gt; is of the first case - the input task already has its value, because the source uri was provided at the start of the pipeline. So that just runs through linearly that code without any distractions.&lt;/p&gt;
-&lt;p&gt;But when we get to step two, its input is the task to read from the remote website. The code enters that step as usual, but the &lt;code&gt;await&lt;/code&gt; cannot immediately resolve into downloaded html. So the compiler's clever rewriting takes over. This bit of code gets "parked" while it waits for the promise-of-future-data to resolve, and the flow of execution moves on to something else that can be run. In this case, it tries to start the third step, and prints its debug data because that doesn't depend on anything else. But once it gets to awaiting step three's input, the execution has to stall again because that &lt;code&gt;await&lt;/code&gt; depends on step two's output. So now the flow of execution has nothing else to do but wait for step two's input to resolve, so it can then finish that step, and then finish step three.&lt;/p&gt;
-&lt;p&gt;And that's what we're seeing in the output above...&lt;/p&gt;
-&lt;h2&gt;Here be dragons!&lt;/h2&gt;
-&lt;p&gt;Now broadly that's not an issue – the code does end up doing all its work in the right order.&lt;/p&gt;
-&lt;p&gt;But after I sat and thought about this a bit harder, I realised that it would be possible to cause some really interesting bugs with this approach. Any code that runs before the &lt;code&gt;await&lt;/code&gt; in a pipeline step might happen some undefined amount of time before the remainder of the code.&lt;/p&gt;
-&lt;p&gt;Imagine if the code took a lock on a database table, awaited the input of a really long-running network operation, and then carried on to write something to the database. That code would almost certainly run ok on a developer's computer. But under load in the real world, you could end up with some horrible performance issues where nobody else can do anything to the database table while this bit of code sits and waits for async operations to complete. In broad strokes:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class CauseAnIssueAsyncStep : IAsyncPipelineStep&amp;lt;string, string&amp;gt;
-{
-    public async Task&amp;lt;string&amp;gt; ProcessAsync(Task&amp;lt;string&amp;gt; Input)
-    {
-        TakeOutSomeLocks();
-
-        var data = FetchSomeSynchronousData();
-		
-        var slowThingThatTakesAges = await Input;
-		
-        var result = FurtherWork(data, slowThingThatTakesAges);
-
-        return result;
-    }
-}
-&lt;/pre&gt;
-&lt;p&gt;And with just the right "wrong code" happening before that initial await I'm pretty sure it would be possible to cause deadlocks, and really mess up your day.&lt;/p&gt;
-&lt;p&gt;Clearly this code pattern is not great. So how can we resolve this issue?&lt;/p&gt;
-&lt;h2&gt;Tweaking the pattern to address that&lt;/h2&gt;
-&lt;p&gt;Having sat and thought about all this, I realised there was a better way to express all of this. If the code changes so that the &lt;code&gt;await&lt;/code&gt; behaviour for the &lt;code&gt;Task&lt;/code&gt; is moved out of the individual pipeline steps then it's not possible for people writing steps to make a mistake with this.&lt;/p&gt;
-&lt;p&gt;I've tried a couple of attempts at this. My first pass worked on the basis that you could have an abstract base type for pipeline steps which dealt with the awaiting of the inputs. But I didn't want to restrict the pipeline steps to inheriting a base class – that didn't look quite right to me. so I tried a second attempt.&lt;/p&gt;
-&lt;p&gt;The basic pipleline component interface goes back to having a &lt;code&gt;TIn&lt;/code&gt; and a &lt;code&gt;Task&amp;lt;T&amp;gt;&lt;/code&gt; result:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public interface IAsyncPipelineStep&amp;lt;TIn, TOut&amp;gt;
-{
-	Task&amp;lt;TOut&amp;gt; ProcessAsync(TIn Input);
-}
-&lt;/pre&gt;
-&lt;p&gt;And the type for the overall pipeline keeps a &lt;code&gt;Func&amp;lt;TIn, Task&amp;gt;&lt;/code&gt; for the steps, and exposes the &lt;code&gt;Task ProcessAsync(TIn Input)&lt;/code&gt; method for executing the complete pipeline:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public abstract class AsyncPipeline&amp;lt;TIn, TOut&amp;gt; : IAsyncPipelineStep&amp;lt;TIn, TOut&amp;gt;
-{
-	public Func&amp;lt;TIn, Task&amp;lt;TOut&amp;gt;&amp;gt; _pipelineSteps { get; protected set; }
-
-	public Task&amp;lt;TOut&amp;gt; ProcessAsync(TIn Input)
-	{
-		return _pipelineSteps(Input);
-	}
-}
-&lt;/pre&gt;
-&lt;p&gt;The extension class for composing the steps needs two methods now. One takes a &lt;code&gt;TIn&lt;/code&gt; input, and runs the step on it directly. And the other takes a &lt;code&gt;Task&lt;/code&gt; and awaits the result before running the step over this value:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public static class AsyncPipelineStepExtensions
-{
-	public async static Task&amp;lt;TOut&amp;gt; Step&amp;lt;TIn, TOut&amp;gt;(this Task&amp;lt;TIn&amp;gt; Input, IAsyncPipelineStep&amp;lt;TIn, TOut&amp;gt; Step)
-	{
-		var input = await Input;
-		return await Step.ProcessAsync(input);
-	}
-
-	public async static Task&amp;lt;TOut&amp;gt; Step&amp;lt;TIn, TOut&amp;gt;(this TIn Input, IAsyncPipelineStep&amp;lt;TIn, TOut&amp;gt; Step)
-	{
-		return await Step.ProcessAsync(Input);
-	}
-}
-&lt;/pre&gt;
-&lt;p&gt;With all those changes, the three example steps look largely the same. But now theydon't need to &lt;code&gt;await&lt;/code&gt; their input now, because that bit of boilerplate has been abstracted away:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class HttpFetchAsyncStep : IAsyncPipelineStep&amp;lt;Uri, string&amp;gt;
-{
-	private static readonly HttpClient _client = new HttpClient();
-
-	public async Task&amp;lt;string&amp;gt; ProcessAsync(Uri Input)
-	{
-		Console.WriteLine("Entering HttpFetchAsyncStep #1");
-		
-		Console.WriteLine("Leaving HttpFetchAsyncStep #1");
-		
-		return await _client.GetStringAsync(Input);
-	}
-}
-
-public class ModifyTextAsyncStep : IAsyncPipelineStep&amp;lt;string, string&amp;gt;
-{
-	public async Task&amp;lt;string&amp;gt; ProcessAsync(string Input)
-	{
-		Console.WriteLine("Entering ModifyTextAsyncStep #2");
-
-		var output = Input.Replace("BBC", "Not the BBC");
-
-		Console.WriteLine("Leaving ModifyTextAsyncStep #2");
-
-		return output;
-	}
-}
-
-public class DiskWriteAsyncStep : IAsyncPipelineStep&amp;lt;string, string&amp;gt;
-{
-	public async Task&amp;lt;string&amp;gt; ProcessAsync(string Input)
-	{
-		Console.WriteLine("Entering DiskWriteAsyncStep #3");
-		
-		var desktopFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-		var fileName =  System.IO.Path.Combine(desktopFolder, "test.txt");
-
-		await System.IO.File.WriteAllTextAsync(fileName, Input);
-
-		Console.WriteLine("Leaving DiskWriteAsyncStep #3");
-
-		return fileName;
-	}
-}
-&lt;/pre&gt;
-&lt;p&gt;The definition of the overall pipeline doesn't change, despite the changes to the underlying types:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class ExampleAsyncPipeline : AsyncPipeline&amp;lt;Uri, string&amp;gt;
-{
-	public ExampleAsyncPipeline()
-	{
-		_pipelineSteps = input =&amp;gt; input
-			.Step(new HttpFetchAsyncStep())
-			.Step(new ModifyTextAsyncStep())
-			.Step(new DiskWriteAsyncStep());
-
-	}
-}
-&lt;/pre&gt;
-&lt;p&gt;To my eye, that approach looks better. It's only a small change really, but it's taken away the ability to make a mistake, without changing the core of how it works.&lt;/p&gt;
-&lt;p&gt;And running it produces the output we'd expect:&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-06-executionorder.png" target="_blank"&gt;&lt;img alt="Pipeline results" src="https://blog.jermdavis.dev/img/2021/2021-06-executionorder.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;As before, &lt;a href="https://gist.github.com/jermdavis/49ecd692a16b10899eb2ee2b50770499" rel="noopener" target="_blank"&gt;this version of the code is available as a gist&lt;/a&gt; if you want to play with it.&lt;/p&gt;
-</content>
-		<summary>&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/posts/2021/pipelines-and-async" target="_blank"&gt;Last time out I was looking at applying async/await patterns to some pipeline patterns for C#&lt;/a&gt;. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...&lt;/p&gt;</summary>
 	</entry>
 </feed>
