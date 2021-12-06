@@ -7,7 +7,52 @@
 	</author>
 	<link rel="self" href="https://blog.jermdavis.dev/" />
 	<rights>2014-2021</rights>
-	<updated>2021-11-23T12:19:56Z</updated>
+	<updated>2021-12-06T08:26:24Z</updated>
+	<entry>
+		<id>https://blog.jermdavis.dev/posts/2021/hot-dr-hot-mess</id>
+		<title>Is your hot disaster recovery causing a hot mess?</title>
+		<author>
+			<name>Jeremy Davis</name>
+		</author>
+		<link href="https://blog.jermdavis.dev/posts/2021/hot-dr-hot-mess" />
+		<link rel="enclosure" type="image" href="https://blog.jermdavis.dev/" />
+		<updated>0001-01-01T00:00:00Z</updated>
+		<content>&lt;p&gt;I've had some conversations recently about odd issues with search-driven sites, whose root cause was related to disaster recovery patterns. While it's important to make sure that your business-critical website has a good backup and recovery process in place, it's also important to pay attention to how to correctly configure these scenarios...&lt;!--more--&gt;&lt;/p&gt;
+&lt;h2 id="what-might-go-wrong"&gt;What might go wrong?&lt;/h2&gt;
+&lt;p&gt;One example of the issues I've seen went something like this: The client had a website which was heavily relient on search. They had a large product offering in Sitecore, which had integrations with back-end systems to keep the content up-to-date and they had these items configured to be indexed by ContentSearch. Their site was running SolrCloud as it's back-end search technology, and it was configured with "switch on rebuild" enabled, to ensure that searches continued to work even during large, slow full index rebuilds.&lt;/p&gt;
+&lt;p&gt;But there was an intermittent issue with the site. Editors would update products, publish their changes, and observe that the public site had updated correctly. But later these changes would disappear from search again. Older, out-of-date results would become visible on the site every so often. And unsurprisingly that behaviour was a problem for the client...&lt;/p&gt;
+&lt;p&gt;Most people's initial assumption with an issue like this would be to look at Solr. If the search results go from "correct" to "wrong" without obvious user intervention then that implies a problem with how data is indexed. But Solr itself isn't the root cause here. Spending time examining the details of the search configuration, and how it processes data at runtime will often show up the same core problem: Solr will happily index the correct data, but every so often it will receive an unexpected "swap aliases" command from the "switch on rebuild" process. That causes the search engine to start serving content from an old (out of date) version of the index - leading to the odd results users were seeing.&lt;/p&gt;
+&lt;p&gt;But why would it decide to swap back to the old index? The answer may well be hiding in your disaster recovery setup..&lt;/p&gt;
+&lt;h2 id="what-patterns-are-people-aiming-for"&gt;What patterns are people aiming for?&lt;/h2&gt;
+&lt;p&gt;For search infrastructure, fault-tolerance is fairly easy with SolrCloud. You spin up three or more Solr nodes, and configure them as a load balaced cluster. Then you configure your indexes as replicated across those nodes. So if any node fails, queries and index operations are handled by other nodes, while you recover the broken one. For more scale and tolerance to faults, you spin up more nodes. And, as noted, Sitecore is often configured with "switch on rebuild" to ensure you always have an index available to query - even in the middle of a rebuild operation.&lt;/p&gt;
+&lt;p&gt;To get fault tolerance for your website you spin up extra servers too. ARM Templates or Kubernetes config can make this pretty easy. It's commonly done for CD servers, but some clients I come across want uptime guarantees and service recovery KPIs to apply to their authoring environment too. So in their minds it makes sense to spin up extra copies of their standard content management role in order to ensure they have a backup in case of disaster.&lt;/p&gt;
+&lt;h2 id="so-why-might-it-break"&gt;So why might it break?&lt;/h2&gt;
+&lt;p&gt;The underlying issue here is indexing strategies. Your default Sitecore CM instance is configured to be the indexing role as well as the CM role for your website. That means it runs the processes which watch your databases for changes and publishing events, and when these happen it fires off the commands and data to Solr to update indexes.&lt;/p&gt;
+&lt;p&gt;Most of the time that indexing process will work fine - but as Sitecore note in their documentation, you should only have one server who is responsible for index updates at any time. So if you spin up a "hot backup" content management server using the default CM config you're breaking that rule. You end up with two severs who both think they should be maintaining the Solr indexes. And that means every so often they will trip over each other and mess up your indexes.&lt;/p&gt;
+&lt;p&gt;You start to see situations where your backup CM server triggers an index swap in a situation it shouldn't have - where the "offline" index is not actually up-to-date. And that makes it look like content is dropping out of your search indexes.&lt;/p&gt;
+&lt;h2 id="how-should-we-fix-this"&gt;How should we fix this?&lt;/h2&gt;
+&lt;p&gt;&lt;a target="_blank" rel="noopener" href="https://doc.sitecore.com/en/developers/92/platform-administration-and-architecture/enable-the-indexing-sub-role.html"&gt;Sitecore's documentation for SolrCloud and switch-on-rebuild&lt;/a&gt; states that in any deployment, precisely one server must be responsible for indexing:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-11-SitecoreDocsNote.png" target="_blank"&gt;&lt;img alt="Note in Sitecore's doc - only one indexing role allowed" src="https://blog.jermdavis.dev/img/2021/2021-11-SitecoreDocsNote.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;To achive this, you have three broad choices:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;b&gt;Follow the documenation - disable indexing on all but one CM&lt;/b&gt;&lt;br&gt;
+If you have to run backup CMs up all the time, then you can follow the documentation and use role based config to ensure that you only ever have one of them which is running the indexing role. That gives you the advantage of having your hot backup CM, while keeping a supported setup. But a disadvantage here is that you have work to do in order to ensure that your CM instances get the right config. In the scenario that your indexing-enabled CM blows up, you have to make sure that another server will pick up this role. And that may be a manual task.
+&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Use infrastructure automation to enable your backup CM&lt;/b&gt;&lt;br&gt;
+You don't have to keep a backup running all the time. You could have a mechanism to (fairly quickly) fire up a new instance in the event of disaster, but not have it up and running during normal operations. The key advantage here is probably cost - not running a server means you don't pay for it. But the related disadvantage is that in an outage you'll need to wait for this automation to complete before you have a CM again. Your choices for doing that include:
+  &lt;ul&gt;
+    &lt;li&gt;Keep an ARM Template or the relevant Kubernetes config files available, so you can run them to fire up a new CM instance in an emergency. That process can be automated potentially.&lt;/li&gt;
+    &lt;li&gt;Or if you run in an IaaS pattern, have the instance installed but the VM / server stopped.&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Configure a separate Indexing role&lt;/b&gt;&lt;br&gt;
+Sitecore supports pulling the indexing role out to a separate server. That might have licensing and runtime cost implications for you, and requires a bit of specific configuration/deployment work, but it allows your multiple CMs (who all have the same config) to share one indexing service. The advantage here is both that you have an instant backup CM in the event of an issue, and that you get to have all your CMs running the same configuration. But the downside here is cost - you're paying to run yet another role for the indexing instance.
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Which of these works best for you will depend on other criteria of your project of course. But you need to follow the Sitecore's rules to avoid having issues.&lt;/p&gt;
+</content>
+		<summary>&lt;p&gt;I've had some conversations recently about odd issues with search-driven sites, whose root cause was related to disaster recovery patterns. While it's important to make sure that your business-critical website has a good backup and recovery process in place, it's also important to pay attention to how to correctly configure these scenarios...&lt;/p&gt;</summary>
+	</entry>
 	<entry>
 		<id>https://blog.jermdavis.dev/posts/2021/shipping-custom-logs-from-your-v10-containers</id>
 		<title>Shipping custom logs from your v10 containers</title>
@@ -822,46 +867,5 @@ spec:
 &lt;p&gt;I've done a few test deployments with this alternative pattern, and they've worked ok. But I think I need to run more real deployments before I'll be confident it is all better. More to come, perhaps...&lt;/p&gt;
 </content>
 		<summary>&lt;p&gt;Some time back, when &lt;a href="https://blog.jermdavis.dev/posts/2021/waiting-for-kubernetes" target="_blank"&gt;I was looking at how to release containerised Sitecore into Azure Kubernetes Clusters&lt;/a&gt;, I worked through the question of "how do I make DevOps wait for the new images to be deployed", because you might want to run further work after the new containers are spun up. While what I tried back then was mostly working, I've found some reasons to try a different tack since then. &lt;/p&gt;</summary>
-	</entry>
-	<entry>
-		<id>https://blog.jermdavis.dev/posts/2021/so-are-you-an-infinidash-expert-yet</id>
-		<title>So, are you an Infinidash expert yet?</title>
-		<author>
-			<name>Jeremy Davis</name>
-		</author>
-		<link href="https://blog.jermdavis.dev/posts/2021/so-are-you-an-infinidash-expert-yet" />
-		<link rel="enclosure" type="image" href="https://blog.jermdavis.dev/" />
-		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;It seems everyone is suddenly an expert in this exciting new tech. And if you weren't paying attention, you may have missed the joke behind all of this – that it's an entirely made-up technology. Funny as the twitter shenangans were, I think there's a point hiding here for us as developers. What is it? Well...&lt;!--more--&gt;&lt;/p&gt;
-&lt;h2&gt;Hang on a second – what's going on here?&lt;/h2&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-07-infinidash.png" target="_blank"&gt;&lt;img alt="Infinidash" src="https://blog.jermdavis.dev/img/2021/2021-07-infinidash.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;So if you're behind the curve here, let me explain. There was a tweet last week where someone joked that (because of the bland and impenetrable naming of many cloud products), you could get a bunch of people to tweet about a completely made-up a new product name, and before too long it would be appearing on job adverts:&lt;/p&gt;
-&lt;div class="embed-twitter"&gt;
-&lt;blockquote class="twitter-tweet" data-width="500" data-dnt="true" data-twitter-extracted-i1634209656654435386="true"&gt;
-&lt;p lang="en" dir="ltr"&gt;I am convinced that a small and dedicated group of twitter devs could tweet hot takes about a completely made up AWS product, idk AWS Infinidash or something, and it would appear as a requirement on job specs within a week
-&lt;/p&gt;&lt;p&gt;— Joe Nash (@jna_sh) &lt;a href="https://twitter.com/jna_sh/status/1410178986978775040?ref_src=twsrc%5Etfw"&gt;June 30, 2021&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt;&lt;/div&gt;
-&lt;p&gt;Now it's a few days later, and we've got an avalanche of people joining in the joke. There have been blog posts, videos, and an whole load of tweets. And, to bring the whole thing full-circle, the recruiters at Signal have given the world a sly wink, and put the made-up tech on a job advert:&lt;/p&gt;
-&lt;!--?# twitter 1411597771287711744 /?--&gt;
-&lt;h2&gt;Why is this anything more than a joke?&lt;/h2&gt;
-&lt;p&gt;I think it emphasises the idea that tech products can be a bit impenetrable to the non-nerds we work with. This is defintely not just an AWS issue. A lot of &lt;a href="https://twitter.com/jna_sh/status/1410995676247363589"&gt;people seemed to read the joke here as mocking recruiters for not understanding the tech products&lt;/a&gt; but in reality we need to remember that almost everyone who's not a subject expert in a particular area has trouble understanding what the terms we use mean much of the time.&lt;/p&gt;
-&lt;p&gt;Look at the current world of Sitecore. There are loads of technical terms that get thrown about in our discussions. In the last week I've used "&lt;a href="https://kubernetes.io/" rel="noopener" target="_blank"&gt;Kubernetes&lt;/a&gt;", "&lt;a href="https://jamstack.org/" rel="noopener" target="_blank"&gt;JAMStack&lt;/a&gt;", "&lt;a href="https://www.bloomreach.com/en/blog/2019/05/caas-what-is-content-as-a-service.html" rel="noopener" target="_blank"&gt;CaaS&lt;/a&gt;", "&lt;a href="https://en.wikipedia.org/wiki/Headless_content_management_system" rel="noopener" target="_blank"&gt;Headless&lt;/a&gt;", "&lt;a href="https://en.wikipedia.org/wiki/Platform_as_a_service" rel="noopener" target="_blank"&gt;PaaS&lt;/a&gt;" and "&lt;a href="https://www.sitecore.com/blog/headless/what-is-mach-architecture" rel="noopener" target="_blank"&gt;MACH&lt;/a&gt;" in conversation – and that's just talking about infrastructure patterns. There are plenty more if we widen the discussion to other topics.&lt;/p&gt;
-&lt;p&gt;So on one hand we these things can cause a recruitment challenge – there's unsurprisingly a sort of vicious circle between technologies getting mentioned in public discussion and them becoming the sort of thing that ends up with a "five years experience in" requirement appearing on lots of job adverts. (Often despite them being less than five years old as a concept) And on the other hand we have a sales challenge, because clients hear terms and start to demand them without really understanding the implications.&lt;/p&gt;
-&lt;p&gt;These are both issues I've experienced directly – and I think they leave us with a problem.&lt;/p&gt;
-&lt;h2&gt;What should we be doing?&lt;/h2&gt;
-&lt;p&gt;I think there are three things that we should be thinking about, as techies:&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Firstly:&lt;/strong&gt; Try not to rely on the buzzwords when you're communicating – try to explain things clearly. It's a common problem in discussions that if you say "anyone not understand X?" that people will generally not speak up. So finding ways of weaving the explanation into your discussions can help everyone understand. This will help your fellow developers learn, and increase their knowledge. And it will help your clients understand things more clearly.&lt;/p&gt;
-&lt;p&gt;And don't forget that explaining and teaching are a good thing overall:&lt;/p&gt;
-&lt;div class="embed-twitter"&gt;
-&lt;blockquote class="twitter-tweet" data-width="500" data-dnt="true"&gt;
-&lt;p lang="en" dir="ltr"&gt;If you share your knowledge and help others learn and grow, everyone levels up, and we all get to keep learning from each other and level each other up more! It's pretty cool 😌
-&lt;/p&gt;&lt;p&gt;— Ian Coldwater 📦💥 (@IanColdwater) &lt;a href="https://twitter.com/IanColdwater/status/1411545409726603264?ref_src=twsrc%5Etfw"&gt;July 4, 2021&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;&lt;b&gt;Secondly:&lt;/b&gt; When recruiting don't get obsessed with lists of specific skills. If your job adverts are a tick-box list of 27 different technologies, you're doing it wrong. The best developers I work with are people who are interested in learning. So if they don't know some of the things you need they can pick it up reasonably quickly. And giving those developers the opportunity to expand their skills is also helpful for recruitment. Some managers worry that will lead to people leaving to sell these new skills elsewhere – but &lt;a href="http://hrnews.co.uk/why-employee-training-development-is-an-effective-retention-strategy/" rel="noopener" target="_blank"&gt;HR experts suggest that helping people learn and grow is likely to make them more likely to stay&lt;/a&gt; with you.&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;Thirdly:&lt;/b&gt; Buzzwords don't solve client problems – good requirements and correct technology choices do. It doesn't really matter what the most recent "exciting buzzword" is. If you want to make your clients happy, you need to be making the right technical choices for to solve their business problems. So you need to understand both their needs, and the options. And sometimes you'll need to use your skills at explaining these things to try and help clients understand why the tech they're asking for is not actually right for them.&lt;/p&gt;
-&lt;p&gt;So maybe don't jump on the "Infinidash for Sitecore" bandwagon unless you're &lt;em&gt;&lt;u&gt;really&lt;/u&gt;&lt;/em&gt; sure it will help 😉&lt;/p&gt;
-&lt;/div&gt;</content>
-		<summary>&lt;p&gt;It seems everyone is suddenly an expert in this exciting new tech. And if you weren't paying attention, you may have missed the joke behind all of this – that it's an entirely made-up technology. Funny as the twitter shenangans were, I think there's a point hiding here for us as developers. What is it? Well...&lt;/p&gt;</summary>
 	</entry>
 </feed>
