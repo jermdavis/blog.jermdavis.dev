@@ -6,8 +6,8 @@
 		<description />
 		<copyright>2014-2021</copyright>
 		<managingEditor>Jeremy Davis</managingEditor>
-		<pubDate>Tue, 07 Dec 2021 12:30:28 GMT</pubDate>
-		<lastBuildDate>Tue, 07 Dec 2021 12:30:28 GMT</lastBuildDate>
+		<pubDate>Wed, 08 Dec 2021 17:53:07 GMT</pubDate>
+		<lastBuildDate>Wed, 08 Dec 2021 17:53:07 GMT</lastBuildDate>
 		<item>
 			<title>Is your hot disaster recovery causing a hot mess?</title>
 			<link>https://blog.jermdavis.dev/posts/2021/hot-dr-hot-mess</link>
@@ -15,7 +15,7 @@
 			<author>Jeremy Davis</author>
 			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
 			<guid>https://blog.jermdavis.dev/posts/2021/hot-dr-hot-mess</guid>
-			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<pubDate>Wed, 08 Dec 2021 00:00:00 GMT</pubDate>
 			<content:encoded>&lt;p&gt;I've had some conversations recently about odd issues with search-driven sites, whose root cause was related to disaster recovery patterns. While it's important to make sure that your business-critical website has a good backup and recovery process in place, it's also important to pay attention to how to correctly configure these scenarios...&lt;!--more--&gt;&lt;/p&gt;
 &lt;h2 id="what-might-go-wrong"&gt;What might go wrong?&lt;/h2&gt;
 &lt;p&gt;One example of the issues I've seen went something like this: The client had a website which was heavily relient on search. They had a large product offering in Sitecore, which had integrations with back-end systems to keep the content up-to-date and they had these items configured to be indexed by ContentSearch. Their site was running SolrCloud as it's back-end search technology, and it was configured with "switch on rebuild" enabled, to ensure that searches continued to work even during large, slow full index rebuilds.&lt;/p&gt;
@@ -35,7 +35,7 @@
 &lt;p&gt;To achive this, you have three broad choices:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;b&gt;Follow the documenation - disable indexing on all but one CM&lt;/b&gt;&lt;br&gt;
-If you have to run backup CMs up all the time, then you can follow the documentation and use role based config to ensure that you only ever have one of them which is running the indexing role. That gives you the advantage of having your hot backup CM, while keeping a supported setup. But a disadvantage here is that you have work to do in order to ensure that your CM instances get the right config. In the scenario that your indexing-enabled CM blows up, you have to make sure that another server will pick up this role. And that may be a manual task.
+If you have to run backup CMs up all the time, then you can follow the documentation and use role based config to ensure that you only ever have one of them which is running the indexing role. That gives you the advantage of having your hot backup CM, while keeping a supported setup. But a disadvantage here is that you have work to do in order to ensure that your CM instances get the right config. In the scenario that your indexing-enabled CM blows up, you have to make sure that another server will pick up this role. And that may be a manual task. 
 &lt;/li&gt;
 &lt;li&gt;&lt;b&gt;Use infrastructure automation to enable your backup CM&lt;/b&gt;&lt;br&gt;
 You don't have to keep a backup running all the time. You could have a mechanism to (fairly quickly) fire up a new instance in the event of disaster, but not have it up and running during normal operations. The key advantage here is probably cost - not running a server means you don't pay for it. But the related disadvantage is that in an outage you'll need to wait for this automation to complete before you have a CM again. Your choices for doing that include:
@@ -49,6 +49,18 @@ Sitecore supports pulling the indexing role out to a separate server. That might
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Which of these works best for you will depend on other criteria of your project of course. But you need to follow the Sitecore's rules to avoid having issues.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;b&gt;&lt;i&gt;Updated to add:&lt;/i&gt;&lt;/b&gt;
+&lt;p&gt;After I published this, one of my colleagues pointed out another fun edge case here. There's a config setting which controls whether Sitecore tries to force aliases to exist when the site starts up:&lt;/p&gt;
+&lt;pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"&gt;&amp;lt;!--  ENFORCES ALIAS CREATION ON INDEX INITIALIZATION
+            If enabled, index aliases will be created on Solr during the index initialization process.
+            Default value: false
+--&amp;gt;
+&amp;lt;setting name="ContentSearch.Solr.EnforceAliasCreation" value="false" /&amp;gt;
+&lt;/pre&gt;
+&lt;p&gt;If you have this set to true, even if a CM server has all its index strategies set to "manual", it will still end up resetting the active alias to the "non rebuild" one each time the Sitecore process recycles. And that may well be the wrong one based on the current state of your public site...&lt;/p&gt;
+&lt;p&gt;So worth checking the state of that setting if you're seeing odd behaviour with indexes, but you thought you'd followed rules above.&lt;/p&gt;
+&lt;/blockquote&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>

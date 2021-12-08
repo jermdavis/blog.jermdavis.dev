@@ -33,6 +33,7 @@
             "https://blog.jermdavis.dev/img/featured/hot-dr-hot-mess-social.png"
         ],
         "datePublished": "2021-12-06T00:00:00+00:00",
+        "dateModified": "2021-12-08T00:00:00+00:00",
         "author": [{
             "@type": "Person",
             "name": "Jeremy Davis",
@@ -137,6 +138,7 @@
         </h1>
         <h2 class="text-2xl">It's a battle for control of your indexes!</h2>
             <div class="meta">Published 06 December 2021</div>
+                <div class="meta">Updated 08 December 2021</div>
             <div class="flex py-1">
                     <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
                     <a href="/tags/solrcloud" class="p-1 mr-1 bg-gray-100 rounded-md"> SolrCloud</a>
@@ -167,7 +169,7 @@
 <p>To achive this, you have three broad choices:</p>
 <ol>
 <li><b>Follow the documenation - disable indexing on all but one CM</b><br>
-If you have to run backup CMs up all the time, then you can follow the documentation and use role based config to ensure that you only ever have one of them which is running the indexing role. That gives you the advantage of having your hot backup CM, while keeping a supported setup. But a disadvantage here is that you have work to do in order to ensure that your CM instances get the right config. In the scenario that your indexing-enabled CM blows up, you have to make sure that another server will pick up this role. And that may be a manual task.
+If you have to run backup CMs up all the time, then you can follow the documentation and use role based config to ensure that you only ever have one of them which is running the indexing role. That gives you the advantage of having your hot backup CM, while keeping a supported setup. But a disadvantage here is that you have work to do in order to ensure that your CM instances get the right config. In the scenario that your indexing-enabled CM blows up, you have to make sure that another server will pick up this role. And that may be a manual task. 
 </li>
 <li><b>Use infrastructure automation to enable your backup CM</b><br>
 You don't have to keep a backup running all the time. You could have a mechanism to (fairly quickly) fire up a new instance in the event of disaster, but not have it up and running during normal operations. The key advantage here is probably cost - not running a server means you don't pay for it. But the related disadvantage is that in an outage you'll need to wait for this automation to complete before you have a CM again. Your choices for doing that include:
@@ -181,6 +183,18 @@ Sitecore supports pulling the indexing role out to a separate server. That might
 </li>
 </ol>
 <p>Which of these works best for you will depend on other criteria of your project of course. But you need to follow the Sitecore's rules to avoid having issues.</p>
+<blockquote>
+<b><i>Updated to add:</i></b>
+<p>After I published this, one of my colleagues pointed out another fun edge case here. There's a config setting which controls whether Sitecore tries to force aliases to exist when the site starts up:</p>
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;!--  ENFORCES ALIAS CREATION ON INDEX INITIALIZATION
+            If enabled, index aliases will be created on Solr during the index initialization process.
+            Default value: false
+--&gt;
+&lt;setting name="ContentSearch.Solr.EnforceAliasCreation" value="false" /&gt;
+</pre>
+<p>If you have this set to true, even if a CM server has all its index strategies set to "manual", it will still end up resetting the active alias to the "non rebuild" one each time the Sitecore process recycles. And that may well be the wrong one based on the current state of your public site...</p>
+<p>So worth checking the state of that setting if you're seeing odd behaviour with indexes, but you thought you'd followed rules above.</p>
+</blockquote>
 
 
             </div>
