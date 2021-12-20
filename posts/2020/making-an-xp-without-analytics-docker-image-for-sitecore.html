@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="One of the minor annoyances of some XM releases of Sitecore is that rather than just disabling analytics and not running xConnect, they do not include the DLLs necessary for personalisation at all. That can be a bit of a pain sometimes &amp;#x2013; as I discovered recently when I tried to deploy some client code into an XM docker container. The site broke because the client code included references to a personalisation DLL &amp;#x2013; which made me realise I actually wanted an &amp;amp;amp;quot;XP in XM mode&amp;amp;amp;quot; container so I didn&amp;#x27;t need to bother with the memory and CPU for xConnect. So here&amp;#x27;s how I hacked one up... ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Making an “XP without analytics” Docker image for&nbsp;Sitecore</title>
+    <title>Jeremy Davis - Making an &#x201C;XP without analytics&#x201D; Docker image for&#xA0;Sitecore</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2020/making-an-xp-without-analytics-docker-image-for-sitecore">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Making an “XP without analytics” Docker image for&nbsp;Sitecore">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Making an &amp;#x201C;XP without analytics&amp;#x201D; Docker image for&amp;#xA0;Sitecore">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/making-an-xp-without-analytics-docker-image-for-sitecore-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Making an &#x201C;XP without analytics&#x201D; Docker image for&#xA0;Sitecore",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/making-an-xp-without-analytics-docker-image-for-sitecore-social.png"
+        ],
+        "datePublished": "2020-03-02T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2020/making-an-xp-without-analytics-docker-image-for-sitecore">
 <meta property="og:type" content="website">
 
@@ -114,31 +130,36 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Making an “XP without analytics” Docker image for&nbsp;Sitecore
+        Making an “XP without analytics” Docker image for Sitecore
         </h1>
+            <div class="meta">Published 02 March 2020</div>
+            <div class="flex py-1">
+                    <a href="/tags/docker" class="p-1 mr-1 bg-gray-100 rounded-md"> Docker</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
-                <p>One of the minor annoyances of some XM releases of Sitecore is that rather than just disabling analytics and not running xConnect, they do not include the DLLs necessary for personalisation at all. That can be a bit of a pain sometimes – as I discovered recently when I tried to deploy some client code into an XM docker container. The site broke because the client code included references to a personalisation DLL – which made me realise I actually wanted an "XP in XM mode" container so I didn't need to bother with the memory and CPU for xConnect. So here's how I hacked one up... <!--more--></p>
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>One of the minor annoyances of some XM releases of Sitecore is that rather than just disabling analytics and not running xConnect, they do not include the DLLs necessary for personalisation at all. That can be a bit of a pain sometimes – as I discovered recently when I tried to deploy some client code into an XM docker container. The site broke because the client code included references to a personalisation DLL – which made me realise I actually wanted an &quot;XP in XM mode&quot; container so I didn't need to bother with the memory and CPU for xConnect. So here's how I hacked one up... <!--more--></p>
 <p>The starting point for my hackery was having an XP v9.2 CM image. You can build one using <a href="https://github.com/Sitecore/docker-images" rel="noopener" target="_blank">the standard docker repo scripts</a> using:</p>
 <pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">.\Build.ps1 -SitecoreUsername &lt;your user&gt; -SitecorePassword &lt;your password&gt;
-            -SitecoreVersion '9.2.0' -Topology XP
+            -SitecoreVersion &#39;9.2.0&#39; -Topology XP
             -IncludeSpe -WindowsVersion 1903
 </pre>
 <p>(Note the improved filtering here, <a href="/posts/2020/building-docker-images-for-older-versions-of-sitecore" target="_blank">compared to my previous comments</a> – the community moves quickly to fix these issues...)</p>
-<p>This generates all the relevant images. And you can use the "standalone" CM one as the basis for a new image. Docker works on the basis of "layers" – when you build a new image you can describe it in terms of the difference between an existing one, and what you want it to be. You describe the changes in your own "<a href="https://docs.docker.com/engine/reference/builder/" rel="noopener" target="_blank">Dockerfile</a>" – text instructions to tell the Docker engine what it should do to make your new image.</p>
+<p>This generates all the relevant images. And you can use the &quot;standalone&quot; CM one as the basis for a new image. Docker works on the basis of &quot;layers&quot; – when you build a new image you can describe it in terms of the difference between an existing one, and what you want it to be. You describe the changes in your own &quot;<a href="https://docs.docker.com/engine/reference/builder/" rel="noopener" target="_blank">Dockerfile</a>&quot; – text instructions to tell the Docker engine what it should do to make your new image.</p>
 <p>Configuring an instance of Sitecore to ignore analytics can be done with a config patch:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/" xmlns:set="http://www.sitecore.net/xmlconfig/set/"  xmlns:role="http://www.sitecore.net/xmlconfig/role/"&gt;
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch=&quot;http://www.sitecore.net/xmlconfig/&quot; xmlns:set=&quot;http://www.sitecore.net/xmlconfig/set/&quot;  xmlns:role=&quot;http://www.sitecore.net/xmlconfig/role/&quot;&gt;
     &lt;sitecore&gt;
         &lt;settings&gt;
-            &lt;setting name="Xdb.Enabled" set:value="false" /&gt;
-            &lt;setting name="Xdb.Tracking.Enabled" set:value="false" /&gt;
+            &lt;setting name=&quot;Xdb.Enabled&quot; set:value=&quot;false&quot; /&gt;
+            &lt;setting name=&quot;Xdb.Tracking.Enabled&quot; set:value=&quot;false&quot; /&gt;
         &lt;/settings&gt;
     &lt;/sitecore&gt;
 &lt;/configuration&gt;
@@ -152,12 +173,12 @@ COPY .\\config\\zDisable-Analytics.config C:\\inetpub\\wwwroot\\App_Config\\Incl
 <p>Make yourself a folder to keep your new setup files. (You'd probably add this to source control – either in your dev project or in a repo for docker image builds. You're probably going to want this file again in the future) Save the text above as <code>Dockerfile</code> (no extension) in the folder and put the analytics disabling config file into the <code>.\config</code> folder alongside the Dockerfile. And then you can ask Docker to build the image with:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">docker build -t sitecore-xpxm-standalone:9.2.0-windowsservercore-1903 .
 </pre>
-<p>The <code>-t</code> parameter specifies the tag to save the image under, and <code>.</code> says "use the <code>Dockerfile</code> in the current folder". And the result of that is:</p>
+<p>The <code>-t</code> parameter specifies the tag to save the image under, and <code>.</code> says &quot;use the <code>Dockerfile</code> in the current folder&quot;. And the result of that is:</p>
 <p><a href="/img/2020/2020-01-dockerbuild.png" target="_blank"><img alt="Docker Build" src="/img/2020/2020-01-dockerbuild.png"></a></p>
 <p>Which leaves us with a new image on disk:</p>
 <p><a href="/img/2020/2020-01-generatedimage.png" target="_blank"><img alt="Generated Image" src="/img/2020/2020-01-generatedimage.png"></a></p>
-<p>So now you have an image, you need to be able to fire it up and work with it. That involves modifying the default "Docker compose" file for the original XP instance. For the 9.2 setup I was working with, I started from <a href="https://github.com/Sitecore/docker-images/blob/master/windows/tests/9.2.x/docker-compose.xp.spe.yml" rel="noopener" target="_blank">9.2.x/docker-compose.xp.spe.yml</a> taken from the official repo. Since we're not wanting to start up xConnect the instructions for those containers (xconnect, xconnect-automationengine, xconnect-indexworker and xconnect-processingengine) can be removed. (I also removed the CD instance, as I wasn't using that) You also need to remove <code>xconnect</code> from the <code>links</code> segment of your CM role config, because it doesn't depend on analytics now. Finally, the instructions for starting the cm instance can be changed to use our newly generated image:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-highlight="22,32" data-enlighter-language="text" style="width:100%; overflow:scroll;">version: '2.4'
+<p>So now you have an image, you need to be able to fire it up and work with it. That involves modifying the default &quot;Docker compose&quot; file for the original XP instance. For the 9.2 setup I was working with, I started from <a href="https://github.com/Sitecore/docker-images/blob/master/windows/tests/9.2.x/docker-compose.xp.spe.yml" rel="noopener" target="_blank">9.2.x/docker-compose.xp.spe.yml</a> taken from the official repo. Since we're not wanting to start up xConnect the instructions for those containers (xconnect, xconnect-automationengine, xconnect-indexworker and xconnect-processingengine) can be removed. (I also removed the CD instance, as I wasn't using that) You also need to remove <code>xconnect</code> from the <code>links</code> segment of your CM role config, because it doesn't depend on analytics now. Finally, the instructions for starting the cm instance can be changed to use our newly generated image:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-highlight="22,32" data-enlighter-language="text" style="width:100%; overflow:scroll;">version: &#39;2.4&#39;
 
 services:
 
@@ -167,7 +188,7 @@ services:
       - .\data\sql:C:\Data
     mem_limit: 2GB
     ports:
-      - "44010:1433"
+      - &quot;44010:1433&quot;
 
   solr:
     image: ${REGISTRY}sitecore-xp-solr:${SITECORE_VERSION}-nanoserver-${NANOSERVER_VERSION}
@@ -175,16 +196,16 @@ services:
       - .\data\solr:C:\Data
     mem_limit: 1GB
     ports:
-      - "44011:8983"
+      - &quot;44011:8983&quot;
 
   cm:
     image: ${REGISTRY}sitecore-xpxm-standalone:9.2.0-windowsservercore-${WINDOWSSERVERCORE_VERSION}
-    entrypoint: powershell.exe -Command "&amp; C:\\tools\\entrypoints\\iis\\Development.ps1 -WatchDirectoryParameters @{ Path = 'C:\\src'; Destination = 'C:\\inetpub\\wwwroot'; ExcludeFiles = @(); }"
+    entrypoint: powershell.exe -Command &quot;&amp; C:\\tools\\entrypoints\\iis\\Development.ps1 -WatchDirectoryParameters &#64;{ Path = &#39;C:\\src&#39;; Destination = &#39;C:\\inetpub\\wwwroot&#39;; ExcludeFiles = &#64;(); }&quot;
     volumes:
       - ${LICENSE_PATH}:C:\license
       - .\data\cm:C:\inetpub\wwwroot\App_Data\logs
     ports:
-      - "44001:80"
+      - &quot;44001:80&quot;
     links:
       - sql
       - solr
@@ -192,6 +213,7 @@ services:
 <p>And running <code>docker-compose up</code> on that file will start up Sitecore, without any xConnect – but with all the DLLs for personalisation in place:</p>
 <p><a href="/img/2020/2020-01-dockerps.png" target="_blank"><img alt="Docker PS" src="/img/2020/2020-01-dockerps.png"></a></p>
 <p>Success!</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -246,7 +268,7 @@ services:
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

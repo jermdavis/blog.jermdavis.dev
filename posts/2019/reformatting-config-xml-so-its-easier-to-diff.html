@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Every so often pretty much every developer ends up in a situation where they&amp;#x27;re looking at a bug that manifests on one platform, but not on another. The sort of bug where you end up spending hours looking through log and config files for a subtle difference. I found myself looking into just this sort of bug recently, but on a site where (to my frustration) the config files were full of comments and whitespace differences across platforms that made diffing really hard&amp;lt;sup&amp;gt;&amp;lt;a href=&amp;quot;#fn&amp;quot;&amp;gt;**&amp;lt;/a&amp;gt;&amp;lt;/sup&amp;gt;. Spotting that subtle bug-causing difference is pretty much impossible when your diff is full of noise... So how can we fix that?">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Reformatting config XML so it's easier to&nbsp;diff</title>
+    <title>Jeremy Davis - Reformatting config XML so it&#x27;s easier to&#xA0;diff</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2019/reformatting-config-xml-so-its-easier-to-diff">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Reformatting config XML so it's easier to&nbsp;diff">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Reformatting config XML so it&amp;#x27;s easier to&amp;#xA0;diff">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/reformatting-config-xml-so-its-easier-to-diff-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Reformatting config XML so it&#x27;s easier to&#xA0;diff",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/reformatting-config-xml-so-its-easier-to-diff-social.png"
+        ],
+        "datePublished": "2019-09-30T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/reformatting-config-xml-so-its-easier-to-diff">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,22 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Reformatting config XML so it's easier to&nbsp;diff
+        Reformatting config XML so it's easier to diff
         </h1>
+            <div class="meta">Published 30 September 2019</div>
+            <div class="flex py-1">
+                    <a href="/tags/configuration" class="p-1 mr-1 bg-gray-100 rounded-md"> Configuration</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Every so often pretty much every developer ends up in a situation where they're looking at a bug that manifests on one platform, but not on another. The sort of bug where you end up spending hours looking through log and config files for a subtle difference. I found myself looking into just this sort of bug recently, but on a site where (to my frustration) the config files were full of comments and whitespace differences across platforms that made diffing really hard<sup><a href="#fn">**</a></sup>. Spotting that subtle bug-causing difference is pretty much impossible when your diff is full of noise... So how can we fix that?<!--more--></p>
 <p>With some Powershell of course!</p>
 <p>I realised life would be much simpler for me if I could standardise the formatting and drop all the comments from the config. That way any differences that the diff tool showed up would be actual configuration differences, and not any of the annoying noise. So I hacked up some code to iterate a tree of <code>.config</code> files and reformat them for me...</p>
@@ -135,7 +156,7 @@
         [string]$file
     )
 
-    Write-Host "Modifying $file"
+    Write-Host &quot;Modifying $file&quot;
 
     $settings = New-Object System.Xml.XmlReaderSettings
     $settings.IgnoreComments = $true
@@ -152,20 +173,20 @@
 </pre>
 <p>The only thing of note there is that you need to use an <code>XmlReader</code> with special settings to get the <code>XmlDocument</code> to strip out comments when it's loading.</p>
 <p>So that will take some messy xml like</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" ?&gt;
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version=&quot;1.0&quot; ?&gt;
 &lt;!-- hello --&gt;
 &lt;alpha&gt;
 
 
 
-&lt;test x="y"/&gt;
+&lt;test x=&quot;y&quot;/&gt;
 
 &lt;/alpha&gt;
 </pre>
 <p>and neaten it up to:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0"?&gt;
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version=&quot;1.0&quot;?&gt;
 &lt;alpha&gt;
-  &lt;test x="y" /&gt;
+  &lt;test x=&quot;y&quot; /&gt;
 &lt;/alpha&gt;
 </pre>
 <p>So little recursive function to step through a tree of folders updating any config files will sort out the rest of the task:</p>
@@ -175,7 +196,7 @@
         [string]$directory
     )
 
-    Write-Host "Processing $directory"
+    Write-Host &quot;Processing $directory&quot;
 
     $files = Get-ChildItem $directory -Filter *.config | Select -ExpandProperty FullName
 
@@ -194,13 +215,14 @@
 </pre>
 <p>So with that in place, I could just put copies of my two sets of config in one folder, and let the script go...</p>
 <p><a href="/img/2019/2019-09-copiedconfig.png" target="_blank"><img alt="Copied Config" src="/img/2019/2019-09-copiedconfig.png"></a></p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">processFolder ".\CopiedConfig"
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">processFolder &quot;.\CopiedConfig&quot;
 </pre>
 <p>To get myself a set of files that were much easier to diff.</p>
 <p>Simple...</p>
 <blockquote>
 <a name="fn">**</a> – Yes, I know full well the fact there are differences like this is a massive code smell. But sometimes when you're the support developer on projects with little budget you just have to hold your nose and make it work, rather than spending days reworking the entre deployment process...
 </blockquote>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -255,7 +277,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

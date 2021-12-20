@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="I&amp;#x27;ve been working on an international deployment of Sitecore recently, and resolving some problems around how publishing raises remote events has demonstrated that there are some things about the publishing process that I didn&amp;#x27;t entirely understand... I doubt this is a common scenario, but it still seems worth writing down what I&amp;#x27;ve learned &amp;#x2013; So here&amp;#x27;s another crib sheet for my future self:">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - An edge case of remote events with Publishing&nbsp;Service</title>
+    <title>Jeremy Davis - An edge case of remote events with Publishing&#xA0;Service</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2019/an-edge-case-of-remote-events-with-publishing-service">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - An edge case of remote events with Publishing&nbsp;Service">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - An edge case of remote events with Publishing&amp;#xA0;Service">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/an-edge-case-of-remote-events-with-publishing-service-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "An edge case of remote events with Publishing&#xA0;Service",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/an-edge-case-of-remote-events-with-publishing-service-social.png"
+        ],
+        "datePublished": "2019-09-02T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/an-edge-case-of-remote-events-with-publishing-service">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,22 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        An edge case of remote events with Publishing&nbsp;Service
+        An edge case of remote events with Publishing Service
         </h1>
+            <div class="meta">Published 02 September 2019</div>
+            <div class="flex py-1">
+                    <a href="/tags/publishing" class="p-1 mr-1 bg-gray-100 rounded-md"> Publishing</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>I've been working on an international deployment of Sitecore recently, and resolving some problems around how publishing raises remote events has demonstrated that there are some things about the publishing process that I didn't entirely understand... I doubt this is a common scenario, but it still seems worth writing down what I've learned – So here's another crib sheet for my future self:<!--more--></p>
 <h2>The scenario:</h2>
 <p>I won't go into the reasons for why, but this deployment has Sitecore broken up into three bits:</p>
@@ -134,17 +155,17 @@
 <li>A Sitecore cluster in Australia which has all the roles other than the Master DB</li>
 </ol>
 <p><a href="/img/2019/2019-07-rolediagram-1.png" target="_blank"><img alt="Role Diagram" src="/img/2019/2019-07-rolediagram-1.png"></a></p>
-<p>So authors log in to the Sitecore instance that's geographically closest to them, and do their editing there. When they're done they hit "publish" and the changes are sent to Publishing Targets for both the EU and AU web databases.</p>
+<p>So authors log in to the Sitecore instance that's geographically closest to them, and do their editing there. When they're done they hit &quot;publish&quot; and the changes are sent to Publishing Targets for both the EU and AU web databases.</p>
 <p>Since there's a WAN link between the central Master DB and the local Web DBs, this seemed like a use-case for Publishing Service, as it's much faster processing should be much better at dealing with the network latency involved in this scenario.</p>
 <p>And mostly this works ok...</p>
-<p>But it was noticable that when an author published in Europe, it updated fine, but caches and indexes did not update in Australia. And that made sense, as checking under the surface the Events tables in the Australian databases did not get any "a publish has happened" messages written to them...</p>
+<p>But it was noticable that when an author published in Europe, it updated fine, but caches and indexes did not update in Australia. And that made sense, as checking under the surface the Events tables in the Australian databases did not get any &quot;a publish has happened&quot; messages written to them...</p>
 <p>So clearly I got something wrong – and after failing to fix it myself I spent some time discussing the scenario with Sitecore Support.</p>
 <h2>My bad assumptions...</h2>
 <p>Initially I looked at the role diagram for the site, and thought that Publishing Service instances need to know about both the EU and AU databases, but they are the only bits of the system that need to.</p>
-<p>So Publishing Service can be configured to see the "web" Publishing Target databases in EU and AU, plus the central Master. But the CM and CD instances only care about their local web database and Master. So they don't need to know about the remote web databases at all.</p>
-<p>That seems logical – and the publish operations largely work. But the "events don't happen remotely" thing suggested it wasn't right.</p>
+<p>So Publishing Service can be configured to see the &quot;web&quot; Publishing Target databases in EU and AU, plus the central Master. But the CM and CD instances only care about their local web database and Master. So they don't need to know about the remote web databases at all.</p>
+<p>That seems logical – and the publish operations largely work. But the &quot;events don't happen remotely&quot; thing suggested it wasn't right.</p>
 <h2>What I learned from support...</h2>
-<p>So it turns out that the "a publish has happened" events are not actually generated by Publishing Service. It does the work of moving items between databases, but it doesn't do the work of triggering all the events. That work still happens inside the CM instance.</p>
+<p>So it turns out that the &quot;a publish has happened&quot; events are not actually generated by Publishing Service. It does the work of moving items between databases, but it doesn't do the work of triggering all the events. That work still happens inside the CM instance.</p>
 <p>That means that this scenario requires you have to have all your remote databases configured as Publishing Targets for both the CM role and for Publishing Service.</p>
 <p>So fix my issue, I had to change the configuration so that:</p>
 <ul>
@@ -156,6 +177,7 @@
 <p>Once both Publishing Service and all of the CM boxes knew about all of the databases, the events started to appear in the remote database after a publish, and magically caches cleared and indexes updated after each publish.</p>
 <p>You don't appear to need to change the CD server config to match the CM changes.</p>
 <p>Once again, Sitecore Support saves my bacon – <a href="https://media.giphy.com/media/4EF5xIO5yiivWh4gGn/giphy.gif" rel="noopener" target="_blank">Thank you</a>!</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -210,7 +232,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

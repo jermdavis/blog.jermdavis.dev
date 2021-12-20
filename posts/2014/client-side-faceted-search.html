@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="A while back &amp;lt;a href=&amp;quot;/posts/2014/faceted-search-in-sitecore-6-6&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;I wrote up the faceted search example I&amp;#x27;d presented at the London Sitecore User Group&amp;lt;/a&amp;gt;, and commented that ASP.Net WebForms wasn&amp;#x27;t really great technology for providing that sort of UI. I noted that it would work better if it could be implemented using Ajax-style UI.&amp;#xA;Having finally had a chance to work out a basic pattern for &amp;lt;a href=&amp;quot;/posts/2014/json-web-services-when-youre-stuck-in-with-basic-asp-net&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;building JSON web services using the sort of technology that&amp;#x27;s easily available in basic Sitecore 6.6 websites&amp;lt;/a&amp;gt; last week, I&amp;#x27;ve now had a chance to get around to implementing a prototype of how the faceted search might be built with client-side processing. ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Updating faceted search with client-side&nbsp;code</title>
+    <title>Jeremy Davis - Updating faceted search with client-side&#xA0;code</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/client-side-faceted-search">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Updating faceted search with client-side&nbsp;code">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Updating faceted search with client-side&amp;#xA0;code">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/client-side-faceted-search-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Updating faceted search with client-side&#xA0;code",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/client-side-faceted-search-social.png"
+        ],
+        "datePublished": "2014-09-15T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/client-side-faceted-search">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,24 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Updating faceted search with client-side&nbsp;code
+        Updating faceted search with client-side code
         </h1>
+            <div class="meta">Published 15 September 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/javascript" class="p-1 mr-1 bg-gray-100 rounded-md"> JavaScript</a>
+                    <a href="/tags/lucene" class="p-1 mr-1 bg-gray-100 rounded-md"> Lucene</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>A while back <a href="/posts/2014/faceted-search-in-sitecore-6-6" target="_blank">I wrote up the faceted search example I'd presented at the London Sitecore User Group</a>, and commented that ASP.Net WebForms wasn't really great technology for providing that sort of UI. I noted that it would work better if it could be implemented using Ajax-style UI.</p>
 <p>Having finally had a chance to work out a basic pattern for <a href="/posts/2014/json-web-services-when-youre-stuck-in-with-basic-asp-net" target="_blank">building JSON web services using the sort of technology that's easily available in basic Sitecore 6.6 websites</a> last week, I've now had a chance to get around to implementing a prototype of how the faceted search might be built with client-side processing. <!--more--></p>
 <h2>The overall pattern</h2>
@@ -135,17 +159,17 @@
 <p>We're aiming for a similar UI to the t-shirt example from the previous attempt.</p>
 <p><a href="/img/2014/2014-09-basicui.png" target="_blank"><img alt="Basic UI" src="/img/2014/2014-09-basicui.png"></a></p>
 <p>We need a block of UI that contains the set of filters, and a list of the results that were generated.</p>
-<p>Because the HTML won't include any actual data when it is downloaded from the server, we also need to have some "loading" placeholders as well:</p>
+<p>Because the HTML won't include any actual data when it is downloaded from the server, we also need to have some &quot;loading&quot; placeholders as well:</p>
 <pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;body&gt;
     &lt;h1&gt;Search TShirts&lt;/h1&gt;
 
-    &lt;form id="filters"&gt;
-        &lt;input type="hidden" id="configID" value="{027184E8-8007-49A2-B14C-1D02B766FE55}" /&gt;
-        &lt;div class="loading"&gt;-- Loading --&lt;/div&gt;
+    &lt;form id=&quot;filters&quot;&gt;
+        &lt;input type=&quot;hidden&quot; id=&quot;configID&quot; value=&quot;{027184E8-8007-49A2-B14C-1D02B766FE55}&quot; /&gt;
+        &lt;div class=&quot;loading&quot;&gt;-- Loading --&lt;/div&gt;
     &lt;/form&gt;
 
-    &lt;ul id="results"&gt;
-        &lt;li class="loading"&gt;-- Loading --&lt;/li&gt;
+    &lt;ul id=&quot;results&quot;&gt;
+        &lt;li class=&quot;loading&quot;&gt;-- Loading --&lt;/li&gt;
     &lt;/ul&gt;
 &lt;/body&gt;
 </pre>
@@ -179,12 +203,12 @@ public SearchConfiguration GetConfig(string configID)
     }
     else
     {
-        string facets = cfgItem.Fields["Facets"].Value;
+        string facets = cfgItem.Fields[&quot;Facets&quot;].Value;
         if (!string.IsNullOrEmpty(facets))
         {
-            result.Filters = facets.Split('|')
+            result.Filters = facets.Split(&#39;|&#39;)
                 .Select(id =&gt; Sitecore.Context.Database.GetItem(id))
-                .Select(itm =&gt; new FilterConfig() { DisplayName = itm.DisplayName, FieldName = itm.Fields["SearchIndexField"].Value })
+                .Select(itm =&gt; new FilterConfig() { DisplayName = itm.DisplayName, FieldName = itm.Fields[&quot;SearchIndexField&quot;].Value })
                 .Where(fc =&gt; !string.IsNullOrWhiteSpace(fc.FieldName) &amp;&amp; !string.IsNullOrWhiteSpace(fc.DisplayName))
                 .Select(fc =&gt; { fc.FieldName = fc.FieldName.ToLower(); return fc; })
                 .ToArray();
@@ -194,23 +218,23 @@ public SearchConfiguration GetConfig(string configID)
     return result;
 }
 </pre>
-<p>The code for the API call follows a similar pattern to the similar code in the WebForms version. It loads the item specified by the configuration item GUID and transforms the GUIDs in the "Facets" field and projects them into <code>FilterConfig</code> items to return.</p>
+<p>The code for the API call follows a similar pattern to the similar code in the WebForms version. It loads the item specified by the configuration item GUID and transforms the GUIDs in the &quot;Facets&quot; field and projects them into <code>FilterConfig</code> items to return.</p>
 <p>Then the client side code can call this method:</p>
 <pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var config = null;
 
 function getConfig() {
-    var cfgID = $("#configID").val();
+    var cfgID = $(&quot;#configID&quot;).val();
 
     $.ajax({
-        url: "/Search/SearchApi.asmx/GetConfig",
+        url: &quot;/Search/SearchApi.asmx/GetConfig&quot;,
         data: data: JSON.stringify({ configID: cfgID}),
-        contentType: "application/json; charset=utf-8",
-        type: "POST",
-        dataType: "json",
+        contentType: &quot;application/json; charset=utf-8&quot;,
+        type: &quot;POST&quot;,
+        dataType: &quot;json&quot;,
         async: false,
         success: function (data) {
             if (data.d.Error) {
-                alert("Failed to find config");
+                alert(&quot;Failed to find config&quot;);
             }
 
             config = data.d.Filters;
@@ -224,22 +248,22 @@ function getConfig() {
     for (i in config) {
         var filter = config[i];
 
-        var block = $('&lt;div&gt;');
-        var span = $('&lt;span class="fieldName"&gt;' + filter.DisplayName + '&lt;/span&gt;');
-        var select = $('&lt;select&gt;').attr({ id: filter.FieldName });
+        var block = $(&#39;&lt;div&gt;&#39;);
+        var span = $(&#39;&lt;span class=&quot;fieldName&quot;&gt;&#39; + filter.DisplayName + &#39;&lt;/span&gt;&#39;);
+        var select = $(&#39;&lt;select&gt;&#39;).attr({ id: filter.FieldName });
 
         span.appendTo(block);
         select.appendTo(block);
-        block.appendTo('#filters');
+        block.appendTo(&#39;#filters&#39;);
 
         select.change(function () {
             if (!ignoreChangeEvents) {
                 var val = $(this).val();
-                if (typeof val === "undefined" | val == null | val == "") {
-                    jQuery.bbq.removeState($(this).attr('id'));
+                if (typeof val === &quot;undefined&quot; | val == null | val == &quot;&quot;) {
+                    jQuery.bbq.removeState($(this).attr(&#39;id&#39;));
                 } else {
                     var state = {};
-                    state[$(this).attr('id')] = val;
+                    state[$(this).attr(&#39;id&#39;)] = val;
                     jQuery.bbq.pushState(state);
                 }
             }
@@ -250,37 +274,37 @@ function getConfig() {
 <p>For each of the filter definitions returned in the config, a block of HTML is created to label the field and set up the dropdown list. And then it attaches an on-change event that's called when the user changes the value. This event checks if we're in a state where the changes to the UI controls should be reflected in the hash fragments of the URL. If so, the new value for the field gets added to the URL's hash fragment. If the new value is empty or null, the code removes that item from the hash.</p>
 <p>[The hash fragment management here makes use of a simple jQuery extension to provide automation for this: <a href="http://benalman.com/projects/jquery-bbq-plugin/" title="jQuery BBQ" target="_blank" rel="noopener noreferrer">jQuery BBQ</a>]</p>
 <p>After this is set up we can run the initial search – which I'll discuss in a second.</p>
-<p>Once that initial search has been run, the last thing that needs to be done is to attach an event to the "hashchange" event so that whenever the URL's hash fragment changes we run a new search:</p>
+<p>Once that initial search has been run, the last thing that needs to be done is to attach an event to the &quot;hashchange&quot; event so that whenever the URL's hash fragment changes we run a new search:</p>
 <pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function setupHashChangeEvent() {
-    $(window).bind('hashchange', function (e) {
+    $(window).bind(&#39;hashchange&#39;, function (e) {
         ignoreChangeEvents = true;
         copyHashParamsToFormFields();
         ignoreChangeEvents = false;
         search(function (field) {
-            return $('#' + field).val();
+            return $(&#39;#&#39; + field).val();
         });
     });
 }
 </pre>
 <p>It stops the event handle for dropdown list changes from updating the hash fragment (so we don't get an infinite loop), updates the UI dropdowns and then runs the search...</p>
 <h2>Running a search</h2>
-<p>Client side, the search code needs to show the "loading" placeholder, fetch the filter values to post back, talk to the server and then update the UI:</p>
+<p>Client side, the search code needs to show the &quot;loading&quot; placeholder, fetch the filter values to post back, talk to the server and then update the UI:</p>
 <pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function search(filterFunction) {
-    $(".loading").show();
+    $(&quot;.loading&quot;).show();
 
     var filters = collateFilterData(filterFunction);
     var data = { filterValues: filters };
 
     $.ajax({
-        url: "/Search/SearchApi.asmx/Search",
+        url: &quot;/Search/SearchApi.asmx/Search&quot;,
         data: JSON.stringify(data),
-        contentType: "application/json; charset=utf-8",
-        type: "POST",
-        dataType: "json",
+        contentType: &quot;application/json; charset=utf-8&quot;,
+        type: &quot;POST&quot;,
+        dataType: &quot;json&quot;,
         async: false,
         success: function (data) {
             if (data.d.Error) {
-                alert("error in search response");
+                alert(&quot;error in search response&quot;);
                 return;
             }
             bindDropdowns(data.d.Filters);
@@ -295,8 +319,8 @@ function collateFilterData(fn) {
         var filter = config[i];
 
         var val = fn(filter.FieldName);
-        if (typeof val === "undefined" | val === null) {
-            val = "";
+        if (typeof val === &quot;undefined&quot; | val === null) {
+            val = &quot;&quot;;
         }
 
         filters[filter.FieldName] = val;
@@ -339,7 +363,7 @@ private BooleanQuery buildQuery(Dictionary&lt;string, object&gt; filterValues)
 {
     BooleanQuery query = new BooleanQuery();
 
-    query.Add(new TermQuery(new Term("_template", ShortID.Encode(_template).ToLowerInvariant())), BooleanClause.Occur.MUST);
+    query.Add(new TermQuery(new Term(&quot;_template&quot;, ShortID.Encode(_template).ToLowerInvariant())), BooleanClause.Occur.MUST);
 
     foreach (var kvp in filterValues)
     {
@@ -355,7 +379,7 @@ private BooleanQuery buildQuery(Dictionary&lt;string, object&gt; filterValues)
 
 private SearchResultCollection runQuery(BooleanQuery query)
 {
-    Index index = Sitecore.Search.SearchManager.GetIndex("demo");
+    Index index = Sitecore.Search.SearchManager.GetIndex(&quot;demo&quot;);
 
     using (IndexSearchContext isc = index.CreateSearchContext())
     {
@@ -403,40 +427,41 @@ private IEnumerable&lt;Result&gt; buildResults(SearchResultCollection results)
     for (i in dropdownValues) {
         var dropdownValue = dropdownValues[i];
 
-        var ddl = $('#' + dropdownValue.FieldName);
-        ddl.find('option').remove();
-        ddl.append('&lt;option value=""&gt;All ' + dropdownValue.FieldName + '&lt;/option&gt;');
+        var ddl = $(&#39;#&#39; + dropdownValue.FieldName);
+        ddl.find(&#39;option&#39;).remove();
+        ddl.append(&#39;&lt;option value=&quot;&quot;&gt;All &#39; + dropdownValue.FieldName + &#39;&lt;/option&gt;&#39;);
 
         for (v in dropdownValue.Values) {
             var li = dropdownValue.Values[v];
-            ddl.append($("&lt;option&gt;&lt;/option&gt;")
-                .attr("value", li.Value)
-                .attr("selected", li.Selected)
+            ddl.append($(&quot;&lt;option&gt;&lt;/option&gt;&quot;)
+                .attr(&quot;value&quot;, li.Value)
+                .attr(&quot;selected&quot;, li.Selected)
                 .text(li.Text));
         }
     }
 
-    $("#filters .loading").hide();
+    $(&quot;#filters .loading&quot;).hide();
 }
 
 function bindResults(resultValues) {
-    var resultDiv = $("#results");
+    var resultDiv = $(&quot;#results&quot;);
     resultDiv.children().remove();
 
     for (i in resultValues) {
         var resultValue = resultValues[i];
         resultDiv
-            .append($("&lt;li&gt;&lt;/li&gt;")
+            .append($(&quot;&lt;li&gt;&lt;/li&gt;&quot;)
             .text(resultValue.DisplayName));
     }
 
-    $("#results .loading").hide();
+    $(&quot;#results .loading&quot;).hide();
 }
 </pre>
 <p>That's all the code that's required for this example. Whether you change the URL or the dropdown lists, the results now update with the server-side results:</p>
 <p><a href="/img/2014/2014-09-selected.png" target="_blank"><img alt="Selected" src="/img/2014/2014-09-selected.png"></a></p>
 <h2>Taking it further</h2>
 <p>For more complex UI, it's likely that the HTML to generate for results or facet filters would be more complex. And that makes having the jQuery code manipulate the HTML directly to create each result or filter harder to do. For situations like this the code can be made easier with other JavaScript libraries. At the simpler end, templating libraries like <a href="http://handlebarsjs.com/" title="Handlebars" target="_blank" rel="noopener noreferrer">Handlebars</a> can help. And at the complex end, UI frameworks like <a href="http://knockoutjs.com/" title="Knockout" target="_blank" rel="noopener noreferrer">Knockout</a> can be used instead of just jQuery.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -491,7 +516,7 @@ function bindResults(resultValues) {
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

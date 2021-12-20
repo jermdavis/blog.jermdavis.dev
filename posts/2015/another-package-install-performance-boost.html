@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="I came across an interesting approach for improving the performance of &amp;lt;a href=&amp;quot;/posts/2015/automated-package-installs&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;automated package installs&amp;lt;/a&amp;gt; the other day. In the space of one day of internet reading I saw the &amp;lt;code&amp;gt;Sitecore.Data.BulkUpdateContext&amp;lt;/code&amp;gt; class mentioned &amp;lt;a href=&amp;quot;http://jockstothecore.com/content-import-with-powershell-treasure-hunt/&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;in a blog post&amp;lt;/a&amp;gt; and it came up in MVP forum discussions. In both cases, it was mentioned in the context of making item operations faster. Hence it seemed like an interesting thing to investigate, to see what sort of difference it would make to my previous work. ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Another package install performance&nbsp;boost</title>
+    <title>Jeremy Davis - Another package install performance&#xA0;boost</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/another-package-install-performance-boost">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Another package install performance&nbsp;boost">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Another package install performance&amp;#xA0;boost">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/another-package-install-performance-boost-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Another package install performance&#xA0;boost",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/another-package-install-performance-boost-social.png"
+        ],
+        "datePublished": "2015-07-27T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/another-package-install-performance-boost">
 <meta property="og:type" content="website">
 
@@ -114,29 +131,36 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Another package install performance&nbsp;boost
+        Another package install performance boost
         </h1>
+            <div class="meta">Published 27 July 2015</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/packages" class="p-1 mr-1 bg-gray-100 rounded-md"> Packages</a>
+                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>I came across an interesting approach for improving the performance of <a href="/posts/2015/automated-package-installs" target="_blank">automated package installs</a> the other day. In the space of one day of internet reading I saw the <code>Sitecore.Data.BulkUpdateContext</code> class mentioned <a href="http://jockstothecore.com/content-import-with-powershell-treasure-hunt/" target="_blank" rel="noopener noreferrer">in a blog post</a> and it came up in MVP forum discussions. In both cases, it was mentioned in the context of making item operations faster. Hence it seemed like an interesting thing to investigate, to see what sort of difference it would make to my previous work. <!--more--></p>
 <h2>How do you use it?</h2>
 <p>The class is simple to use - it's an <code>IDisposable</code> which can be placed into a <code>using</code> block wrapped around the rest of the logic for installing a package. The <code>Page_Load()</code> code from <a href="/posts/2015/automated-package-installs" target="_blank">my previous blog post</a>‘s package install endpoint can be updated simply by wrapping this class around the existing set of <code>using</code> statements:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Page_Load(object sender, EventArgs e)
 {
-    var files = WebUtil.GetQueryString("modules").Split('|');
+    var files = WebUtil.GetQueryString(&quot;modules&quot;).Split(&#39;|&#39;);
     if (files.Length == 0)
     {
-        Response.Write("No Modules specified");
+        Response.Write(&quot;No Modules specified&quot;);
         return;
     }
-    Sitecore.Context.SetActiveSite("shell");
+    Sitecore.Context.SetActiveSite(&quot;shell&quot;);
 
     using(new BulkUpdateContext())
     {
@@ -149,7 +173,7 @@
                     foreach (var file in files)
                     {
                         Install(Path.Combine(Sitecore.Shell.Applications.Install.ApplicationContext.PackagePath, file));
-                        Response.Write("Installed Package: " + file + "&lt;br&gt;");
+                        Response.Write(&quot;Installed Package: &quot; + file + &quot;&lt;br&gt;&quot;);
                     }
                 }
             }
@@ -165,12 +189,12 @@
 # Put the code to time here...
 
 $sw.Stop()
-Write-Host "Elapsed time: $($sw.Elapsed)"
+Write-Host &quot;Elapsed time: $($sw.Elapsed)&quot;
 </pre>
 <p>If we wrap that around the PowerShell code which is calling the ASP.Net code above, we can measure the elapsed time for installing a set of packages:</p>
 <pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-Packages() {
-    $siteName = Get-ConfigParam "InstanceName"
-    $sitecoreFolder = "C:\Inetpub\wwwroot\$($siteName)\Data\packages"   
+    $siteName = Get-ConfigParam &quot;InstanceName&quot;
+    $sitecoreFolder = &quot;C:\Inetpub\wwwroot\$($siteName)\Data\packages&quot;   
     
     $sw = [Diagnostics.Stopwatch]::StartNew()
 
@@ -179,18 +203,18 @@ Write-Host "Elapsed time: $($sw.Elapsed)"
         $query = (Split-Path -Path $module -Leaf)
         
         # Copy the package
-        Write-Host "Copying package $query to Sitecore package folder..."
+        Write-Host &quot;Copying package $query to Sitecore package folder...&quot;
         Copy-Item $module $sitecoreFolder -force
         
-        Write-Host "Calling package upload tool for $query"
+        Write-Host &quot;Calling package upload tool for $query&quot;
     
         # call tool
-        $url = "http://$siteName/PackageDeploy.aspx?modules=$query"
-        $result = Invoke-WebRequest -Uri $url -TimeoutSec 600 -OutFile ".\$siteName-PackageResponse-$query.log" -PassThru
+        $url = &quot;http://$siteName/PackageDeploy.aspx?modules=$query&quot;
+        $result = Invoke-WebRequest -Uri $url -TimeoutSec 600 -OutFile &quot;.\$siteName-PackageResponse-$query.log&quot; -PassThru
         
         if($result.StatusCode -ne 200) {
-            Write-Host "StatusCode: $($result.StatusCode)"
-            throw "Package install failed for $($query)"
+            Write-Host &quot;StatusCode: $($result.StatusCode)&quot;
+            throw &quot;Package install failed for $($query)&quot;
         }
         
         # Removing installed package file
@@ -199,9 +223,9 @@ Write-Host "Elapsed time: $($sw.Elapsed)"
     }
 
     $sw.Stop()
-    Write-Host "Package install time: $($sw.Elapsed)"
+    Write-Host &quot;Package install time: $($sw.Elapsed)&quot;
 
-    write-host "Package tool done..."
+    write-host &quot;Package tool done...&quot;
 }
 </pre>
 <p>If I run this as part of a scripted install of a new instance of Sitecore 6.6 and adding SPEAK and Email Campaign Manager packages then, an average of 10 runs gives me:</p>
@@ -216,8 +240,9 @@ Write-Host "Elapsed time: $($sw.Elapsed)"
 </ul>
 <p>So while that's not a statistically rigorous analysis, it does suggest that it's well worth adding that extra line of code to improve the performance when installing big packages, or multiple packages...</p>
 <hr>
-<p>Edited to add: As pointed out by <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/kamsar">@kamsar</a> on twitter, the underlying code for <code>BulkUpdateContext</code> disables the publishing queue while the install proceeds - so you need to remember to publish things yourself after you've finished with your package installs.</p>
+<p>Edited to add: As pointed out by <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/kamsar">&#64;kamsar</a> on twitter, the underlying code for <code>BulkUpdateContext</code> disables the publishing queue while the install proceeds - so you need to remember to publish things yourself after you've finished with your package installs.</p>
 <p>Another point I failed to add in my original write-up was that you'll want to update your search indexes after using this approach. (Thanks to <a href="/posts/2015/enabling-automated-index-rebuilds" target="_blank">make use of the post I wrote on index builds</a> to address this.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -272,7 +297,7 @@ Write-Host "Elapsed time: $($sw.Elapsed)"
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="This is one of those issues where I feel like I should have worked it out faster than I did. Computers are relentlessly logical. If you tell them to ignore something, they&amp;#x27;re going to ignore it, even if that does confuse your content editors... ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Why are my pages under /services/&nbsp;broken?</title>
+    <title>Jeremy Davis - Why are my pages under /services/&#xA0;broken?</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2018/why-are-my-pages-under-services-broken">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Why are my pages under /services/&nbsp;broken?">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Why are my pages under /services/&amp;#xA0;broken?">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/why-are-my-pages-under-services-broken-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Why are my pages under /services/&#xA0;broken?",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/why-are-my-pages-under-services-broken-social.png"
+        ],
+        "datePublished": "2018-11-26T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/why-are-my-pages-under-services-broken">
 <meta property="og:type" content="website">
 
@@ -114,29 +130,33 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Why are my pages under /services/&nbsp;broken?
+        Why are my pages under /services/ broken?
         </h1>
+            <div class="meta">Published 26 November 2018</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>This is one of those issues where I feel like I should have worked it out faster than I did. Computers are relentlessly logical. If you tell them to ignore something, they're going to ignore it, even if that does confuse your content editors... <!--more--></p>
 <p>I got a bug report recently, from a user complaining that they had set up a tree of content but after publishing, all they got was a 404. It was one of those bug reports that bounced around a few people before landing in my inbox – and it looked odd.</p>
-<p>The content the user described did exist (a whole tree of pages under <code>/services/</code>) and it had indeed been published. The content worked fine on my development instance. But when viewed on the QA or UAT instances of the site, it did indeed return a 404. But not the styled 404 page you would get if you typed in a nonsense url – a completely plain page which said nothing but "404" on it:</p>
+<p>The content the user described did exist (a whole tree of pages under <code>/services/</code>) and it had indeed been published. The content worked fine on my development instance. But when viewed on the QA or UAT instances of the site, it did indeed return a 404. But not the styled 404 page you would get if you typed in a nonsense url – a completely plain page which said nothing but &quot;404&quot; on it:</p>
 <p><a href="/img/2018/2018-09-4041.png" target="_blank"><img alt="404" src="/img/2018/2018-09-4041.png"></a></p>
 <p>Clearly something was blocking that path. But what? It was something not present for a development instance, but present for QA and UAT. The QA instance was a single-server site running on our local network, but the UAT instance ran on the client's infrasructure. That difference in infrastructuretended to rule out the idea that it might be an over-zealous firewall or a proxy that was blocking certain path segments.</p>
-<p>So I did a "find in files" search for the word "services", and trawled through the list of hits. Eventually, I found that my dev instance included a hit in <code>ship.config.disabled</code> and I had <a href="https://media.giphy.com/media/5z0cCCGooBQUtejM4v/giphy.gif" rel="noopener" target="_blank">my Eureka moment</a>.</p>
+<p>So I did a &quot;find in files&quot; search for the word &quot;services&quot;, and trawled through the list of hits. Eventually, I found that my dev instance included a hit in <code>ship.config.disabled</code> and I had <a href="https://media.giphy.com/media/5z0cCCGooBQUtejM4v/giphy.gif" rel="noopener" target="_blank">my Eureka moment</a>.</p>
 <p>Our dev instances included the config and code for <a href="https://github.com/kevinobee/Sitecore.Ship" rel="noopener" target="_blank">Sitecore.Ship</a>, but it was disabled as we never deployed to dev machines via our build and deploy automation. That config file includes the following line:</p>
-<pre data-enlighter-highlight="5" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0"?&gt;
-&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/" xmlns:set="http://www.sitecore.net/xmlconfig/set/"&gt;
+<pre data-enlighter-highlight="5" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;configuration xmlns:patch=&quot;http://www.sitecore.net/xmlconfig/&quot; xmlns:set=&quot;http://www.sitecore.net/xmlconfig/set/&quot;&gt;
   &lt;sitecore&gt;
     &lt;settings&gt;
-      &lt;setting name="IgnoreUrlPrefixes" set:value="/services/|/sitecore/default.aspx|/trace.axd|/webresource.axd|/sitecore/shell/Controls/Rich Text Editor/Telerik.Web.UI.DialogHandler.aspx|/sitecore/shell/applications/content manager/telerik.web.ui.dialoghandler.aspx|/sitecore/shell/Controls/Rich Text Editor/Telerik.Web.UI.SpellCheckHandler.axd|/Telerik.Web.UI.WebResource.axd|/sitecore/admin/upgrade/|/layouts/testing" /&gt;
+      &lt;setting name=&quot;IgnoreUrlPrefixes&quot; set:value=&quot;/services/|/sitecore/default.aspx|/trace.axd|/webresource.axd|/sitecore/shell/Controls/Rich Text Editor/Telerik.Web.UI.DialogHandler.aspx|/sitecore/shell/applications/content manager/telerik.web.ui.dialoghandler.aspx|/sitecore/shell/Controls/Rich Text Editor/Telerik.Web.UI.SpellCheckHandler.axd|/Telerik.Web.UI.WebResource.axd|/sitecore/admin/upgrade/|/layouts/testing&quot; /&gt;
     &lt;/settings&gt;
   &lt;/sitecore&gt;
 &lt;/configuration&gt;
@@ -144,8 +164,9 @@
 <p>Ship exposes an API under the path <code>/services/</code> and hence it tells Sitecore to ignore any requests made to that path, so that Ship's HTTP handler can take care of these requests.</p>
 <p>So on machines like QA and UAT, where we were making automated deployments (and hence this config file was enabled) Ship was ensuring that Sitecore didn't process these requests – causing to serve up the 404 HTML page that had been set up.</p>
 <h2>So...</h2>
-<p>If you're deploying via <a href="https://github.com/kevinobee/Sitecore.Ship" rel="noopener" target="_blank">Sitecore.Ship</a>, stop and have a think about that default services URL. Does the owner of the site you're working on provide any services to people? Might they want to name a tree of content "Services"?</p>
+<p>If you're deploying via <a href="https://github.com/kevinobee/Sitecore.Ship" rel="noopener" target="_blank">Sitecore.Ship</a>, stop and have a think about that default services URL. Does the owner of the site you're working on provide any services to people? Might they want to name a tree of content &quot;Services&quot;?</p>
 <p>If so, remember to change your site's config to avoid a load of confusion...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -200,7 +221,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

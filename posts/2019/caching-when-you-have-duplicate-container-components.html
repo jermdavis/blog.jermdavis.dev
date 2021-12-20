@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="In theory, the magic of Dynamic Placeholders lets us have a container component placed onto your page more than once. That didn&amp;#x27;t work in the old world of &amp;amp;amp;quot;static&amp;amp;amp;quot; placeholders, because the rendering engine didn&amp;#x27;t like two placeholders with the same name. But despite it&amp;#x27;s benefits, the dynamic implementation has an annoying edge case &amp;#x2013; you may not be able to enable caching for your container component. I had a client bump into this issue recently, so I spent some time considering approaches that might help them address this issue. ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Caching when you have duplicate container&nbsp;components</title>
+    <title>Jeremy Davis - Caching when you have duplicate container&#xA0;components</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2019/caching-when-you-have-duplicate-container-components">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Caching when you have duplicate container&nbsp;components">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Caching when you have duplicate container&amp;#xA0;components">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/caching-when-you-have-duplicate-container-components-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Caching when you have duplicate container&#xA0;components",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/caching-when-you-have-duplicate-container-components-social.png"
+        ],
+        "datePublished": "2019-09-16T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/caching-when-you-have-duplicate-container-components">
 <meta property="og:type" content="website">
 
@@ -114,24 +130,29 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Caching when you have duplicate container&nbsp;components
+        Caching when you have duplicate container components
         </h1>
+            <div class="meta">Published 16 September 2019</div>
+            <div class="flex py-1">
+                    <a href="/tags/caching" class="p-1 mr-1 bg-gray-100 rounded-md"> Caching</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
-                <p>In theory, the magic of Dynamic Placeholders lets us have a container component placed onto your page more than once. That didn't work in the old world of "static" placeholders, because the rendering engine didn't like two placeholders with the same name. But despite it's benefits, the dynamic implementation has an annoying edge case – you may not be able to enable caching for your container component. I had a client bump into this issue recently, so I spent some time considering approaches that might help them address this issue. <!--more--></p>
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>In theory, the magic of Dynamic Placeholders lets us have a container component placed onto your page more than once. That didn't work in the old world of &quot;static&quot; placeholders, because the rendering engine didn't like two placeholders with the same name. But despite it's benefits, the dynamic implementation has an annoying edge case – you may not be able to enable caching for your container component. I had a client bump into this issue recently, so I spent some time considering approaches that might help them address this issue. <!--more--></p>
 <h2>The issue</h2>
 <p>Imagine you have a container component. A very simple one will do fine – all it really needs to contain is a Dynamic Placeholder:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">@using Sitecore.Mvc
-&lt;div style="border:2px solid red; margin-top:10px; padding:10px;"&gt;
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&#64;using Sitecore.Mvc
+&lt;div style=&quot;border:2px solid red; margin-top:10px; padding:10px;&quot;&gt;
     &lt;div&gt;Dynamic Container&lt;/div&gt;
-    @Html.Sitecore().DynamicPlaceholder("container")
+    &#64;Html.Sitecore().DynamicPlaceholder(&quot;container&quot;)
 &lt;/div&gt;
 </pre>
 <p>If you build up a page using two instances of that component, with some child components inside each of the placeholders it will look fine in Experience Editor:</p>
@@ -140,19 +161,19 @@
 <p><a href="/img/2019/2019-09-wrongui.png" target="_blank"><img alt="Wrong UI" src="/img/2019/2019-09-wrongui.png"></a></p>
 <p>That's because the code renders the first container and caches the result. Then it starts to render the second one, but gets a cache hit, and so returns the cached data for the first one. In the cache you see:</p>
 <p><a href="/img/2019/2019-09-incorrectcaches.png" target="_blank"><img alt="Incorrect Caches" src="/img/2019/2019-09-incorrectcaches.png"></a></p>
-<p>There's no cache variant that works for "this component varies by its children" – so only the first instance of the container ever gets rendered and cached.</p>
-<p>My interest in this came about because I got handed a bug report on a client site that said "our page is wrong!" and it turned out to be because of this issue. I think there are three main ways that the issue could be resolved to make the client happy:</p>
+<p>There's no cache variant that works for &quot;this component varies by its children&quot; – so only the first instance of the container ever gets rendered and cached.</p>
+<p>My interest in this came about because I got handed a bug report on a client site that said &quot;our page is wrong!&quot; and it turned out to be because of this issue. I think there are three main ways that the issue could be resolved to make the client happy:</p>
 <h2>Solution one: Just disable caching</h2>
 <p>If you turn the cache settings off for the container component, all will look right.</p>
 <p>That's probably fine if your container has few children, or it's not used very much. The performance difference in that scenario is likely to be small – especially if you are able to enable caching for the child components inside your container.</p>
 <p>That's a fix developers can roll out easily (it's just undoing the cache settings on the rendering item) and it doesn't affect editors at all.</p>
 <h2>Solution two: Use a fake data source</h2>
-<p>You could configure the container component with the "vary by datasource" cache setting instead of turning caching off. If the component doesn't really need a data source, the code will just ignore what ever item the datasource setting points to, other than for caching. And that can allow the normal caching framework to work here.</p>
+<p>You could configure the container component with the &quot;vary by datasource&quot; cache setting instead of turning caching off. If the component doesn't really need a data source, the code will just ignore what ever item the datasource setting points to, other than for caching. And that can allow the normal caching framework to work here.</p>
 <p>No deployment is required for this, which is a bonus. But it might be confusing for editors to need to add a data source where it's not really needed. Plus this doesn't work if your container does need a datasource, and you have two on a page that need the same datasource but different children.</p>
 <p>So this might not be a great answer.</p>
 <h3>Solution three: Vary the cache by rendering id</h3>
-<p>Finally, it turns out it's not actually that hard to extend Sitecore's caching model to allow for the idea of "cache this specific rendering instance". You could write some code that looked at the actual children of a component and generated a cache key based on that. Maybe by hashing some data from the Rendering XML? But it struck me that it's faster and easier (and probably much the same outcome) to just make use of the unique ID that every instance of a rendering gets by default...</p>
-<p>To do this, you need to create a new data template to store your "cache by rendering's unique id" flag:</p>
+<p>Finally, it turns out it's not actually that hard to extend Sitecore's caching model to allow for the idea of &quot;cache this specific rendering instance&quot;. You could write some code that looked at the actual children of a component and generated a cache key based on that. Maybe by hashing some data from the Rendering XML? But it struck me that it's faster and easier (and probably much the same outcome) to just make use of the unique ID that every instance of a rendering gets by default...</p>
+<p>To do this, you need to create a new data template to store your &quot;cache by rendering's unique id&quot; flag:</p>
 <p><a href="/img/2019/2019-09-newcacheflag.png" target="_blank"><img alt="New Cache Flag" src="/img/2019/2019-09-newcacheflag.png"></a></p>
 <p>And then add that to the inheritance tree of the standard caching flags item:</p>
 <p><a href="/img/2019/2019-09-extendcachingflags-1.png" target="_blank"><img alt="Extend Caching Flags" src="/img/2019/2019-09-extendcachingflags-1.png"></a></p>
@@ -165,11 +186,11 @@
     {
         var cacheKey = base.GenerateKey(rendering, args);
 
-        var cacheField = (CheckboxField)rendering.RenderingItem.InnerItem.Fields["VaryByUniqueId"];
+        var cacheField = (CheckboxField)rendering.RenderingItem.InnerItem.Fields[&quot;VaryByUniqueId&quot;];
             
         if (cacheField.Checked)
         {
-            cacheKey += "_#uniqueId:" + rendering.UniqueId.ToString();
+            cacheKey += &quot;_#uniqueId:&quot; + rendering.UniqueId.ToString();
         }
 
         return cacheKey;
@@ -178,12 +199,12 @@
 </pre>
 <p>That looks for the extra cache variant flag on the item being rendered, and if it exists the cache key is extended with the unique ID for this rendering instance.</p>
 <p>And you can patch that into your config via:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8" ?&gt;
-&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
+&lt;configuration xmlns:patch=&quot;http://www.sitecore.net/xmlconfig/&quot;&gt;
   &lt;sitecore&gt;
     &lt;pipelines&gt;
       &lt;mvc.renderRendering&gt;
-        &lt;processor patch:instead="processor[@type='Sitecore.Mvc.Pipelines.Response.RenderRendering.GenerateCacheKey, Sitecore.Mvc']" type="Caching.VaryByUniqueIdCacheKey, Caching" /&gt;
+        &lt;processor patch:instead=&quot;processor[&#64;type=&#39;Sitecore.Mvc.Pipelines.Response.RenderRendering.GenerateCacheKey, Sitecore.Mvc&#39;]&quot; type=&quot;Caching.VaryByUniqueIdCacheKey, Caching&quot; /&gt;
       &lt;/mvc.renderRendering&gt;
     &lt;/pipelines&gt;
   &lt;/sitecore&gt;
@@ -193,8 +214,9 @@
 <p><a href="/img/2019/2019-09-correctcache.png" target="_blank"><img alt="Correct Cache" src="/img/2019/2019-09-correctcache.png"></a></p>
 <p>And the published version of the site will look correct:</p>
 <p><a href="/img/2019/2019-09-correctoutput-1.png" target="_blank"><img alt="Correct Output" src="/img/2019/2019-09-correctoutput-1.png"></a></p>
-<p>Whether that solution is "better" for you than just disabling caching probably depends on the effort involved in rendering each of your containers. If they have one or two items in them, chances are it's not worth it. But if your container had a larger number of items, the "memory usage vs processing time" trade-off might be worth it.</p>
+<p>Whether that solution is &quot;better&quot; for you than just disabling caching probably depends on the effort involved in rendering each of your containers. If they have one or two items in them, chances are it's not worth it. But if your container had a larger number of items, the &quot;memory usage vs processing time&quot; trade-off might be worth it.</p>
 <p>It's an option for you...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -249,7 +271,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

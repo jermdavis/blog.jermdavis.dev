@@ -3,7 +3,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="I&amp;#x27;ve been slowly improving the release process for the container-based project I&amp;#x27;m working on. There&amp;#x27;s a lot to learn about the ways to configure the Azure Devops pipelines for this work, because targeting Kubernetes is quite different from the old IaaS and PaaS approaches I was used to. ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Waiting for <strike>Godot</strike> Kubernetes">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Waiting for &amp;lt;strike&amp;gt;Godot&amp;lt;/strike&amp;gt; Kubernetes">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/waiting-for-kubernetes-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Waiting for &lt;strike&gt;Godot&lt;/strike&gt; Kubernetes",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/waiting-for-kubernetes-social.png"
+        ],
+        "datePublished": "2021-03-15T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/waiting-for-kubernetes">
 <meta property="og:type" content="website">
 
@@ -114,24 +130,29 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
         Waiting for <strike>Godot</strike> Kubernetes
         </h1>
+            <div class="meta">Published 15 March 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/kubernetes" class="p-1 mr-1 bg-gray-100 rounded-md"> Kubernetes</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>I've been slowly improving the release process for the container-based project I'm working on. There's a lot to learn about the ways to configure the Azure Devops pipelines for this work, because targeting Kubernetes is quite different from the old IaaS and PaaS approaches I was used to. <!--more--></p>
 <h2>The issue</h2>
-<p>One of the key processes for a container release is that you have to instruct Kubernetes to update the images for the site you're deploying. You send a command to say "here are the new config files, please update!". Kubernetes will then start the process of updating to the images described in this new config – which takes a while. It needs to download the files, spin up the appropriate containers based on them, and start up the software they run.</p>
-<p>Now a Sitecore deployment often involves tasks for things like "sync Unicorn" or similar, which have to take place after you've deployed your new images. So it's necessary for the release pipeline to wait for Kubernetes to finish this whole process of updating images before triggering Unicorn.</p>
+<p>One of the key processes for a container release is that you have to instruct Kubernetes to update the images for the site you're deploying. You send a command to say &quot;here are the new config files, please update!&quot;. Kubernetes will then start the process of updating to the images described in this new config – which takes a while. It needs to download the files, spin up the appropriate containers based on them, and start up the software they run.</p>
+<p>Now a Sitecore deployment often involves tasks for things like &quot;sync Unicorn&quot; or similar, which have to take place after you've deployed your new images. So it's necessary for the release pipeline to wait for Kubernetes to finish this whole process of updating images before triggering Unicorn.</p>
 <p>So how can DevOps do that waiting job?</p>
 <h2>First attempt</h2>
-<p>I did a bit of research before my initial attempt to set this up, and came across <a href="https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#wait" rel="noopener" target="_blank">documentation for the "wait" option for the kubectl command</a>. When that is run, it can pause executition until some sort of container-related condition becomes true.</p>
+<p>I did a bit of research before my initial attempt to set this up, and came across <a href="https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#wait" rel="noopener" target="_blank">documentation for the &quot;wait&quot; option for the kubectl command</a>. When that is run, it can pause executition until some sort of container-related condition becomes true.</p>
 <p>And helpfully DevOps has a pipeline step which can run this command with its various parameters:</p>
 <p><a href="/img/2021/2021-03-addkubectl.png" target="_blank"><img alt="Add Kubectl" src="/img/2021/2021-03-addkubectl.png"></a></p>
 <p>So I configured an initial attempt in DevOps that waited for all the pods in my namespace to be ready, and give me output data in a json format. (So I could see what went on after the deploy completed) I also picked a pretty big timeout, since it can take a while for all the pods in a Sitecore XP deployment download and get ready. The command line equivalent of the setup in DevOps looks like:</p>
@@ -139,7 +160,7 @@
 </pre>
 <p>And I tried some command-line tests against a demo instance, where this worked. But when I used it in DevOps against my client's official Kubernetes instance it sat and waited forever. Even when the release of my new images appeared to be complete, this command didn't finish.</p>
 <p>Back to the drawing board...</p>
-<p>The first issue here was really obvious in retrospect. When you deploy Sitecore to containers, you need to initialise the databases and the Solr indexes. Sitecore's container-based release process includes <a href="https://github.com/Sitecore/container-deployment/tree/master/k8s/sxp/10.0/ltsc2019/xm1/init" rel="noopener" target="_blank">running some job containers</a> to do this – and these had been run in the client's deployment. But after running they had not been removed again. So I had two job containers sitting in a "done my job" state. But my wait command above wants all the containers to be in the "Ready" state – and completed jobs are not.</p>
+<p>The first issue here was really obvious in retrospect. When you deploy Sitecore to containers, you need to initialise the databases and the Solr indexes. Sitecore's container-based release process includes <a href="https://github.com/Sitecore/container-deployment/tree/master/k8s/sxp/10.0/ltsc2019/xm1/init" rel="noopener" target="_blank">running some job containers</a> to do this – and these had been run in the client's deployment. But after running they had not been removed again. So I had two job containers sitting in a &quot;done my job&quot; state. But my wait command above wants all the containers to be in the &quot;Ready&quot; state – and completed jobs are not.</p>
 <p><strong>So learning point #1:</strong> Finished jobs are still important...</p>
 <p>But that wasn't the only issue: I was also seeing warnings from DevOps where it complained that the wait operation was generating too much data:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2021-02-03T14:00:24.2280843Z ##[warning]Output variable not set as kubectl command output exceeded the maximum supported length. Output length: 413314, Maximum supported length: 32766
@@ -154,6 +175,7 @@
 <p>Instead of waiting for all the pods, I've changed to waiting for just the CM pod to be ready. That's the key thing for my onward deployment – in that my next step involves talking to the CM box. And the other thing is that there's now no output command. That means it's not flooding the DevOps agent log with piles of data.</p>
 <p><a href="/img/2021/2021-03-setup.png" target="_blank"><img alt="Kubectl wait setup" src="/img/2021/2021-03-setup.png"></a></p>
 <p>And with those two changes in place, my deployment proceeds correctly. And so unlike the play in the title, the deployment does arrive at the right state eventually...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -208,7 +230,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

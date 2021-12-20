@@ -3,7 +3,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Ages ago I wrote some posts about &amp;lt;a href=&amp;quot;/posts/2016/an-alternative-approach-to-pipelines&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;an approach to pipeline-style code patterns&amp;lt;/a&amp;gt; for C# code. Recently I got a question on a gist I&amp;#x27;d written to go with that article, because someone was having issues adding async code into pipeline components. Async patterns are much more common now, but this wasn&amp;#x27;t something I&amp;#x27;d actually tried. Cue some interesting experiments... ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
@@ -22,8 +22,24 @@
 
     
     <meta property="og:title" content="Jeremy Davis - Pipelines and async">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/pipelines-and-async-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Pipelines and async",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/pipelines-and-async-social.png"
+        ],
+        "datePublished": "2021-06-07T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/pipelines-and-async">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,21 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
         Pipelines and async
         </h1>
+            <div class="meta">Published 07 June 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Ages ago I wrote some posts about <a href="/posts/2016/an-alternative-approach-to-pipelines" target="_blank">an approach to pipeline-style code patterns</a> for C# code. Recently I got a question on a gist I'd written to go with that article, because someone was having issues adding async code into pipeline components. Async patterns are much more common now, but this wasn't something I'd actually tried. Cue some interesting experiments... <!--more--></p>
 <h2>Async gets everywhere...</h2>
 <p>In my original code I had a basic pipeline step pattern that could map an input to an output:</p>
@@ -215,13 +235,13 @@
 <pre data-enlighter-highlight="6" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main()
 {
 	var pipeline = new ExampleAsyncPipeline();
-	var uri = new Uri("https://news.bbc.co.uk/");
+	var uri = new Uri(&quot;https://news.bbc.co.uk/&quot;);
 
 	var input = Task.FromResult(uri);
 
 	var tempFile = await pipeline.ProcessAsync(input);
 
-	Console.WriteLine($"{uri} saved to {tempFile}");
+	Console.WriteLine($&quot;{uri} saved to {tempFile}&quot;);
 }
 </pre>
 <p>Now this runs, and it gives us some valid output:</p>
@@ -248,19 +268,20 @@
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main()
 {
 	var pipeline = new ExampleAsyncPipeline();
-	var uri = new Uri("https://news.bbc.co.uk/");
+	var uri = new Uri(&quot;https://news.bbc.co.uk/&quot;);
 
 	var tempFile = await pipeline.ProcessAsync(uri);
 
-	Console.WriteLine($"{uri} saved to {tempFile}");
+	Console.WriteLine($&quot;{uri} saved to {tempFile}&quot;);
 }
 </pre>
 <p>And now all our pipelines can go async if necessary...</p>
 <p><a href="/img/2021/2021-06-firstpassatasyncpipeline.png" target="_blank"><img alt="First Pass at Async Pipeline" src="/img/2021/2021-06-firstpassatasyncpipeline.png"></a></p>
 <p>As previously, <a href="https://gist.github.com/jermdavis/d794849103df95eeda2eec330f73411f" rel="noopener" target="_blank">all the code above is in a gist</a> if you want to tinker with it. (I've pasted that from <a href="https://www.linqpad.net/" rel="noopener" target="_blank">LinqPad</a>, so it's not a complete C# program, but it does include all the relevant code)</p>
-<p>(And I want to add a "thank you!" to <a href="https://github.com/wfigueiredo">Walanem Figueiredo</a> for asking the question that prompted me to stop and think about this – it's turned out to be a surprisingly interesting topic)</p>
+<p>(And I want to add a &quot;thank you!&quot; to <a href="https://github.com/wfigueiredo">Walanem Figueiredo</a> for asking the question that prompted me to stop and think about this – it's turned out to be a surprisingly interesting topic)</p>
 <h2>But!!! There's a problem here, I think</h2>
 <p>The code above works, and I was going to leave it at that. But that foreshadowing... Further back-and-forth in the comments on my original gist has made me realise that this is probably not the right answer. Having the <code>await Input</code> logic in each pipeline step is annoying boilerplate that you have to remember every time you write a step, so that's not ideal. But it could also be the cause of some interesting bugs I think. And text time out I'll explain a bit about how I realised that, and how I thought about correcting that problem.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -315,7 +336,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

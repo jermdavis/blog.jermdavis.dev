@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="In &amp;lt;a href=&amp;quot;/posts/2014/automatic-packages-from-tfs-3-pipelines-and-data-transformation&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;last week&amp;#x27;s entry I listed out the set of pipeline components required to generate a package&amp;lt;/a&amp;gt;. This week, lets have a look at what goes into each of those components and see how they interact with the configuration and source control data.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Automatic packages from TFS: #4 – Pipeline component&nbsp;internals</title>
+    <title>Jeremy Davis - Automatic packages from TFS: #4 &#x2013; Pipeline component&#xA0;internals</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-4-pipeline-component-internals">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Automatic packages from TFS: #4 – Pipeline component&nbsp;internals">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Automatic packages from TFS: #4 &amp;#x2013; Pipeline component&amp;#xA0;internals">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/automatic-packages-from-tfs-4-pipeline-component-internals-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Automatic packages from TFS: #4 &#x2013; Pipeline component&#xA0;internals",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/automatic-packages-from-tfs-4-pipeline-component-internals-social.png"
+        ],
+        "datePublished": "2014-08-25T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-4-pipeline-component-internals">
 <meta property="og:type" content="website">
 
@@ -114,43 +131,50 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Automatic packages from TFS: #4 – Pipeline component&nbsp;internals
+        Automatic packages from TFS: #4 – Pipeline component internals
         </h1>
+            <div class="meta">Published 25 August 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/team-foundation-server" class="p-1 mr-1 bg-gray-100 rounded-md"> Team Foundation Server</a>
+                    <a href="/tags/packages" class="p-1 mr-1 bg-gray-100 rounded-md"> Packages</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>In <a href="/posts/2014/automatic-packages-from-tfs-3-pipelines-and-data-transformation" target="_blank">last week's entry I listed out the set of pipeline components required to generate a package</a>. This week, lets have a look at what goes into each of those components and see how they interact with the configuration and source control data.<!--more--></p>
 <h2>1: Basic Package Metadata</h2>
 <p>The first component that runs is the <code>SetPackageMetadata</code>. This is a simple component that just sets some basic package metadata. For the moment that is just the package's name and the name of the package creator:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SetPackageMetadata : IPipelineComponent
 {
-    public const string PackageNameKey = "SetPackageMetadata.PackageName";
+    public const string PackageNameKey = &quot;SetPackageMetadata.PackageName&quot;;
 
     public void Run(PipelineData data)
     {
         if (!data.Configuration.Settings.ContainsKey(PackageNameKey))
         {
-            data.Configuration.ThrowMissingConfigurationException(PackageNameKey, "This should be the name to set for the package");
+            data.Configuration.ThrowMissingConfigurationException(PackageNameKey, &quot;This should be the name to set for the package&quot;);
         }
 
         data.Output.Metadata.Name = data.Configuration.Settings[PackageNameKey];
-        data.Output.Metadata.Author = System.Environment.UserDomainName + "\\" + System.Environment.UserName;
+        data.Output.Metadata.Author = System.Environment.UserDomainName + &quot;\\&quot; + System.Environment.UserName;
     }
 }
 </pre>
-<p>All the pipeline components implement the <code>IPipelineComponent</code> interface and expose the <code>Run()</code> method that is called by the parent. When called, it does two things. First it looks at the configuration data that is passed in to the component. It checks to see if the configuration data includes a key called "SetPackageMetadata.PackageName". (For all the configuration settings I've chosen to use a "." pattern to avoid clashes) If the key does not exist in the configuration dictionary then the component can't continue – so it raises an exception to indicate this missing data. Otherwise it carries on and uses the configuration data and the system environment data to update properties in the package metadata.</p>
+<p>All the pipeline components implement the <code>IPipelineComponent</code> interface and expose the <code>Run()</code> method that is called by the parent. When called, it does two things. First it looks at the configuration data that is passed in to the component. It checks to see if the configuration data includes a key called &quot;SetPackageMetadata.PackageName&quot;. (For all the configuration settings I've chosen to use a &quot;.&quot; pattern to avoid clashes) If the key does not exist in the configuration dictionary then the component can't continue – so it raises an exception to indicate this missing data. Otherwise it carries on and uses the configuration data and the system environment data to update properties in the package metadata.</p>
 <h2>2: Remove any unwanted changes</h2>
 <p>The second step in the pipeline is to remove any changed files from the Source Control data that we don't want to process. The job of the <code>RemoveUnwantedItems</code> is to fetch the configuration required for this, and then make use of the data to filter the Source Control Changes.</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class RemoveUnwantedItems : IPipelineComponent
 {
-    public const string ExtensionsToIgnoreKey = "RemoveUnwantedItems.ExtensionsToIgnore";
-    public const string FoldersToIgnoreKey = "RemoveUnwantedItems.FoldersToIgnore";
+    public const string ExtensionsToIgnoreKey = &quot;RemoveUnwantedItems.ExtensionsToIgnore&quot;;
+    public const string FoldersToIgnoreKey = &quot;RemoveUnwantedItems.FoldersToIgnore&quot;;
 
     private string[] extensions;
     private string[] folders;
@@ -159,15 +183,15 @@
     {
         if (!data.Configuration.Settings.ContainsKey(ExtensionsToIgnoreKey))
         {
-            data.Configuration.ThrowMissingConfigurationException(ExtensionsToIgnoreKey, "A comman separated list of file extensions to ignore when processing. Processed by an 'ends with' query.");
+            data.Configuration.ThrowMissingConfigurationException(ExtensionsToIgnoreKey, &quot;A comman separated list of file extensions to ignore when processing. Processed by an &#39;ends with&#39; query.&quot;);
         }
-        extensions = data.Configuration.Settings[ExtensionsToIgnoreKey].Split(',');
+        extensions = data.Configuration.Settings[ExtensionsToIgnoreKey].Split(&#39;,&#39;);
 
         if (!data.Configuration.Settings.ContainsKey(FoldersToIgnoreKey))
         {
-            data.Configuration.ThrowMissingConfigurationException(FoldersToIgnoreKey, "A comman separted list of folders to ignore. Processed by a 'contains' query.");
+            data.Configuration.ThrowMissingConfigurationException(FoldersToIgnoreKey, &quot;A comman separted list of folders to ignore. Processed by a &#39;contains&#39; query.&quot;);
         }
-        folders = data.Configuration.Settings[FoldersToIgnoreKey].Split(',');
+        folders = data.Configuration.Settings[FoldersToIgnoreKey].Split(&#39;,&#39;);
 
         string[] keys = new string[data.Input.Keys.Count];
         data.Input.Keys.CopyTo(keys, 0);
@@ -212,14 +236,14 @@ private bool containsExcludedFolder(string key)
 
 private bool noExtension(string key)
 {
-    string remainder = key.Substring(key.LastIndexOf("/"));
+    string remainder = key.Substring(key.LastIndexOf(&quot;/&quot;));
 
-    if (!remainder.Contains("."))
+    if (!remainder.Contains(&quot;.&quot;))
     {
         return true;
     }
 
-    if (remainder == "/")
+    if (remainder == &quot;/&quot;)
     {
         return true;
     }
@@ -232,19 +256,19 @@ private bool noExtension(string key)
 <p>If the input from source control contains things like changes to <code>.less</code> files that need to have the extension changed in the package output, then this component will process the change. It takes a slightly more complex input configuration to specify a list of old and new names, and then checks the source control data for entries that need changing:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class RenameFiles : IPipelineComponent
 {
-    public const string ExtensionsKey = "RenameFiles.Extensions";
+    public const string ExtensionsKey = &quot;RenameFiles.Extensions&quot;;
 
     public void Run(PipelineData data)
     {
         if(!data.Configuration.Settings.ContainsKey(ExtensionsKey))
         {
-            data.Configuration.ThrowMissingConfigurationException(ExtensionsKey, "A list of renames to perform. Separate entries with commas Separate source and target names with a pipe.");
+            data.Configuration.ThrowMissingConfigurationException(ExtensionsKey, &quot;A list of renames to perform. Separate entries with commas Separate source and target names with a pipe.&quot;);
         }
         Dictionary&lt;string, string&gt; renames = new Dictionary&lt;string, string&gt;(StringComparer.CurrentCultureIgnoreCase);
-        var extensions = data.Configuration.Settings[ExtensionsKey].Split(',');
+        var extensions = data.Configuration.Settings[ExtensionsKey].Split(&#39;,&#39;);
         foreach (string extension in extensions)
         {
-            var parts = extension.Split('|');
+            var parts = extension.Split(&#39;|&#39;);
             renames.Add(parts[0].Trim(), parts[1].Trim());
         }
 
@@ -260,7 +284,7 @@ private bool noExtension(string key)
                     SourceControlActions actions = data.Input[file];
                     data.Input.Remove(file);
 
-                    string newKey = file.Substring(0, file.LastIndexOf('.')) + rename.Value;
+                    string newKey = file.Substring(0, file.LastIndexOf(&#39;.&#39;)) + rename.Value;
 
                     data.Input.Add(newKey, actions);
 
@@ -276,25 +300,25 @@ private bool noExtension(string key)
 <p>Getting the relevant files to deploy is the next task to process. This requires knowing where the web project being deployed is located, in order to be able to adjust the paths returned by Source Control into the relative style of path required in a package:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractFilesToDeploy : IPipelineComponent
 {
-    public const string WebProjectFolderKey = "ExtractFilesToDeploy.WebProjectFolder";
+    public const string WebProjectFolderKey = &quot;ExtractFilesToDeploy.WebProjectFolder&quot;;
 
     public void Run(PipelineData data)
     {
         if (!data.Configuration.Settings.ContainsKey(WebProjectFolderKey))
         {
-            data.Configuration.ThrowMissingConfigurationException(WebProjectFolderKey, "This should be the disk path to the web project folder.");
+            data.Configuration.ThrowMissingConfigurationException(WebProjectFolderKey, &quot;This should be the disk path to the web project folder.&quot;);
         }
         string webProjectFolder = data.Configuration.Settings[WebProjectFolderKey]; 
             
 
         var fs = new PackageModel.PackageSourceFiles();
-        fs.Name = "Files to deploy";
+        fs.Name = &quot;Files to deploy&quot;;
 
         foreach (var item in data.Input)
         {
-            if (!item.Key.EndsWith(".item", StringComparison.CurrentCultureIgnoreCase) &amp;&amp; !item.Key.EndsWith(".cs", StringComparison.CurrentCultureIgnoreCase)  &amp;&amp; item.Value.IsNotDelete())
+            if (!item.Key.EndsWith(&quot;.item&quot;, StringComparison.CurrentCultureIgnoreCase) &amp;&amp; !item.Key.EndsWith(&quot;.cs&quot;, StringComparison.CurrentCultureIgnoreCase)  &amp;&amp; item.Value.IsNotDelete())
             {
-                fs.Add(item.Key.Replace(webProjectFolder, ""));
+                fs.Add(item.Key.Replace(webProjectFolder, &quot;&quot;));
             }
         }
 
@@ -314,11 +338,11 @@ private bool noExtension(string key)
         cfg = data.Configuration;
 
         var pi = new PackageModel.PackageSourceItems();
-        pi.Name = "Items to deploy";
+        pi.Name = &quot;Items to deploy&quot;;
 
         foreach (var item in data.Input)
         {
-            if (item.Key.EndsWith(".item", StringComparison.CurrentCultureIgnoreCase) &amp;&amp; item.Value.IsNotDelete())
+            if (item.Key.EndsWith(&quot;.item&quot;, StringComparison.CurrentCultureIgnoreCase) &amp;&amp; item.Value.IsNotDelete())
             {
                 try
                 {
@@ -326,7 +350,7 @@ private bool noExtension(string key)
                 }
                 catch (FileNotFoundException)
                 {
-                    cfg.Log.WriteLine("Serialised Item not found for '" + item.Key + "' - Cannot add to package.");
+                    cfg.Log.WriteLine(&quot;Serialised Item not found for &#39;&quot; + item.Key + &quot;&#39; - Cannot add to package.&quot;);
                 }
                     
             }
@@ -381,8 +405,8 @@ content-length: 68
 
 At least 7 characters, where one or more is a punctuation character.
 </pre>
-<p>You can see that all the data we need is stored in the "item" section that begins the file. It includes the GUID, the path. For the purposes of the prototype here I'm not bothered by specific item versions or languages, so we can fix those bits of the data to "invariant" for the language and "0" for the version in order to tell Sitecore to ignore those options when building the package.</p>
-<p>Hence we can write a very simple parser to turn the data into a dictionary. It ignores any blank lines, and looks for lines marked with four hyphens – processing data until it reaches one of these regions marked with a title other than "item". And finally it breaks the remaining strings into name / value pairs:</p>
+<p>You can see that all the data we need is stored in the &quot;item&quot; section that begins the file. It includes the GUID, the path. For the purposes of the prototype here I'm not bothered by specific item versions or languages, so we can fix those bits of the data to &quot;invariant&quot; for the language and &quot;0&quot; for the version in order to tell Sitecore to ignore those options when building the package.</p>
+<p>Hence we can write a very simple parser to turn the data into a dictionary. It ignores any blank lines, and looks for lines marked with four hyphens – processing data until it reaches one of these regions marked with a title other than &quot;item&quot;. And finally it breaks the remaining strings into name / value pairs:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IDictionary&lt;string, string&gt; parseFile(StreamReader sr)
 {
     Dictionary&lt;string, string&gt; data = new Dictionary&lt;string, string&gt;(StringComparer.CurrentCultureIgnoreCase);
@@ -400,18 +424,18 @@ At least 7 characters, where one or more is a punctuation character.
             continue;
         }
 
-        if (line.StartsWith("----"))
+        if (line.StartsWith(&quot;----&quot;))
         {
-            string region = line.Replace("----", "");
+            string region = line.Replace(&quot;----&quot;, &quot;&quot;);
 
-            if (StringComparer.CurrentCultureIgnoreCase.Compare(region,"item") != 0)
+            if (StringComparer.CurrentCultureIgnoreCase.Compare(region,&quot;item&quot;) != 0)
             {
                 done = true;
             }
         }
         else
         {
-            string[] parts = line.Split(':');
+            string[] parts = line.Split(&#39;:&#39;);
             data.Add(parts[0].Trim(), parts[1].Trim());
         }
     }
@@ -428,28 +452,28 @@ At least 7 characters, where one or more is a punctuation character.
     {
         var data = parseFile(tr);
 
-        string db = data["database"];
-        string id = data["id"];
-        string path = data["path"];
+        string db = data[&quot;database&quot;];
+        string id = data[&quot;id&quot;];
+        string path = data[&quot;path&quot;];
 
-        identifier = string.Format("/{0}{1}/{2}/invariant/0", db, path, id);
+        identifier = string.Format(&quot;/{0}{1}/{2}/invariant/0&quot;, db, path, id);
     }
 
     return identifier;
 }
 </pre>
 <p>It takes the disk path from Source Control and opens it as a text file and parses it using the code above. And then it generates the correct path using the data extracted from the disk file.</p>
-<p>Now this approach works well, and solves the core problem of not having access to Sitecore – however it requires that the data exists on disk. Hence this makes it a requirement of the tool that the current state of your working folder includes all the correct <code>.item</code> files. If you don't do a "get-latest" to ensure the files are available then you will see errors from the tool – <code>FileNotFoundException</code>s.</p>
+<p>Now this approach works well, and solves the core problem of not having access to Sitecore – however it requires that the data exists on disk. Hence this makes it a requirement of the tool that the current state of your working folder includes all the correct <code>.item</code> files. If you don't do a &quot;get-latest&quot; to ensure the files are available then you will see errors from the tool – <code>FileNotFoundException</code>s.</p>
 <p>Another possible thing to do with this tool in the future might be to add the ability to perform this get operation automatically. However I'm thinking of this tool being used in a build workflow where this job should already have been performed in order to perform the build itself.</p>
 <h2>6: Adding binary files to deploy</h2>
 <p>The last thing which needs to be added to the package is the binaries generated from the code in the web package. The <code>ExtractBinariesToDeploy</code> component does this. The configuration for this is a bit more complex, as it needs to be a set of project names, with their accompanying set of binaries. Currently that's a comma separated list, where each item is a pipe-separated list of one project followed by a number of binary files. The following bit of code parses the data out of the config setting into a Dictionary containing a list of strings:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private Dictionary&lt;string, List&lt;string&gt;&gt; extractProjectPathMap(PipelineData data)
 {
 	Dictionary&lt;string, List&lt;string&gt;&gt; projectPathMap = new Dictionary&lt;string, List&lt;string&gt;&gt;(StringComparer.CurrentCultureIgnoreCase);
-	var projectsCfg = data.Configuration.Settings[ProjectPathMapKey].Split(',');
+	var projectsCfg = data.Configuration.Settings[ProjectPathMapKey].Split(&#39;,&#39;);
 	foreach (string project in projectsCfg)
 	{
-		string[] parts = project.Split('|');
+		string[] parts = project.Split(&#39;|&#39;);
 
 		List&lt;string&gt; files = new List&lt;string&gt;();
 		for (int i = 1; i &lt; parts.Length; i++)
@@ -466,16 +490,16 @@ At least 7 characters, where one or more is a punctuation character.
 <p>That code is used by the core of the pipeline component to parse the configuration before it starts to process the individual items. It goes through the set of projects configured, and for each one, it checks to see if it can find any C# source changes in the input data. For any configured projects that do have changes, it adds the relevant binaries to the package:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractBinariesToDeploy : IPipelineComponent
 {
-    public const string ProjectPathMapKey = "ExtractBinariesToDeploy.ProjectPathMap";
+    public const string ProjectPathMapKey = &quot;ExtractBinariesToDeploy.ProjectPathMap&quot;;
 
     public void Run(PipelineData data)
     {
         var fs = new PackageModel.PackageSourceFiles();
-        fs.Name = "Binaries to deploy";
+        fs.Name = &quot;Binaries to deploy&quot;;
 
         if (!data.Configuration.Settings.ContainsKey(ProjectPathMapKey))
         {
-            data.Configuration.ThrowMissingConfigurationException(ProjectPathMapKey, "A comma separated list of settings. Each one is a pipe separated items. The first part is the project path. All subsequent parts are binaries to add if C# files in the project have been changed.");
+            data.Configuration.ThrowMissingConfigurationException(ProjectPathMapKey, &quot;A comma separated list of settings. Each one is a pipe separated items. The first part is the project path. All subsequent parts are binaries to add if C# files in the project have been changed.&quot;);
         }
 
         var projectPathMap = extractProjectPathMap(data);
@@ -483,7 +507,7 @@ At least 7 characters, where one or more is a punctuation character.
 
         foreach (var item in data.Input)
         {
-            if (item.Key.EndsWith(".cs", StringComparison.CurrentCultureIgnoreCase))
+            if (item.Key.EndsWith(&quot;.cs&quot;, StringComparison.CurrentCultureIgnoreCase))
             {
                 foreach (string project in projects.ToArray())
                 {
@@ -519,7 +543,7 @@ At least 7 characters, where one or more is a punctuation character.
         bool deletionsFound = false;
 
         StringBuilder sb = new StringBuilder();
-        sb.Append("The following items require deletion:\r\n");
+        sb.Append(&quot;The following items require deletion:\r\n&quot;);
 
         foreach (var item in data.Input)
         {
@@ -527,7 +551,7 @@ At least 7 characters, where one or more is a punctuation character.
             {
                 deletionsFound = true;
                 sb.Append(item.Key);
-                sb.Append("\r\n");
+                sb.Append(&quot;\r\n&quot;);
             }
         }
 
@@ -542,6 +566,7 @@ At least 7 characters, where one or more is a punctuation character.
 <h2>Next step...</h2>
 <p>So that's the set of pipeline components I'm using for my prototype – but as previously suggested, the code is designed to be extensible to allow them to be improved or replaced in future work.</p>
 <p>Next week's will be the last part of this, I think – a wrap up and the final source code.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -596,7 +621,7 @@ At least 7 characters, where one or more is a punctuation character.
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Have you ever needed to write code that detects if the current computer has an internet connection or not? Having recently tried this, it turns out it&amp;#x27;s not quite as easy as I expected it would be. So since I&amp;#x27;ve banged my head against the challenge, here&amp;#x27;s one approach to solving the problem that you might find useful: ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Tests that cope gracefully with Airplane&nbsp;Mode</title>
+    <title>Jeremy Davis - Tests that cope gracefully with Airplane&#xA0;Mode</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2016/tests-that-cope-gracefully-with-airplane-mode">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Tests that cope gracefully with Airplane&nbsp;Mode">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Tests that cope gracefully with Airplane&amp;#xA0;Mode">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/tests-that-cope-gracefully-with-airplane-mode-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Tests that cope gracefully with Airplane&#xA0;Mode",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/tests-that-cope-gracefully-with-airplane-mode-social.png"
+        ],
+        "datePublished": "2016-12-26T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/tests-that-cope-gracefully-with-airplane-mode">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,22 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Tests that cope gracefully with Airplane&nbsp;Mode
+        Tests that cope gracefully with Airplane Mode
         </h1>
+            <div class="meta">Published 26 December 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+                    <a href="/tags/unit-test" class="p-1 mr-1 bg-gray-100 rounded-md"> Unit Test</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Have you ever needed to write code that detects if the current computer has an internet connection or not? Having recently tried this, it turns out it's not quite as easy as I expected it would be. So since I've banged my head against the challenge, here's one approach to solving the problem that you might find useful: <!--more--></p>
 <p>If you read up on automated tests, you'll find a lot of detail on the topic of ensuring any dependencies of the code under test can be mocked. One of the key reasons given for this is that some dependencies will have non-deterministic behaviour – calls that ask for the current time or fetch data from the internet for example. While these architectural rules are good, one of the challenges of dealing with legacy code is that it usually wasn't built with good IoC patterns. That means you can find yourself trying to work around non-deterministic dependencies while you get tests in place...</p>
 <p>Recently I found myself looking at some legacy code which made internet requests using the <code>WebClient</code> class. In order to get started updating this code I needed to verify its current behaviour, so I wrote a few tests that caused it to fetch data from a known URL and verify the response.</p>
@@ -136,7 +157,7 @@ public void SomeClass_SomeMethod_NetworkFetch_ReturnsValidData()
 {
     if(!NetworkInterface.GetIsNetworkAvailable())
     {
-        Assert.Inconclusive("This test requires network access");
+        Assert.Inconclusive(&quot;This test requires network access&quot;);
     }
 
     // rest of the test...
@@ -146,8 +167,8 @@ public void SomeClass_SomeMethod_NetworkFetch_ReturnsValidData()
 <p>Poking about I realised that <code>NetworkInterface</code> class includes another method for <code>GetAllNetworkInterfaces()</code>. So I fired up <a href="https://www.linqpad.net/" target="_blank" rel="noopener noreferrer">LinqPad</a> and I wrote a fragment of code to list out the state of all the adapters on my laptop:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var adapters = NetworkInterface
                 .GetAllNetworkInterfaces()
-                .Select(i =&gt; i.Description + ": " + i.OperationalStatus.ToString())
-Console.WriteLine(String.Join("\r\n", adapters);
+                .Select(i =&gt; i.Description + &quot;: &quot; + i.OperationalStatus.ToString())
+Console.WriteLine(String.Join(&quot;\r\n&quot;, adapters);
 </pre>
 <p>And that returned:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-highlight="4,5" data-enlighter-language="text" style="width:100%; overflow:scroll;">Microsoft Wi-Fi Direct Virtual Adapter: Down
@@ -165,8 +186,8 @@ Microsoft ISATAP Adapter #3: Down
     return NetworkInterface.GetAllNetworkInterfaces()
         .Where(i =&gt; i.OperationalStatus == OperationalStatus.Up )
         .Select(i =&gt; i.Description.ToLower())
-        .Where(n =&gt; !n.Contains("virtualbox"))
-        .Where(n =&gt; !n.Contains("loopback"))
+        .Where(n =&gt; !n.Contains(&quot;virtualbox&quot;))
+        .Where(n =&gt; !n.Contains(&quot;loopback&quot;))
         .Any();
 }
 </pre>
@@ -176,13 +197,14 @@ Microsoft ISATAP Adapter #3: Down
 {
     if(!physicalNetworkAvailable())
     {
-        Assert.Inconclusive("This test requires network access");
+        Assert.Inconclusive(&quot;This test requires network access&quot;);
     }
 
     // rest of the test...
 }
 </pre>
 <p>So now I can get back to the important work of fixing the code's dependencies so that I don't need the code here...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -237,7 +259,7 @@ Microsoft ISATAP Adapter #3: Down
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

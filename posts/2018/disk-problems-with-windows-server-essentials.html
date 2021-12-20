@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Ages ago &amp;lt;a href=&amp;quot;/posts/2014/fun-with-nuc-servers&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;I wrote myself some notes on setting up Windows Server Essentials on Intel NUC hardware&amp;lt;/a&amp;gt;. Recently I did an upgrade on one of these machines, and ended up in a world of pain. Google was very thin on information to help me try and sort this out, so I figured this needed writing up...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Disk problems with Windows Server&nbsp;Essentials</title>
+    <title>Jeremy Davis - Disk problems with Windows Server&#xA0;Essentials</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2018/disk-problems-with-windows-server-essentials">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Disk problems with Windows Server&nbsp;Essentials">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Disk problems with Windows Server&amp;#xA0;Essentials">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/disk-problems-with-windows-server-essentials-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Disk problems with Windows Server&#xA0;Essentials",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/disk-problems-with-windows-server-essentials-social.png"
+        ],
+        "datePublished": "2018-08-06T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/disk-problems-with-windows-server-essentials">
 <meta property="og:type" content="website">
 
@@ -114,25 +130,30 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Disk problems with Windows Server&nbsp;Essentials
+        Disk problems with Windows Server Essentials
         </h1>
+            <div class="meta">Published 06 August 2018</div>
+            <div class="flex py-1">
+                    <a href="/tags/nuc" class="p-1 mr-1 bg-gray-100 rounded-md"> NUC</a>
+                    <a href="/tags/windows" class="p-1 mr-1 bg-gray-100 rounded-md"> Windows</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Ages ago <a href="/posts/2014/fun-with-nuc-servers" target="_blank">I wrote myself some notes on setting up Windows Server Essentials on Intel NUC hardware</a>. Recently I did an upgrade on one of these machines, and ended up in a world of pain. Google was very thin on information to help me try and sort this out, so I figured this needed writing up...<!--more--></p>
 <h2>How it all got started...</h2>
-<p>My server had been running quietly and happily for some years, but I had recently realised I had two issues. The obvious one was that I was running out of disk space on the 1TB hard drive installed in the server, so I figured it was time to upgrade it to a 2TB drive. The second issue was that I started seeing quite a few event log messages I didn't like the look of. The most worrying ones were raised by the "ESENT" subsystem and included error IDs 510, 508, 533. I'd find my event log looking like this:</p>
+<p>My server had been running quietly and happily for some years, but I had recently realised I had two issues. The obvious one was that I was running out of disk space on the 1TB hard drive installed in the server, so I figured it was time to upgrade it to a 2TB drive. The second issue was that I started seeing quite a few event log messages I didn't like the look of. The most worrying ones were raised by the &quot;ESENT&quot; subsystem and included error IDs 510, 508, 533. I'd find my event log looking like this:</p>
 <p><a href="/img/2018/2018-05-e244dd62558553460bab4d622839bc83.png" target="_blank"><img alt="ESENT errors" src="/img/2018/2018-05-e244dd62558553460bab4d622839bc83.png"></a></p>
 <p>The error message attached to those looks a bit scary:</p>
-<p><code>A request to write to the file "[some file name]" at offset 229376 (0x0000000000038000) for 4096 (0x00001000) bytes succeeded, but took an abnormally long time (28 seconds) to be serviced by the OS. This problem is likely due to faulty hardware. Please contact your hardware vendor for further assistance diagnosing the problem.</code></p>
+<p><code>A request to write to the file &quot;[some file name]&quot; at offset 229376 (0x0000000000038000) for 4096 (0x00001000) bytes succeeded, but took an abnormally long time (28 seconds) to be serviced by the OS. This problem is likely due to faulty hardware. Please contact your hardware vendor for further assistance diagnosing the problem.</code></p>
 <p>The file in question varied a bit, but was usually something that looked related to Windows itself. It was noticable that the computer would be generally unresponsive for a short period of time around each of these errors.</p>
-<p>So given Windows was saying "faulty hardware" and I knew I needed more disk space, I decided it was definitely time for a new hard drive.</p>
+<p>So given Windows was saying &quot;faulty hardware&quot; and I knew I needed more disk space, I decided it was definitely time for a new hard drive.</p>
 <h2>But it gets worse...</h2>
 <p>So after a quick click around some websites selling hard drives, I orderd myself a 2TB drive. When it turned up I used some <a href="https://www.macrium.com/reflectfree" rel="noopener" target="_blank">disk imaging software to clone the data from the old drive to the new one</a>, hoping to avoid the need to reinstall Windows, and I put it the new one into the machine and booted up again.</p>
 <p>And the errors were still being generated...</p>
@@ -146,15 +167,15 @@ I tried a newer model of NUC. Errors still occuring.</p>
 <p><a href="https://media.giphy.com/media/3og0IN2YJFptu9DQAw/giphy.gif" rel="noopener" target="_blank">I may have used some fairly strong language at this point</a>. Having changed every aspect of the machine, I was still seeing the same error. Not necessarily instantly, but it was noticable that as soon as I tried to run Windows Update, I would start seeing ESENT errors in the logs, and Windows Update would never successfully install updates. (Leaving it overnight – which seemed like a long enough wait)</p>
 <h2>Getting to a solution...</h2>
 <p>I'll save you the description of about two weeks of further googling, rebooting, re-fitting heatsinks, reinstalling Windows and banging my head on the desk at this point.</p>
-<p>But eventually I came across some blog posts that talked about <a href="https://www.wintips.org/fix-windows-10-freezing-bsod-restart-issues/" rel="noopener" target="_blank">PCI power management</a> causing <a href="https://blogs.technet.microsoft.com/kevinholman/2013/06/21/event-id-129-storachi-reset-to-device-deviceraidport0-was-issued/" rel="noopener" target="_blank">hangs and potential disk issues</a>. While these were not talking about my specific hardware or issues, that made me think that maybe I should check what the settings for the power management features of this hardware and a default install of Windows Server 2016 were. And they seemed to be set to "try and save power" in most cases. So I tried adjusting the following settings:</p>
+<p>But eventually I came across some blog posts that talked about <a href="https://www.wintips.org/fix-windows-10-freezing-bsod-restart-issues/" rel="noopener" target="_blank">PCI power management</a> causing <a href="https://blogs.technet.microsoft.com/kevinholman/2013/06/21/event-id-129-storachi-reset-to-device-deviceraidport0-was-issued/" rel="noopener" target="_blank">hangs and potential disk issues</a>. While these were not talking about my specific hardware or issues, that made me think that maybe I should check what the settings for the power management features of this hardware and a default install of Windows Server 2016 were. And they seemed to be set to &quot;try and save power&quot; in most cases. So I tried adjusting the following settings:</p>
 <ul>
 <li>I changed the BIOS power management settings to prevent it throttling performance to save energy.</li>
 <li>I changed the Windows Power Options "AHCI Link Power Management" settings to turn them off, and prevent Windows from powering down the connection to these devices.</li>
 </ul>
 <p>And with that done, the ESENT errors stopped reappearing in my logs.</p>
-<p>I ran the "SFC /scannow" command from an elevated command prompt, and allowed it to fix up some system files that were unhappy. And with this done I found I was finally able to get a successful run of Windows Update as well.</p>
+<p>I ran the &quot;SFC /scannow&quot; command from an elevated command prompt, and allowed it to fix up some system files that were unhappy. And with this done I found I was finally able to get a successful run of Windows Update as well.</p>
 <p><a href="https://media.giphy.com/media/EDt1m8p5hqXG8/giphy.gif" rel="noopener" target="_blank">Cue a huge sigh of relief</a>.</p>
-<p>I do still see the occasional instances of Error ID 153 from the "disk" subsystem, with a message like <code>The IO operation at logical block address 0x5a9088 for Disk 0 (PDO name: \Device\00000036) was retried.</code> in the System log. But as far as I can tell from my searching, this is not actually a problem, it's just that recent builds of windows are more aggressive about logging some stuff that used to be treated as unimportant, and quietly ignored.</p>
+<p>I do still see the occasional instances of Error ID 153 from the &quot;disk&quot; subsystem, with a message like <code>The IO operation at logical block address 0x5a9088 for Disk 0 (PDO name: \Device\00000036) was retried.</code> in the System log. But as far as I can tell from my searching, this is not actually a problem, it's just that recent builds of windows are more aggressive about logging some stuff that used to be treated as unimportant, and quietly ignored.</p>
 <p>All the messing about leads me to believe that there was never anything wrong with my original hard drive, and all this was caused by something changing in Windows that caused it to either be more sensitive to these disk power management issues, or to just start logging errors it had actually been encountering all along.</p>
 <h2>Other things I needed to change</h2>
 <p>All the rebuilding involved in this pointed out that a few other things have changed for installing this software onto NUCs since I last tried:</p>
@@ -164,8 +185,9 @@ I tried a newer model of NUC. Errors still occuring.</p>
 <li>If you have older machines using RDP to connect to a recently patched server, <a href="https://support.microsoft.com/en-gb/help/4295591/credssp-encryption-oracle-remediation-error-when-to-rdp-to-azure-vm" rel="noopener" target="_blank">you may need to work around a security setting related to a crypto bug that throws up a warning about "CredSSP" and "Oracle remediation" when you try to connect</a>.</li>
 <li>You'll probably see lots of log messages about increasing the security of LDAP using signing. <a href="https://support.microsoft.com/en-gb/help/935834/how-to-enable-ldap-signing-in-windows-server-2008" rel="noopener" target="_blank">If you're not supporting legacy ldap clients, enable signing to get rid of the messages</a>.</li>
 </ul>
-<p>So getting my server back up to speed was a long and painful process. But I am now running <a href="https://www.intel.co.uk/content/www/uk/en/products/boards-kits/nuc/boards/nuc7i3dnbe.html" rel="noopener" target="_blank">a nice new NUC</a> and I've also taken the opportunity to install the "<a href="https://www.mymediaalexa.com/" rel="noopener" target="_blank">My Media for Alexa</a>" server so I can now enjoy the frustration of trying to get my Amazon Echo to understand me asking it to play specific tracks from my MP3 collection.</p>
+<p>So getting my server back up to speed was a long and painful process. But I am now running <a href="https://www.intel.co.uk/content/www/uk/en/products/boards-kits/nuc/boards/nuc7i3dnbe.html" rel="noopener" target="_blank">a nice new NUC</a> and I've also taken the opportunity to install the &quot;<a href="https://www.mymediaalexa.com/" rel="noopener" target="_blank">My Media for Alexa</a>&quot; server so I can now enjoy the frustration of trying to get my Amazon Echo to understand me asking it to play specific tracks from my MP3 collection.</p>
 <p>Fingres crossed I don't have to reinstall again for a good long time...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -220,7 +242,7 @@ I tried a newer model of NUC. Errors still occuring.</p>
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

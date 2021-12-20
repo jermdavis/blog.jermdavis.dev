@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Recently I looked at &amp;lt;a href=&amp;quot;/posts/2014/delete-aliases-along-with-their-items&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;removing aliases when their owning items were deleted&amp;lt;/a&amp;gt;. I noted at the end of the post that the code ended up with some duplication in it. Duplication is generally a bad thing in code &amp;#x2013; copy/pastes of code tends to diverge over time and introduce bugs. So ideally we&amp;#x27;d work out a way to get rid of the duplication, and reduce the set of methods our class needs.&amp;#xA;Having been reading a bit on functional languages and F# in particular, I was thinking about how it can be done by passing code as parameters to more generic methods.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Avoiding duplicated code with&nbsp;delegates...</title>
+    <title>Jeremy Davis - Avoiding duplicated code with&#xA0;delegates...</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/avoiding-duplication-by-passing-code-as-parameters">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Avoiding duplicated code with&nbsp;delegates...">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Avoiding duplicated code with&amp;#xA0;delegates...">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/avoiding-duplication-by-passing-code-as-parameters-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Avoiding duplicated code with&#xA0;delegates...",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/avoiding-duplication-by-passing-code-as-parameters-social.png"
+        ],
+        "datePublished": "2014-04-14T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/avoiding-duplication-by-passing-code-as-parameters">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,24 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Avoiding duplicated code with&nbsp;delegates...
+        Avoiding duplicated code with delegates...
         </h1>
+            <div class="meta">Published 14 April 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/general" class="p-1 mr-1 bg-gray-100 rounded-md"> General</a>
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Recently I looked at <a href="/posts/2014/delete-aliases-along-with-their-items" target="_blank" rel="noopener noreferrer">removing aliases when their owning items were deleted</a>. I noted at the end of the post that the code ended up with some duplication in it. Duplication is generally a bad thing in code – copy/pastes of code tends to diverge over time and introduce bugs. So ideally we'd work out a way to get rid of the duplication, and reduce the set of methods our class needs.</p>
 <p>Having been reading a bit on functional languages and F# in particular, I was thinking about how it can be done by passing code as parameters to more generic methods.</p>
 <!--more-->
@@ -146,7 +170,7 @@
 <p><a target="_blank" rel="noopener noreferrer" href="/img/2014/compare.png"><img border="0" alt="Comparing Code" src="/img/2014/compare.png"></a></p>
 <p>In fact the only differences are in text strings, the return type and the other function they call.</p>
 <p>So how do we reduce the amount of code we need? Well, how about we try passing some of those differences in as parameters to a more generic function? For strings and normal types that's easy – we do it all the time. But what about the other function that gets called to process the individual Items? Well in .Net we have the concept of Delegates to represent pointers to functions. Historically you had to declare these yourself, but more recently the arrival of Linq gave the .Net Framework a series of generic types for representing pointers to methods and functions: <code>Action&lt;T&gt;</code> and its variants represent a pointer to a void method. <code>Func&lt;T, Result&gt;</code> and its variants represent a pointer to a function that returns the type TResult. You can read more about the <a target="_blank" rel="noopener noreferrer" href="http://msdn.microsoft.com/en-us/library/bb549151(v=vs.110).aspx">Func</a> and <a target="_blank" rel="noopener noreferrer" href="http://msdn.microsoft.com/en-us/library/018hxwa8(v=vs.110).aspx">Action</a> types at MSDN.</p>
-<p>So if we want to make our "do something" method into a parameter to some more generic code, we need to decide what it's signature should be. In this case we have two possibilities: <code>Action&lt;Item&gt;</code> or <code>Func&lt;Item, int&gt;</code> depending on which version of the <code>xxAliases()</code> methods you look at from last week's code. Since we can always ignore a return type if we want to, it seems that <code>Func&lt;Item, int&gt;</code> is the right choice here, as it lets us express both of our possible methods.</p>
+<p>So if we want to make our &quot;do something&quot; method into a parameter to some more generic code, we need to decide what it's signature should be. In this case we have two possibilities: <code>Action&lt;Item&gt;</code> or <code>Func&lt;Item, int&gt;</code> depending on which version of the <code>xxAliases()</code> methods you look at from last week's code. Since we can always ignore a return type if we want to, it seems that <code>Func&lt;Item, int&gt;</code> is the right choice here, as it lets us express both of our possible methods.</p>
 <p>Based on that and a bit of thinking, we can replace the two <code>xxAliases(ListString, Database)</code> methods with one new method that looks like this:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private int processItems(ListString items, Database db, string taskContext, Func&lt;Item, int&gt; process)
 {
@@ -178,10 +202,10 @@
     }
     catch (Exception ex)
     {
-        Log.Error("Error during: " + taskContext, ex, this);
+        Log.Error(&quot;Error during: &quot; + taskContext, ex, this);
         HttpUnhandledException ex2 = new HttpUnhandledException(ex.Message, ex);
         string htmlErrorMessage = ex2.GetHtmlErrorMessage();
-        UrlString urlString = new UrlString("/sitecore/shell/controls/error.htm");
+        UrlString urlString = new UrlString(&quot;/sitecore/shell/controls/error.htm&quot;);
         Context.ClientPage.ClientResponse.ShowModalDialog(urlString.ToString(), htmlErrorMessage);
     }
 
@@ -191,11 +215,11 @@
 <p>It does exactly the same thing, except that it takes the processing function for each Item as a parameter, and it also takes the name of the task for logging / error purposes as a parameter. And with that we can remove the two methods with the <code>xxAliases(ListString, Database)</code> signature.</p>
 <p>Making use of this is easy, since C# will implicitly type cast the name of a function into the appropriate <code>Func&lt;&gt;</code> type at compile time, so for counting aliases we can just write:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// Count the aliases for any items we have as parameters
-int aliases = processItems(items, db, "DeleteItems pipeline - count aliases", countAliases);
+int aliases = processItems(items, db, &quot;DeleteItems pipeline - count aliases&quot;, countAliases);
 </pre>
 <p>and that will cause our <code>countAliases(Item)</code> method to be called for each item the <code>processItems()</code> code finds. But doing the same thing for the <code>removeAliases()</code> method would give a compiler error. That returns <code>void</code>, meaning it can't be typecast to a <code>Func&lt;&gt;</code> – so we have to cheat a little here and make <code>removeAliases(Item item)</code> return an integer instead of void. You can count the number of Alias items that actually get removed, or you can just return 0 – it doesn't matter to the rest of the code.</p>
 <p>It's worth mentioning here that you don't actually need to declare a method to call our <code>processItems()</code> function. Another of the nice features you get with this approach is that you can write methods and functions inline using Lambda expressions. So you can write:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">processItems(listOfItems, database, "Example anonymous method", itm =&gt; {
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">processItems(listOfItems, database, &quot;Example anonymous method&quot;, itm =&gt; {
     // do something
     return 0;
 });
@@ -215,6 +239,7 @@ int aliases = processItems(items, db, "DeleteItems pipeline - count aliases", co
 }
 </pre>
 <p>And we've successfully removed the duplication. Job's a good ‘un.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -269,7 +294,7 @@ int aliases = processItems(items, db, "DeleteItems pipeline - count aliases", co
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

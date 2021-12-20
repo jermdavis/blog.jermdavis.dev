@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Having been working on more automation with PowerShell DSC in the last week, I hit upon an interesting issue. For many operations, it doesn&amp;#x27;t really matter what user your script is executing as. Most local operations that only affect the current machine just work. However, every so often you come across an operation that you need to perform as a specific user. So how can you impersonate a different user for parts of your scripts? ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Wait, who is DSC running as&nbsp;again?</title>
+    <title>Jeremy Davis - Wait, who is DSC running as&#xA0;again?</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/wait-who-is-dsc-running-as-again">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Wait, who is DSC running as&nbsp;again?">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Wait, who is DSC running as&amp;#xA0;again?">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/wait-who-is-dsc-running-as-again-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Wait, who is DSC running as&#xA0;again?",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/wait-who-is-dsc-running-as-again-social.png"
+        ],
+        "datePublished": "2015-11-23T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/wait-who-is-dsc-running-as-again">
 <meta property="og:type" content="website">
 
@@ -114,33 +131,39 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Wait, who is DSC running as&nbsp;again?
+        Wait, who is DSC running as again?
         </h1>
+            <div class="meta">Published 23 November 2015</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+                    <a href="/tags/powershell-dsc" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell DSC</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Having been working on more automation with PowerShell DSC in the last week, I hit upon an interesting issue. For many operations, it doesn't really matter what user your script is executing as. Most local operations that only affect the current machine just work. However, every so often you come across an operation that you need to perform as a specific user. So how can you impersonate a different user for parts of your scripts? <!--more--></p>
 <h2>What's the default user context?</h2>
-<p>The first question to address is what account does an "ordinary" script run as? We can write a simple <code>Script</code> resource that outputs the details of the current user. For example:</p>
+<p>The first question to address is what account does an &quot;ordinary&quot; script run as? We can write a simple <code>Script</code> resource that outputs the details of the current user. For example:</p>
 <pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Script ShowUser
 {
     GetScript = { }
     TestScript = { $False }
     SetScript = {
-        write-verbose "User: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)"
-        write-verbose "Current User: $env:UserName"
+        write-verbose &quot;User: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)&quot;
+        write-verbose &quot;Current User: $env:UserName&quot;
     }
 }
 </pre>
 <p>The <code>GetScript</code> and <code>TestScript</code> blocks here aren't important. The <code>SetScript</code> block is just displaying the current user in two different ways - using the current Windows security principle object, and the current environment variable for the user name. What do we get? This:</p>
 <p><a href="/img/2015/2015-11-defaultuser.png" target="_blank"><img alt="Default User" src="/img/2015/2015-11-defaultuser.png"></a></p>
-<p>The code is running as <code>NT AUTHORITY\SYSTEM</code> - the current computer's account. That account lacks certain security rights. The obvious rights it doesn't have is network access, but as I discovered recently I also can't grant the "log on a service" right to other user accounts via a process running like that. So how can you run code as different users?</p>
+<p>The code is running as <code>NT AUTHORITY\SYSTEM</code> - the current computer's account. That account lacks certain security rights. The obvious rights it doesn't have is network access, but as I discovered recently I also can't grant the &quot;log on a service&quot; right to other user accounts via a process running like that. So how can you run code as different users?</p>
 <h2>How do we get the credential details of another user?</h2>
 <p>PowerShell provides a data type for dealing with user credentials: the <code>PSCredential</code> type. The simplest way to get some credentials is to use the <code>Get-Credential</code> commandlet. This will prompt the current user to enter some credentials. Because it's interactive, you can't do this in the <code>.MOF</code> - only DSC script that generates the <code>.MOF</code> file. Hence the call has to go outside the <code>Configuration</code> block in your script, and the credential needs to be passed into it.</p>
 <p>To achieve this, we need to add a new parameter to the DSC script, to allow us to pass in our chosen credential:</p>
@@ -158,7 +181,7 @@
         $CustomCredential
     )
  
-    Node $AllNodes.where{ $_.Role.Contains("Required-Role-Name") }.NodeName
+    Node $AllNodes.where{ $_.Role.Contains(&quot;Required-Role-Name&quot;) }.NodeName
     {
        #
        # Resources go here...
@@ -167,14 +190,14 @@
 }
 </pre>
 <p>When the DSC Script is executed, the <code>Get-Credentials</code> Commandlet can capture a credential to pass in as the last parameter for the call to the DSC script:</p>
-<pre data-enlighter-highlight="1" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">ExampleCredentials -ConfigurationData "\\vboxsvr\DSC\configData.psd1" -PackagePath "\\VBOXSVR\DSC\location" -CustomCredential (Get-Credential)
+<pre data-enlighter-highlight="1" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">ExampleCredentials -ConfigurationData &quot;\\vboxsvr\DSC\configData.psd1&quot; -PackagePath &quot;\\VBOXSVR\DSC\location&quot; -CustomCredential (Get-Credential)
 Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose 
 </pre>
 <p>Now, while this prevents you from having to hard-code credentials into your DSC script, remember that the data is saved in your <code>.MOF</code> file. Hence this isn't secure. In order to persuade PowerShell that you really mean to do this, you need to add an extra bit of data to your Node configuration data:</p>
-<pre data-enlighter-highlight="5" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">@{
-    AllNodes = @(
-        @{
-            NodeName = "*"
+<pre data-enlighter-highlight="5" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">&#64;{
+    AllNodes = &#64;(
+        &#64;{
+            NodeName = &quot;*&quot;
             PSDscAllowPlainTextPassword = $true
         }
         #
@@ -186,11 +209,11 @@ Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose
 <p>Here, the <code>PSDscAllowPlainTextPassword</code> setting has been applied to any <code>Node</code> in the data file, allowing the insecure credentials.</p>
 <p>The work I'm doing with DSC is all for development environments at present, hence the credentials in these files are not really secret. However, if you you need to include credentials that should be kept secret, you are able to <a href="https://msdn.microsoft.com/en-us/PowerShell/DSC/secureMOF" target="_blank" rel="noopener noreferrer">encrypt <code>.MOF</code> files using certificates</a>.</p>
 <p>But what if you need your scripts to run unattended? How can you capture credentials if there's no user around to enter them? Simple enough. One appraoch is to create the Credential object manually, and pass that to the DSC invocation instead:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$username = "SomeDomain\AnyUser"
-$password = ConvertTo-SecureString "your-password" -Force -AsPlainText
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$username = &quot;SomeDomain\AnyUser&quot;
+$password = ConvertTo-SecureString &quot;your-password&quot; -Force -AsPlainText
 $credential = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $password
 
-ExampleCredentials -ConfigurationData "\\vboxsvr\DSC\configData.psd1" -PackagePath "\\VBOXSVR\DSC\location" -CustomCredential $credential
+ExampleCredentials -ConfigurationData &quot;\\vboxsvr\DSC\configData.psd1&quot; -PackagePath &quot;\\VBOXSVR\DSC\location&quot; -CustomCredential $credential
 Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose 
 </pre>
 <p>Obviously, this has further security implications, since your credentials are now in plain text in both the DSC script and the <code>.MOF</code> file. So handle with care...</p>
@@ -219,8 +242,8 @@ Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose
     GetScript = { }
     TestScript = { $False }
     SetScript = {
-        $env:UserName | Out-File "c:\dsc\username.txt" -Encoding ASCII
-        Write-Verbose "$env:UserName"
+        $env:UserName | Out-File &quot;c:\dsc\username.txt&quot; -Encoding ASCII
+        Write-Verbose &quot;$env:UserName&quot;
     }
 }
 </pre>
@@ -235,9 +258,9 @@ Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose
     GetScript = { }
     TestScript = { $False }
     SetScript = {
-        $tmp = "$($using:Node.TempFolder)"
-        $file = "$tmp\_TestImpersonation.ps1"           
-        "whoami &gt; $tmp\_TestImpersonation.txt" | Out-File $file -Encoding ASCII
+        $tmp = &quot;$($using:Node.TempFolder)&quot;
+        $file = &quot;$tmp\_TestImpersonation.ps1&quot;           
+        &quot;whoami &gt; $tmp\_TestImpersonation.txt&quot; | Out-File $file -Encoding ASCII
     }
 }
 </pre>
@@ -248,16 +271,17 @@ Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose
 <p>Then we can add an <code>xWindowsProcess</code> resource to execute a task - in this case the PowerShell script we output above:</p>
 <pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">xWindowsProcess RunScript
 {
-    DependsOn = "[script]GenerateScript"
-    Path = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
-    Arguments = "-NonInteractive -File `$($Node.TempFolder)\_TestImpersonation.ps1`
+    DependsOn = &quot;[script]GenerateScript&quot;
+    Path = &quot;C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe&quot;
+    Arguments = &quot;-NonInteractive -File `$($Node.TempFolder)\_TestImpersonation.ps1`
     Credential = $CustomCredential
-    Ensure = "Present"
+    Ensure = &quot;Present&quot;
 }
 </pre>
 <p>This fires up a new instance of the PowerShell runtime as the user we specified with out credentials. It specifies that PowerShell has to run in a non-interactive session, and that it should execute the script created in the previous step.</p>
 <p>When this runs, you end up with a script written to disk which then writes a text file confirming that user name the script was run as. This is a silly example – but  It shows you can run most tasks or processes using the same approach.</p>
 <p>While this approach works for a PowerShell script, it does not seem to work correctly for a batch file. An attempt to execute batch files, or to run the <code>cmd.exe</code> shell and pass it a batch file will return errors. The batch file appears to be executed ok, but the DSC Resource seems unable to detect the child process running the script correctly - hence it can return erroneous errors about being unable to start the script. That means DSC doesn't wait for the batch file to complete before executing subsequent resources, which will probably lead to race conditions in your scripts. But you don't write batch files any more, do you? 😉</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -312,7 +336,7 @@ Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

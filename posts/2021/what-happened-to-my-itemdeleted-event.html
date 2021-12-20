@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="My QA team had a deployment issue recently, where Azure DevOps failed to successfully release to a couple of servers. The reason for the failure wasn&amp;#x27;t obvious to me immediately, so here&amp;#x27;s a quick write-up for Google, in the hope it saves some other people.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - What happened to my “item:deleted” event?</title>
+    <title>Jeremy Davis - What happened to my &#x201C;item:deleted&#x201D; event?</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/what-happened-to-my-itemdeleted-event">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - What happened to my “item:deleted” event?">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - What happened to my &amp;#x201C;item:deleted&amp;#x201D; event?">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/what-happened-to-my-itemdeleted-event-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "What happened to my &#x201C;item:deleted&#x201D; event?",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/what-happened-to-my-itemdeleted-event-social.png"
+        ],
+        "datePublished": "2021-10-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/what-happened-to-my-itemdeleted-event">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,23 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
         What happened to my “item:deleted” event?
         </h1>
+            <div class="meta">Published 25 October 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/general" class="p-1 mr-1 bg-gray-100 rounded-md"> General</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/deployment" class="p-1 mr-1 bg-gray-100 rounded-md"> Deployment</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>My QA team had a deployment issue recently, where Azure DevOps failed to successfully release to a couple of servers. The reason for the failure wasn't obvious to me immediately, so here's a quick write-up for Google, in the hope it saves some other people.<!--more--></p>
 <h2>The reported error</h2>
 <p>The DevOps release pipeline had failed. It was the Unicorn sync step which reported an error, but the error messages were not initially helpful:</p>
@@ -142,18 +164,18 @@
 2021-09-06T10:56:24.4578219Z ==============================================================================
 2021-09-06T10:56:25.3011750Z Generating script.
 2021-09-06T10:56:25.3420551Z ========================== Starting Command Output ===========================
-2021-09-06T10:56:25.3660200Z ##[command]"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\azagent\A1\_work\_temp\6a50dc74-9a04-4072-afd1-03306e0b3fb2.ps1'"
+2021-09-06T10:56:25.3660200Z ##[command]&quot;C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command &quot;. &#39;C:\azagent\A1\_work\_temp\6a50dc74-9a04-4072-afd1-03306e0b3fb2.ps1&#39;&quot;
 2021-09-06T10:56:25.6931500Z Starting Unicorn sync
 2021-09-06T10:56:26.4749680Z Sync-Unicorn: Executing Sync...
-2021-09-06T10:56:26.7585296Z Sync-Unicorn : Exception calling "GetResponse" with "0" argument(s): "The
-2021-09-06T10:56:26.7585814Z remote server returned an error: (500) Internal Server Error."
+2021-09-06T10:56:26.7585296Z Sync-Unicorn : Exception calling &quot;GetResponse&quot; with &quot;0&quot; argument(s): &quot;The
+2021-09-06T10:56:26.7585814Z remote server returned an error: (500) Internal Server Error.&quot;
 2021-09-06T10:56:26.7586285Z At C:\azagent\A1\_work\_temp\6a50dc74-9a04-4072-afd1-03306e0b3fb2.ps1:9 char:1
-2021-09-06T10:56:26.7586747Z + Sync-Unicorn -ControlPanelUrl 'https://my-server-name/un ...
+2021-09-06T10:56:26.7586747Z + Sync-Unicorn -ControlPanelUrl &#39;https://my-server-name/un ...
 2021-09-06T10:56:26.7587192Z + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 2021-09-06T10:56:26.7587616Z     + CategoryInfo          : NotSpecified: (:) [Sync-Unicorn], MethodInvocationException
 2021-09-06T10:56:26.7588307Z     + FullyQualifiedErrorId : WebException,Sync-Unicorn
 2021-09-06T10:56:26.7588676Z
-2021-09-06T10:56:26.8984825Z ##[error]PowerShell exited with code '1'.
+2021-09-06T10:56:26.8984825Z ##[error]PowerShell exited with code &#39;1&#39;.
 2021-09-06T10:56:26.9490148Z ##[section]Finishing: Run Unicorn Sync
 </pre>
 <p>But basically all it says is that there was a 500 error calling Unicorn's sync endpoint.</p>
@@ -163,7 +185,7 @@
 <img src="/img/2021/unicornerror.png" alt="Detailed error">
 </a>
 <p>Again, for Google's benefit:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Message[1]: Ensure definition type did not complete successfully. StatusCode: 500, ReasonPhrase: 'Internal Server Error', Version: 1.1, Content: System.Net.Http.StreamContent, Headers:
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Message[1]: Ensure definition type did not complete successfully. StatusCode: 500, ReasonPhrase: &#39;Internal Server Error&#39;, Version: 1.1, Content: System.Net.Http.StreamContent, Headers:
 {
 Cache-Control: private
 Date: Mon, 06 Sep 2021 10:56:26 GMT
@@ -182,7 +204,7 @@ at Sitecore.Events.Event.EventSubscribers.RaiseEvent(String eventName, Object[] 
 
 101216 11:56:26 ERROR Failed to delete the item. Item ID: {1D54ADFD-3D04-49FF-9FA1-BEC77042AE65}, database: web
 Exception: System.AggregateException
-Message: One or more exceptions occurred while processing the subscribers to the 'item:deleted' event.
+Message: One or more exceptions occurred while processing the subscribers to the &#39;item:deleted&#39; event.
 Source: Sitecore.Kernel
 at Sitecore.Events.Event.EventSubscribers.RaiseEvent(String eventName, Object[] parameters, EventResult result)
 at Sitecore.Events.Event.RaiseEvent(String eventName, Object[] parameters)
@@ -194,16 +216,17 @@ at Sitecore.Data.Engines.DataEngine.DeleteItem(Item item)
 <p>That error's telling us that what actually happened was that the <code>item:deleted</code> event has a subscriber that connects to xDB. And that's what's failing here.</p>
 <h2>A soluition – and some facepalming</h2>
 <p>I spent a bit of time reading the errors above, before spotting this bit:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Message[1]: Ensure definition type did not complete successfully. StatusCode: 500, ReasonPhrase: 'Internal Server Error'
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Message[1]: Ensure definition type did not complete successfully. StatusCode: 500, ReasonPhrase: &#39;Internal Server Error&#39;
 </pre>
-<p>And a bit of Googling pointed me to this article: "<a href="https://andrewwburns.com/2019/02/07/sitecore-system-invalidoperationexception-ensure-definition-type-did-not-complete-successfully/" target="_blank">SITECORE: SYSTEM.INVALIDOPERATIONEXCEPTION: ENSURE DEFINITION TYPE DID NOT COMPLETE SUCCESSFULLY</a>" and the sudden realisation that this was actually really obvious...</p>
+<p>And a bit of Googling pointed me to this article: &quot;<a href="https://andrewwburns.com/2019/02/07/sitecore-system-invalidoperationexception-ensure-definition-type-did-not-complete-successfully/" target="_blank">SITECORE: SYSTEM.INVALIDOPERATIONEXCEPTION: ENSURE DEFINITION TYPE DID NOT COMPLETE SUCCESSFULLY</a>&quot; and the sudden realisation that this was actually really obvious...</p>
 <p>That article points out that the message in the Sitecore logs above correlates to a message in the xConnect logs which is much more obvious:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">[Error] XConnect Web Application Error: “System.ApplicationException:
 Exception trying to intialize Service Collection and Provider for for WebAPI Dependency Resolver, Inner Exception:
 Required license is missing: Sitecore.xDB.Base —&gt; Sitecore.Nexus.Licensing.LicenseException: Required license is missing: Sitecore.xDB.Base
 </pre>
-<p>Hence the facepalming... This whole business was another "our company's license has expired" issue – <a href="/posts/2021/sitecore-containers-and-expired-licenses" target="_blank">like the Docker issues I saw recently</a>. My colleagues had correctly updated the license file for the XM roles, but it seems they forgot to update xConnect's copy of the license file. Ooops.</p>
+<p>Hence the facepalming... This whole business was another &quot;our company's license has expired&quot; issue – <a href="/posts/2021/sitecore-containers-and-expired-licenses" target="_blank">like the Docker issues I saw recently</a>. My colleagues had correctly updated the license file for the XM roles, but it seems they forgot to update xConnect's copy of the license file. Ooops.</p>
 <p>But, problem solved, as everything sorted itself out when I updated that missed license file. So a big thank you to <a href="https://twitter.com/AndrewWBurns/" rel="noopener" target="_blank">Andy Burns</a> for the blog post that helped me here.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -258,7 +281,7 @@ Required license is missing: Sitecore.xDB.Base —&gt; Sitecore.Nexus.Licensing.
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Most of the time when you need to cache things in Sitecore, it&amp;#x27;s handled for you with the built in frameworks for data and UI layer caches. Usually your problems are solved by tuning the sizes of the caches and configuring the right caching settings on your UI components. But what happens when you&amp;#x27;ve got bits of data which you want to cache that are neither components or items? ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Edge cases of&nbsp;caching</title>
+    <title>Jeremy Davis - Edge cases of&#xA0;caching</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2016/edge-cases-of-caching">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Edge cases of&nbsp;caching">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Edge cases of&amp;#xA0;caching">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/edge-cases-of-caching-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Edge cases of&#xA0;caching",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/edge-cases-of-caching-social.png"
+        ],
+        "datePublished": "2016-05-30T00:00:00+00:00",
+        "dateModified": "2016-05-31T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/edge-cases-of-caching">
 <meta property="og:type" content="website">
 
@@ -114,21 +131,27 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Edge cases of&nbsp;caching
+        Edge cases of caching
         </h1>
+            <div class="meta">Published 30 May 2016</div>
+                <div class="meta">Updated 31 May 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Most of the time when you need to cache things in Sitecore, it's handled for you with the built in frameworks for data and UI layer caches. Usually your problems are solved by tuning the sizes of the caches and configuring the right caching settings on your UI components. But what happens when you've got bits of data which you want to cache that are neither components or items? <!--more--></p>
 <p>Recently I was doing some performance tuning for a site, and noticed that there were some fairly high-effort calls required in layout code that couldn't be moved out to a component. For example, how can you optimise code to calculate attributes that go into the <code>&lt;html&gt;</code> element? I was looking at code where extension methods were injecting this data:</p>
 <pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;!DOCTYPE html&gt;
-&lt;html lang="@Html.CurrentLanguage()" @Html.TextDirection()&gt;
+&lt;html lang=&quot;&#64;Html.CurrentLanguage()&quot; &#64;Html.TextDirection()&gt;
   &lt;head&gt;
     &lt;!-- metadata components etc. go here --&gt;
   &lt;/head&gt;
@@ -164,7 +187,7 @@
 <p>To this structure:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CurrentLanguage(this HtmlHelper html)
 {
-    string key = "layout::language";
+    string key = &quot;layout::language&quot;;
     Func&lt;string&gt; dataFn = () =&gt;
     {
         // code to calculate the right value
@@ -177,7 +200,7 @@
 <p>This works great for simple helpers, as long as you think of a unique value for your cache key. However, some of the extension methods I was looking at could take parameters. In that situation, it's important to ensure you use all the parameter values when you're creating your cache key. That means you'll get a separate cache entry for each distinct call. For example:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CalculateCorrectSiteLogoMarkup(this HtmlHelper html, int width, int height)
 {
-    string key = string.Format("layout::logo|width={0}|height={1}", width, height);
+    string key = string.Format(&quot;layout::logo|width={0}|height={1}&quot;, width, height);
     Func&lt;string&gt; dataFn = () =&gt;
     {
         // code to calculate the right value
@@ -188,6 +211,7 @@
 }
 </pre>
 <p>And with that, you can cache pretty much any of the long running functions that might be hiding behind a layout...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -242,7 +266,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

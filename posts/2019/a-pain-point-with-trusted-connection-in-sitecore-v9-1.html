@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="One of the projects I&amp;#x27;m working on at the moment came with a requirement to change Sitecore v9.1 from running with the default SQL Security accounts to trusted connections using specific Active Directory accounts that the client provided. While there&amp;#x27;s a bit of work to do to enable this, it shouldn&amp;#x27;t be too tough. But trying to be a bit clever, I hit upon an issue which seemed worth documenting...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - A pain point with “Trusted Connection” in Sitecore&nbsp;v9.1</title>
+    <title>Jeremy Davis - A pain point with &#x201C;Trusted Connection&#x201D; in Sitecore&#xA0;v9.1</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2019/a-pain-point-with-trusted-connection-in-sitecore-v9-1">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - A pain point with “Trusted Connection” in Sitecore&nbsp;v9.1">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - A pain point with &amp;#x201C;Trusted Connection&amp;#x201D; in Sitecore&amp;#xA0;v9.1">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-pain-point-with-trusted-connection-in-sitecore-v9-1-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "A pain point with &#x201C;Trusted Connection&#x201D; in Sitecore&#xA0;v9.1",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/a-pain-point-with-trusted-connection-in-sitecore-v9-1-social.png"
+        ],
+        "datePublished": "2019-05-27T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/a-pain-point-with-trusted-connection-in-sitecore-v9-1">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,21 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        A pain point with “Trusted Connection” in Sitecore&nbsp;v9.1
+        A pain point with “Trusted Connection” in Sitecore v9.1
         </h1>
+            <div class="meta">Published 27 May 2019</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>One of the projects I'm working on at the moment came with a requirement to change Sitecore v9.1 from running with the default SQL Security accounts to trusted connections using specific Active Directory accounts that the client provided. While there's a bit of work to do to enable this, it shouldn't be too tough. But trying to be a bit clever, I hit upon an issue which seemed worth documenting...<!--more--></p>
 <h2>A bit of background:</h2>
 <p>You may well never have delved into the SQL Databases that Sitecore provisions, but some of the more modern ones include a stored procedure called <code>GrantLeastPrivilege</code>. They don't seem to be officially documented, but when you examine them, they're helper scripts that grant exactly the database rights that a user account needs to be able to access a specific Sitecore database:</p>
@@ -134,26 +154,27 @@
 <p>But when I tried to use these scripts with the Active Directory accounts provided by the client, I got oddly inconsistent results. When I tried to call the procedure in some databases with my user</p>
 <pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">USE [MyInstance_Xdb.Collection.Shard0]
 GO
-[xdb_collection].[GrantLeastPrivilege] 'Domain\ProcessAccountName'
+[xdb_collection].[GrantLeastPrivilege] &#39;Domain\ProcessAccountName&#39;
 </pre>
 <p>I got success. It would write out all the changes it made. But when I called the same procedure in other databases, with the same approach</p>
 <pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">USE [MyInstance_ProcessingEngineStorage]
 GO
-[sitecore_processing_storage].[GrantLeastPrivilege] 'Domain\ProcessAccountName'
+[sitecore_processing_storage].[GrantLeastPrivilege] &#39;Domain\ProcessAccountName&#39;
 </pre>
 <p>I got error messages instead – saying something like:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Msg 102, Level 15, State 1, Line 9
-Incorrect syntax near '\'.
+Incorrect syntax near &#39;\&#39;.
 </pre>
 <p>When I tested it, across all the non-content databases, it broke on ProcessingEngineStorage, MarketingAutomation, Processing.Pools, Processing.Tasks, ProcessingEngineTasks and ReferenceData.</p>
 <p>Looking at the underlying code, the scripts which work run statements in the form of</p>
-<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">EXECUTE('grant execute on TYPE::[database].[thing] TO [' + @Name + ']')
+<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">EXECUTE(&#39;grant execute on TYPE::[database].[thing] TO [&#39; + &#64;Name + &#39;]&#39;)
 </pre>
 <p>and the ones that fail look like</p>
-<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">EXECUTE('grant execute on TYPE::[database].[thing] TO ' + @Name)
+<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">EXECUTE(&#39;grant execute on TYPE::[database].[thing] TO &#39; + &#64;Name)
 </pre>
 <p>so it's pretty easy to tweak them to be successful. But it's a bit of a pain that this doesn't work out of the box. So I've reported this to Sitecore Support, who have accepted it's a bug. If you're hitting this issue too, make reference to bug 331327.</p>
-<p>(And yes, I'm aware of the whole "string concatenation is dangerous when generating SQL statements thing – that's a debate for another day)</p>
+<p>(And yes, I'm aware of the whole &quot;string concatenation is dangerous when generating SQL statements thing – that's a debate for another day)</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -208,7 +229,7 @@ Incorrect syntax near '\'.
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

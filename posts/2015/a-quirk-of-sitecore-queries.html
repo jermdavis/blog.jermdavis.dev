@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="It&amp;#x27;s nearly Christmas, and before I head off for a bit of a holiday, here&amp;#x27;s a quick bug issue you might encounter. Despite the increasing power and sophistication of the search technologies in Sitecore, sometimes we still need to fall back to good old-fashioned Sitecore Query. A common reason for this is because the query you&amp;#x27;re writing depends on the structure of the data, not its content. Recently a colleague of mine pointed out some issues to me with the way some queries are resolved, which I thought might be of interest to others.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - A quirk of Sitecore&nbsp;Queries...</title>
+    <title>Jeremy Davis - A quirk of Sitecore&#xA0;Queries...</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/a-quirk-of-sitecore-queries">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - A quirk of Sitecore&nbsp;Queries...">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - A quirk of Sitecore&amp;#xA0;Queries...">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-quirk-of-sitecore-queries-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "A quirk of Sitecore&#xA0;Queries...",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/a-quirk-of-sitecore-queries-social.png"
+        ],
+        "datePublished": "2015-12-14T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/a-quirk-of-sitecore-queries">
 <meta property="og:type" content="website">
 
@@ -114,31 +131,38 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        A quirk of Sitecore&nbsp;Queries...
+        A quirk of Sitecore Queries...
         </h1>
+            <div class="meta">Published 14 December 2015</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/bug" class="p-1 mr-1 bg-gray-100 rounded-md"> Bug</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>It's nearly Christmas, and before I head off for a bit of a holiday, here's a quick bug issue you might encounter. Despite the increasing power and sophistication of the search technologies in Sitecore, sometimes we still need to fall back to good old-fashioned Sitecore Query. A common reason for this is because the query you're writing depends on the structure of the data, not its content. Recently a colleague of mine pointed out some issues to me with the way some queries are resolved, which I thought might be of interest to others.<!--more--></p>
 <p>To see the issue, open your preferred XPath Query building tool (either inside older versions of Sitecore, or in Sitecore Rocks) and pick a context item for the query that's at the bottom of a tree of content. Anything will do, but for example:</p>
 <p><a href="/img/2015/2015-12-itempicker.png" target="_blank"><img alt="Item Picker" src="/img/2015/2015-12-itempicker.png"></a></p>
 <p>You can then write a query using the <code>ancestor-or-self</code> axis, to return this item and those above it up the tree:</p>
 <p><a href="/img/2015/2015-12-ancestorquery.png" target="_blank"><img alt="Ancestor Query" src="/img/2015/2015-12-ancestorquery.png"></a></p>
-<p>All good, so far. (Though the eagle-eyed amongst you may notice that running this query in the "Sitecore XPath" mode returns the results in the opposite order to running it in the "‘Real' XPath" mode. However that's a minor point compared to what follows)</p>
-<p>But if you now try to add a position-index term to the query, things don't work quite as you'd expect. In pure XPath you'd expect <code>ancestor-or-self::*[1]</code> to return the context item, and <code>ancestor-or-self::*[2]</code> to return the context item's parent. And if you select the "‘Real' XPath" option for a Rocks query, that is what you'll get. But if you run this query via a Sitecore XPath query you get a different answer:</p>
+<p>All good, so far. (Though the eagle-eyed amongst you may notice that running this query in the &quot;Sitecore XPath&quot; mode returns the results in the opposite order to running it in the &quot;‘Real' XPath&quot; mode. However that's a minor point compared to what follows)</p>
+<p>But if you now try to add a position-index term to the query, things don't work quite as you'd expect. In pure XPath you'd expect <code>ancestor-or-self::*[1]</code> to return the context item, and <code>ancestor-or-self::*[2]</code> to return the context item's parent. And if you select the &quot;‘Real' XPath&quot; option for a Rocks query, that is what you'll get. But if you run this query via a Sitecore XPath query you get a different answer:</p>
 <p><a href="/img/2015/2015-12-wrongqueryanswer.png" target="_blank"><img alt="Wrong Query Answer" src="/img/2015/2015-12-wrongqueryanswer.png"></a></p>
 <p>And it's clearly the wrong answer, as it's returned multiple items where you would expect only one. Other position index values also return the wrong answers.</p>
 <p>I have seen this issue in v6.6 and v8.0 – but it's likely that this will occur in other versions too. Sitecore Support have recorded this as a bug, so hopefully it will be corrected in future releases.</p>
 <p>On a similar note, you can also see issues with the <code>parent</code> axis. The query <code>parent::*</code> should return the immediate parent of the context item. However what you get is:</p>
 <p><a href="/img/2015/2015-12-wrongqueryanswer2.png" target="_blank"><img alt="Wrong Query Answer 2" src="/img/2015/2015-12-wrongqueryanswer2.png"></a></p>
-<p>That appears to be returning all the children of the parent item. Again, running the query against "real" XPath returns the answer you'd expect.</p>
-<p>Generally, you can work around these axis issues by finding alternative ways to express your query. For example, using the shorthand for the parent axis <code>..</code> instead of <code>parent::*</code> does return the correct parent item – And you can construct alternatives for both these problematic axes this way. Alternatively, if you can express your code without the need for the query at all, you can find an ancestor item using the <code>&lt;a href="http://wonald.com/determine-sitecore-item-ancestors-and-descendants-without-xpath-or-traversing-the-content-tree-460.htm" target="_blank" rel="noopener noreferrer"&gt;Sitecore.Data.Item.Paths.LongID&lt;/a&gt;</code> property - a string containing all the ancestor IDs which you can process. (Though I should caveat this with the fact that I've not had a chance to try this approach myself yet)</p>
+<p>That appears to be returning all the children of the parent item. Again, running the query against &quot;real&quot; XPath returns the answer you'd expect.</p>
+<p>Generally, you can work around these axis issues by finding alternative ways to express your query. For example, using the shorthand for the parent axis <code>..</code> instead of <code>parent::*</code> does return the correct parent item – And you can construct alternatives for both these problematic axes this way. Alternatively, if you can express your code without the need for the query at all, you can find an ancestor item using the <code>&lt;a href=&quot;http://wonald.com/determine-sitecore-item-ancestors-and-descendants-without-xpath-or-traversing-the-content-tree-460.htm&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Sitecore.Data.Item.Paths.LongID&lt;/a&gt;</code> property - a string containing all the ancestor IDs which you can process. (Though I should caveat this with the fact that I've not had a chance to try this approach myself yet)</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -193,7 +217,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

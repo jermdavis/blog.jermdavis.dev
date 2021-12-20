@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Recently I was looking into &amp;lt;a href=&amp;quot;/posts/2016/edge-cases-of-caching&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;how custom caching might improve the performance of Layouts in Sitecore&amp;lt;/a&amp;gt;. But one important aspect of the concept of improving performance with tricks like that which I didn&amp;#x27;t discuss was how you can work out places where caching will give you benefits... ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Finding places to improve&nbsp;performance</title>
+    <title>Jeremy Davis - Finding places to improve&#xA0;performance</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2016/finding-places-to-improve-performance">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Finding places to improve&nbsp;performance">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Finding places to improve&amp;#xA0;performance">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/finding-places-to-improve-performance-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Finding places to improve&#xA0;performance",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/finding-places-to-improve-performance-social.png"
+        ],
+        "datePublished": "2016-06-13T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/finding-places-to-improve-performance">
 <meta property="og:type" content="website">
 
@@ -114,27 +131,32 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Finding places to improve&nbsp;performance
+        Finding places to improve performance
         </h1>
+            <div class="meta">Published 13 June 2016</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Recently I was looking into <a href="/posts/2016/edge-cases-of-caching" target="_blank">how custom caching might improve the performance of Layouts in Sitecore</a>. But one important aspect of the concept of improving performance with tricks like that which I didn't discuss was how you can work out places where caching will give you benefits... <!--more--></p>
 <h2>First you measure...</h2>
-<p>The first thing to emphasise here is that measurement is your friend. Improving performance can be a tricky subject, so you need to have some meaningful numbers to base your work on. It's not uncommon to make an "improvement" to some code which, for complicated reasons due to compilers and CPU architectures etc. actually end up slower than the original code. And you need to make sure your measurements are repeatable.</p>
+<p>The first thing to emphasise here is that measurement is your friend. Improving performance can be a tricky subject, so you need to have some meaningful numbers to base your work on. It's not uncommon to make an &quot;improvement&quot; to some code which, for complicated reasons due to compilers and CPU architectures etc. actually end up slower than the original code. And you need to make sure your measurements are repeatable.</p>
 <p>For the work I was doing recently, I combined two techniques:</p>
 <h3>How fast is a page request?</h3>
 First, for a raw view of "how long does it take to render the mark-up for a page" I timed how long a few thousand requests to a particular page took, and averaged that time. There are loads of tools you can use to investigate things like this, but for simplicity (and because I'm a big fan of it), I hacked up a quick script in <a href="https://www.linqpad.net/" target="_blank" rel="noopener noreferrer">LinqPad</a> to time the requests. It looked like:
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">Stopwatch sw = new Stopwatch();
 WebClient client = new WebClient();
 
-string url = "https://mysite/some-page";
+string url = &quot;https://mysite/some-page&quot;;
 
 long totalTime = 0;
 int totalRequests = 1000;
@@ -155,9 +177,9 @@ for(int i=0; i&lt;totalRequests; i++)
 }
 
 float avg = totalTime / requestCount;
-totalTime.Dump("Total Time");
-requestCount.Dump("Total Requests");
-avg.Dump("Average request time (ms)");
+totalTime.Dump(&quot;Total Time&quot;);
+requestCount.Dump(&quot;Total Requests&quot;);
+avg.Dump(&quot;Average request time (ms)&quot;);
 </pre>
 <p>Fetching only the HTML helps by filtering out the code that generates pages from the code that does things like resize images or bundle Javascript. Focusing your tests like this helps get a clearer view of code performance. You can, of course, run separate tests for fetching CSS / Javascript or images and do performance work on those paths too.</p>
 <p>The result of running the script above is an estimation of the average response time for the code per fetch of the HTML:</p>
@@ -165,11 +187,11 @@ avg.Dump("Average request time (ms)");
 <h3>And what is the machine doing all that time?</h3>
 The second measurement I took was to attach Visual Studio 2015's profiler to my site, and then re-run the load script above. It's not entirely easy finding how you do this to begin with, but the "attach it to an external process" option for the profiler hides here:
 <p><a href="/img/2016/2016-06-attachperf.png" target="_blank"><img alt="Attach Profiler" src="/img/2016/2016-06-attachperf.png"></a></p>
-<p>(Remember you'll need "Show processes from all users" and "Show processes from all sessions" ticked in the "Attach Profiler to Process" dialog, in order to find the "w3wp" process to attach) Once you see this:</p>
+<p>(Remember you'll need &quot;Show processes from all users&quot; and &quot;Show processes from all sessions&quot; ticked in the &quot;Attach Profiler to Process&quot; dialog, in order to find the &quot;w3wp&quot; process to attach) Once you see this:</p>
 <p><a href="/img/2016/2016-06-profiling.png" target="_blank"><img alt="Profiling" src="/img/2016/2016-06-profiling.png"></a></p>
-<p>you can generate your load again (by running the script above again in my case), and once that's done you can click the "Stop" link in Visual Studio. At that point you get a shiny report:</p>
+<p>you can generate your load again (by running the script above again in my case), and once that's done you can click the &quot;Stop&quot; link in Visual Studio. At that point you get a shiny report:</p>
 <p><a href="/img/2016/2016-06-summaryreport.png" target="_blank"><img alt="Summary Report" src="/img/2016/2016-06-summaryreport.png"></a></p>
-<p>That's all very pretty, but it's not massively helpful in itself. Unsurprisingly, the code taking up the most CPU time in the summary is .Net and Sitecore code – neither of which offer much chance for you to optimise. So change the report from the "Summary" view that's the default to the "Modules" view, and click the "Inclusive Samples %" column to sort the list by "how many times the profiler found itself in a particular function and its children". That gives you a list where you can easily see the relative effort of your code versus the rest of the system:</p>
+<p>That's all very pretty, but it's not massively helpful in itself. Unsurprisingly, the code taking up the most CPU time in the summary is .Net and Sitecore code – neither of which offer much chance for you to optimise. So change the report from the &quot;Summary&quot; view that's the default to the &quot;Modules&quot; view, and click the &quot;Inclusive Samples %&quot; column to sort the list by &quot;how many times the profiler found itself in a particular function and its children&quot;. That gives you a list where you can easily see the relative effort of your code versus the rest of the system:</p>
 <p><a href="/img/2016/2016-06-modulestrace1.png" target="_blank"><img alt="Modules Trace" src="/img/2016/2016-06-modulestrace1.png"></a></p>
 <p>Note to self: Choose an example that requires less redacting next time... 😉</p>
 <h2>Then you optimise, and measure some more...</h2>
@@ -187,7 +209,8 @@ The second measurement I took was to attach Visual Studio 2015's profiler to my 
 <p>It's probably worth pointing out that the profiling and the fact you're probably testing against development hardware will have a performance impact on your code – so you shouldn't treat any numbers here as absolute timings. It's relative changes that you need to think about for the purposes of this sort of work.</p>
 <p>You may also want to run similar tests against requests for images (or other resources being served out of Sitecore) that involve any custom code.</p>
 <h2>And repeat to fade...</h2>
-<p>You can keep repeating this process of "measure, find a thing, improve it, measure again" as long as you can find things in your code to improve that offer a reasonable effort / reward benefit.</p>
+<p>You can keep repeating this process of &quot;measure, find a thing, improve it, measure again&quot; as long as you can find things in your code to improve that offer a reasonable effort / reward benefit.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -242,7 +265,7 @@ The second measurement I took was to attach Visual Studio 2015's profiler to my 
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

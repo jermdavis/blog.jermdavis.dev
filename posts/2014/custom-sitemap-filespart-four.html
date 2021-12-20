@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="The &amp;lt;a href=&amp;quot;/posts/2014/custom-sitemap-filespart-one&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;last&amp;lt;/a&amp;gt; &amp;lt;a href=&amp;quot;/posts/2014/custom-sitemap-filespart-two&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;three&amp;lt;/a&amp;gt; &amp;lt;a href=&amp;quot;/posts/2014/custom-sitemap-filespart-three&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;posts&amp;lt;/a&amp;gt; have discussed some prototype code for a sitemap generator, and I want to wrap the series up with a few thoughts about how the size of your Sitemap build operation might affect your site.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Custom Sitemap Files – Part Four</title>
+    <title>Jeremy Davis - Custom Sitemap Files &#x2013; Part Four</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/custom-sitemap-filespart-four">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Custom Sitemap Files – Part Four">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Custom Sitemap Files &amp;#x2013; Part Four">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/custom-sitemap-filespart-four-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Custom Sitemap Files &#x2013; Part Four",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/custom-sitemap-filespart-four-social.png"
+        ],
+        "datePublished": "2014-06-02T00:00:00+00:00",
+        "dateModified": "2018-06-26T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/custom-sitemap-filespart-four">
 <meta property="og:type" content="website">
 
@@ -114,21 +131,26 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
         Custom Sitemap Files – Part Four
         </h1>
+            <div class="meta">Published 02 June 2014</div>
+                <div class="meta">Updated 26 June 2018</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>The <a href="/posts/2014/custom-sitemap-filespart-one" target="_blank">last</a> <a href="/posts/2014/custom-sitemap-filespart-two" target="_blank">three</a> <a href="/posts/2014/custom-sitemap-filespart-three" target="_blank">posts</a> have discussed some prototype code for a sitemap generator, and I want to wrap the series up with a few thoughts about how the size of your Sitemap build operation might affect your site.<!--more--></p>
 <p>The pattern the previous posts discussed was to have the sitemap generated each time the Publishing process runs. For small to medium sites that's ok, as the processing for the sitemap won't take too much extra time. However once you get to large sites this might start to become an issue. With Buckets and parallel publishing, Sitecore are starting to talk about the idea that you can have millions of items in a site. And that's likely to become a problem if you have a five minute publish followed by another three minutes processing the sitemap.</p>
 <p>(And also, don't forget the database server load and item-cache churn that processing large sitemaps is likely to cause you)</p>
-<p>Talking about this issue with my colleague <a href="https://twitter.com/steviemcgill" target="_blank" rel="noopener noreferrer">@steviemcgill</a> recently, he was explaining how he'd ended up disabling generation of sitemaps in a project he was working on because of the performance issue it was causing in his codebase. That got me thinking about strategies for trying to address this problem. My suspicion is that the one of these to choose for an implementation of sitemaps is probably dependent on the specifics of your site and its size and requirements. But here are a few approaches you might consider in your solutions:</p>
+<p>Talking about this issue with my colleague <a href="https://twitter.com/steviemcgill" target="_blank" rel="noopener noreferrer">&#64;steviemcgill</a> recently, he was explaining how he'd ended up disabling generation of sitemaps in a project he was working on because of the performance issue it was causing in his codebase. That got me thinking about strategies for trying to address this problem. My suspicion is that the one of these to choose for an implementation of sitemaps is probably dependent on the specifics of your site and its size and requirements. But here are a few approaches you might consider in your solutions:</p>
 <ul>
 <li><h2>Make it manual</h2>
 <p>Perhaps the most obvious approach to speeding the publish up is simply to avoid processing the Sitemap data unless you really need to. The setup from the first Sitemap post was to generate the data when the publish happened by triggering the code at the end of the publishing events. What about having the publish happen when you click a UI button instead? That means you can run publishes whenever you need to without the extra overhead of the Sitemap generation each time. But conversely it does mean that you need to remember to click the update button to make sure search engines see your changes.</p>
@@ -142,7 +164,7 @@
 <li><h2>Run it in the background</h2>
 <p>What if you really do want every publish to trigger a rebuild of the Sitemap? Perhaps running that process on a background thread could help free up the UI and prevent publishing users having to wait around for so long? Well yes, it probably could, but with two fairly big caveats:</p>
 <p>The first is that you will probably need to think about what might happen if two publishes happen close enough together to cause the sitemap generation operations to overlap. Depending on how you choose to implement your sitemap generation you might find problems with overlapped operations. At the least you're wasting CPU cycles to generate the files in this scenario. But at worst, combing overlapping operations with certain code patterns might lead to exceptions for locked files, or files ending up with incorrect data in them. You will probably need to implement some sort of locking operation here in order to try to address these scenarios. In a single-server solution you can probably make use of Windows locking primitives. For multi-server solutions you would need to look at keeping locking flags on disk or in databases. Or alternatively you might consider writing your output to random file names, and only rename them to the correct names when the process finishes.</p>
-<p>The second issue here is that IIS isn't actually very good at running background tasks. Web servers were built to deal with short-running, immediate tasks to serve up web pages. Having a background operation take a few minutes to complete wasn't really in the architectural plan for IIS. Background tasks can be killed off by IIS when it decides it needs to tear down the AppDomain your code is running in. Errors, periodic process recycling and admins clicking "stop" on a site can all do this to you.</p>
+<p>The second issue here is that IIS isn't actually very good at running background tasks. Web servers were built to deal with short-running, immediate tasks to serve up web pages. Having a background operation take a few minutes to complete wasn't really in the architectural plan for IIS. Background tasks can be killed off by IIS when it decides it needs to tear down the AppDomain your code is running in. Errors, periodic process recycling and admins clicking &quot;stop&quot; on a site can all do this to you.</p>
 <p>My suspicion is that this is probably not a great way to go if you need reliable code for big sitemaps from simple code.</p>
 </li>
 <li><h2>Break it into parallel tasks</h2>
@@ -151,8 +173,9 @@
 <p>However because of that performance increase, it's important to consider how running these tasks in parallel will increase the load on your database and publishing servers. As <a href="http://www.sitecore.net/Community/Technical-Blogs/Reinnovations/Posts/2014/03/Enabling-Parallel-Publishing.aspx" target="_blank" rel="noopener noreferrer">noted in the documentation for Sitecore's parallel publishing</a> process, you need to consider the servers that will be doing all this work.</p>
 </li>
 </ul>
-<p>So there's four approaches you could consider if you were looking to implement alternative approaches to how and when your sitemap is generated. Having spent a morning thinking about this, I suspect I'll be implementing the "manual" approach in the code I'm working on at the moment. But I can see that as the scale of sites tends to increase, I may find myself having to solve the parallel-implementation problems in the future.</p>
+<p>So there's four approaches you could consider if you were looking to implement alternative approaches to how and when your sitemap is generated. Having spent a morning thinking about this, I suspect I'll be implementing the &quot;manual&quot; approach in the code I'm working on at the moment. But I can see that as the scale of sites tends to increase, I may find myself having to solve the parallel-implementation problems in the future.</p>
 <p>And that will probably end up as another blog post when I do get around to it...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -207,7 +230,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

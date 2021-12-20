@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="The third part of this series is to look at how we can add images to our XML Sitemap files. We&amp;#x27;ve looked at &amp;lt;a href=&amp;quot;/posts/2014/custom-sitemap-filespart-one&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;the configuration&amp;lt;/a&amp;gt; and &amp;lt;a href=&amp;quot;/posts/2014/custom-sitemap-filespart-two&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;the basic code&amp;lt;/a&amp;gt; to get entries into Sitemap files in the first two posts.&amp;#xA;Getting images into the sitemap requires two things: First specifying some rules for what images to include, and secondly some code to extract those images from the content and write them into the index files. The code to deal with images that are specified in fields on the web page item is easy &amp;#x2013; but we also need to deal with the situation where the image is referred to by a component that has been dynamically bound to the page. ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Custom Sitemap Files – Part Three</title>
+    <title>Jeremy Davis - Custom Sitemap Files &#x2013; Part Three</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/custom-sitemap-filespart-three">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Custom Sitemap Files – Part Three">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Custom Sitemap Files &amp;#x2013; Part Three">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/custom-sitemap-filespart-three-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Custom Sitemap Files &#x2013; Part Three",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/custom-sitemap-filespart-three-social.png"
+        ],
+        "datePublished": "2014-05-20T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/custom-sitemap-filespart-three">
 <meta property="og:type" content="website">
 
@@ -114,20 +131,26 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
         Custom Sitemap Files – Part Three
         </h1>
+            <div class="meta">Published 20 May 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>The third part of this series is to look at how we can add images to our XML Sitemap files. We've looked at <a href="/posts/2014/custom-sitemap-filespart-one" target="_blank">the configuration</a> and <a href="/posts/2014/custom-sitemap-filespart-two" target="_blank">the basic code</a> to get entries into Sitemap files in the first two posts.</p>
 <p>Getting images into the sitemap requires two things: First specifying some rules for what images to include, and secondly some code to extract those images from the content and write them into the index files. The code to deal with images that are specified in fields on the web page item is easy – but we also need to deal with the situation where the image is referred to by a component that has been dynamically bound to the page. <!--more--></p>
-<p>The configuration for an "image field on the current page" reference is pretty easy:</p>
+<p>The configuration for an &quot;image field on the current page&quot; reference is pretty easy:</p>
 <a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapFieldImageTemplate.png">
 <img alt="Image field template" src="/img/2014/SitemapFieldImageTemplate.png">
 </a>
@@ -209,17 +232,17 @@
         ID.TryParse(siteItem.Fields[Identifiers.SitemapRootItemFieldID].Value, out rootItem);
         SitemapRootItem = rootItem;
 
-        SitemapIncludeLanguages = siteItem.Fields[Identifiers.SitemapIncludeLanguagesFieldID].Value.Split('|')
+        SitemapIncludeLanguages = siteItem.Fields[Identifiers.SitemapIncludeLanguagesFieldID].Value.Split(&#39;|&#39;)
             .Where(s =&gt; !string.IsNullOrWhiteSpace(s))
             .Select(s =&gt; ID.Parse(s))
             .Select(i =&gt; SitemapSourceDatabase.GetItem(i))
             .Select(l =&gt; l.Name);
 
-        SitemapIncludeTemplates = siteItem.Fields[Identifiers.SitemapIncludeTemplatesFieldID].Value.Split('|')
+        SitemapIncludeTemplates = siteItem.Fields[Identifiers.SitemapIncludeTemplatesFieldID].Value.Split(&#39;|&#39;)
             .Where(s =&gt; !string.IsNullOrWhiteSpace(s))
             .Select(s =&gt; ID.Parse(s));
 
-        var imageExtraction = siteItem.Axes.SelectItems(string.Format("./*[@@templateid='{0}' or @@templateid='{1}']", Identifiers.SitemapFieldImageTemplateID, Identifiers.SitemapComponentImageTemplateID));
+        var imageExtraction = siteItem.Axes.SelectItems(string.Format(&quot;./*[&#64;&#64;templateid=&#39;{0}&#39; or &#64;&#64;templateid=&#39;{1}&#39;]&quot;, Identifiers.SitemapFieldImageTemplateID, Identifiers.SitemapComponentImageTemplateID));
         if (imageExtraction != null &amp;&amp; imageExtraction.Length &gt; 0)
         {
             ImageExtraction = imageExtraction
@@ -256,9 +279,9 @@
 
     public XElement Serialise()
     {
-        XElement root = new XElement("url");
+        XElement root = new XElement(&quot;url&quot;);
 
-        root.Add(new XElement("loc", Location));
+        root.Add(new XElement(&quot;loc&quot;, Location));
         
         foreach(SitemapImage img in _images)
         {
@@ -267,17 +290,17 @@
 
         if(LastModified.HasValue)
         {
-            root.Add(new XElement("lastmod", LastModified.Value.ToString("yyyy-MM-dd")));
+            root.Add(new XElement(&quot;lastmod&quot;, LastModified.Value.ToString(&quot;yyyy-MM-dd&quot;)));
         }
 
         if (ChangeFrequency.HasValue)
         {
-            root.Add(new XElement("changefreq", ChangeFrequency.Value.ToString().ToLower()));
+            root.Add(new XElement(&quot;changefreq&quot;, ChangeFrequency.Value.ToString().ToLower()));
         }
 
         if (Priority.HasValue)
         {
-            root.Add(new XElement("priority", Priority.Value.ToString("0.0")));
+            root.Add(new XElement(&quot;priority&quot;, Priority.Value.ToString(&quot;0.0&quot;)));
         }
 
         return root;
@@ -292,39 +315,39 @@ public class SitemapImage
     public string Title {get;set;}
     public string License {get;set;}
 
-    public static readonly XNamespace Namespace = "http://www.google.com/schemas/sitemap-image/1.1";
+    public static readonly XNamespace Namespace = &quot;http://www.google.com/schemas/sitemap-image/1.1&quot;;
 
     public XElement Serialise()
     {
-        XElement img = new XElement(Namespace + "image");
+        XElement img = new XElement(Namespace + &quot;image&quot;);
 
-        img.Add(new XElement(Namespace + "loc", Location));
+        img.Add(new XElement(Namespace + &quot;loc&quot;, Location));
 
         if (!string.IsNullOrWhiteSpace(Caption))
         {
-            img.Add(new XElement(Namespace + "caption", Caption));
+            img.Add(new XElement(Namespace + &quot;caption&quot;, Caption));
         }
 
         if(!string.IsNullOrWhiteSpace(GeoLocation))
         {
-            img.Add(new XElement(Namespace + "geo_location", GeoLocation));
+            img.Add(new XElement(Namespace + &quot;geo_location&quot;, GeoLocation));
         }
 
         if(!string.IsNullOrWhiteSpace(Title))
         {
-            img.Add(new XElement(Namespace + "title", Title));
+            img.Add(new XElement(Namespace + &quot;title&quot;, Title));
         }
 
         if(!string.IsNullOrWhiteSpace(License))
         {
-            img.Add(new XElement(Namespace + "license", License));
+            img.Add(new XElement(Namespace + &quot;license&quot;, License));
         }
 
         return img;
     }
 }
 </pre>
-<p>And with all that in place, we can start updating the&nbsp; code to generate the data. According to <a href="https://support.google.com/webmasters/answer/178636?hl=en" target="_blank" rel="noopener noreferrer">the schema definition for Sitemap XML</a>, the image data goes into the url element, so we can add the code to the place in last week's code where we were generating that bit of data – the <code>processLanguage()</code> method. All we change here is to add a call to a new <code>processImages()</code> method and add the results to the images collection in the <code>SitemapUrl</code> object:</p>
+<p>And with all that in place, we can start updating the  code to generate the data. According to <a href="https://support.google.com/webmasters/answer/178636?hl=en" target="_blank" rel="noopener noreferrer">the schema definition for Sitemap XML</a>, the image data goes into the url element, so we can add the code to the place in last week's code where we were generating that bit of data – the <code>processLanguage()</code> method. All we change here is to add a call to a new <code>processImages()</code> method and add the results to the images collection in the <code>SitemapUrl</code> object:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SitemapUrl processLanguage(SiteConfiguration sc, Item item, Language l)
 {
     SitemapUrl url = new SitemapUrl();
@@ -383,10 +406,10 @@ public class SitemapImage
         }
         else
         {
-            string xml = LayoutField.GetFieldValue(item.Fields["__Renderings"]);
+            string xml = LayoutField.GetFieldValue(item.Fields[&quot;__Renderings&quot;]);
             LayoutDefinition ld = LayoutDefinition.Parse(xml);
 
-            DeviceDefinition deviceDef = ld.GetDevice("{FE5D7FDF-89C0-4D99-9AA3-B5FBD009C9F3}");
+            DeviceDefinition deviceDef = ld.GetDevice(&quot;{FE5D7FDF-89C0-4D99-9AA3-B5FBD009C9F3}&quot;);
 
             foreach(RenderingDefinition renderingDef in deviceDef.GetRenderings(icfg.ImageComponent))
             {
@@ -406,8 +429,8 @@ public class SitemapImage
     return imgs;
 }
 </pre>
-<p>So, if the image configuration says "get the image from a field on the current item" then we just read the value from that field. But for the "get the image from a component data source" config we need to do a bit more work.</p>
-<p>Sitecore stores its information about page layouts inside the "__Renderings" field on an item. This contains some XML that describes what's called a Layout Delta. (<a href="http://www.sitecore.net/Community/Technical-Blogs/John-West-Sitecore-Blog/Posts/2012/12/Sitecore-Idiosyncrasies-Layout-Details-and-Layout-Deltas.aspx" target="_blank" rel="noopener noreferrer">All that is explained here</a>) In order to extract the data about "what components are on this page" we parse ask a couple of helper classes to fetch the layout XML for us and then parse it into Sitecore's object model for this data. Then we need to specify what device we're using. Here I've hard coded it to use the "Default" device's ID. In reality you'd probably want that to be configurable in some way. Once we have a device, we can call <code>GetRenderings()</code> on that device to get back a list of any components being displayed that make use of the UI component defined by the ID we pass in - and that ID comes from our configuration item. (Back in the config above, we picked the component with a Droptree – so the value we have here is a GUID) We then iterate the set of <code>RenderingDefinition</code> objects we get back, and try to add an image item for each one.</p>
+<p>So, if the image configuration says &quot;get the image from a field on the current item&quot; then we just read the value from that field. But for the &quot;get the image from a component data source&quot; config we need to do a bit more work.</p>
+<p>Sitecore stores its information about page layouts inside the &quot;__Renderings&quot; field on an item. This contains some XML that describes what's called a Layout Delta. (<a href="http://www.sitecore.net/Community/Technical-Blogs/John-West-Sitecore-Blog/Posts/2012/12/Sitecore-Idiosyncrasies-Layout-Details-and-Layout-Deltas.aspx" target="_blank" rel="noopener noreferrer">All that is explained here</a>) In order to extract the data about &quot;what components are on this page&quot; we parse ask a couple of helper classes to fetch the layout XML for us and then parse it into Sitecore's object model for this data. Then we need to specify what device we're using. Here I've hard coded it to use the &quot;Default&quot; device's ID. In reality you'd probably want that to be configurable in some way. Once we have a device, we can call <code>GetRenderings()</code> on that device to get back a list of any components being displayed that make use of the UI component defined by the ID we pass in - and that ID comes from our configuration item. (Back in the config above, we picked the component with a Droptree – so the value we have here is a GUID) We then iterate the set of <code>RenderingDefinition</code> objects we get back, and try to add an image item for each one.</p>
 <p>Generating the sitemap data for the image happens in the <code>makeImg()</code> method:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SitemapImage makeImg(ImageConfiguration icfg, Item item)
 {
@@ -443,7 +466,7 @@ public class SitemapImage
 </pre>
 <p>That uses the MediaManager to generate the URL for the image, extracts a few properties and returns our data item for serialising.</p>
 <p>So when we wire all that up, and re-generate our sitemap XML we get:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"&gt;
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;urlset xmlns=&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot; xmlns:image=&quot;http://www.google.com/schemas/sitemap-image/1.1&quot;&gt;
   &lt;url&gt;
     &lt;loc&gt;http://test/en/sitecore/content/Home&lt;/loc&gt;
     &lt;image:image&gt;
@@ -483,6 +506,7 @@ public class SitemapImage
 <p>And there we have it. Configurable sitemaps that can include image data as well as the more usual stuff.</p>
 <p>If you're interested in playing with this yourself you can <a href="/files/Sitemaps-Package.zip" target="_blank" rel="noopener noreferrer">download a package file of the sitecore templates and example config</a> and a <a href="/files/Sitemaps-source.zip" target="_blank" rel="noopener noreferrer">zip file of the example c# files</a> to put together yourself and play with. But please remember that this is just proof of concept code so it's not sensible to use it in production as-is.</p>
 <p>I think I've got one more post to make on this topic – next will be some thoughts on how you can address sitemap generation on very large sites, where performance can be an issue.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -537,7 +561,7 @@ public class SitemapImage
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

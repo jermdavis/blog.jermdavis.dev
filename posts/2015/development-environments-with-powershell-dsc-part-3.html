@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="After last week&amp;#x27;s &amp;lt;a href=&amp;quot;/posts/2015/development-environments-with-powershell-dsc-part-2&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;look at the basic setup of Windows features via PowerShell DSC&amp;lt;/a&amp;gt;, this week I&amp;#x27;m looking at adding MongoDB into the mix. I wrote a post a while back &amp;lt;a href=&amp;quot;/posts/2015/automating-a-development-mongodb-install&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;about installing MongoDB via ordinary PowerShell&amp;lt;/a&amp;gt;, this post can re-purpose that logic in a new form...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;3</title>
+    <title>Jeremy Davis - Development environments with PowerShell DSC &#x2013; Part&#xA0;3</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-3">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;3">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC &amp;#x2013; Part&amp;#xA0;3">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-3-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Development environments with PowerShell DSC &#x2013; Part&#xA0;3",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-3-social.png"
+        ],
+        "datePublished": "2015-10-26T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-3">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,25 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Development environments with PowerShell DSC – Part&nbsp;3
+        Development environments with PowerShell DSC – Part 3
         </h1>
+            <div class="meta">Published 26 October 2015</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/mongodb" class="p-1 mr-1 bg-gray-100 rounded-md"> MongoDB</a>
+                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+                    <a href="/tags/powershell-dsc" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell DSC</a>
+                    <a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md"> Installation</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>After last week's <a href="/posts/2015/development-environments-with-powershell-dsc-part-2" target="_blank">look at the basic setup of Windows features via PowerShell DSC</a>, this week I'm looking at adding MongoDB into the mix. I wrote a post a while back <a href="/posts/2015/automating-a-development-mongodb-install" target="_blank">about installing MongoDB via ordinary PowerShell</a>, this post can re-purpose that logic in a new form...<!--more--></p>
 <p><i>(<b>Edited to add:</b> Links to all posts in this series: <a href="/posts/2015/development-environments-with-powershell-dsc-part-1" target="_blank">1:Introduction to DSC</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-2" target="_blank">2:Windows Features</a> – 3:Mongo DB – <a href="/posts/2015/development-environments-with-powershell-dsc-part-4" target="_blank">4:SQL Server</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">5:Sitecore</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-6" target="_blank">6:Coveo CES</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-7" target="_blank">7:Coveo REST API &amp; Coveo for Sitecore</a>)</i></p>
 <blockquote>
@@ -139,22 +164,22 @@
 <h2>Configuration for this installation</h2>
 <p>There are various bits of the Mongo installation that it would be useful to make configurable.</p>
 <p>We'll need somewhere to stick temporary files used by the installation, and we'll need assorted settings for MongoDB itself. We can extend the basic configuration data with the right new things:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
-    AllNodes = @(
-        @{
-            NodeName = "WIN-AQEKG7L9SE8"
-            Role = "Setup, WindowsFeatures, IE, SqlServer, MongoDB, Sitecore"
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">&#64;{
+    AllNodes = &#64;(
+        &#64;{
+            NodeName = &quot;WIN-AQEKG7L9SE8&quot;
+            Role = &quot;Setup, WindowsFeatures, IE, SqlServer, MongoDB, Sitecore&quot;
             
-            TempFolder = "c:\dsc"
+            TempFolder = &quot;c:\dsc&quot;
 
-            Mongo = @{
-                DataFolder = "c:\MongoDataFolder"
-                ConfigFile = "mongod.cfg"
-                MSIFile = "mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi"
-                InstallerAppName = "MongoDB 3.0.6 2008R2Plus SSL (64 bit)"
-                ServiceExe = "MongoDB\Server\3.0\bin\mongod.exe"
-                RoboZip = "Robomongo-0.8.5-i386.zip"
-                UserForLink = "Administrator"
+            Mongo = &#64;{
+                DataFolder = &quot;c:\MongoDataFolder&quot;
+                ConfigFile = &quot;mongod.cfg&quot;
+                MSIFile = &quot;mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi&quot;
+                InstallerAppName = &quot;MongoDB 3.0.6 2008R2Plus SSL (64 bit)&quot;
+                ServiceExe = &quot;MongoDB\Server\3.0\bin\mongod.exe&quot;
+                RoboZip = &quot;Robomongo-0.8.5-i386.zip&quot;
+                UserForLink = &quot;Administrator&quot;
             }
          }
     );
@@ -172,15 +197,15 @@
         $PackagePath
     )
 
-    Node $AllNodes.where{ $_.Role.Contains("MongoDB") }.NodeName
+    Node $AllNodes.where{ $_.Role.Contains(&quot;MongoDB&quot;) }.NodeName
     {
          #
-         # We'll put the resources here
+         # We&#39;ll put the resources here
          #
     }
 }
 
-MongoDBInstall -ConfigurationData "\\vboxsvr\dsc\configData.psd1" -PackagePath "\\VBOXSVR\dsc\Mongo"
+MongoDBInstall -ConfigurationData &quot;\\vboxsvr\dsc\configData.psd1&quot; -PackagePath &quot;\\VBOXSVR\dsc\Mongo&quot;
 Start-DscConfiguration -Path .\MongoDBInstall -Verbose -Wait -Force
 </pre>
 <p>The resources in the examples below can all be added into the <code>Node</code> block here.</p>
@@ -188,26 +213,26 @@ Start-DscConfiguration -Path .\MongoDBInstall -Verbose -Wait -Force
 <p>First of all, MongoDB needs folders to store its data in. The <code>File</code> resource in DSC can be used both for copying files and folders, or for creating them. So combining that with the configuration above we can create the right folders:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File MongoDataFolders
 {
-    Type = "Directory"
-    DestinationPath = "$($Node.Mongo.DataFolder)\db"
-    Ensure = "Present"
+    Type = &quot;Directory&quot;
+    DestinationPath = &quot;$($Node.Mongo.DataFolder)\db&quot;
+    Ensure = &quot;Present&quot;
 }
 
 File MongoLogFolders
 {
-    Type = "Directory"
-    DestinationPath = "$($Node.Mongo.DataFolder)\log"
-    Ensure = "Present"
+    Type = &quot;Directory&quot;
+    DestinationPath = &quot;$($Node.Mongo.DataFolder)\log&quot;
+    Ensure = &quot;Present&quot;
 }
 </pre>
-<p>By not supplying a <code>Source</code> for these resources and by setting <code>Type</code> to "Directory" we're telling DSC to create the folders specified by the <code>DestinationPath</code>. The value of that path comes from the configuration properties above. (I wrote a previous <a href="/posts/2015/config-variables-in-powershell-dsc-can-confuse" target="_blank">post about how DSC resolves these variables</a>, which will help explain that)</p>
+<p>By not supplying a <code>Source</code> for these resources and by setting <code>Type</code> to &quot;Directory&quot; we're telling DSC to create the folders specified by the <code>DestinationPath</code>. The value of that path comes from the configuration properties above. (I wrote a previous <a href="/posts/2015/config-variables-in-powershell-dsc-can-confuse" target="_blank">post about how DSC resolves these variables</a>, which will help explain that)</p>
 <p>The next thing we'll need is the config file for the MongoDB service. In my previous script I was generating that directly as the script ran, but for this version I've made this file a dependency of the script. Hence we can use another <code>File</code> resource to copy it over to our Mongo data directory:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File MongoConfigFile
 {
-    SourcePath = "$PackagePath\mongod.cfg"
-    DestinationPath = "$($Node.Mongo.DataFolder)\mongod.cfg"
-    Type = "File"
-    Ensure = "Present"
+    SourcePath = &quot;$PackagePath\mongod.cfg&quot;
+    DestinationPath = &quot;$($Node.Mongo.DataFolder)\mongod.cfg&quot;
+    Type = &quot;File&quot;
+    Ensure = &quot;Present&quot;
 }
 </pre>
 <p>Here the <code>SourcePath</code> is specified using the <code>-PackagePath</code> parameter to our <code>Configuration</code> so we can find the source file. That file includes some variables which need to be resolved though. My basic example config contains:</p>
@@ -219,13 +244,13 @@ storage:
 </pre>
 <p>(You can, of course, add whatever extra MongoDB configuration you need here)</p>
 <p>We then need a bit of code to transform the <code>$MongoDataFolder</code> variables here into the correct path. We can do that with a <code>Script</code> resource - these let us run ordinary PowerShell code in our DSC file.</p>
-<p>The first thing to notice here is the use of the <code>DependsOn</code> property of this resource. Usually DSC will work out the order to run resources in on its own, but if you have a scenario where execution order is important, then you can use this property to tell DSC how it should order things. The value of the <code>DependsOn</code> property is a string in the format "[]", as shown below.</p>
+<p>The first thing to notice here is the use of the <code>DependsOn</code> property of this resource. Usually DSC will work out the order to run resources in on its own, but if you have a scenario where execution order is important, then you can use this property to tell DSC how it should order things. The value of the <code>DependsOn</code> property is a string in the format &quot;[]&quot;, as shown below.</p>
 <p>Script resources have three other key properties that we need to fill in. These represent three specific scripts which get run at different times. The <code>GetScript</code> property can be used to return a dictionary of values describing the current state of a resource. The <code>TestScript</code> property contains code that checks whether the resource has any work to do. It returns false if there is work to do, and true if there is not.</p>
 <p>For the purposes of this resource, these two scripts aren't particularly important, so they're not filled in here.</p>
 <p>The final property is <code>SetScript</code>, and this is the one which does all the hard work:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script UpdateMongoConfigFile
 {
-    DependsOn = "[file]MongoConfigFile"
+    DependsOn = &quot;[file]MongoConfigFile&quot;
     GetScript = {
     }
     TestScript = {
@@ -235,9 +260,9 @@ storage:
         $configFile = $using:Node.Mongo.ConfigFile
         $mongoDataFolder = $using:Node.Mongo.DataFolder
 
-        $text = Get-Content "$mongoDataFolder\$configFile" | Out-String
-        $text = $text.Replace(`$MongoDataFolder", $mongoDataFolder)
-        $text | Out-File "$mongoDataFolder\$configFile"
+        $text = Get-Content &quot;$mongoDataFolder\$configFile&quot; | Out-String
+        $text = $text.Replace(`$MongoDataFolder&quot;, $mongoDataFolder)
+        $text | Out-File &quot;$mongoDataFolder\$configFile&quot;
     }
 }
 </pre>
@@ -246,46 +271,46 @@ storage:
 <p>So the next step is installing MongoDB itself. That needs two steps. The first is a simple one to copy the installer over from our folder full of dependencies into our local temporary folder:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File MongoMSI
 {
-    SourcePath = "$PackagePath\$($Node.Mongo.MSIFile)"
-    DestinationPath = "$($Node.TempFolder)\$($Node.Mongo.MSIFile)"
-    Type = "File"
-    Ensure = "Present"
+    SourcePath = &quot;$PackagePath\$($Node.Mongo.MSIFile)&quot;
+    DestinationPath = &quot;$($Node.TempFolder)\$($Node.Mongo.MSIFile)&quot;
+    Type = &quot;File&quot;
+    Ensure = &quot;Present&quot;
 }
 </pre>
 <p>Then we can run the installation. Helpfully DSC has a resource whose purpose is installing <code>.EXE</code> and <code>.MSI</code> packages. While it's a bit restrictive about the packages it can install, MongoDB plays nicely with it, so we can use the <code>Package</code> resource as follows:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Package MongoDB
 {
-    DependsOn = "[file]MongoMSI"
-    Ensure = "Present"
-    Path = "$($Node.TempFolder)\$($Node.Mongo.MSIFile)"
-    Arguments = 'ADDLOCAL="all"'
-    Name = "$($Node.Mongo.InstallerAppName)"
-    ProductId = ""
+    DependsOn = &quot;[file]MongoMSI&quot;
+    Ensure = &quot;Present&quot;
+    Path = &quot;$($Node.TempFolder)\$($Node.Mongo.MSIFile)&quot;
+    Arguments = &#39;ADDLOCAL=&quot;all&quot;&#39;
+    Name = &quot;$($Node.Mongo.InstallerAppName)&quot;
+    ProductId = &quot;&quot;
 }
 </pre>
-<p>Again we have a dependency here - we can't install the package until it's been copied into our temp folder. But there are two other things which need pointing out. The first is the <code>Arguments</code> property, which you use to pass in any parameters for the install package. In this case we're just saying "install everything".</p>
-<p>The second is the <code>Name</code> and <code>ProductID</code> properties. These two are used to specify how DSC can test if your package is installed already or not. (Remember that DSC attempts to avoid repeating tasks it doesn't have to) You only have to specify one of these parameters. <code>Name</code> needs to be the text which appears in the "uninstall programs" list in Windows, and <code>ProductID</code> is the unique package GUID for the installer. Generally, Name is easier to find. I've made it a parameter here, as this will change with different versions of MongoDB – so if we specify a different installer in our config we need to specify a different <code>Name</code> as well.</p>
+<p>Again we have a dependency here - we can't install the package until it's been copied into our temp folder. But there are two other things which need pointing out. The first is the <code>Arguments</code> property, which you use to pass in any parameters for the install package. In this case we're just saying &quot;install everything&quot;.</p>
+<p>The second is the <code>Name</code> and <code>ProductID</code> properties. These two are used to specify how DSC can test if your package is installed already or not. (Remember that DSC attempts to avoid repeating tasks it doesn't have to) You only have to specify one of these parameters. <code>Name</code> needs to be the text which appears in the &quot;uninstall programs&quot; list in Windows, and <code>ProductID</code> is the unique package GUID for the installer. Generally, Name is easier to find. I've made it a parameter here, as this will change with different versions of MongoDB – so if we specify a different installer in our config we need to specify a different <code>Name</code> as well.</p>
 <h2>Configuring MongoDB as a service</h2>
 <p>As I discussed in my previous Mongo post, running the installer gets you the executables on disk, but it doesn't install them as a service. Doing that involves two steps. The first is to instruct MongoDB to add itself into the list of services on the machine. That requires some custom code, so we need another <code>Script</code> resource:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script MongoService
 {
-    DependsOn = "[package]MongoDB", "[script]UpdateMongoConfigFile"
+    DependsOn = &quot;[package]MongoDB&quot;, &quot;[script]UpdateMongoConfigFile&quot;
     GetScript = {
-        $instances = gwmi win32_service -computerName localhost | ? { $_.Name -match "mongo*" -and $_.PathName -match "mongod.exe" } | % { $_.Caption }
+        $instances = gwmi win32_service -computerName localhost | ? { $_.Name -match &quot;mongo*&quot; -and $_.PathName -match &quot;mongod.exe&quot; } | % { $_.Caption }
         $res = $instances -ne $null -and $instances -gt 0
-        $vals = @{ 
+        $vals = &#64;{ 
             Installed = $res; 
             InstanceCount = $sqlInstances.count 
         }
         $vals
     }
     TestScript = {
-        $instances = gwmi win32_service -computerName localhost | ? { $_.Name -match "mongo*" -and $_.PathName -match "mongod.exe" } | % { $_.Caption }
+        $instances = gwmi win32_service -computerName localhost | ? { $_.Name -match &quot;mongo*&quot; -and $_.PathName -match &quot;mongod.exe&quot; } | % { $_.Caption }
         $res = $instances -ne $null -and $instances -gt 0
         if ($res) {
-            Write-Verbose "MongoDB is already running as a service"
+            Write-Verbose &quot;MongoDB is already running as a service&quot;
         } else {
-            Write-Verbose "MongoDB is not running as a service"
+            Write-Verbose &quot;MongoDB is not running as a service&quot;
         }
         $res
     }
@@ -294,22 +319,22 @@ storage:
         $dataFolder = $using:Node.Mongo.DataFolder
         $service = $using:Node.Mongo.ServiceExe
 
-        $MongoExe = "$using:Env:ProgramFiles\$service"
-        $ConfigFile = "$dataFolder\$configFile"
+        $MongoExe = &quot;$using:Env:ProgramFiles\$service&quot;
+        $ConfigFile = &quot;$dataFolder\$configFile&quot;
 
         &amp;$MongoExe --config $ConfigFile --install
     }
 }
 </pre>
-<p>With this one I've filled in the <code>GetScript</code> with some code that uses a call to the WMI API to ask for a list of any services called "Mongo" that are currently running. It then uses this data to create a dictionary containing a boolean to say whether the service is installed, and how many instances have been found. The <code>TestScript</code> property uses a similar query to decide if the installation needs to proceed or not.</p>
+<p>With this one I've filled in the <code>GetScript</code> with some code that uses a call to the WMI API to ask for a list of any services called &quot;Mongo&quot; that are currently running. It then uses this data to create a dictionary containing a boolean to say whether the service is installed, and how many instances have been found. The <code>TestScript</code> property uses a similar query to decide if the installation needs to proceed or not.</p>
 <p>In the <code>SetScript</code> block, it extracts the various config variables, works out the path to the Mongo executable and its config file, and then it runs the <code>.EXE</code> passing in the <code>--config</code> and <code>--install</code> parameters to tell it to set itself up as a service.</p>
 <p>Once that's done, the second step is that we need to make sure our service is configured to start automatically. Luckily, DSC has a resource called <code>Service</code> which can deal with changing the state of Windows services. All we have to do is specify the name of the service, how we want it to start up and what state it should be in now:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Service StartMongoService
 {
-    DependsOn = "[script]MongoService"
-    StartupType =  "Automatic"
-    Name = "MongoDB"
-    State = "Running"
+    DependsOn = &quot;[script]MongoService&quot;
+    StartupType =  &quot;Automatic&quot;
+    Name = &quot;MongoDB&quot;
+    State = &quot;Running&quot;
 }
 </pre>
 <p>With that done, we have MongoDB running as a service in the background.</p>
@@ -317,34 +342,34 @@ storage:
 <p>MongoDB is available as a <code>.EXE</code> installer, but this one isn't well behaved enough to use with the <code>Package</code> resource, so this code uses the <code>.ZIP</code> version of RoboMongo. The first thing to do is to grab a copy of this from our dependencies folder:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File GetRobomongoZip
 {
-    SourcePath = "$PackagePath\$($Node.Mongo.RoboZip)"
-    DestinationPath = "$($Node.TempFolder)\$($Node.Mongo.RoboZip)"
-    Type = "File"
-    Ensure = "Present"
+    SourcePath = &quot;$PackagePath\$($Node.Mongo.RoboZip)&quot;
+    DestinationPath = &quot;$($Node.TempFolder)\$($Node.Mongo.RoboZip)&quot;
+    Type = &quot;File&quot;
+    Ensure = &quot;Present&quot;
 }
 </pre>
 <p>With the file copied over, then we have to unzip it. Again, DSC provides us a helpful resource: <code>Archive</code> can unpack a zip file. This uses the <code>$Env:ProgramFiles</code> variable to find the appropriate place to unpack the zip to:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Archive UnzipRobomongo
 {
-    DependsOn =  "[file]GetRobomongoZip"
-    Path = "$($Node.TempFolder)\$($Node.Mongo.RoboZip)"
-    Destination = "$Env:ProgramFiles\RoboMongo"
+    DependsOn =  &quot;[file]GetRobomongoZip&quot;
+    Path = &quot;$($Node.TempFolder)\$($Node.Mongo.RoboZip)&quot;
+    Destination = &quot;$Env:ProgramFiles\RoboMongo&quot;
 }
 </pre>
 <p>You can run RoboMongo now, but it's easier if we have an icon to click on rather than having to go find it in the Program Files folder. So we can use another <code>Script</code> resource to add an icon to a user's desktop via the <a href="https://msdn.microsoft.com/en-us/library/aew9yb99(v=vs.84).aspx" target="_blank" rel="noopener noreferrer">Windows Shell's COM API</a>:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script AddRobomongoLink
 {
-    DependsOn = "[archive]UnzipRobomongo"
+    DependsOn = &quot;[archive]UnzipRobomongo&quot;
     GetScript = {
         $usr = $using:Node.Mongo.UserForLink
-        $result = Test-Path "C:\Users\$using:usr\Desktop\Robomongo.lnk"
-        @{
-            "Installed" = $result
+        $result = Test-Path &quot;C:\Users\$using:usr\Desktop\Robomongo.lnk&quot;
+        &#64;{
+            &quot;Installed&quot; = $result
         }
     }
     TestScript = {
         $usr = $using:Node.Mongo.UserForLink
-        $result = Test-Path "C:\Users\$using:usr\Desktop\Robomongo.lnk"
+        $result = Test-Path &quot;C:\Users\$using:usr\Desktop\Robomongo.lnk&quot;
 
         $result
     }
@@ -355,8 +380,8 @@ storage:
         $folder = [io.path]::GetFileNameWithoutExtension($zip)
 
         $WshShell = New-Object -comObject WScript.Shell
-        $Shortcut = $WshShell.CreateShortcut("C:\Users\$usr\Desktop\Robomongo.lnk")
-        $Shortcut.TargetPath = "$Env:ProgramFiles\RoboMongo\$folder\Robomongo.exe"
+        $Shortcut = $WshShell.CreateShortcut(&quot;C:\Users\$usr\Desktop\Robomongo.lnk&quot;)
+        $Shortcut.TargetPath = &quot;$Env:ProgramFiles\RoboMongo\$folder\Robomongo.exe&quot;
         $Shortcut.Save()
     }
 }
@@ -366,6 +391,7 @@ storage:
 <p>And with that done, you can fire up RoboMongo and check out what's in your MongoDB data store:</p>
 <p><a href="/img/2015/2015-09-robomongo.png" target="_blank"><img alt="Robo Mongo" src="/img/2015/2015-09-robomongo.png"></a></p>
 <p>Next week, we'll turn out attention to SQL Server.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -420,7 +446,7 @@ storage:
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="There are lots of scenarios where sorting the results of Sitecore API or search queries is easy. But there&amp;#x27;s one scenario that I&amp;#x27;ve come across a couple of times can be a bit trickier than the usual &amp;amp;amp;quot;sort by date&amp;amp;amp;quot; scenario.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Getting your queries in&nbsp;order</title>
+    <title>Jeremy Davis - Getting your queries in&#xA0;order</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2016/getting-your-queries-in-order">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Getting your queries in&nbsp;order">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Getting your queries in&amp;#xA0;order">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/getting-your-queries-in-order-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Getting your queries in&#xA0;order",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/getting-your-queries-in-order-social.png"
+        ],
+        "datePublished": "2016-05-02T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/getting-your-queries-in-order">
 <meta property="og:type" content="website">
 
@@ -114,21 +131,26 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Getting your queries in&nbsp;order
+        Getting your queries in order
         </h1>
+            <div class="meta">Published 02 May 2016</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
-                <p>There are lots of scenarios where sorting the results of Sitecore API or search queries is easy. But there's one scenario that I've come across a couple of times can be a bit trickier than the usual "sort by date" scenario.<!--more--></p>
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>There are lots of scenarios where sorting the results of Sitecore API or search queries is easy. But there's one scenario that I've come across a couple of times can be a bit trickier than the usual &quot;sort by date&quot; scenario.<!--more--></p>
 <h2>The scenario</h2>
 <p><a href="/img/2016/2016-02-contentstructure.png" target="_blank"><img alt="ContentStructure" src="/img/2016/2016-02-contentstructure.png"></a> Imagine you have a folder structure holding a set of content items. Maybe something like the tree on the left here. They're ordered and organised into folders based on something that makes sense to your content editors. This content is going to be processed using a sort order that should match the content-tree order.</p>
-<p>I've come across this requirement for a search interface for training courses – where the default sort needed to be in "marketing importance" order. But it could equally well be used in <a href="/posts/2016/getting-your-redirects-right" target="_blank">the case of ordering the redirect rules</a> I discussed recently.</p>
+<p>I've come across this requirement for a search interface for training courses – where the default sort needed to be in &quot;marketing importance&quot; order. But it could equally well be used in <a href="/posts/2016/getting-your-redirects-right" target="_blank">the case of ordering the redirect rules</a> I discussed recently.</p>
 <p>Out of the box, Sitecore has an approach to sorting content in its tree – the <a href="http://www.sitecore.net/learn/blogs/technical-blogs/john-west-sitecore-blog/posts/2015/05/sitecore-standard-template-fields.aspx" target="_blank" rel="noopener noreferrer">Standard Fields</a> for each item have a <code>__sortorder</code> field defined, and the default sort for the content tree orders by that field. When you move items up and down to change their order, that value is updated to try and ensure all the items in that folder sort correctly. This approach works ok for sorting the results of a query if all the items are in the same folder. However with our data in this example, the query starts from <code>/sitecore/content/Home/Sortable Content Items</code> and looks down the tree – hence it is looking at many folders. So it could return multiple items with the same <code>__sortorder</code> because these values are calculated per-folder, and different folders may duplicate the same value.</p>
 <p>And if the values in the sort field can repeat, you can't sort the result of your query by that field and expect to get items in a predictable order. So, what can you do about it?</p>
 <h2>One possible solution</h2>
@@ -176,8 +198,8 @@ private string DefaultString;
 
 public ItemEventHandler()
 {
-    DefaultString = new string('0', FormatStringDigits);
-    FormatString = "{0:" + DefaultString + "}";
+    DefaultString = new string(&#39;0&#39;, FormatStringDigits);
+    FormatString = &quot;{0:&quot; + DefaultString + &quot;}&quot;;
 }
 </pre>
 <p>Each time an item needs processing, it needs to do four things:</p>
@@ -288,23 +310,23 @@ public void OnSortOrderChanged(object sender, EventArgs args)
 }
 </pre>
 <p>And then these methods can be configured to be called when the events occur with a config patch:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch=&quot;http://www.sitecore.net/xmlconfig/&quot;&gt;
   &lt;sitecore&gt;
     &lt;events&gt;
-      &lt;event name="item:created"&gt;
-        &lt;handler type="DevTest.Sorting.ItemEventHandler, DevTest.Sorting" method="OnCreated"/&gt;
+      &lt;event name=&quot;item:created&quot;&gt;
+        &lt;handler type=&quot;DevTest.Sorting.ItemEventHandler, DevTest.Sorting&quot; method=&quot;OnCreated&quot;/&gt;
       &lt;/event&gt;
 
-      &lt;event name="item:copying"&gt;
-        &lt;handler type="DevTest.Sorting.ItemEventHandler, DevTest.Sorting" method="OnCopied"/&gt;
+      &lt;event name=&quot;item:copying&quot;&gt;
+        &lt;handler type=&quot;DevTest.Sorting.ItemEventHandler, DevTest.Sorting&quot; method=&quot;OnCopied&quot;/&gt;
       &lt;/event&gt;
       
-      &lt;event name="item:moved"&gt;
-        &lt;handler type="DevTest.Sorting.ItemEventHandler, DevTest.Sorting" method="OnMoved"/&gt;
+      &lt;event name=&quot;item:moved&quot;&gt;
+        &lt;handler type=&quot;DevTest.Sorting.ItemEventHandler, DevTest.Sorting&quot; method=&quot;OnMoved&quot;/&gt;
       &lt;/event&gt;
       
-      &lt;event name="item:sortorderchanged"&gt;
-        &lt;handler type="DevTest.Sorting.ItemEventHandler, DevTest.Sorting" method="OnSortOrderChanged"/&gt;
+      &lt;event name=&quot;item:sortorderchanged&quot;&gt;
+        &lt;handler type=&quot;DevTest.Sorting.ItemEventHandler, DevTest.Sorting&quot; method=&quot;OnSortOrderChanged&quot;/&gt;
       &lt;/event&gt;
     &lt;/events&gt;
   &lt;/sitecore&gt;
@@ -314,13 +336,14 @@ public void OnSortOrderChanged(object sender, EventArgs args)
 <h2>Caveats</h2>
 <p>While this can be a useful approach for content order sorting, it's not perfect, and there are some scenarios this idea doesn't cope with.</p>
 <ul>
-<li>For starters it won't work with items in buckets, as "content order" doesn't really apply to them.</li>
-<li>The default <code>__sortorder</code> value for a newly created item is empty - which isn't helpful. Ideally it should be the right value, based on the other items in the folder. This means that by default content editors need to make sure they move stuff to the "right" position in the tree, even when the item first appears in an acceptable location. That ensures the <code>__sortorder</code> field gets the correct value.</li>
+<li>For starters it won't work with items in buckets, as &quot;content order&quot; doesn't really apply to them.</li>
+<li>The default <code>__sortorder</code> value for a newly created item is empty - which isn't helpful. Ideally it should be the right value, based on the other items in the folder. This means that by default content editors need to make sure they move stuff to the &quot;right&quot; position in the tree, even when the item first appears in an acceptable location. That ensures the <code>__sortorder</code> field gets the correct value.</li>
 <li>The code above uses <code>Math.Abs()</code> because this approach doesn't really cope with negative numbers. But it's quite possible that <code>__sortorders</code> value can be negative. That would mess up this approach.</li>
 <li>It's sensitive to the depth of your content tree, and the volume of content you're sorting – due to the need to make sure all the sort strings are the same length. If the volume or depth of the content excedes the values you configure for formatting the sorting strings, the sort won't work.</li>
 <li>The example code above isn't that efficient. The need to recurse up the content tree and the need to re-calculate an entire child tree when a parent changes its <code>__sortorder</code> lead to lots of item reads. I think it should be possible to make this code more efficient though.</li>
 </ul>
 <p>But despite those points, maybe some of you out there might find it useful in your work too...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -375,7 +398,7 @@ public void OnSortOrderChanged(object sender, EventArgs args)
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

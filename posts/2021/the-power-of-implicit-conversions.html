@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="There are bits of the C# language that we don&amp;#x27;t think about too much when writing websites &amp;#x2013; and implicit conversions are one of those things. But while I&amp;#x27;ve been messing about with some ray-tracing code in evenings recently, I found a couple of examples they patterns they can be a help with...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - The power of implicit&nbsp;conversions</title>
+    <title>Jeremy Davis - The power of implicit&#xA0;conversions</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/the-power-of-implicit-conversions">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - The power of implicit&nbsp;conversions">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - The power of implicit&amp;#xA0;conversions">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/the-power-of-implicit-conversions-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "The power of implicit&#xA0;conversions",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/the-power-of-implicit-conversions-social.png"
+        ],
+        "datePublished": "2021-08-17T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/the-power-of-implicit-conversions">
 <meta property="og:type" content="website">
 
@@ -114,21 +130,25 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        The power of implicit&nbsp;conversions
+        The power of implicit conversions
         </h1>
+            <div class="meta">Published 17 August 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>There are bits of the C# language that we don't think about too much when writing websites – and implicit conversions are one of those things. But while I've been messing about with some ray-tracing code in evenings recently, I found a couple of examples they patterns they can be a help with...<!--more--></p>
 <h2>The challenge</h2>
-<p>There are various places in a raytracer where you need to deal with angles. The orientation of geometry, working out the directions the rays travel in and how the light reflects and refracts. And wherever your expressing angles you need to choose your units. While a lot of maths is defined in terms of <a href="https://en.wikipedia.org/wiki/Radian" rel="noopener" target="_blank">radians</a>, I find that with my "not very good" maths skills, I think in terms of <a href="https://en.wikipedia.org/wiki/Degree_(angle)" rel="noopener" target="_blank">degrees</a>.</p>
-<p>So how can I write the code so that it the internals work in the "right" angle units for their work, but I have the option to define things as degrees or as radians to suit my thinking?</p>
+<p>There are various places in a raytracer where you need to deal with angles. The orientation of geometry, working out the directions the rays travel in and how the light reflects and refracts. And wherever your expressing angles you need to choose your units. While a lot of maths is defined in terms of <a href="https://en.wikipedia.org/wiki/Radian" rel="noopener" target="_blank">radians</a>, I find that with my &quot;not very good&quot; maths skills, I think in terms of <a href="https://en.wikipedia.org/wiki/Degree_(angle)" rel="noopener" target="_blank">degrees</a>.</p>
+<p>So how can I write the code so that it the internals work in the &quot;right&quot; angle units for their work, but I have the option to define things as degrees or as radians to suit my thinking?</p>
 <h2>The traditional approach</h2>
 <p>A lot of code which does units conversions provides helper methods to convert from one set of units to another. Something like:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void CalculateSomeAngles(double radians)
@@ -171,7 +191,7 @@ CalculateSomeAngles(new Radians(1.1));
     }
 }
 </pre>
-<p>But the magic here is adding some operators to allow the compiler to automatically do some conversions for us. If we add a "to degrees" conversion to the radians struct and the equivalent degrees struct:</p>
+<p>But the magic here is adding some operators to allow the compiler to automatically do some conversions for us. If we add a &quot;to degrees&quot; conversion to the radians struct and the equivalent degrees struct:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public struct Degrees
 {
     public static implicit operator Radians(Degrees d)
@@ -195,7 +215,7 @@ CalculateSomeAngles(new Degrees(72));
 </pre>
 <p>And now I don't have to worry about my units.</p>
 <h2>And there's more...</h2>
-<p>Using this for unit conversion is one very simple usage for this approach. (And in fact, one you could argue can be solved in other ways) The other place I found this sort of pattern helpful was in implementation animations. I wanted to enable a situation where most (if not all) of the properties of objects in a scene could be animated. Broadly that means "animate the values of a double" or "animate a matrix". And in both cases the implicit conversions idea can help.</p>
+<p>Using this for unit conversion is one very simple usage for this approach. (And in fact, one you could argue can be solved in other ways) The other place I found this sort of pattern helpful was in implementation animations. I wanted to enable a situation where most (if not all) of the properties of objects in a scene could be animated. Broadly that means &quot;animate the values of a double&quot; or &quot;animate a matrix&quot;. And in both cases the implicit conversions idea can help.</p>
 <p>The pattern I ended up with for animation was that it needed a mechanism to set which frame is being rendered, and a mechanism to get the value for this point. Something like:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAnimateable&lt;T&gt;
 {
@@ -203,7 +223,7 @@ CalculateSomeAngles(new Degrees(72));
     void SetFrame(int thisFrame, int frameCount);
 }
 </pre>
-<p>So if we have a material with "shinyness" that can be amimated, we can replace the normal <code>double</code>-typed property with something which exposes this interface, and when the material gets initialised for a specific frame we just pass that data down to the animateable properties:</p>
+<p>So if we have a material with &quot;shinyness&quot; that can be amimated, we can replace the normal <code>double</code>-typed property with something which exposes this interface, and when the material gets initialised for a specific frame we just pass that data down to the animateable properties:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PhongMaterial
 {
     ....
@@ -262,6 +282,7 @@ CalculateSomeAngles(new Degrees(72));
 </pre>
 <p>This pattern has ended up very useful for both simple scene properties like above, and for more complex Matrix properties for transformations.</p>
 
+
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
                 <section class="mvp">
@@ -315,7 +336,7 @@ CalculateSomeAngles(new Degrees(72));
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

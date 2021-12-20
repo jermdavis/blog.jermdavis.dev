@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Last week I looked at &amp;lt;a href=&amp;quot;/posts/2014/visualising-aliases&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;how to visualise aliases in the Content Editor&amp;lt;/a&amp;gt;, based on a requirement from one of my clients. The second part of the work I was considering here was how you can automatically remove any aliases related to an item when you remove that item. What I wanted to achieve was having the system prompt you to ask if you want the aliases removed whenever you delete an item that has aliases attached. Something like: ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Delete aliases along with their&nbsp;items</title>
+    <title>Jeremy Davis - Delete aliases along with their&#xA0;items</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/delete-aliases-along-with-their-items">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Delete aliases along with their&nbsp;items">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Delete aliases along with their&amp;#xA0;items">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/delete-aliases-along-with-their-items-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Delete aliases along with their&#xA0;items",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/delete-aliases-along-with-their-items-social.png"
+        ],
+        "datePublished": "2014-03-17T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/delete-aliases-along-with-their-items">
 <meta property="og:type" content="website">
 
@@ -114,23 +131,30 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Delete aliases along with their&nbsp;items
+        Delete aliases along with their items
         </h1>
+            <div class="meta">Published 17 March 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/ui" class="p-1 mr-1 bg-gray-100 rounded-md"> UI</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Last week I looked at <a href="/posts/2014/visualising-aliases" target="_blank" rel="noopener noreferrer">how to visualise aliases in the Content Editor</a>, based on a requirement from one of my clients. The second part of the work I was considering here was how you can automatically remove any aliases related to an item when you remove that item. What I wanted to achieve was having the system prompt you to ask if you want the aliases removed whenever you delete an item that has aliases attached. Something like: <!--more--></p>
 <a target="_blank" rel="noopener noreferrer" href="/img/2014/AliasWarnDialog.png">
 <img alt="Alias warning dialog" src="/img/2014/AliasWarnDialog.png">
 </a>
 <p>I bit of digging through docs and Reflector shows that when you delete an item via the UI, Sitecore runs the <code>uiDeleteItems</code> pipeline. This performs the series of steps required to verity and then perform the deletion:</p>
-<p>Looking at the code behind these components, it seems sensible that if we're going to extend this pipeline, the "are you sure you want to delete aliases" component needs to go between the "Confirm" step (which prompts to confirm whether you really want to delete the item) and the <code>CheckTemplateLinks</code> step. That would allow us to prompt before Sitecore starts the process of deletion. Now as you can probably tell from the config above, the original Sitecore code breaks this sort of "confirm" and "perform" behaviour into multiple pipeline steps. But for the purposes of this example we'll stick to just the one for simplicity.</p>
+<p>Looking at the code behind these components, it seems sensible that if we're going to extend this pipeline, the &quot;are you sure you want to delete aliases&quot; component needs to go between the &quot;Confirm&quot; step (which prompts to confirm whether you really want to delete the item) and the <code>CheckTemplateLinks</code> step. That would allow us to prompt before Sitecore starts the process of deletion. Now as you can probably tell from the config above, the original Sitecore code breaks this sort of &quot;confirm&quot; and &quot;perform&quot; behaviour into multiple pipeline steps. But for the purposes of this example we'll stick to just the one for simplicity.</p>
 <p>So, as we've seen with other customisations, we need to start with a basic extension class which will provide our new pipeline step. For this particular pipeline, that class looks like:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteExtensions : ItemOperation
 {
@@ -140,33 +164,33 @@
 }
 </pre>
 <p>and it gets configured with a configuration patch like so:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;processor patch:after="*[@method='Confirm']" mode="on" type="Testing.DeleteExtensions ,Testing" method="CheckAndDeleteAliases"/&gt;
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;processor patch:after=&quot;*[&#64;method=&#39;Confirm&#39;]&quot; mode=&quot;on&quot; type=&quot;Testing.DeleteExtensions ,Testing&quot; method=&quot;CheckAndDeleteAliases&quot;/&gt;
 </pre>
-<p>Confirming an operation and then optionally performing it in a pipeline requires&nbsp; pattern of code that we saw in the <a href="/posts/2014/confirming-sitecore-commands" target="_blank" rel="noopener noreferrer">previous post about confirming commands in the Sitecore UI</a> – the code needs a two step approach where initially we present the UI and the the second time the code is run we detect the results from the UI dialog and act on them. So we need a clause to detect the user saying "no" to alias removal, a clause to detect the user saying "yes" and the code to generate the confirmation dialog. Now interestingly when we have multiple dialogs in a pipeline it turns out we can't make use of <code>args.IsPostBack</code> directly because it will already be true due to the previous dialog. But the <code>args.Result</code> property is correct when our code runs. Hence we can work around this issue by structuring the code a bit differently here:</p>
+<p>Confirming an operation and then optionally performing it in a pipeline requires  pattern of code that we saw in the <a href="/posts/2014/confirming-sitecore-commands" target="_blank" rel="noopener noreferrer">previous post about confirming commands in the Sitecore UI</a> – the code needs a two step approach where initially we present the UI and the the second time the code is run we detect the results from the UI dialog and act on them. So we need a clause to detect the user saying &quot;no&quot; to alias removal, a clause to detect the user saying &quot;yes&quot; and the code to generate the confirmation dialog. Now interestingly when we have multiple dialogs in a pipeline it turns out we can't make use of <code>args.IsPostBack</code> directly because it will already be true due to the previous dialog. But the <code>args.Result</code> property is correct when our code runs. Hence we can work around this issue by structuring the code a bit differently here:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteItems : ItemOperation
 {
-    private static Sitecore.Data.ID aliasID = new Sitecore.Data.ID("{54BCFFB7-8F46-4948-AE74-DA5B6B5AFA86}");
+    private static Sitecore.Data.ID aliasID = new Sitecore.Data.ID(&quot;{54BCFFB7-8F46-4948-AE74-DA5B6B5AFA86}&quot;);
     public void CheckAndDeleteAliases(ClientPipelineArgs args)
     {
-        Assert.ArgumentNotNull(args, "args");
+        Assert.ArgumentNotNull(args, &quot;args&quot;);
 
         //
         // Check for postback data from our dialog
         //
 
         // User clicked no - abort the whole deletion
-        if (args.Result == "no")
+        if (args.Result == &quot;no&quot;)
         {
             args.AbortPipeline();
             return;
         }
 
         // Both further steps require these bits of context data
-        ListString items = new ListString(args.Parameters["items"], '|');
+        ListString items = new ListString(args.Parameters[&quot;items&quot;], &#39;|&#39;);
         Database db = getDatabase(args);
 
         // User clicked yes - ok to delete
-        if (args.Result == "yes")
+        if (args.Result == &quot;yes&quot;)
         {
             args.Result = string.Empty;
             removeAliases(items, db);
@@ -174,7 +198,7 @@
         }
 
         //
-        // If we're not handling a postback, check for aliases and present UI
+        // If we&#39;re not handling a postback, check for aliases and present UI
         //
 
         // Count the aliases for any items we have as parameters
@@ -188,11 +212,11 @@
             if(items.Count == 1)
             {
                 Item item = db.GetItem(items[0]);
-                message = string.Format("The item \"{0}\" has {1} alias{2} which will also be {3}." + " Are you sure?", item.DisplayName, aliases, aliases != 1 ? "es" : string.Empty, Settings.RecycleBinActive ? "recycled" : "deleted");
+                message = string.Format(&quot;The item \&quot;{0}\&quot; has {1} alias{2} which will also be {3}.&quot; + &quot; Are you sure?&quot;, item.DisplayName, aliases, aliases != 1 ? &quot;es&quot; : string.Empty, Settings.RecycleBinActive ? &quot;recycled&quot; : &quot;deleted&quot;);
             }
             else
             {
-                message = string.Format("These {0} items have {1} alias{2} which will also be {3}." + " Are you sure?", items.Count, aliases, aliases != 1 ? "es" : string.Empty, Settings.RecycleBinActive ? "recycled" : "deleted");
+                message = string.Format(&quot;These {0} items have {1} alias{2} which will also be {3}.&quot; + &quot; Are you sure?&quot;, items.Count, aliases, aliases != 1 ? &quot;es&quot; : string.Empty, Settings.RecycleBinActive ? &quot;recycled&quot; : &quot;deleted&quot;);
            }
            Context.ClientPage.ClientResponse.Confirm(message);
            args.WaitForPostBack();
@@ -201,11 +225,11 @@
 
     private Database getDatabase(ClientPipelineArgs args)
     {
-        Assert.ArgumentNotNull(args, "args");
-        Database database = Factory.GetDatabase(args.Parameters["database"]);
-        Assert.IsNotNull(database, typeof(Database), "Name: {0}", new object[]
+        Assert.ArgumentNotNull(args, &quot;args&quot;);
+        Database database = Factory.GetDatabase(args.Parameters[&quot;database&quot;]);
+        Assert.IsNotNull(database, typeof(Database), &quot;Name: {0}&quot;, new object[]
         {
-            args.Parameters["database"]
+            args.Parameters[&quot;database&quot;]
         });
         return Assert.ResultNotNull(database);
     }
@@ -215,7 +239,7 @@
         int aliases = 0;
         try
         {
-            using (new TaskContext("DeleteItems pipeline - count aliases"))
+            using (new TaskContext(&quot;DeleteItems pipeline - count aliases&quot;))
             {
                 using (new SecurityDisabler())
                 {
@@ -239,10 +263,10 @@
         }
         catch (Exception ex)
         {
-            Log.Error("Error while counting aliases for items", ex, this);
+            Log.Error(&quot;Error while counting aliases for items&quot;, ex, this);
             HttpUnhandledException ex2 = new HttpUnhandledException(ex.Message, ex);
             string htmlErrorMessage = ex2.GetHtmlErrorMessage();
-            UrlString urlString = new UrlString("/sitecore/shell/controls/error.htm");
+            UrlString urlString = new UrlString(&quot;/sitecore/shell/controls/error.htm&quot;);
             Context.ClientPage.ClientResponse.ShowModalDialog(urlString.ToString(), htmlErrorMessage);
         }
 
@@ -276,7 +300,7 @@
     {
         try
         {
-            using (new TaskContext("DeleteItems pipeline - remove aliases"))
+            using (new TaskContext(&quot;DeleteItems pipeline - remove aliases&quot;))
             {
                 using (new SecurityDisabler())
                 {
@@ -300,10 +324,10 @@
         }
         catch (Exception ex)
         {
-            Log.Error("Error while removing aliases for items", ex, this);
+            Log.Error(&quot;Error while removing aliases for items&quot;, ex, this);
             HttpUnhandledException ex2 = new HttpUnhandledException(ex.Message, ex);
             string htmlErrorMessage = ex2.GetHtmlErrorMessage();
-            UrlString urlString = new UrlString("/sitecore/shell/controls/error.htm");
+            UrlString urlString = new UrlString(&quot;/sitecore/shell/controls/error.htm&quot;);
             Context.ClientPage.ClientResponse.ShowModalDialog(urlString.ToString(), htmlErrorMessage);
         }
     }
@@ -318,12 +342,12 @@
         {
             if (Settings.RecycleBinActive)
             {
-                Log.Audit(this, "Recycle alias {0} of item {1}", AuditFormatter.FormatItem(alias), AuditFormatter.FormatItem(item));
+                Log.Audit(this, &quot;Recycle alias {0} of item {1}&quot;, AuditFormatter.FormatItem(alias), AuditFormatter.FormatItem(item));
                 alias.Recycle();
             }
             else
             {
-                Log.Audit(this, "Delete alias {0} of item: {1}", AuditFormatter.FormatItem(alias), AuditFormatter.FormatItem(item));
+                Log.Audit(this, &quot;Delete alias {0} of item: {1}&quot;, AuditFormatter.FormatItem(alias), AuditFormatter.FormatItem(item));
                 alias.Delete();
             }
         }
@@ -332,6 +356,7 @@
 <p>However here, instead of counting the aliases, this code removes them. As mentioned above, this code pays attention to the configuration for whether Sitecore uses the Recycle Bin approach to deletion or not, in the same way the original item deletion code in Sitecore does.</p>
 <p>Testing this gives us the dialog box shown in the image at the top of the page, and if we approve the deletion, removes the appropriate aliases. Job's a good 'un.</p>
 <p>Now whenever I come across blocks of code as similar as the <code>removeAliases(ListString items, Database db)</code> and <code>countAliases(ListString items, Database db)</code> methods I start thinking about how to reduce that down to one method. But I'll save that for a future discussion...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -386,7 +411,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

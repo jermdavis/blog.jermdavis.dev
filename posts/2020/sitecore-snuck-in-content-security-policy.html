@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Ages ago I wrote up a bit &amp;lt;a href=&amp;quot;/posts/2018/now-is-the-time-to-seriously-consider-your-content-security-policy&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;about how your public sites should consider implementing Content Security Policy&amp;lt;/a&amp;gt; because of all the hacks it can prevent. In a bit of frustrating irony, I was tripped up by a problem caused precisely because Sitecore have added some CSP headers to their own code. Google came up empty on this, so I&amp;#x27;m documenting it for the next person who gets bitten.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Sitecore snuck in Content Security&nbsp;Policy!</title>
+    <title>Jeremy Davis - Sitecore snuck in Content Security&#xA0;Policy!</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2020/sitecore-snuck-in-content-security-policy">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Sitecore snuck in Content Security&nbsp;Policy!">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Sitecore snuck in Content Security&amp;#xA0;Policy!">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/sitecore-snuck-in-content-security-policy-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Sitecore snuck in Content Security&#xA0;Policy!",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/sitecore-snuck-in-content-security-policy-social.png"
+        ],
+        "datePublished": "2020-09-14T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2020/sitecore-snuck-in-content-security-policy">
 <meta property="og:type" content="website">
 
@@ -114,45 +130,50 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Sitecore snuck in Content Security&nbsp;Policy!
+        Sitecore snuck in Content Security Policy!
         </h1>
+            <div class="meta">Published 14 September 2020</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Ages ago I wrote up a bit <a href="/posts/2018/now-is-the-time-to-seriously-consider-your-content-security-policy" target="_blank">about how your public sites should consider implementing Content Security Policy</a> because of all the hacks it can prevent. In a bit of frustrating irony, I was tripped up by a problem caused precisely because Sitecore have added some CSP headers to their own code. Google came up empty on this, so I'm documenting it for the next person who gets bitten.<!--more--></p>
 <h2>The problem</h2>
 <p>I've been working on some research towards a brand new client project using Sitecore 10 on Docker. As part of my solution setup, I tried to add in the <a href="https://github.com/JeffDarchuk/SitecoreSidekick" rel="noopener" target="_blank">Sitecore Sidekick</a> toolset, as I find it very useful for developers to pull down test content for their work. Having managed to work around the lack of a specific Sitecore 10 build for this at that point, I was hit with a very unexpected issue. Clicking the Sidekick icon got me this:</p>
 <p><a href="/img/2020/2020-08-broken-1.png" target="_blank"><img alt="Broken" src="/img/2020/2020-08-broken-1.png"></a></p>
 <p>Chrome's Content Security Policy code is blocking Sidekick's window... Checking Dev Tools showed this error:</p>
 <p><a href="/img/2020/2020-08-blockmessage.png" target="_blank"><img alt="Block Message" src="/img/2020/2020-08-blockmessage.png"></a></p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Refused to frame 'http://cm.whatever.localhost/' because it violates the following Content Security Policy directive: "default-src 'self' https://apps.sitecore.net". Note that 'frame-src' was not explicitly set, so 'default-src' is used as a fallback.
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Refused to frame &#39;http://cm.whatever.localhost/&#39; because it violates the following Content Security Policy directive: &quot;default-src &#39;self&#39; https://apps.sitecore.net&quot;. Note that &#39;frame-src&#39; was not explicitly set, so &#39;default-src&#39; is used as a fallback.
 </pre>
-<p>And looking at the underlying markup I can see that the "window" on the Sitecore desktop is actually an iFrame:</p>
+<p>And looking at the underlying markup I can see that the &quot;window&quot; on the Sitecore desktop is actually an iFrame:</p>
 <p><a href="/img/2020/2020-08-brokenmarkup.png" target="_blank"><img alt="Broken Markup" src="/img/2020/2020-08-brokenmarkup.png"></a></p>
 <p>So there are a few interesting things here:</p>
 <ul>
 <li><b>Even without the CSP, this wouldn't work well in Chrome</b>
-If you look closely at the iFrame source, it's an <code>http://</code> request - but the overall page request is using <code>https://</code>. Chrome gets very unhappy at "mixed content" these days, so that would be a bad thing.</li>
+If you look closely at the iFrame source, it's an <code>http://</code> request - but the overall page request is using <code>https://</code>. Chrome gets very unhappy at &quot;mixed content&quot; these days, so that would be a bad thing.</li>
 <li><b>Containers mess with how you think HTTPS works</b>
-The reason the mixed content thing happens is because in a container deployment, Sitecore uses <a href="https://docs.traefik.io/" rel="noopener" target="_blank">Traefik</a> as a reverse-proxy to do SSL termination. So you make an HTTPS request to the Traefik container, which deals with the SSL bit, and passes your HTTP request on to the Sitecore container over Docker's internal networking. So when Sidekick tries to generate the "right" URL, it looks at the inbound request, and it sees <code>http</code>... And if you write code that processes URLs inside a container, you need to pay attention to the <code>X-Forwarded-*</code> headers - as they can tell you about the original request, before any proxies or SSL termination got in the way.</li>
+The reason the mixed content thing happens is because in a container deployment, Sitecore uses <a href="https://docs.traefik.io/" rel="noopener" target="_blank">Traefik</a> as a reverse-proxy to do SSL termination. So you make an HTTPS request to the Traefik container, which deals with the SSL bit, and passes your HTTP request on to the Sitecore container over Docker's internal networking. So when Sidekick tries to generate the &quot;right&quot; URL, it looks at the inbound request, and it sees <code>http</code>... And if you write code that processes URLs inside a container, you need to pay attention to the <code>X-Forwarded-*</code> headers - as they can tell you about the original request, before any proxies or SSL termination got in the way.</li>
 <li><b>The CSP doesn't have any <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-src" rel="noopener" target="_blank"><code>frame-src</code></a> config</b>
 That means it'll fall back to using the <code>default-src</code> setting - which is configured as <code>self</code> here. That means it will disallow any frame request that doesn't come from the same scheme (https), port and host.</li>
 </ul>
 <h2>So where did that header come from, anyway?</h2>
 <p>This is the bit that confused me the most...</p>
-<p>It turns out that sneakily, Sitecore pushed some config into V9.3 which writes out a basic CSP for any pages under <code>/sitecore</code>. This isn't mentioned in the release notes for either V9.3 or V10, but it's <a href="https://kb.sitecore.net/articles/464569" rel="noopener" target="_blank">alluded to in this Knowledge Base article</a>, which says that the lack of CSPs is "fixed" with V9.3.</p>
+<p>It turns out that sneakily, Sitecore pushed some config into V9.3 which writes out a basic CSP for any pages under <code>/sitecore</code>. This isn't mentioned in the release notes for either V9.3 or V10, but it's <a href="https://kb.sitecore.net/articles/464569" rel="noopener" target="_blank">alluded to in this Knowledge Base article</a>, which says that the lack of CSPs is &quot;fixed&quot; with V9.3.</p>
 <p>My attempts at Google to work out how this was being done failed, but <a href="https://twitter.com/jflh" rel="noopener" target="_blank">Jeff L'Heureux</a> at Sitecore solved the conundrum for me. It's been configured as a <code>&lt;customHeaders&gt;</code> setting in the site web.config:</p>
 <p><a href="/img/2020/2020-08-cspinwebconfig.png" target="_blank"><img alt="CSP In Web.Config" src="/img/2020/2020-08-cspinwebconfig.png"></a></p>
 <p>So you can tweak it if you need to - if you need to allow certain other urls just update your <code>web.config</code> with some XDT before you release.</p>
 <h2>Hopefully this blog post is sort-of redundant already...</h2>
 <p>I discussed the core issue (that Sidekick wouldn't work in a container with this CSP) with <a href="https://twitter.com/jeffdarchuk" rel="noopener" target="_blank">Jeff Darchuck</a>, the creator of Sidekick, and he's worked ou a fix so that Sidekick doesn't trigger this issue any more. That should be <a href="https://www.nuget.org/packages/SitecoreSidekickCore/1.5.7" rel="noopener" target="_blank">available in version 1.5.7 and up</a> on Nuget.</p>
 <p>But it's still possible you might hit this issue if you iFrame your own custom apps into a window on the Sitecore desktop. So maybe this will be of help...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -207,7 +228,7 @@ That means it'll fall back to using the <code>default-src</code> setting - which
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

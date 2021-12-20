@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="There was a lot of exciting new stuff on show at the Sitecore&amp;#x27;s recent MVP Summit and Symposium the other week. Plenty of others have written up the general goings on at those events (have a google &amp;#x2013; there&amp;#x27;s lots to read), so I thought I&amp;#x27;d focus on something more specific that piqued my interest: the novel approach that&amp;#x27;s being taken to pipelines in some of the new code Sitecore are producing.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - An alternative approach to&nbsp;pipelines</title>
+    <title>Jeremy Davis - An alternative approach to&#xA0;pipelines</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2016/an-alternative-approach-to-pipelines">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - An alternative approach to&nbsp;pipelines">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - An alternative approach to&amp;#xA0;pipelines">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/an-alternative-approach-to-pipelines-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "An alternative approach to&#xA0;pipelines",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/an-alternative-approach-to-pipelines-social.png"
+        ],
+        "datePublished": "2016-10-03T00:00:00+00:00",
+        "dateModified": "2016-11-05T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/an-alternative-approach-to-pipelines">
 <meta property="og:type" content="website">
 
@@ -114,21 +131,26 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        An alternative approach to&nbsp;pipelines
+        An alternative approach to pipelines
         </h1>
+            <div class="meta">Published 03 October 2016</div>
+                <div class="meta">Updated 05 November 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>There was a lot of exciting new stuff on show at the Sitecore's recent MVP Summit and Symposium the other week. Plenty of others have written up the general goings on at those events (have a google – there's lots to read), so I thought I'd focus on something more specific that piqued my interest: the novel approach that's being taken to pipelines in some of the new code Sitecore are producing.<!--more--></p>
 <h2>Some background...</h2>
 <p><a href="/img/2016/2016-10-5722_image_6788ad06.png" target="_blank"><img alt="Commerce Pipelines" src="/img/2016/2016-10-5722_image_6788ad06.png"></a> Pipelines are <a href="https://community.sitecore.net/technical_blogs/b/sitecorejohn_blog/posts/important-pipelines-in-the-sitecore-asp-net-cms" target="_blank" rel="noopener noreferrer">a common concept in Sitecore</a>, but I first came across the idea of a pipeline in code when I started working with a beta of Commerce Server back in 2000. So it's fitting that one of the places Sitecore were showing off their new code was in Sitecore Commerce – the replacement for the old Commerce Server codebase. I've also made use of pipeline patterns in some personal code I've written over the years – most recently in my homebrew replacement for the old Google Reader, which I use to keep on top of the news.</p>
-<p>One of the things that all these pipeline implementations have in common is that they use a single type as the input and output of the overall process, and each step in the pipeline has that type as their input and output. An object goes in the top, passes through each step and then comes out the end. A lot of the time, that's all well and good. But sometimes I've felt that the object being passed through ends up a bit messy as a result of having to store state and data for every step. For example, in Commerce Server's shopping baskets they solved the issue of needing complex data types for the pipeline by using a dictionary object, which acquired more entries and child lists and dictionaries over the course of the execution. And my RSS reader's "processing new RSS Feed items" pipeline suffered from a similar issue. The pipeline data object there ended up with lots of fixed properties to deal with turning an entry from an RSS feed into "safe" title, metadata and content data to record in the database.</p>
+<p>One of the things that all these pipeline implementations have in common is that they use a single type as the input and output of the overall process, and each step in the pipeline has that type as their input and output. An object goes in the top, passes through each step and then comes out the end. A lot of the time, that's all well and good. But sometimes I've felt that the object being passed through ends up a bit messy as a result of having to store state and data for every step. For example, in Commerce Server's shopping baskets they solved the issue of needing complex data types for the pipeline by using a dictionary object, which acquired more entries and child lists and dictionaries over the course of the execution. And my RSS reader's &quot;processing new RSS Feed items&quot; pipeline suffered from a similar issue. The pipeline data object there ended up with lots of fixed properties to deal with turning an entry from an RSS feed into &quot;safe&quot; title, metadata and content data to record in the database.</p>
 <p>So, that background made me very interested in the way some of the new code Sitecore are producing was working. Having seen some presentations, I had a very interesting chat with <a href="https://twitter.com/stephenpope" target="_blank" rel="noopener noreferrer">Stephen Pope</a> in the Symposium hotel bar, which got me interested in reproducing their idea of code-first pipelines which don't need to have the same type for input as it has for output. It seemed to me that I might be able to tidy up some of my code – so I started investigating how it might work for me.</p>
 <blockquote>
 NB: While I'm focusing on pipelines that are wholly defined in code here, I don't mean to suggest that Sitecore are too. The concepts of config files and patches are just things I've not needed in the code I'm interested in
@@ -151,7 +173,7 @@ NB: While I'm focusing on pipelines that are wholly defined in code here, I don'
     }
 }
 </pre>
-<p>A pipeline needs to be able to compose together a set of these steps. The usage I've been thinking about would adopt a "code first" approach to setting these things up. Extension methods give an easy way to achieve this:</p>
+<p>A pipeline needs to be able to compose together a set of these steps. The usage I've been thinking about would adopt a &quot;code first&quot; approach to setting these things up. Extension methods give an easy way to achieve this:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class PipelineStepExtensions
 {
     public static OUTPUT Step&lt;INPUT, OUTPUT&gt;(this INPUT input, IPipelineStep&lt;INPUT, OUTPUT&gt; step)
@@ -250,7 +272,7 @@ public class InnerPipeline : Pipeline&lt;int, int&gt;
     }
 }
 </pre>
-<p>This step takes a function that operates on the input, to decide whether to run the child step or just pass the output through. Note that unlike the previous steps we've looked at, this one requires that the input and the output are the same type, because otherwise the "skip over" behaviour doesn't work – so this has a type constraint to ensure <code>INPUT</code> and <code>OUTPUT</code> are related. So if you wanted a particular step to only run if the input was greater than 15 you could use something like:</p>
+<p>This step takes a function that operates on the input, to decide whether to run the child step or just pass the output through. Note that unlike the previous steps we've looked at, this one requires that the input and the output are the same type, because otherwise the &quot;skip over&quot; behaviour doesn't work – so this has a type constraint to ensure <code>INPUT</code> and <code>OUTPUT</code> are related. So if you wanted a particular step to only run if the input was greater than 15 you could use something like:</p>
 <pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PipelineWithOptionalStep : Pipeline&lt;int, int&gt;
 {
     public PipelineWithOptionalStep()
@@ -262,13 +284,14 @@ public class InnerPipeline : Pipeline&lt;int, int&gt;
     }
 }
 </pre>
-<p>And it's easy to move from this code to a step which can choose between options for the step to run as well. And of course the optional step or steps you pick from can be entire pipelines themselves... Potentially other things like "exception handling of failing steps" or logging could be wrapped up in that style.</p>
+<p>And it's easy to move from this code to a step which can choose between options for the step to run as well. And of course the optional step or steps you pick from can be entire pipelines themselves... Potentially other things like &quot;exception handling of failing steps&quot; or logging could be wrapped up in that style.</p>
 <h2>In conclusion...</h2>
-<p>While this is a very simple "proof of concept" implementation of some of the ideas I've heard discussed, it shows some interesting promise. I'm going to have to spend some time implementing some real pipelines for my RSS Reader when I have a free moment, and see whether I can make that code look cleaner with this approach. If you're interested in playing with this style of pipeline, you can <a href="https://gist.github.com/jermdavis/67cf5d834ad720bb5f57c1a556c6b3d7" target="_blank" rel="noopener noreferrer">grab the code for my tinkering from GitHub</a>.</p>
+<p>While this is a very simple &quot;proof of concept&quot; implementation of some of the ideas I've heard discussed, it shows some interesting promise. I'm going to have to spend some time implementing some real pipelines for my RSS Reader when I have a free moment, and see whether I can make that code look cleaner with this approach. If you're interested in playing with this style of pipeline, you can <a href="https://gist.github.com/jermdavis/67cf5d834ad720bb5f57c1a556c6b3d7" target="_blank" rel="noopener noreferrer">grab the code for my tinkering from GitHub</a>.</p>
 <blockquote>
 <b><i>Edited to add:</i></b> After a conversation on twitter I also <a href="https://gist.github.com/jermdavis/5696495f7bff467fc8039e35a4f218de" target="_blank" rel="noopener noreferrer">added a gist for a simple example for how a decorator could be used to apply a particular step to all the data in an input enumeration</a>. Plus one for <a href="https://gist.github.com/jermdavis/a28a0a60c913689a167754893c68afcc" target="_blank" rel="noopener noreferrer">how a decorator could make pipeline steps raise start and end events</a>.
 </blockquote>
 <p>And in the meantime I'm even more interested to see the detail of how Sitecore's code has approached this once it gets released, so I can see how much further they've managed to take it...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -323,7 +346,7 @@ public class InnerPipeline : Pipeline&lt;int, int&gt;
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

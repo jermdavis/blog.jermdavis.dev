@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Last week I spoke at the London Sitecore Technical User Group, and discussed my experiences working on a project that had to provide a Faceted Search UI in Sitecore 6.6. As part of my example, I talked about how you can build Facets using Lucene when you don&amp;#x27;t have access to the newer search APIs available in Sitecore 7.x, and about how you can make your search UI configurable by editors to improve their user experience. And I said I&amp;#x27;d post my example code and explanation. So here goes:">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Faceted Search in Sitecore&nbsp;6.6</title>
+    <title>Jeremy Davis - Faceted Search in Sitecore&#xA0;6.6</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/faceted-search-in-sitecore-6-6">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Faceted Search in Sitecore&nbsp;6.6">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Faceted Search in Sitecore&amp;#xA0;6.6">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/faceted-search-in-sitecore-6-6-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Faceted Search in Sitecore&#xA0;6.6",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/faceted-search-in-sitecore-6-6-social.png"
+        ],
+        "datePublished": "2014-06-09T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/faceted-search-in-sitecore-6-6">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,25 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Faceted Search in Sitecore&nbsp;6.6
+        Faceted Search in Sitecore 6.6
         </h1>
+            <div class="meta">Published 09 June 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+                    <a href="/tags/lucene" class="p-1 mr-1 bg-gray-100 rounded-md"> Lucene</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/ui" class="p-1 mr-1 bg-gray-100 rounded-md"> UI</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Last week I spoke at the London Sitecore Technical User Group, and discussed my experiences working on a project that had to provide a Faceted Search UI in Sitecore 6.6. As part of my example, I talked about how you can build Facets using Lucene when you don't have access to the newer search APIs available in Sitecore 7.x, and about how you can make your search UI configurable by editors to improve their user experience. And I said I'd post my example code and explanation. So here goes:<!--more--></p>
 <p>Imagine you want to sell t-shirts from your Sitecore website. To help people find the t-shirt they want on your site, you want to provide a search interface where they can filter your products using aspects of your metadata – say Size and Colour. And you want to allow your content editors to control the Facet UI that lets people filter your products. How might you go about that?</p>
 <h2>Data templates</h2>
@@ -135,18 +160,18 @@
 <p>A series of values have been set up for size and colour so editors can pick from them, as well as a set of example t-shirt items for us to search over with the following code. And with that test data in place, we can think about how to search them.</p>
 <p>If we want to allow editors to modify the set of facet filters available in a particular search, then we need a way to represent a facet inside Sitecore. Hence another data template:</p>
 <p><a href="/img/2014/2014-06-facet1.png" target="_blank"><img alt="Facet Template" src="/img/2014/2014-06-facet1.png"></a></p>
-<p>For this simple example we need only one field here. It will contain the name of the Sitecore field that we want to build a facet from. With that template we can then set up example facet definition items for each of the Colour and Size metadata fields we defined earlier. For example, the "Colours Facet" item needs the value "Colour" in its "SearchIndexField" field.</p>
+<p>For this simple example we need only one field here. It will contain the name of the Sitecore field that we want to build a facet from. With that template we can then set up example facet definition items for each of the Colour and Size metadata fields we defined earlier. For example, the &quot;Colours Facet&quot; item needs the value &quot;Colour&quot; in its &quot;SearchIndexField&quot; field.</p>
 <p>By describing facets in this way you will be able to create new facets later without needing to change the code. In a real-world example you would have other fields on these items. Things like display text for the name of the facet, or data to describe the rendering or sorting strategies for this particular facet would be common examples.</p>
 <p>With those set up, the next thing you need is a data template to describe the set of facets to use in a particular search:</p>
 <p><a href="/img/2014/2014-06-query.png" target="_blank"><img alt="Query Template" src="/img/2014/2014-06-query.png"></a></p>
-<p>For our simple example we need only one field – a multilist to let editors pick from the set of facet definition items we defined above. We can create an example query definition item from this template, and select both our Colour and Size facet definitions. This "TShirtsQuery" item will be the data source of our UI control for the searching.</p>
+<p>For our simple example we need only one field – a multilist to let editors pick from the set of facet definition items we defined above. We can create an example query definition item from this template, and select both our Colour and Size facet definitions. This &quot;TShirtsQuery&quot; item will be the data source of our UI control for the searching.</p>
 <p>For this example, the UI control is a simple Sublayout, with an ASP.Net User Control that we'll see code for later. The sublayout can be be bound to a page and have its data source set to the item above.</p>
 <h2>Search Index</h2>
 <p>In order to run a search, you need a Lucene index to query against. For Sitecore 6.6 projects a helpful shortcut to setting up an easy to configure index is to nip over to GitHub and <a href="https://github.com/sitecorian/SitecoreSearchContrib" target="_blank" rel="noopener noreferrer">grab yourself a copy of the Sitecore SearchContrib project</a>. This includes a load of useful code for speeding up search work, but for the purposes of this demo, all we need is the <a href="https://github.com/sitecorian/SitecoreSearchContrib/tree/master/scSearchContrib.Crawler" target="_blank" rel="noopener noreferrer">scSearchContrib.Crawler</a> part of the code. Grab this code, build it against your particular versions of Sitecore and Lucene. You can then drop the binaries into your website's bin folder and <a href="https://github.com/sitecorian/SitecoreSearchContrib/blob/master/scSearchContrib.Crawler/App_Config/Include/scSearchContrib.Crawler.config" target="_blank" rel="noopener noreferrer">grab yourself a copy of the example search configuration file</a> that is included in this project and drop it into your website's config include folder.</p>
-<p>The example config is mostly fine for this example. You need to note that it creates an index named "demo". But it requires one change to be made. You need to find the data that defines how the Multilist fields are indexed, and change the "StorageType" attribute to "Yes":</p>
+<p>The example config is mostly fine for this example. You need to note that it creates an index named &quot;demo&quot;. But it requires one change to be made. You need to find the data that defines how the Multilist fields are indexed, and change the &quot;StorageType&quot; attribute to &quot;Yes&quot;:</p>
 <p><a href="/img/2014/2014-06-index.png" target="_blank"><img alt="Index" src="/img/2014/2014-06-index.png"></a></p>
-<p>Why do you need to make this change? Well when the default configuration of Lucene here builds an index it sets up a collection of complex data structures that it uses for efficient searching. But while the index remembers the Sitecore IDs of items, it doesn't remember any of the other data it's been processing. For "normal" searches that's fine – you just use the Sitecore APIs to load the items your search index matches in order to do further processing.</p>
-<p>But here, building facets, we need to process lots of items that we won't end up showing in our on-screen results in order to get all the facet values. (You'll see this in the code later on) That would be very inefficient via the Sitecore APIs. Item loading is much slower than reading information from the Lucene index. So to get around that problem we change "StorageType" so that Lucene does remember the values of Multilist fields when it indexes them.</p>
+<p>Why do you need to make this change? Well when the default configuration of Lucene here builds an index it sets up a collection of complex data structures that it uses for efficient searching. But while the index remembers the Sitecore IDs of items, it doesn't remember any of the other data it's been processing. For &quot;normal&quot; searches that's fine – you just use the Sitecore APIs to load the items your search index matches in order to do further processing.</p>
+<p>But here, building facets, we need to process lots of items that we won't end up showing in our on-screen results in order to get all the facet values. (You'll see this in the code later on) That would be very inefficient via the Sitecore APIs. Item loading is much slower than reading information from the Lucene index. So to get around that problem we change &quot;StorageType&quot; so that Lucene does remember the values of Multilist fields when it indexes them.</p>
 <p>That lets us trade off a slightly larger index size against those extra Sitecore API calls for better performance.</p>
 <p>With that config change made, you can build an index to search later...</p>
 <h2>Code</h2>
@@ -158,15 +183,15 @@
     string cfgItem = (this.Parent as Sublayout).DataSource;
     Item cfg = Sitecore.Context.Database.GetItem(cfgItem);
 
-    string facets = cfg.Fields["Facets"].Value;
+    string facets = cfg.Fields[&quot;Facets&quot;].Value;
 
     string[] config = null;
 
     if (!string.IsNullOrEmpty(facets))
     {
-        config = facets.Split('|')
+        config = facets.Split(&#39;|&#39;)
             .Select(id =&gt; Sitecore.Context.Database.GetItem(id))
-            .Select(itm =&gt; itm.Fields["SearchIndexField"].Value)
+            .Select(itm =&gt; itm.Fields[&quot;SearchIndexField&quot;].Value)
             .Select(f =&gt; f.ToLowerInvariant())
             .ToArray();
     }
@@ -177,17 +202,17 @@
 <p>The data source item contains one field, so we extract its value. It's a multilist, so the value is a string of GUIDs separated with pipe characters. So to transform this data into something more usable we can use a Linq expression to process it. (You don't have to use Linq in your code – you can use whatever way of writing this you prefer – and if you used an ORM like Glass you'd find a lot of this method was done for you) We break it using the pipe character, and then project each of those IDs into Sitecore items via the API. Each of those items will be one of our Facet definitions – so we can extract the one field that contains from the item, leaving us with a set of field names we can build facets from. Finally these field names get transformed into lowercase, since Lucene works in lowercase most of the time.</p>
 <p>And at the end of that we have an array containing the names of the fields we want to make facets from.</p>
 <p>Next is building a query. To do that we need to construct a Lucene expression tree to represent the search we're going to run. We start from a <code>BooleanQuery</code> object and we add a set of required terms to that:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private readonly Guid _template = new Guid("{C5537201-AF56-473B-A614-E5DA9FB5079E}");
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private readonly Guid _template = new Guid(&quot;{C5537201-AF56-473B-A614-E5DA9FB5079E}&quot;);
 
 private BooleanQuery buildQuery(string[] facets)
 {
     BooleanQuery query = new BooleanQuery();
 
-    query.Add(new TermQuery(new Term("_template", ShortID.Encode(_template).ToLowerInvariant())), BooleanClause.Occur.MUST);
+    query.Add(new TermQuery(new Term(&quot;_template&quot;, ShortID.Encode(_template).ToLowerInvariant())), BooleanClause.Occur.MUST);
 
     foreach (string facet in facets)
     {
-        string key = Request.Form.AllKeys.Where(k =&gt; k.EndsWith("$" + facet)).FirstOrDefault();
+        string key = Request.Form.AllKeys.Where(k =&gt; k.EndsWith(&quot;$&quot; + facet)).FirstOrDefault();
         if (!string.IsNullOrWhiteSpace(key))
         {
             string value = Request.Form[key];
@@ -208,7 +233,7 @@ private BooleanQuery buildQuery(string[] facets)
 <p>And once we've been through all of the config we have a search query to run. That can be done with the following method:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SearchResultCollection runQuery(BooleanQuery query)
 {
-    Index index = Sitecore.Search.SearchManager.GetIndex("demo");
+    Index index = Sitecore.Search.SearchManager.GetIndex(&quot;demo&quot;);
 
     using (IndexSearchContext isc = index.CreateSearchContext())
     {
@@ -217,7 +242,7 @@ private BooleanQuery buildQuery(string[] facets)
     }
 }
 </pre>
-<p>First we ask Sitecore to give us the index named "demo" (remember the name from the config file earlier?) and from that we create a context for searching. We use that context to run our query and give us back a set of "hits". Note the second parameter to the <code>Search()</code> method - it's a number for how many results Lucene will look at before it gives up the search. To generate the right set of facets you must ensure what ever you set this to is bigger than the maximum number of results you might have. If Lucene discards any matching results then your set of facets might be wrong....</p>
+<p>First we ask Sitecore to give us the index named &quot;demo&quot; (remember the name from the config file earlier?) and from that we create a context for searching. We use that context to run our query and give us back a set of &quot;hits&quot;. Note the second parameter to the <code>Search()</code> method - it's a number for how many results Lucene will look at before it gives up the search. To generate the right set of facets you must ensure what ever you set this to is bigger than the maximum number of results you might have. If Lucene discards any matching results then your set of facets might be wrong....</p>
 <p>You can then transform your hits into proper results. The two integer parameters of <code>FetchResults()</code> are usually used for paginating your results. However here we need all the results - so these parameters must also be set to return everything.</p>
 <p>From the results returned we can now build the data for the facets we'll display. To make the code a bit simpler we'll define a quick helper data type here to contain the data for each facet:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FacetData
@@ -263,10 +288,10 @@ private BooleanQuery buildQuery(string[] facets)
 <p>And we end up with an <code>IEnumerable&lt;FacetData&gt;</code> that we can bind to our UI.</p>
 <p>To display the facets we need some UI to bind the data to:</p>
 <pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;h2&gt;Filters&lt;/h2&gt;
-&lt;asp:Repeater runat="server" ID="filterRepeater"&gt;
+&lt;asp:Repeater runat=&quot;server&quot; ID=&quot;filterRepeater&quot;&gt;
     &lt;ItemTemplate&gt;
         &lt;div&gt;
-            &lt;asp:DropDownList runat="server" ID="filter" AutoPostBack="true" /&gt;
+            &lt;asp:DropDownList runat=&quot;server&quot; ID=&quot;filter&quot; AutoPostBack=&quot;true&quot; /&gt;
         &lt;/div&gt;
     &lt;/ItemTemplate&gt;
 &lt;/asp:Repeater&gt;
@@ -278,33 +303,33 @@ private BooleanQuery buildQuery(string[] facets)
     {
         FacetData data = e.Item.DataItem as FacetData;
 
-        DropDownList ddl = e.Item.FindControl("filter") as DropDownList;
+        DropDownList ddl = e.Item.FindControl(&quot;filter&quot;) as DropDownList;
         ddl.ID = data.Name;
 
         var vals = new List&lt;ListItem&gt;();
-        vals.Add(new ListItem("-- All " + data.Name + " --", string.Empty));
+        vals.Add(new ListItem(&quot;-- All &quot; + data.Name + &quot; --&quot;, string.Empty));
         vals.AddRange(data.Values);
 
         ddl.DataSource = vals;
-        ddl.DataTextField = "Text";
-        ddl.DataValueField = "Value";
+        ddl.DataTextField = &quot;Text&quot;;
+        ddl.DataValueField = &quot;Value&quot;;
         ddl.DataBind();
     }
 }
 </pre>
-<p>Two things of note here. First is that when we find the <code>DropDownList</code> we set its ID to match the name of the current facet so we can find it in the query definition above. The second is that the data we generated for our facet includes all the real values, but id doesn't include a "don't filter by this" option. So we add a few lines to add this to the top of our list before we do the data bind.</p>
+<p>Two things of note here. First is that when we find the <code>DropDownList</code> we set its ID to match the name of the current facet so we can find it in the query definition above. The second is that the data we generated for our facet includes all the real values, but id doesn't include a &quot;don't filter by this&quot; option. So we add a few lines to add this to the top of our list before we do the data bind.</p>
 <p>Now next you'd probably want to paginate your results. I skipped over that in my demo to save time, but you could use Linq's <code>Skip()</code> and <code>Take()</code> operations, or you could refactor your code to be able to call the <code>FetchResults()</code> method on your search hits again instead.</p>
 <p>And with your page of results sorted out, you can bind that to your UI. I created the following HTML in order display the items:</p>
 <pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;h2&gt;Results&lt;/h2&gt;
-&lt;asp:Repeater runat="server" ID="resultRepeater"&gt;
+&lt;asp:Repeater runat=&quot;server&quot; ID=&quot;resultRepeater&quot;&gt;
     &lt;HeaderTemplate&gt;&lt;ul&gt;&lt;/HeaderTemplate&gt;
     &lt;ItemTemplate&gt;
         &lt;li&gt;
-            &lt;sc:Image runat="server" id="image" MaxWidth="50" Field="Image" style="display:inline-block;" /&gt;
-            &lt;div style="display:inline-block"&gt;
-                &lt;sc:Text runat="server" id="title" Field="Title" /&gt;
+            &lt;sc:Image runat=&quot;server&quot; id=&quot;image&quot; MaxWidth=&quot;50&quot; Field=&quot;Image&quot; style=&quot;display:inline-block;&quot; /&gt;
+            &lt;div style=&quot;display:inline-block&quot;&gt;
+                &lt;sc:Text runat=&quot;server&quot; id=&quot;title&quot; Field=&quot;Title&quot; /&gt;
                 &lt;br /&gt;
-                &lt;sc:Text runat="server" id="description" Field="Description" /&gt;
+                &lt;sc:Text runat=&quot;server&quot; id=&quot;description&quot; Field=&quot;Description&quot; /&gt;
             &lt;/div&gt;
         &lt;/li&gt;
     &lt;/ItemTemplate&gt;
@@ -320,9 +345,9 @@ private BooleanQuery buildQuery(string[] facets)
 
         Item itm = sr.GetObject&lt;Item&gt;();
 
-        var image = e.Item.FindControl("image") as Sitecore.Web.UI.WebControls.Image;
-        var title = e.Item.FindControl("title") as Sitecore.Web.UI.WebControls.Text;
-        var description = e.Item.FindControl("description") as Sitecore.Web.UI.WebControls.Text;
+        var image = e.Item.FindControl(&quot;image&quot;) as Sitecore.Web.UI.WebControls.Image;
+        var title = e.Item.FindControl(&quot;title&quot;) as Sitecore.Web.UI.WebControls.Text;
+        var description = e.Item.FindControl(&quot;description&quot;) as Sitecore.Web.UI.WebControls.Text;
 
         image.Item = itm;
         title.Item = itm;
@@ -360,6 +385,7 @@ private BooleanQuery buildQuery(string[] facets)
 <p>There are dropdowns for each facet defined in the configuration, and they contain all the valid metadata options for the current results. Hence no matter what you choose, you can't get zero results. Then we're displaying the Lucene query for debug purposes - and here it has a term for the template and for each of our facets. And finally we show only the results that the set of facets match...</p>
 <h2>Downloads</h2>
 <p>If you want to grab a copy of this to play with then you can <a href="/files/FacetedSearch-Package.zip" target="_blank">download the Sitecore content items</a> (Add your own UI component and page to display it all) and <a href="/files/FacetedSearch-Code.zip" target="_blank">download the C# to build yourself</a>, combine with the SearchContrib code described above and experiment on your own test instance of Sitecore.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -414,7 +440,7 @@ private BooleanQuery buildQuery(string[] facets)
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

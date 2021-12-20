@@ -3,7 +3,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Deploying Sitecore (or anything else) in containers has been a big learning curve for me. Every so often I come across a new aspect of the whole business that I&amp;#x27;ve not seen before. This week, another agency&amp;#x27;s work showed me a new thing which might help with making changes to Kubernetes config. The approaches I&amp;#x27;d seen to deployments involved pushing all of the Kubernetes config each time you want to release, but it turns out you may not need to do that...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
@@ -22,8 +22,24 @@
 
     
     <meta property="og:title" content="Jeremy Davis - Patching Kubernetes config">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/patching-kubernetes-config-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Patching Kubernetes config",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/patching-kubernetes-config-social.png"
+        ],
+        "datePublished": "2021-03-29T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/patching-kubernetes-config">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,22 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
         Patching Kubernetes config
         </h1>
+            <div class="meta">Published 29 March 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/kubernetes" class="p-1 mr-1 bg-gray-100 rounded-md"> Kubernetes</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Deploying Sitecore (or anything else) in containers has been a big learning curve for me. Every so often I come across a new aspect of the whole business that I've not seen before. This week, another agency's work showed me a new thing which might help with making changes to Kubernetes config. The approaches I'd seen to deployments involved pushing all of the Kubernetes config each time you want to release, but it turns out you may not need to do that...<!--more--></p>
 <h2>The underlying challenge</h2>
 <p>All the early examples I'd seen for running containers releases used the <code>kubectl apply</code> command to send the full set of configuration data out to a Kubernetes cluster. Sitecore provide you with a big pile of config files in their container release:</p>
@@ -132,7 +153,7 @@
 <p>These files specify a load of configuration settings, but a critical one to consider for the release process is the image tag (version) which you want Kubernetes to find and run for each of your roles. In your config files, there's a specific bit of yaml which describes this:</p>
 <p><a href="/img/2021/2021-03-imagetags.png" target="_blank"><img alt="Image Tags" src="/img/2021/2021-03-imagetags.png"></a></p>
 <p>The simplest thing to do here is specify <code>latest</code> as the version tag. So if you deploy this config, Kubernetes will look at your container registry and find the most recent build and deploy that. Which is fine if you're just pushing out the newest thing – but it doesn't work if you need to deploy another version. Maybe you need to roll back? Or maybe your QA team is swapping between different feature builds because they're testing multiple bits of work in a different order that they were built...</p>
-<p>So to be able to release a specific version of your website to Kubernetes, you need to change this config to describe a specific version tag, not a generic one like "latest".</p>
+<p>So to be able to release a specific version of your website to Kubernetes, you need to change this config to describe a specific version tag, not a generic one like &quot;latest&quot;.</p>
 <h2>Where I'd started from</h2>
 <p>When I first put the deployment process together for this particular project, I went with (what I thought) was a fairly straight forward solution to this challenge.</p>
 <p>When DevOps builds the containers, it tags them with the release details using the build number and the source branch it came from:</p>
@@ -156,14 +177,15 @@
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl patch deployment cm -n myNamespace --patch-file ThatPatchAbove.yaml
 </pre>
 <p>You can also <a href="https://stackoverflow.com/questions/36920171/how-can-i-edit-a-deployment-without-modify-the-file-manually/36924484#36924484" rel="noopener" target="_blank">do this sort of patching without any disk files</a> it turns out – you have to express your patch as part of the command line: (using a json representation of the schema above)</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl patch deployment cm -n myNamespace -p {"spec":{"template":{"spec":{"containers":[{"name":"sitecore-xp1-cm","myrepository.azurecr.io/myclient-xp1-cm:8823-example-branch"}]}}}}'
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl patch deployment cm -n myNamespace -p {&quot;spec&quot;:{&quot;template&quot;:{&quot;spec&quot;:{&quot;containers&quot;:[{&quot;name&quot;:&quot;sitecore-xp1-cm&quot;,&quot;myrepository.azurecr.io/myclient-xp1-cm:8823-example-branch&quot;}]}}}}&#39;
 </pre>
 <p>So maybe it would be possible to have a release that didn't need to include any of the Kubernetes config in the release artefact? That's something I need to find time to test...</p>
 <h2>And another thing...</h2>
-<p>Turns out you can also use this trick to acquire a patched version of your config file if you want. You can also specify a "dry run" parameter (so the command doesn't change the config, just works out what the result of the operation would be) and ask <code>kubectl</code> to output the result to the console. That gives you back the result of applying your patch to a specific config. That might be the current state of the deployment (e.g. as specified by <code>patch deployment cm</code> above) or you can specify a source file if you like with the <code>-f</code> parameter.</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl patch -n myNamespace -f cm.yaml -p '{"spec":{"template":{"spec":{"containers":[{"name":"sitecore-xp1-cm","myrepository.azurecr.io/myclient-xp1-cm:8823-example-branch"}]}}}}' --dry-run=client -o yaml &gt; cm-patched.yaml
+<p>Turns out you can also use this trick to acquire a patched version of your config file if you want. You can also specify a &quot;dry run&quot; parameter (so the command doesn't change the config, just works out what the result of the operation would be) and ask <code>kubectl</code> to output the result to the console. That gives you back the result of applying your patch to a specific config. That might be the current state of the deployment (e.g. as specified by <code>patch deployment cm</code> above) or you can specify a source file if you like with the <code>-f</code> parameter.</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl patch -n myNamespace -f cm.yaml -p &#39;{&quot;spec&quot;:{&quot;template&quot;:{&quot;spec&quot;:{&quot;containers&quot;:[{&quot;name&quot;:&quot;sitecore-xp1-cm&quot;,&quot;myrepository.azurecr.io/myclient-xp1-cm:8823-example-branch&quot;}]}}}}&#39; --dry-run=client -o yaml &gt; cm-patched.yaml
 </pre>
-<p>And that seems a better solution to getting a file with the right version in it than my hacky "search and replace with PowerShell" original...</p>
+<p>And that seems a better solution to getting a file with the right version in it than my hacky &quot;search and replace with PowerShell&quot; original...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -218,7 +240,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

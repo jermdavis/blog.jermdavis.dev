@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Before Christmas I was working out how to spin up custom Sitecore images in AKS. Since I&amp;#x27;m fairly new to containers generally and this was my first time running them remotely, I messed up. A lot. So I spent quite a bit of time trying to work out what it was I&amp;#x27;d messed up. I found these commands particularly useful to work out what was wrong:">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - My current favourite Kubernetes&nbsp;commands</title>
+    <title>Jeremy Davis - My current favourite Kubernetes&#xA0;commands</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/my-current-favourite-kubernetes-commands">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - My current favourite Kubernetes&nbsp;commands">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - My current favourite Kubernetes&amp;#xA0;commands">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/my-current-favourite-kubernetes-commands-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "My current favourite Kubernetes&#xA0;commands",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/my-current-favourite-kubernetes-commands-social.png"
+        ],
+        "datePublished": "2021-01-04T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/my-current-favourite-kubernetes-commands">
 <meta property="og:type" content="website">
 
@@ -114,43 +130,48 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        My current favourite Kubernetes&nbsp;commands
+        My current favourite Kubernetes commands
         </h1>
+            <div class="meta">Published 04 January 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/kubernetes" class="p-1 mr-1 bg-gray-100 rounded-md"> Kubernetes</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Before Christmas I was working out how to spin up custom Sitecore images in AKS. Since I'm fairly new to containers generally and this was my first time running them remotely, I messed up. A lot. So I spent quite a bit of time trying to work out what it was I'd messed up. I found these commands particularly useful to work out what was wrong:<!--more--></p>
 <h2>Show me the logs!</h2>
 <p>The most common thing I found myself wanting to do for debugging was to see what's being recorded in the logs being streamed out of the containers. Just like your local Docker images, K8s can pass you this log data. But you need to tell it which pod you want to see the log data for:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe logs cm-864d7c4c4-d4smb -n your-namespace -f
 </pre>
-<p>The <code>-f</code> here is basically "tail" – it will keep showing you logs until you stop the kubectl command. If you need a hint about the pod names, you can run <code>kubectl.exe get pods -n your-namespace</code> to see a list of all the stuff running in your namespace. (This is also useful for the two other commands I'm commenting on below)</p>
-<p>If you get bored of typing this (and I did – as I found myself doing this a lot) then you should investigate <a href="https://github.com/derailed/k9s" rel="noopener" target="_blank">the "k9s" tool</a> – which gives you an easier way to browse pods, and view their logs.</p>
+<p>The <code>-f</code> here is basically &quot;tail&quot; – it will keep showing you logs until you stop the kubectl command. If you need a hint about the pod names, you can run <code>kubectl.exe get pods -n your-namespace</code> to see a list of all the stuff running in your namespace. (This is also useful for the two other commands I'm commenting on below)</p>
+<p>If you get bored of typing this (and I did – as I found myself doing this a lot) then you should investigate <a href="https://github.com/derailed/k9s" rel="noopener" target="_blank">the &quot;k9s&quot; tool</a> – which gives you an easier way to browse pods, and view their logs.</p>
 <p>I found there tended to be a bit of a pause between an event happening in the container and the log data getting reported back to me – so you may need to apply a bit of patience here while you debug.</p>
 <h2>Let me connect to something in a specific container!</h2>
 <p>By default, the only services exposed outside of your K8s instance are those where you configured it to have an ingress endpoint, or you opened ports directly. For a default setup of Sitecore, that's the CM and CD web servers on port 443.</p>
-<p>But what if you want to check xConnect is up without letting all of the internet see it? Or (in non-prod scenarios) talk to SQL Server or Solr? You need "<a href="https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/" rel="noopener" target="_blank">port forwarding</a>"! For example, to be able to web browse Solr in a specific pod:</p>
+<p>But what if you want to check xConnect is up without letting all of the internet see it? Or (in non-prod scenarios) talk to SQL Server or Solr? You need &quot;<a href="https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/" rel="noopener" target="_blank">port forwarding</a>&quot;! For example, to be able to web browse Solr in a specific pod:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe port-forward pod/solr-864d7c4c4-p8rsq 9999:8983 -n your-namespace
 </pre>
 <p>That will make the local address <code>127.0.0.1:9999</code> magcially connect into your cluster, and connect to the Solr pod in your names on its port 8983. So you can open a web browser to <code>http://127.0.0.1:9999</code> on your computer and browse the Solr UI.</p>
 <p>As long as kubectl is running this command, you'll be able to connect. To end the connection, just hit Ctrl-C in your shell window.</p>
-<p>Note that you can't use "localhost" here – it has to be "127.0.0.1".</p>
+<p>Note that you can't use &quot;localhost&quot; here – it has to be &quot;127.0.0.1&quot;.</p>
 <p>And it's not just tied to connecting to pods – you can connect to services or deployments in a similar fashion too.</p>
 <h2>Let me run a shell in a specific container!</h2>
 <p>Sometimes you just want to nose around inside a running container. Viewing a log file that's not exported to the k8s log stream maybe? Or checking that a specific file or config setting is actually present? Or running a script...</p>
-<p>In this scenario, you need to "<a href="http://exec" rel="noopener" target="_blank">exec</a>" a command in your container.</p>
+<p>In this scenario, you need to &quot;<a href="http://exec" rel="noopener" target="_blank">exec</a>&quot; a command in your container.</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe exec --stdin --tty mssql-7794b4b5cc-hhc24 -n your-namespace -- powershell.exe
 </pre>
 <p>Takes a while to type this one – you may want to make some sort of shortcut... But pay attention to the whitespace here – the final <code>--</code> has spaces either side of it.</p>
-<p>That will connect your local shell window to "powershell.exe" in the container. Much like <code>exec</code> in Docker whatever you type gets sent to the container, and whatever it displays gets sent back to you. But in this case it's done across the network to wherever your Kubernetes instance is running. And of course you don't have to run PowerShell – any command-line tool should work.</p>
+<p>That will connect your local shell window to &quot;powershell.exe&quot; in the container. Much like <code>exec</code> in Docker whatever you type gets sent to the container, and whatever it displays gets sent back to you. But in this case it's done across the network to wherever your Kubernetes instance is running. And of course you don't have to run PowerShell – any command-line tool should work.</p>
 <p>To get back to your normal local prompt, you just end the command you ran – so <code>exit</code> will quit the remote PowerShell, but other commands may be appropriate for different tools.</p>
 <p>Just remember that while you can change things on disk in the container, by default nothing is permenent in Kubernetes. Unless you specifically set up a pod or a mounted folder as persistent, any changes you make will vanish as soon as your pod is replaced for any reason. So it's best to make changes in your images most of the time.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -205,7 +226,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

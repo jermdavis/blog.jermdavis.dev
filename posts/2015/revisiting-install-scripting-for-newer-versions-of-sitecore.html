@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Previously, I&amp;#x27;ve written a few posts (&amp;lt;a href=&amp;quot;/posts/2014/unattended-installs-of-sitecore&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;here&amp;lt;/a&amp;gt;, &amp;lt;a href=&amp;quot;/posts/2015/msi-parameters&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;here&amp;lt;/a&amp;gt; and &amp;lt;a href=&amp;quot;/posts/2015/msi-parameters&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;here&amp;lt;/a&amp;gt;) about automation approaches and PowerShell scripts I was experimenting with for installing developer instances of Sitecore 6. It seems about time that I checked out how that scripting work copes with newer versions of Sitecore...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Revisiting install scripting for newer versions of&nbsp;Sitecore</title>
+    <title>Jeremy Davis - Revisiting install scripting for newer versions of&#xA0;Sitecore</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/revisiting-install-scripting-for-newer-versions-of-sitecore">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Revisiting install scripting for newer versions of&nbsp;Sitecore">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Revisiting install scripting for newer versions of&amp;#xA0;Sitecore">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/revisiting-install-scripting-for-newer-versions-of-sitecore-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Revisiting install scripting for newer versions of&#xA0;Sitecore",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/revisiting-install-scripting-for-newer-versions-of-sitecore-social.png"
+        ],
+        "datePublished": "2015-09-14T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/revisiting-install-scripting-for-newer-versions-of-sitecore">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,23 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Revisiting install scripting for newer versions of&nbsp;Sitecore
+        Revisiting install scripting for newer versions of Sitecore
         </h1>
+            <div class="meta">Published 14 September 2015</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md"> Installation</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Previously, I've written a few posts (<a href="/posts/2014/unattended-installs-of-sitecore" target="_blank">here</a>, <a href="/posts/2015/msi-parameters" target="_blank">here</a> and <a href="/posts/2015/msi-parameters" target="_blank">here</a>) about automation approaches and PowerShell scripts I was experimenting with for installing developer instances of Sitecore 6. It seems about time that I checked out how that scripting work copes with newer versions of Sitecore...<!--more--></p>
 <p>In my original post, I investigated the parameters being passed to the Sitecore V6.6 <code>MSI</code> by the installer UI. I said at the time that it seemed likely these parameters might change as the versions of Sitecore changed and features evolved. Now that I'm spending some time working with newer releases, I've had a chance to compare how these parameters vary with newer versions. Using the same approach as previously, I've captured the command line being used to install the <code>MSI</code> for two of the newer release.</p>
 <p>But it turns out that there are only minor changes in the settings between v6.6, v7.2 and v8.0. From what I've seen:</p>
@@ -134,12 +157,13 @@
 <li>The `SC_IISSITE_ID` parameter is no longer included. It seems likely the installer is now relying on the site name.</li>
 </ul>
 <p>So it turns out that the approach for installing the newer versions can be pretty much the same as that used for the older ones. Extract the <code>MSI</code> file from the <code>EXE</code>, and use <code>msiexec.exe</code> with the appropriate parameters for your needs. To do so with a basic command line operation, you can use:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">"Sitecore 8.0 rev. 150812.exe" /q /ExtractCab
-"msiexec.exe" /qn /i "%cd%\SupportFiles\exe\Sitecore.msi" TRANSFORMS=":InstanceId5;:ComponentGUIDTransform5.mst" MSINEWINSTANCE=1 LOGVERBOSE=1 SC_LANG="en-US" SC_FULL="1" SC_INSTANCENAME="silent" SC_LICENSE_PATH="C:\Software\PartnerLicense-2015.xml" SC_SQL_SERVER_USER="sa" SC_SQL_SERVER="localhost" SC_SQL_SERVER_PASSWORD="p@55w0rd" SC_DBPREFIX="silent_" SC_PREFIX_PHYSICAL_FILES="1" SC_SQL_SERVER_CONFIG_USER="sa" SC_SQL_SERVER_CONFIG_PASSWORD="p@55w0rd" SC_DBTYPE="MSSQL" INSTALLLOCATION="C:\Inetpub\wwwroot\silent" SC_DATA_FOLDER="C:\Inetpub\wwwroot\silent\Data" SC_DB_FOLDER="C:\Inetpub\wwwroot\silent\Databases" SC_MDF_FOLDER="C:\Inetpub\wwwroot\silent\Databases\MDF" SC_LDF_FOLDER="C:\Inetpub\wwwroot\silent\Databases\LDF" SC_NET_VERSION="4"  SC_INTEGRATED_PIPELINE_MODE="1" SC_IISSITE_NAME="Silent" SC_IISAPPPOOL_NAME="SilentAppPool" SC_IISSITE_HEADER="silent" SC_IISSITE_PORT="80" /l*+v "%cd%\SilentInstall.log" 
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">&quot;Sitecore 8.0 rev. 150812.exe&quot; /q /ExtractCab
+&quot;msiexec.exe&quot; /qn /i &quot;%cd%\SupportFiles\exe\Sitecore.msi&quot; TRANSFORMS=&quot;:InstanceId5;:ComponentGUIDTransform5.mst&quot; MSINEWINSTANCE=1 LOGVERBOSE=1 SC_LANG=&quot;en-US&quot; SC_FULL=&quot;1&quot; SC_INSTANCENAME=&quot;silent&quot; SC_LICENSE_PATH=&quot;C:\Software\PartnerLicense-2015.xml&quot; SC_SQL_SERVER_USER=&quot;sa&quot; SC_SQL_SERVER=&quot;localhost&quot; SC_SQL_SERVER_PASSWORD=&quot;p&#64;55w0rd&quot; SC_DBPREFIX=&quot;silent_&quot; SC_PREFIX_PHYSICAL_FILES=&quot;1&quot; SC_SQL_SERVER_CONFIG_USER=&quot;sa&quot; SC_SQL_SERVER_CONFIG_PASSWORD=&quot;p&#64;55w0rd&quot; SC_DBTYPE=&quot;MSSQL&quot; INSTALLLOCATION=&quot;C:\Inetpub\wwwroot\silent&quot; SC_DATA_FOLDER=&quot;C:\Inetpub\wwwroot\silent\Data&quot; SC_DB_FOLDER=&quot;C:\Inetpub\wwwroot\silent\Databases&quot; SC_MDF_FOLDER=&quot;C:\Inetpub\wwwroot\silent\Databases\MDF&quot; SC_LDF_FOLDER=&quot;C:\Inetpub\wwwroot\silent\Databases\LDF&quot; SC_NET_VERSION=&quot;4&quot;  SC_INTEGRATED_PIPELINE_MODE=&quot;1&quot; SC_IISSITE_NAME=&quot;Silent&quot; SC_IISAPPPOOL_NAME=&quot;SilentAppPool&quot; SC_IISSITE_HEADER=&quot;silent&quot; SC_IISSITE_PORT=&quot;80&quot; /l*+v &quot;%cd%\SilentInstall.log&quot; 
 </pre>
 <p>Though <a href="/posts/2015/msi-parameters" target="_blank">as discussed previously</a>, the <code>TRANSFORMS</code> parameter's <code>InstanceId</code> data is important to having the install work correctly, so the appropriate value needs to be worked out if you want to be able to install more than one instance of Sitecore on the same machine.</p>
 <p>And so the same approach to <a href="/posts/2015/msi-parameters" target="_blank">using PowerShell scripts to automate this</a>, along with <a href="/posts/2015/automated-package-installs" target="_blank">other aspects</a> of <a href="/posts/2015/automating-host-names-and-ssl-certificates-for-sitecore-instances" target="_blank">the install</a> works too. Look back over my previous posts to see how that might work.</p>
 <p>It's worth noting that with Sitecore 7.5 and newer you no longer need the <a href="/posts/2015/scripted-dms-installs" target="_blank">script to add analytics</a> to your installation, as this feature is always enabled. But conversely you <a href="/posts/2015/automating-a-development-mongodb-install" target="_blank">need an instance of MongoDB</a> for analytics data capture.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -194,7 +218,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

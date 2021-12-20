@@ -3,7 +3,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Ever had a tool that works reliably suddenly not work? I had a problem like that recently, and it lead to some experimentation that I think I may need to come back to later. So this is mostly so I can remember what I was doing when I get back to this. But as we move toward a more &amp;amp;amp;quot;platform agnostic&amp;amp;amp;quot; with more use of .Net Core on Linux, maybe there&amp;#x27;s something here that might help you too...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
@@ -22,8 +22,24 @@
 
     
     <meta property="og:title" content="Jeremy Davis - Broken Unicorn synchronisation">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/broken-unicorn-synchronisation-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Broken Unicorn synchronisation",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/broken-unicorn-synchronisation-social.png"
+        ],
+        "datePublished": "2021-01-18T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/broken-unicorn-synchronisation">
 <meta property="og:type" content="website">
 
@@ -114,20 +130,26 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
         Broken Unicorn synchronisation
         </h1>
+            <div class="meta">Published 18 January 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/devops" class="p-1 mr-1 bg-gray-100 rounded-md"> DevOps</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/unicorn" class="p-1 mr-1 bg-gray-100 rounded-md"> Unicorn</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
-                <p>Ever had a tool that works reliably suddenly not work? I had a problem like that recently, and it lead to some experimentation that I think I may need to come back to later. So this is mostly so I can remember what I was doing when I get back to this. But as we move toward a more "platform agnostic" with more use of .Net Core on Linux, maybe there's something here that might help you too...<!--more--></p>
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>Ever had a tool that works reliably suddenly not work? I had a problem like that recently, and it lead to some experimentation that I think I may need to come back to later. So this is mostly so I can remember what I was doing when I get back to this. But as we move toward a more &quot;platform agnostic&quot; with more use of .Net Core on Linux, maybe there's something here that might help you too...<!--more--></p>
 <h2>Setting the scene</h2>
-<p>I'm working on a client project right now, which has a pile of "new to me" technology in it. The big ones have been <a href="https://www.docker.com/" rel="noopener" target="_blank">Docker</a> and <a href="https://kubernetes.io/" rel="noopener" target="_blank">Kubernetes</a>. But the client doesn't own <a href="https://www.teamdevelopmentforsitecore.com/" rel="noopener" target="_blank">TDS</a> licenses, so serialisation for the solution uses <a href="https://github.com/SitecoreUnicorn/Unicorn" rel="noopener" target="_blank">Unicorn</a>. Development has been chugging away quietyly for a while – and the deployments to our internal QA infrastructure were working fine. Our <a href="https://azure.microsoft.com/en-gb/services/devops/?nav=min" rel="noopener" target="_blank">DevOps</a> build was collecting up all the Unicorn serialised items, ensuring they got to the target server, and then using the PowerShell script for "remote sync" to ask Unicorn on the CM box to pull in all the changed items.</p>
+<p>I'm working on a client project right now, which has a pile of &quot;new to me&quot; technology in it. The big ones have been <a href="https://www.docker.com/" rel="noopener" target="_blank">Docker</a> and <a href="https://kubernetes.io/" rel="noopener" target="_blank">Kubernetes</a>. But the client doesn't own <a href="https://www.teamdevelopmentforsitecore.com/" rel="noopener" target="_blank">TDS</a> licenses, so serialisation for the solution uses <a href="https://github.com/SitecoreUnicorn/Unicorn" rel="noopener" target="_blank">Unicorn</a>. Development has been chugging away quietyly for a while – and the deployments to our internal QA infrastructure were working fine. Our <a href="https://azure.microsoft.com/en-gb/services/devops/?nav=min" rel="noopener" target="_blank">DevOps</a> build was collecting up all the Unicorn serialised items, ensuring they got to the target server, and then using the PowerShell script for &quot;remote sync&quot; to ask Unicorn on the CM box to pull in all the changed items.</p>
 <p>Nothing surprising there.</p>
 <p>But then the client sorted out some of their internal infrastructure for the project, and tried to run a deployment over to their kit instead of ours. And this one failed. The Unicorn sync step would not run.</p>
 <p>After a bit of digging and thinking we hit on the likely cause: Our internal releases were using Microsoft's Hosted release agents running Windows – which are happy to run the .Net 4.x DLL that the Unicorn sync uses. But the client was using their own private release agents which were running on Linux with <a href="https://github.com/PowerShell/PowerShell" rel="noopener" target="_blank">PowerShell Core</a>. It seems that configuration could not run the .Net 4 code and hence the failure.</p>
@@ -137,7 +159,7 @@
 <h2>Fixing things via a different route</h2>
 <p>What could I do if there wasn't a Windows agent available? Well the obvious answer is that the Unicorn Sync would need to be triggered using some .Net Core code. What would that involve?</p>
 <p>Well the sync is basically two things: A PowerShell script that controls the process, and a DLL that includes some code for authentication. The DLL is <a href="https://github.com/kamsar/MicroCHAP" rel="noopener" target="_blank">available in a Github repo</a>, so I took a fork of that...</p>
-<p>It includes a few classes and some tests. It's was using XUnit for the tests though – which for some reason I could not make run on the laptop I was doing this with. (Everything built and ran, but all the tests were marked as "not run" and the tests log had a warning about lacking a test adapater nuget project) So I took a quick detour and changed it over to using MSTest just to make some progress. Having done that, a couple of the tests didn't pass:</p>
+<p>It includes a few classes and some tests. It's was using XUnit for the tests though – which for some reason I could not make run on the laptop I was doing this with. (Everything built and ran, but all the tests were marked as &quot;not run&quot; and the tests log had a warning about lacking a test adapater nuget project) So I took a quick detour and changed it over to using MSTest just to make some progress. Having done that, a couple of the tests didn't pass:</p>
 <p><a href="/img/2021/2021-01-failedtests.png" target="_blank"><img alt="Failed Tests" src="/img/2021/2021-01-failedtests.png"></a></p>
 <p>Tests seem important for this, so I figured I should fix them. So what's the fault?</p>
 <p><a href="/img/2021/2021-01-error.png" target="_blank"><img alt="Test Error" src="/img/2021/2021-01-error.png"></a></p>
@@ -145,7 +167,7 @@
 <pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IChapServer CreateTestServer()
 {
 	var responseService = Substitute.For&lt;ISignatureService&gt;();
-	var signatureResult = new SignatureResult { SignatureHash = "RESPONSE" };
+	var signatureResult = new SignatureResult { SignatureHash = &quot;RESPONSE&quot; };
 	responseService.CreateSignature(Arg.Any&lt;string&gt;(), Arg.Any&lt;string&gt;(), Arg.Any&lt;IEnumerable&lt;SignatureFactor&gt;&gt;()).Returns(signatureResult);
 
 	return new ChapServer(responseService, new InMemoryChallengeStore(null));
@@ -156,7 +178,7 @@
 {
 	var logger = Substitute.For&lt;IChallengeStoreLogger&gt;();
 	var responseService = Substitute.For&lt;ISignatureService&gt;();
-	var signatureResult = new SignatureResult { SignatureHash = "RESPONSE" };
+	var signatureResult = new SignatureResult { SignatureHash = &quot;RESPONSE&quot; };
 	responseService.CreateSignature(Arg.Any&lt;string&gt;(), Arg.Any&lt;string&gt;(), Arg.Any&lt;IEnumerable&lt;SignatureFactor&gt;&gt;()).Returns(signatureResult);
 
 	return new ChapServer(responseService, new InMemoryChallengeStore(logger));
@@ -169,6 +191,7 @@
 <p>This weekend tinkering didn't involve the client's systems – so I tried testing this using local docker containers...</p>
 <p>Clearly there's something I don't understand about how Powershell Core images are built, or what the client's release agent config was. I tried running up a copy of <code>mcr.microsoft.com/powershell</code> using Linux Containers in docker, assuming this would show similar behaviour. But it was able to run the original code happily (and ran the new code too).</p>
 <p>So I'll need to find some time to come back to this at some point, when I can do a more accurate test, and verify this actually fixes the issue. So for the moment I'll leave this here as a note to myself for later, along with <a href="https://github.com/jermdavis/MicroCHAP" rel="noopener" target="_blank">the tweaked code on Github</a>. And maybe it'll be of use to someone else too...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -223,7 +246,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

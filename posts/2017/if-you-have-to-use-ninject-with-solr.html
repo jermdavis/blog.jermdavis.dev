@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="My first time having to configure Solr for Sitecore recently taught me a variety of new things. (I know &amp;#x2013; how have I managed to avoid it this long?) Most of the basics of the setup have been well documented elsewhere, so I won&amp;#x27;t repeat any of that. However setting up the site to use the Ninject DI container wasn&amp;#x27;t as smooth as the documentation suggested, so here are some notes on the issues I hit in case you find yourself stuck: ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - If you have to use Ninject with&nbsp;Solr...</title>
+    <title>Jeremy Davis - If you have to use Ninject with&#xA0;Solr...</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2017/if-you-have-to-use-ninject-with-solr">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - If you have to use Ninject with&nbsp;Solr...">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - If you have to use Ninject with&amp;#xA0;Solr...">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/if-you-have-to-use-ninject-with-solr-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "If you have to use Ninject with&#xA0;Solr...",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/if-you-have-to-use-ninject-with-solr-social.png"
+        ],
+        "datePublished": "2017-12-11T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2017/if-you-have-to-use-ninject-with-solr">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,23 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        If you have to use Ninject with&nbsp;Solr...
+        If you have to use Ninject with Solr...
         </h1>
+            <div class="meta">Published 11 December 2017</div>
+            <div class="flex py-1">
+                    <a href="/tags/configuration" class="p-1 mr-1 bg-gray-100 rounded-md"> Configuration</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/solr" class="p-1 mr-1 bg-gray-100 rounded-md"> Solr</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>My first time having to configure Solr for Sitecore recently taught me a variety of new things. (I know – how have I managed to avoid it this long?) Most of the basics of the setup have been well documented elsewhere, so I won't repeat any of that. However setting up the site to use the Ninject DI container wasn't as smooth as the documentation suggested, so here are some notes on the issues I hit in case you find yourself stuck: <!--more--></p>
 <h2>Background</h2>
 <p>I was looking at a site based on v8.1 update 3, which was using Lucene for search. It already had an instance of the Ninject DI container, since this is installed as part of the social features for Sitecore. While I understand Ninject may not be the fastest container in existence, I decided I preferred making use of that to adding another container to the solution. YMMV – but that's not the point of this post.</p>
@@ -135,22 +157,23 @@
 <p><code>Could not load file or assembly 'Ninject, Version=3.0.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7' or one of its dependencies. The system cannot find the file specified.</code></p>
 <p>So the first issue to address is that Sitecore's Solr support has been built against a different version of Ninject than the version they ship with their social code. But at least that's fairly easily fixed with a Assembly Binding redirect. Looking at the existing configuration, there was already some config for the location of the Ninject binary in place, so I amended it. In the <code>/configuration/runtime/assemblybinding</code> section of the site's <code>web.config</code> I added:</p>
 <pre data-enlighter-highlight="4" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;dependentAssembly&gt;
-    &lt;assemblyIdentity name="Ninject" publicKeyToken="c7192dc5380945e7" xmlns="urn:schemas-microsoft-com:asm.v1" /&gt;
-    &lt;codeBase version="3.2.0.0" href="bin\Social\Ninject.dll" xmlns="urn:schemas-microsoft-com:asm.v1" /&gt;
-    &lt;bindingRedirect oldVersion="0.0.0.0-3.2.0.0" newVersion="3.2.0.0" xmlns="urn:schemas-microsoft-com:asm.v1" /&gt;
+    &lt;assemblyIdentity name=&quot;Ninject&quot; publicKeyToken=&quot;c7192dc5380945e7&quot; xmlns=&quot;urn:schemas-microsoft-com:asm.v1&quot; /&gt;
+    &lt;codeBase version=&quot;3.2.0.0&quot; href=&quot;bin\Social\Ninject.dll&quot; xmlns=&quot;urn:schemas-microsoft-com:asm.v1&quot; /&gt;
+    &lt;bindingRedirect oldVersion=&quot;0.0.0.0-3.2.0.0&quot; newVersion=&quot;3.2.0.0&quot; xmlns=&quot;urn:schemas-microsoft-com:asm.v1&quot; /&gt;
 &lt;/dependentAssembly&gt;
 </pre>
 <p>With that saved, and the site refreshed I immediately hit a second YSOD:</p>
 <p><a href="/img/2017/2017-09-ysod.png" target="_blank"><img alt="ysod" src="/img/2017/2017-09-ysod.png"></a></p>
 <p><code>Could not load file or assembly 'CommonServiceLocator.NinjectAdapter, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null' or one of its dependencies.</code></p>
 <p>At this point I scratched my head a bit, and went to re-read the instructions in more detail.</p>
-<p>The "Select the correct support DLL files" section of the instructions says that for Ninject three DLLs are needed. The files <code>Ninject.Integration.SolrNet.dll</code> and <code>Sitecore.ContentSearch.SolrProvider.NinjectIntegration.dll</code> are in the Solr Support zip file for this version of Sitecore and I'd copied over already. But <code>CommonServiceLocator.NinjectAdapter.dll</code> was not there... I spent a certain amount of time wondering if I'd missed some obvious link to download the file – but it appears not.</p>
-<p>So my first guess was "maybe it's on NuGet"? But this file doesn't appear to be present in any of the official NuGet packages for Ninject. There is an "unofficial" package for this DLL but that contains the wrong namespace for the code Sitecore wants to call, so that's no good. However <a href="https://github.com/ninject/Ninject/tree/master/src/CommonServiceLocator.NinjectAdapter" rel="noopener noreferrer" target="_blank"> the right files are present in the source for Ninject on Github</a>. Looking at <a href="https://github.com/ninject/Ninject/wiki/Getting-Started" rel="noopener noreferrer" target="_blank">the official wiki for Ninject</a>, that suggests you can get releases from their build server. However, that link did not work – clicking it went to <a href="https://teamcity.bbv.ch/viewLog.html?buildTypeId=bt7&amp;buildId=lastPinned&amp;tab=artifacts" rel="noopener noreferrer" target="_blank">https://teamcity.bbv.ch/viewLog.html?buildTypeId=bt7&amp;buildId=lastPinned&amp;tab=artifacts</a> which then redirected automatically to an OAuth2 endpoint on the server <code>http://dmzytr01:8080/</code> - which clearly isn't going to work for those of us on the public internet...</p>
+<p>The &quot;Select the correct support DLL files&quot; section of the instructions says that for Ninject three DLLs are needed. The files <code>Ninject.Integration.SolrNet.dll</code> and <code>Sitecore.ContentSearch.SolrProvider.NinjectIntegration.dll</code> are in the Solr Support zip file for this version of Sitecore and I'd copied over already. But <code>CommonServiceLocator.NinjectAdapter.dll</code> was not there... I spent a certain amount of time wondering if I'd missed some obvious link to download the file – but it appears not.</p>
+<p>So my first guess was &quot;maybe it's on NuGet&quot;? But this file doesn't appear to be present in any of the official NuGet packages for Ninject. There is an &quot;unofficial&quot; package for this DLL but that contains the wrong namespace for the code Sitecore wants to call, so that's no good. However <a href="https://github.com/ninject/Ninject/tree/master/src/CommonServiceLocator.NinjectAdapter" rel="noopener noreferrer" target="_blank"> the right files are present in the source for Ninject on Github</a>. Looking at <a href="https://github.com/ninject/Ninject/wiki/Getting-Started" rel="noopener noreferrer" target="_blank">the official wiki for Ninject</a>, that suggests you can get releases from their build server. However, that link did not work – clicking it went to <a href="https://teamcity.bbv.ch/viewLog.html?buildTypeId=bt7&amp;buildId=lastPinned&amp;tab=artifacts" rel="noopener noreferrer" target="_blank">https://teamcity.bbv.ch/viewLog.html?buildTypeId=bt7&amp;buildId=lastPinned&amp;tab=artifacts</a> which then redirected automatically to an OAuth2 endpoint on the server <code>http://dmzytr01:8080/</code> - which clearly isn't going to work for those of us on the public internet...</p>
 <p>So, back to the drawing board. Instead, I cloned the source from Github to build my own version of the DLL. Given that the Ninject dll that ships with Sitecore is version 3.2.2.0, I took the source for 3.2.2 and compiled a release version of that. I finished the setup described in Sitecore's doc by copying all the files and updating the <code>Global.asax</code> and tried to load my site...</p>
 <p>No luck – the same YSOD again – even though the DLL was now present.</p>
 <p>Looking at the DLL I'd deployed I had a quick <b><em>facepalm</em></b> – of course the Solr support has been built against the older version of Ninject, so I've just built the wrong version of the DLL. So after some scrabbling about in the release history for Ninject on GitHub I re-downloaded the source and got v3.0.0 to compile the <code>CommonServiceLocator</code> code.</p>
-<p>Digging into this, I spotted two further issues with this that needed correcting: First, the solution was configured to sign the assembly for a release build. So I undid that bit of configuration in Visual Studio so the output would match Sitecore's needs. But more oddly, the source for the V3.0.0 DLL from GitHub had a version number of V2.3.something. I decided to bet that this was a "forgot to check in the assembly version change" issue with the source code, and modified that myself before rebuilding.</p>
+<p>Digging into this, I spotted two further issues with this that needed correcting: First, the solution was configured to sign the assembly for a release build. So I undid that bit of configuration in Visual Studio so the output would match Sitecore's needs. But more oddly, the source for the V3.0.0 DLL from GitHub had a version number of V2.3.something. I decided to bet that this was a &quot;forgot to check in the assembly version change&quot; issue with the source code, and modified that myself before rebuilding.</p>
 <p>And with that version of the DLL copied over, the site finally loaded and let me build indexes...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -205,7 +228,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

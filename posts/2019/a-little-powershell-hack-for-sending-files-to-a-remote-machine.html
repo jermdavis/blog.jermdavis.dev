@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="I was asked to do some configuration on a remote computer recently, and discovered that the security-concious network admins had locked down the ability for me to share my local computer&amp;#x27;s files with the server via RDP and the ability to get to services like OneDrive. I had a collection of config files I had been asked to deploy, and manually creating each file on the server and copying over its contents seemed like a lot of hassle. So I tried a trick with PowerShell to make my life easier...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - A little PowerShell hack for sending files to a remote&nbsp;machine</title>
+    <title>Jeremy Davis - A little PowerShell hack for sending files to a remote&#xA0;machine</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2019/a-little-powershell-hack-for-sending-files-to-a-remote-machine">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - A little PowerShell hack for sending files to a remote&nbsp;machine">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - A little PowerShell hack for sending files to a remote&amp;#xA0;machine">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-little-powershell-hack-for-sending-files-to-a-remote-machine-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "A little PowerShell hack for sending files to a remote&#xA0;machine",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/a-little-powershell-hack-for-sending-files-to-a-remote-machine-social.png"
+        ],
+        "datePublished": "2019-06-10T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/a-little-powershell-hack-for-sending-files-to-a-remote-machine">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,21 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        A little PowerShell hack for sending files to a remote&nbsp;machine
+        A little PowerShell hack for sending files to a remote machine
         </h1>
+            <div class="meta">Published 10 June 2019</div>
+            <div class="flex py-1">
+                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>I was asked to do some configuration on a remote computer recently, and discovered that the security-concious network admins had locked down the ability for me to share my local computer's files with the server via RDP and the ability to get to services like OneDrive. I had a collection of config files I had been asked to deploy, and manually creating each file on the server and copying over its contents seemed like a lot of hassle. So I tried a trick with PowerShell to make my life easier...<!--more--></p>
 <blockquote>
 <b><i>Please note:</i></b> I'm not condoning breaking network security policies here – don't use this in a way that would get you into trouble!
@@ -139,15 +159,15 @@
     
     if(!(Test-Path $file))
     {
-        throw "Specified file '$file' cannot be found"
+        throw &quot;Specified file &#39;$file&#39; cannot be found&quot;
     }
 
     $fileName = Split-Path $file -leaf
 
     $data = Base64Encode-File $file
-    "$fileName`b$data" | Set-Clipboard
+    &quot;$fileName`b$data&quot; | Set-Clipboard
 
-    Write-Host "File `$file` encoded to clipboard in $($data.Length) bytes"
+    Write-Host &quot;File `$file` encoded to clipboard in $($data.Length) bytes&quot;
 }
 </pre>
 <p>Having checked the file exists, the code uses <code>Split-Path</code> to make sure it has just the file name, ignoring any relative path that may have been passed in. It then turns the file into a base64 string. Finally it sends a string to the clipboard that combines the file name and the encoded data and writes some output.</p>
@@ -176,11 +196,11 @@
 
     $clip = Get-Clipboard
 
-    $bits = $clip.Split(`b")
+    $bits = $clip.Split(`b&quot;)
 
     if($bits.Length -ne 2)
     {
-        throw "Data error. Expected 2 items of data on clipboard, but got $($bits.Length)"
+        throw &quot;Data error. Expected 2 items of data on clipboard, but got $($bits.Length)&quot;
     }
 
     $file = $bits[0]
@@ -190,7 +210,7 @@
     }
     $data = $bits[1]
 
-    Write-Host "Receiving file `$file` from $($clip.Length) bytes of data"
+    Write-Host &quot;Receiving file `$file` from $($clip.Length) bytes of data&quot;
 
     Write-EmbeddedFile $data $file
 }
@@ -207,13 +227,13 @@
   process
   {
     $Content = [System.Convert]::FromBase64String($base64)
-    Set-Content -Path ".\$targetFile" -Value $Content -Encoding Byte
+    Set-Content -Path &quot;.\$targetFile&quot; -Value $Content -Encoding Byte
   }
 }
 </pre>
 <p>Finally, the module file can export the two key functions for use:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Export-ModuleMember -Function "Receive-ClipboardFile"
-Export-ModuleMember -Function "Send-ClipboardFile"
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Export-ModuleMember -Function &quot;Receive-ClipboardFile&quot;
+Export-ModuleMember -Function &quot;Send-ClipboardFile&quot;
 </pre>
 <p>And with that, all you have to do is drop this script (I named it <code>ClipboardFileTransfer.psm1</code>) into a suitably named folder in your modules directory or locally and you can import it and send some files...</p>
 <p>For example, if you have the module in a local directory on the local machine you might run:</p>
@@ -224,6 +244,7 @@ Export-ModuleMember -Function "Send-ClipboardFile"
 <p>[Note to self: tweak script so that the bytes reported at both ends measure the same thing... 😉 ]</p>
 <p>You need to get this one script onto both of your machines, but if you can do that, this allows for easy transfers of other files. And it made my day a lot simpler.</p>
 <p>If you think this might be useful, <a href="https://gist.github.com/jermdavis/aa3d1cda2875167ef59feaceae6b0961" rel="noopener" target="_blank">the script is available as a gist</a> for you to use.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -278,7 +299,7 @@ Export-ModuleMember -Function "Send-ClipboardFile"
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

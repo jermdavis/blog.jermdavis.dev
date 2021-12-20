@@ -3,7 +3,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Outside of work I&amp;#x27;ve been looking for non-Sitecore things to experiement with recently, and my eye was caught by a bit of interesting game development technology. I came across a discussion of using code to generate game data with a technique called &amp;amp;amp;quot;Wavefunction Collapse&amp;amp;amp;quot;. It&amp;#x27;s a simple concept, but it has some interesting results, so I thought I&amp;#x27;d have a go at an implementation myself.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
@@ -22,8 +22,24 @@
 
     
     <meta property="og:title" content="Jeremy Davis - An interesting diversion into procedural generation...">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/an-interesting-diversion-into-procedural-generation-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "An interesting diversion into procedural generation...",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/an-interesting-diversion-into-procedural-generation-social.png"
+        ],
+        "datePublished": "2020-07-06T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2020/an-interesting-diversion-into-procedural-generation">
 <meta property="og:type" content="website">
 
@@ -114,34 +130,38 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
         An interesting diversion into procedural generation...
         </h1>
+            <div class="meta">Published 06 July 2020</div>
+            <div class="flex py-1">
+                    <a href="/tags/general" class="p-1 mr-1 bg-gray-100 rounded-md"> General</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
-                <p>Outside of work I've been looking for non-Sitecore things to experiement with recently, and my eye was caught by a bit of interesting game development technology. I came across a discussion of using code to generate game data with a technique called "Wavefunction Collapse". It's a simple concept, but it has some interesting results, so I thought I'd have a go at an implementation myself.<!--more--></p>
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>Outside of work I've been looking for non-Sitecore things to experiement with recently, and my eye was caught by a bit of interesting game development technology. I came across a discussion of using code to generate game data with a technique called &quot;Wavefunction Collapse&quot;. It's a simple concept, but it has some interesting results, so I thought I'd have a go at an implementation myself.<!--more--></p>
 <h2>So what is this idea?</h2>
 <p>Imagine you have a set of tiles that you want to build a map out of. There are some rules about how the tiles can be layed out, and you want the computer to make use of those rules to generate a random layout of the tiles for you. For example the tiles might be box drawing characters:</p>
 <p><a href="/img/2020/2020-06-tiles.png" target="_blank"><img alt="Tiles" src="/img/2020/2020-06-tiles.png"></a></p>
 <p>The rules for this example are simple: the shapes need to be placed so that the lines join up, generating a path.</p>
-<p>Wavefunction collapse is one way to approach this, and the algorithm goes something like this: You make an array, the size of the map you need. Each cell in the array is "a wavefunction" – (the name is stolen from physics and quantum state) it's basically a list of all the possible tiles that could go in that space. To start with that means "any tile".</p>
+<p>Wavefunction collapse is one way to approach this, and the algorithm goes something like this: You make an array, the size of the map you need. Each cell in the array is &quot;a wavefunction&quot; – (the name is stolen from physics and quantum state) it's basically a list of all the possible tiles that could go in that space. To start with that means &quot;any tile&quot;.</p>
 <p>Then you run a loop over the data:</p>
 <ul>
-<li>Find the wavefunction with the lowest "entropy". That means the array cell with the fewest possible options. If you have multiple wavefunctions with the same value for entropy, then pick one of them at random.</li>
-<li>"Collapse" this wavefunction – based on the weights for each possible tile that remains a choice, pick one tile and discard the others.</li>
+<li>Find the wavefunction with the lowest &quot;entropy&quot;. That means the array cell with the fewest possible options. If you have multiple wavefunctions with the same value for entropy, then pick one of them at random.</li>
+<li>&quot;Collapse&quot; this wavefunction – based on the weights for each possible tile that remains a choice, pick one tile and discard the others.</li>
 <li>And then you propagate that change to the adjacent tiles. Because you now know what the current tile is, you can look at the surrounding tiles and remove some of their options based on rules which now cannot be true. And that reduces their entropy, in preparation for the next round.</li>
 </ul>
 <p>If you keep repeating this process for a while, you end up resolving a single value for more and more cells in your array, until you end up with with a completed map. (Or you get an error condition because the remaining rules can't be resolved – but we'll ignore that edge case to keep this description simple) Slowed down for visibility, it looks something like this:</p>
 <p><span class="embed-youtube" style="text-align:center; display: block;"><iframe class="youtube-player" width="640" height="360" src="https://www.youtube.com/embed/C71R0JIfLnk?version=3&amp;rel=1&amp;showsearch=0&amp;showinfo=1&amp;iv_load_policy=1&amp;fs=1&amp;hl=en&amp;autohide=2&amp;wmode=transparent" allowfullscreen="true" style="border:0;" sandbox="allow-scripts allow-same-origin allow-popups allow-presentation"></iframe></span></p>
 <p>The blue array cell is the one being processed. Green ones are those whose wavefunction was changed by propagation. And yellow are those considered for propagation, but not changed. Once a cell is resolved, it shows the chosen map tile. For the cells that are unresolved, the value displayed for the wavefunction is the number of choices still available. (rendered in hexadecimal here – to allow for more options to be displayed)</p>
 <h2>How does it work?</h2>
-<p>At its simplest, a <code>WaveFunction</code> is just an array of possibilities, and a way to work out "entropy" based on how many of those are valid. And if there's only one choice, we've finished processing this:</p>
+<p>At its simplest, a <code>WaveFunction</code> is just an array of possibilities, and a way to work out &quot;entropy&quot; based on how many of those are valid. And if there's only one choice, we've finished processing this:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class WaveFunction
 {
     public Tile[] Choices { get; set; }
@@ -322,13 +342,13 @@
 
             if (adjWaveFunction.Choices.Where(t =&gt; t != null).Count() == 0)
             {
-                throw new Exception("Map cannot be solved.");
+                throw new Exception(&quot;Map cannot be solved.&quot;);
             }
         }
     }
 }
 </pre>
-<p>Starting at the current point, it looks around in all the defined directions. For each one, it looks to see if any of the choices at that location is now impossible, based on the current rules. If so, that item gets removed from the target wavefunction's choices, and the updated wavefunction gets added to the "list of places than need processing further". The loop continues until it's run out of things to change.</p>
+<p>Starting at the current point, it looks around in all the defined directions. For each one, it looks to see if any of the choices at that location is now impossible, based on the current rules. If so, that item gets removed from the target wavefunction's choices, and the updated wavefunction gets added to the &quot;list of places than need processing further&quot;. The loop continues until it's run out of things to change.</p>
 <p>The <code>TilePossible()</code> method checks the target wavefunction to see whether the rules allow that state - so it can be removed if not allowed.</p>
 <p>And this overall loop continues until either all the wavefunctions are reduced to a specific value (Entropy equals 1) or we hit an impossible state.</p>
 <p>What I find particularly interesting about this is that the rules can come from different sources. The generation logic relies on the <code>TileRule</code> class above - and you can write these by hand if you want. For example, here's the definition of a simple three-tile ruleset:</p>
@@ -336,9 +356,9 @@
 {
     var ts = new TileSet(dh);
 
-    var one = ts.NewTile('█',1);
-    var two = ts.NewTile('╬',1);
-    var three = ts.NewTile('┼',1);
+    var one = ts.NewTile(&#39;█&#39;,1);
+    var two = ts.NewTile(&#39;╬&#39;,1);
+    var three = ts.NewTile(&#39;┼&#39;,1);
 
     ts.AddBidirectionalTileRules(one, one, 1, Directions.North, Directions.South, Directions.East, Directions.West);
     ts.AddBidirectionalTileRules(one, two, 1, Directions.North, Directions.South, Directions.East, Directions.West);
@@ -354,7 +374,7 @@
 <p>And that generates something like:</p>
 <p><a href="/img/2020/2020-07-directrulemap.png" target="_blank"><img alt="Direct Rule Map" src="/img/2020/2020-07-directrulemap.png"></a></p>
 <p>This simple example has bidirectional rules (if a rule is valid left-to-right then it is also valid right-to-left) but that doesn't have to be true – rules can work in a single direction only.</p>
-<p>But what's really interesting is that you can infer rules from an existing data set. The video example above comes from taking simple "this character has exits east and south" type data, and using that to build a ruleset. But you can also take a text file, and iterate through it to work out what characters can be adjacent to each other, and build a ruleset from that instead. You can also infer weights from how often you see any character, or any relationship between adjacent characters.</p>
+<p>But what's really interesting is that you can infer rules from an existing data set. The video example above comes from taking simple &quot;this character has exits east and south&quot; type data, and using that to build a ruleset. But you can also take a text file, and iterate through it to work out what characters can be adjacent to each other, and build a ruleset from that instead. You can also infer weights from how often you see any character, or any relationship between adjacent characters.</p>
 <p>For example, inferring rules from the following text:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">/---\  +---+
 |   |  |   |
@@ -365,6 +385,7 @@
 <p><a href="/img/2020/2020-07-map.png" target="_blank"><img alt="Generated Rule Map" src="/img/2020/2020-07-map.png"></a></p>
 <p>Which saves the effort of writing the rules directly. And you can extend the same process to pixels in an image, or tiles in a 2d or 3d map. The versatility is really interesting to me.</p>
 <p>My fiddling about with this can be <a href="https://github.com/jermdavis/TileExperiment" rel="noopener" target="_blank">downloaded from github if you want to play too</a>. It's not very efficient code – it was written to understand the behaviour rather than to be optimised for real use. But it can still generate some interesting patterns. And there's <a href="https://robertheaton.com/2018/12/17/wavefunction-collapse-algorithm/" rel="noopener" target="_blank">plenty more to read on this topic</a> if this has piqued your interest.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -419,7 +440,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="A problem I&amp;#x27;ve encountered a number of times in my Sitecore career is that when content trees are large and indexing tasks complex, it can take such a long time to perform a full rebuild of a search index that your web application can end up recycling for some reason before the build completes... Once content grows to this size, search can become quite difficult to manage, so I&amp;#x27;ve been experimenting with a tool to help.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Dealing with very long running search&nbsp;builds</title>
+    <title>Jeremy Davis - Dealing with very long running search&#xA0;builds</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2019/dealing-with-very-long-running-search-builds">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Dealing with very long running search&nbsp;builds">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Dealing with very long running search&amp;#xA0;builds">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/dealing-with-very-long-running-search-builds-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Dealing with very long running search&#xA0;builds",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/dealing-with-very-long-running-search-builds-social.png"
+        ],
+        "datePublished": "2019-10-28T00:00:00+00:00",
+        "dateModified": "2019-10-30T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/dealing-with-very-long-running-search-builds">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,23 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Dealing with very long running search&nbsp;builds
+        Dealing with very long running search builds
         </h1>
+            <div class="meta">Published 28 October 2019</div>
+                <div class="meta">Updated 30 October 2019</div>
+            <div class="flex py-1">
+                    <a href="/tags/search" class="p-1 mr-1 bg-gray-100 rounded-md"> Search</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>A problem I've encountered a number of times in my Sitecore career is that when content trees are large and indexing tasks complex, it can take such a long time to perform a full rebuild of a search index that your web application can end up recycling for some reason before the build completes... Once content grows to this size, search can become quite difficult to manage, so I've been experimenting with a tool to help.<!--more--></p>
 <h2>The background</h2>
 <p>You've probably experience the same thing: A search index build that runs for days... You have no idea how long its going to take to finish, and then something goes wrong and IIS resets itself losing your progress...<br>
@@ -133,17 +156,17 @@ After it happened to me recently I decided it might be helpful if I could run a 
 <p>Here's how it works:</p>
 <h2>The index service endpoint</h2>
 <p>To allow a process outside the website to control indexing there needs to be some sort of web-service endpoint exposed by Sitecore so that some other process can send commands. I hacked together a quick ASPX page that can expose a simple HTTP GET =&gt; JSON type API, and added an option to my tool to allow you to deploy it into a Sitecore instance.</p>
-<p>You can use the "Deploy" verb:</p>
+<p>You can use the &quot;Deploy&quot; verb:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">SearchIndexBuilder.exe deploy -w &lt;your website folder&gt; [-o] [-t &lt;token&gt;]
 </pre>
 <p>You specify the root folder of your website with the <code>-w</code> parameter, and the tool will write the endpoint file to there. The endpoint file requires a security token in your requests in order to respond to requests. By default the tool will generate you a random guid for the token, but if you'd prefer to specify something yourself you can use <code>-t</code> to pass it into the endpoint. Finally, the tool won't overwrite an existing endpoint file if it finds one, but you can change that behaviour with the <code>-o</code> flag.</p>
 <p>The tool's output includes the token that was configured – so if you let it generate one for you it will tell you what it is.</p>
 <p><a href="/img/2019/2019-10-deploy.png" target="_blank"><img alt="Deploy Endpoint" src="/img/2019/2019-10-deploy.png"></a></p>
-<p>When you're done with the endpoint you can also use the tool to remove it again with the "Remove" verb. Again you pass the <code>-w</code> parameter to specify the website root folder to remove the endpoint from.</p>
+<p>When you're done with the endpoint you can also use the tool to remove it again with the &quot;Remove&quot; verb. Again you pass the <code>-w</code> parameter to specify the website root folder to remove the endpoint from.</p>
 <p>The endpoint should work with most versions of Sitecore from v7.0 and up. (It won't work with older ones as it requires the ContentSearch APIs) I've tried it against v7.1, v7.2 and v9.0 so far.</p>
 <p>Note that these two verbs needs to be run on the same server as the Sitecore instance (because they write directly to disk) but the other verbs can be run remotely as they only use HTTP(S) access.</p>
 <h2>Configuring a rebuild</h2>
-<p>Because I wanted the rebuild process to be able to survive things like an IIS reset or the server getting rebooted, it made sense to keep the key config for the process in a file. So the tool has the "Setup" verb which helps you generate a config file.</p>
+<p>Because I wanted the rebuild process to be able to survive things like an IIS reset or the server getting rebooted, it made sense to keep the key config for the process in a file. So the tool has the &quot;Setup&quot; verb which helps you generate a config file.</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">SearchIndexBuilder.exe setup -u &lt;url of the endpoint&gt; -d &lt;database&gt; -t &lt;token&gt; [-q &lt;query for items&gt;] [-c &lt;config file name&gt;] [-o]
 </pre>
 <p>You give the tool the web URL for the endpoint with the <code>-u</code> parameter. As with the endpoint deployment above, you don't need to worry about the name of the endpoint file – just it's path. Use HTTPS if you can though – to protect your security token. You pass the token into the config file with the <code>-t</code> parameter. Make sure you specify the same one that was used when you set up the endpoint above.</p>
@@ -152,7 +175,7 @@ After it happened to me recently I decided it might be helpful if I could run a 
 <p>All the data worked out above gets written into a config file. By default it will save <code>.\config.json</code> but if you want to write to a different name or location then you can use <code>-c</code> to pass that in. And as above, if you need to overwrite an existing file then the <code>-o</code> flag will enable that.</p>
 <p>Since this is just a JSON file, you can edit it with your favourite text editor. By default it configures itself to try and rebuild all of the indexes that are configured in your server. But you can edit this set by removing entries from the config file. You can also make tweaks to the list of items to process if you fancy.</p>
 <h2>Running a build...</h2>
-<p>Once you have a config file, the "Index" verb can be used to process it:</p>
+<p>Once you have a config file, the &quot;Index&quot; verb can be used to process it:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">SearchIndexBuilder.exe index [-c &lt;config file&gt;][-o &lt;output Every X items&gt;] [-r &lt;retries in case of error&gt;] [-p &lt;ms to pause for&gt;] [-t &lt;timeout in seconds&gt;]
 </pre>
 <p>If you want to specify a particular config file then use <code>-c</code> as above, otherwise it will use the default file name.</p>
@@ -165,6 +188,7 @@ After it happened to me recently I decided it might be helpful if I could run a 
 <p>You can also generate new job config from the errors of a previous run if you need to. This, and some <a href="https://github.com/jermdavis/SearchIndexBuilder/blob/master/README.md" rel="noopener" target="_blank">assorted other options are written up in the readme</a>.</p>
 <h2>Want to try it?</h2>
 <p>Go ahead – you can <a href="https://github.com/jermdavis/SearchIndexBuilder/releases" rel="noopener" target="_blank">grab the latest build of the code from Github</a>. If you want to know how it works, then the <a href="https://github.com/jermdavis/SearchIndexBuilder" rel="noopener" target="_blank">code for this is available on Github</a> too. It's not particularly pretty, but you're free to poke around and suggest improvements if you fancy. There's some extra information in the readme for that repo.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -219,7 +243,7 @@ After it happened to me recently I decided it might be helpful if I could run a 
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

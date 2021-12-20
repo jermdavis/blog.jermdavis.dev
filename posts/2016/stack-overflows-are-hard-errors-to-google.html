@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Sometimes you find yourself investigating errors which are made more difficult to solve by the sheer weight of hits for a term out on the internet. Top of my list of things that are a pain to Google, is any sort of Stack Overflow exception. You can &amp;lt;a href=&amp;quot;http://stackoverflow.com/&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;guess why, right&amp;lt;/a&amp;gt;? &amp;#x1F609; Having gone throught that pain recently, here&amp;#x27;s some notes on an issue I helped my colleagues diagnose recently which fell straight into that trap...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Stack Overflows are hard errors to&nbsp;Google</title>
+    <title>Jeremy Davis - Stack Overflows are hard errors to&#xA0;Google</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2016/stack-overflows-are-hard-errors-to-google">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Stack Overflows are hard errors to&nbsp;Google">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Stack Overflows are hard errors to&amp;#xA0;Google">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/stack-overflows-are-hard-errors-to-google-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Stack Overflows are hard errors to&#xA0;Google",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/stack-overflows-are-hard-errors-to-google-social.png"
+        ],
+        "datePublished": "2016-03-07T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/stack-overflows-are-hard-errors-to-google">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,22 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Stack Overflows are hard errors to&nbsp;Google
+        Stack Overflows are hard errors to Google
         </h1>
+            <div class="meta">Published 07 March 2016</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Sometimes you find yourself investigating errors which are made more difficult to solve by the sheer weight of hits for a term out on the internet. Top of my list of things that are a pain to Google, is any sort of Stack Overflow exception. You can <a href="http://stackoverflow.com/" target="_blank" rel="noopener noreferrer">guess why, right</a>? 😉 Having gone throught that pain recently, here's some notes on an issue I helped my colleagues diagnose recently which fell straight into that trap...<!--more--></p>
 <h2>What was the issue we saw?</h2>
 <p>A while after a deployment, testers reported that some content editing operations caused the server in question to hang. Trying to lock an item for edit, change its Presentation Details or do some other operations which modified the item seemed to cause the problem. It happened on some items, but not others. Testers would see error dialogs poping up in Content Editor after a wait:</p>
@@ -194,17 +216,18 @@
 <p>That lead to us thinking about why the save operation might get into a loop.</p>
 <p>The obvious answer here was custom event handlers. If an event was triggering after Sitecore saved an item, causing it to be saved again and if Sitecore was running custom code on a separate thread, that could cause this sort of issue. So we tried disabling all of the custom events wired up in patches to the default Sitecore config.</p>
 <p>That didn't work.</p>
-<p>So then we looked down a rabbit hole relating to search. The project was using Coveo, with some customisations to ensure that if a Data Source item for a page got saved, the page itself was re-indexed. The re-index was triggered by changing the "last updated" time on the page item. So we tried disabling search.</p>
+<p>So then we looked down a rabbit hole relating to search. The project was using Coveo, with some customisations to ensure that if a Data Source item for a page got saved, the page itself was re-indexed. The re-index was triggered by changing the &quot;last updated&quot; time on the page item. So we tried disabling search.</p>
 <p>That didn't solve the problem either.</p>
-<p>Finally, after a lot of hair-pulling, we noticed that a custom Rule had been configured inside the Sitecore UI that was running in the On-Saved event. This rule was related to some SEO requirements to ensure that page Name and Display Name fields used "correct" values. Looking at the rule, an issue popped out:</p>
+<p>Finally, after a lot of hair-pulling, we noticed that a custom Rule had been configured inside the Sitecore UI that was running in the On-Saved event. This rule was related to some SEO requirements to ensure that page Name and Display Name fields used &quot;correct&quot; values. Looking at the rule, an issue popped out:</p>
 <p><a href="/img/2016/2016-03-saveruleissue.png" target="_blank"><img alt="Save Rule Issue" src="/img/2016/2016-03-saveruleissue.png"></a></p>
-<p>The last thing in the rule is a custom "save the changes" action, and the rule is running in the "Item Saved" event.</p>
-<p>The "shooting yourself in the foot" alarm went off at this point – and removing the "save the changes" action caused the hang/crash issues to go away.</p>
+<p>The last thing in the rule is a custom &quot;save the changes&quot; action, and the rule is running in the &quot;Item Saved&quot; event.</p>
+<p>The &quot;shooting yourself in the foot&quot; alarm went off at this point – and removing the &quot;save the changes&quot; action caused the hang/crash issues to go away.</p>
 <h2>Fixing the issue</h2>
 <p>Having found the underlying problem, the fix was pretty simple. And it's an important rule to remember:</p>
-<p>Don't write changes to an item in a rule running on the "Item Saved" event – because it can cause the event to run again, leading to a loop. (Yes, <a href="http://www.partechit.nl/en/blog/2012/12/temporarily-disable-events-through-the-sitecore-api" target="_blank" rel="noopener noreferrer">it is possible to write to an item without triggering events</a> – but I'd argue it's better to put your code into the correct event than to hack around this issue)</p>
-<p>If you need to modify the state of an item when it is saved, use the "Item Saving" event instead. That allows you to change the state, but rely on Sitecore to do the save operation for you afterwards. And it won't trigger any further events at that point.</p>
-<p>Note that out of the box, there isn't a Rules Engine event for "Item Saving". But you can plumb one in yourself easily enough – Have a Google for <a href="http://www.bfurlong.com/create-a-custom-rule-context-in-sitecore/" target="_blank" rel="noopener noreferrer">blogs on the subject of triggering rules</a>, or just point your favourite decompiler at Sitecore's code for running "Item Saved" to see how.</p>
+<p>Don't write changes to an item in a rule running on the &quot;Item Saved&quot; event – because it can cause the event to run again, leading to a loop. (Yes, <a href="http://www.partechit.nl/en/blog/2012/12/temporarily-disable-events-through-the-sitecore-api" target="_blank" rel="noopener noreferrer">it is possible to write to an item without triggering events</a> – but I'd argue it's better to put your code into the correct event than to hack around this issue)</p>
+<p>If you need to modify the state of an item when it is saved, use the &quot;Item Saving&quot; event instead. That allows you to change the state, but rely on Sitecore to do the save operation for you afterwards. And it won't trigger any further events at that point.</p>
+<p>Note that out of the box, there isn't a Rules Engine event for &quot;Item Saving&quot;. But you can plumb one in yourself easily enough – Have a Google for <a href="http://www.bfurlong.com/create-a-custom-rule-context-in-sitecore/" target="_blank" rel="noopener noreferrer">blogs on the subject of triggering rules</a>, or just point your favourite decompiler at Sitecore's code for running &quot;Item Saved&quot; to see how.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -259,7 +282,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

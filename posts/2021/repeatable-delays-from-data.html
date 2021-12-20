@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="I had an interesting discussion recently, about how some code could calculate a &amp;amp;amp;quot;random&amp;amp;amp;quot; but deterministic numeric value based on some data. This made me think of the classic old concept of &amp;amp;amp;quot;checksums&amp;amp;amp;quot; as a possible solution. Here&amp;#x27;s what I was thinking about:">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Repeatable delays from&nbsp;data</title>
+    <title>Jeremy Davis - Repeatable delays from&#xA0;data</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/repeatable-delays-from-data">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Repeatable delays from&nbsp;data">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Repeatable delays from&amp;#xA0;data">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/repeatable-delays-from-data-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Repeatable delays from&#xA0;data",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/repeatable-delays-from-data-social.png"
+        ],
+        "datePublished": "2021-08-02T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/repeatable-delays-from-data">
 <meta property="og:type" content="website">
 
@@ -114,23 +130,27 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Repeatable delays from&nbsp;data
+        Repeatable delays from data
         </h1>
+            <div class="meta">Published 02 August 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
-                <p>I had an interesting discussion recently, about how some code could calculate a "random" but deterministic numeric value based on some data. This made me think of the classic old concept of "checksums" as a possible solution. Here's what I was thinking about:<!--more--></p>
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>I had an interesting discussion recently, about how some code could calculate a &quot;random&quot; but deterministic numeric value based on some data. This made me think of the classic old concept of &quot;checksums&quot; as a possible solution. Here's what I was thinking about:<!--more--></p>
 <h2>The problem</h2>
 <p>The discussion started because of the need to make some scheduled code run in Kubernetes pods, with multiple instances of the same image running at the same time. But we didn't want the scheduled code to end up starting at exactly the same time in each pod. Because the number of replicas running could vary, there was a desire to avoid setting this delay via explicit config, so we were looking for ways of automating this.</p>
 <h2>One possible solution</h2>
 <p>Each of these pods has a name which comes through to the code as the machine name in environment variables. So if we can compute a delay value based on the name, then we could probably get a reasonable first pass at this. Names of pods are usually a mix of text and numbers, plus some punctuation. So we'll need a bit of maths...</p>
-<p>A common code pattern where users need to enter identity data, is to add a digit to the end which represents a checksum. The last digit of a card or account number is a common place to find this – the last digit is computed from the preceding ones to give a reasonable test that all the numbers have been entered correctly. There are a collection of common algorithms for doing this – but I was considering stealing <a href="https://en.wikipedia.org/wiki/Check_digit#UPC" rel="noopener" target="_blank">the one from "UPC" barcodes</a>. There, you start with a multi-digit number and:</p>
+<p>A common code pattern where users need to enter identity data, is to add a digit to the end which represents a checksum. The last digit of a card or account number is a common place to find this – the last digit is computed from the preceding ones to give a reasonable test that all the numbers have been entered correctly. There are a collection of common algorithms for doing this – but I was considering stealing <a href="https://en.wikipedia.org/wiki/Check_digit#UPC" rel="noopener" target="_blank">the one from &quot;UPC&quot; barcodes</a>. There, you start with a multi-digit number and:</p>
 <p><a href="/img/2021/2021-07-check-digit-calculation.png" target="_blank"><img alt="" src="/img/2021/2021-07-check-digit-calculation.png"></a></p>
 <ul>
 <li>Add together the values of the odd digits</li>
@@ -179,6 +199,7 @@ cm-d1e9220abd-emvke -&gt; 2s    cm-4630ff27d7-qfubm -&gt; 6s
 cm-f4653da2ef-dcehw -&gt; 3s    cm-6f34d6f2c9-ritip -&gt; 9s
 </pre>
 <p>That gives a reasonable spread of values for whatever string we the code starts from, and they're repeatable rather than random.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -233,7 +254,7 @@ cm-f4653da2ef-dcehw -&gt; 3s    cm-6f34d6f2c9-ritip -&gt; 9s
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

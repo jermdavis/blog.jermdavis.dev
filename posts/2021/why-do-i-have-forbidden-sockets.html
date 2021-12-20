@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="I was tinkering with some C# code that uses &amp;lt;code&amp;gt;TcpListener&amp;lt;/code&amp;gt;s recently, and hit on a strange issue where my code would run fine on on machine, and fail on another. It took me a while to find an answer in Google, so here&amp;#x27;s a reminder to my future self:">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Why do I have forbidden&nbsp;sockets?</title>
+    <title>Jeremy Davis - Why do I have forbidden&#xA0;sockets?</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/why-do-i-have-forbidden-sockets">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Why do I have forbidden&nbsp;sockets?">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Why do I have forbidden&amp;#xA0;sockets?">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/why-do-i-have-forbidden-sockets-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Why do I have forbidden&#xA0;sockets?",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/why-do-i-have-forbidden-sockets-social.png"
+        ],
+        "datePublished": "2021-02-15T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/why-do-i-have-forbidden-sockets">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,21 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Why do I have forbidden&nbsp;sockets?
+        Why do I have forbidden sockets?
         </h1>
+            <div class="meta">Published 15 February 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>I was tinkering with some C# code that uses <code>TcpListener</code>s recently, and hit on a strange issue where my code would run fine on on machine, and fail on another. It took me a while to find an answer in Google, so here's a reminder to my future self:<!--more--></p>
 <h2>The initial issue</h2>
 <p>In amongst the code I was running was a fragment like this:</p>
@@ -145,7 +165,7 @@ _listener.Start();
    at Channels.Program.Main(String[] args) in C:\Users\JDavis\Source\Repos\ChannelsExperiment\Channels\Program.cs:line 23
    at Channels.Program.&lt;Main&gt;(String[] args)
 </pre>
-<p>My initial thought was "ah, there'll be something else using that port..." but running <code>netstat -ano</code> didn't show a hit against the loopback address I was trying to bind:</p>
+<p>My initial thought was &quot;ah, there'll be something else using that port...&quot; but running <code>netstat -ano</code> didn't show a hit against the loopback address I was trying to bind:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-highlight="4,5" data-enlighter-language="text" style="width:100%; overflow:scroll;">Active Connections
   Proto  Local Address          Foreign Address        State           PID
   TCP    127.0.0.1:1029         127.0.0.1:1030         ESTABLISHED     5604
@@ -156,7 +176,7 @@ _listener.Start();
   TCP    127.0.0.1:62522        127.0.0.1:1763         ESTABLISHED     4780
 </pre>
 <p>(I checked against the real IP address of the machine as well – nothing there either)</p>
-<p>So I fell back on "it was a security error – maybe I have fewer rights on this machine?" and tried running Visual Studio (and also my test app) as admin. But no difference there either.</p>
+<p>So I fell back on &quot;it was a security error – maybe I have fewer rights on this machine?&quot; and tried running Visual Studio (and also my test app) as admin. But no difference there either.</p>
 <h2>The answer...</h2>
 <p>After a pile of futher googling I hit upon an idea that was entirely new to me. It turns out code can reserve a port, without ever actually opening it. That means Windows will refuse you rights to use it for anything else – but it won't show up on the netstat call shown above. And the refusal comes up as the odd security error above.</p>
 <p>To work this out you need a different command: <code>netsh interface ipv4 show excludedportrange protocol=tcp</code> and for me that gives:</p>
@@ -176,6 +196,7 @@ Start Port    End Port
 <p>My code tried to open port 1234, and that is included in the second of these ranges... Bingo!</p>
 <p>The critical info here came from <a href="https://stackoverflow.com/a/59165435/847953" rel="noopener" target="_blank">this Stack Overflow answer</a>, if you want to read the original source.</p>
 <p>So I can use this info to pick a port that's free on all my machines, and my little bit of test code can run happily.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -230,7 +251,7 @@ Start Port    End Port
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

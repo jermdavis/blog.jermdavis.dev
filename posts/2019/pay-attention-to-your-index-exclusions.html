@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="I hit an interesting issue recently: Some code that worked fine on a QA instance of Sitecore had been deployed for UAT and was now failing with an odd error message. Whilst this issue was entirely our fault, there wasn&amp;#x27;t much in Google about the error messages I was seeing, so I&amp;#x27;m trying to correct that problem today...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Pay attention to your index&nbsp;exclusions</title>
+    <title>Jeremy Davis - Pay attention to your index&#xA0;exclusions</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2019/pay-attention-to-your-index-exclusions">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Pay attention to your index&nbsp;exclusions">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Pay attention to your index&amp;#xA0;exclusions">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/pay-attention-to-your-index-exclusions-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Pay attention to your index&#xA0;exclusions",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/pay-attention-to-your-index-exclusions-social.png"
+        ],
+        "datePublished": "2019-07-04T00:00:00+00:00",
+        "dateModified": "2019-08-05T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/pay-attention-to-your-index-exclusions">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,23 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Pay attention to your index&nbsp;exclusions
+        Pay attention to your index exclusions
         </h1>
+            <div class="meta">Published 04 July 2019</div>
+                <div class="meta">Updated 05 August 2019</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/solr" class="p-1 mr-1 bg-gray-100 rounded-md"> Solr</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>I hit an interesting issue recently: Some code that worked fine on a QA instance of Sitecore had been deployed for UAT and was now failing with an odd error message. Whilst this issue was entirely our fault, there wasn't much in Google about the error messages I was seeing, so I'm trying to correct that problem today...<!--more--></p>
 <h2>The issue</h2>
 <p>The code in question was runing on a Sitecore 7 instance. It fell over on UAT with this error:</p>
@@ -138,11 +161,11 @@ Parameter name: key]
 </pre>
 <p>That's not a very helpful error, so I spent some time tracking it down. From the stack trace you can see that the problem seems to be in translating an <code>IIndexable</code> into a search context, but it doesn't say anything helpful about why...</p>
 <p>And under the surface, the code which was crashing looked something like:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var root = Sitecore.Context.GetItem("{08D9E0A1-BB72-48FD-AAB2-EFCD6F3B3C92}");
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var root = Sitecore.Context.GetItem(&quot;{08D9E0A1-BB72-48FD-AAB2-EFCD6F3B3C92}&quot;);
 
 using (var context = ContentSearchManager.CreateSearchContext(new SitecoreIndexableItem(root)))
 {
-    // run some search queries starting from the "root" item...
+    // run some search queries starting from the &quot;root&quot; item...
 }
 </pre>
 <h2>The cause</h2>
@@ -154,8 +177,8 @@ using (var context = ContentSearchManager.CreateSearchContext(new SitecoreIndexa
 </pre>
 <p>It translates the <code>IIndexable</code> into a valid index for that item. And then it creates a search context on that index.</p>
 <p>The exception gets thrown because the translation returns null - that item doesn't map to any index. Under the surface, there's a pipeline that gets run to do this translation, and it iterates all the defined indexes. And asks them in turn if they contain the item in question.</p>
-<p>In the scenario I was looking at, all indexes returned "no" when asked this, and the code in the pipeline returns null when that happens... So later on when Sitecore tries to fetch its index by looking up the index based on a null name, you get the exception above.</p>
-<p>Some further digging found a key difference between the configurations of the "working" servers and the "broken" one:</p>
+<p>In the scenario I was looking at, all indexes returned &quot;no&quot; when asked this, and the code in the pipeline returns null when that happens... So later on when Sitecore tries to fetch its index by looking up the index based on a null name, you get the exception above.</p>
+<p>Some further digging found a key difference between the configurations of the &quot;working&quot; servers and the &quot;broken&quot; one:</p>
 <ul>
 <li>On the machines where it worked Sitecore's search indexes were configured as "index all templates, except some specific ones"</li>
 <li>But the servers that were broken were configured as "exclude all templates, except some specific ones"...</li>
@@ -186,6 +209,7 @@ using (var context = ContentSearchManager.CreateSearchContext(new SitecoreIndexa
    Sitecore.ContentSearch.Pipelines.GetContextIndex.GetContextIndexPipeline.Run(ICorePipeline pipeline, GetContextIndexArgs args) +38
 </pre>
 <p>The trace is a bit more obvious – but for people new to Sitecore's index configuration process that still might be confusing. So if you're seeing either of the error messages shown above, check what you're excluding from your indexes...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -240,7 +264,7 @@ using (var context = ContentSearchManager.CreateSearchContext(new SitecoreIndexa
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

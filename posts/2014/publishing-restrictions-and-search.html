@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="I had to deal with a bug report in some Sitecore 6.6 / &amp;lt;a href=&amp;quot;http://sitecorian.github.io/SitecoreSearchContrib/&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;Advanced Database Crawler&amp;lt;/a&amp;gt; search code recently, relating to items with publishing restrictions not disappearing from search results until another publish occurred. It struck me that there&amp;#x27;s not much written about how publishing restrictions interact with search, so I figured I should take a bit of time to write down what I&amp;#x27;d found while sorting the bug.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Publishing restrictions and&nbsp;search</title>
+    <title>Jeremy Davis - Publishing restrictions and&#xA0;search</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/publishing-restrictions-and-search">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Publishing restrictions and&nbsp;search">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Publishing restrictions and&amp;#xA0;search">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/publishing-restrictions-and-search-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Publishing restrictions and&#xA0;search",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/publishing-restrictions-and-search-social.png"
+        ],
+        "datePublished": "2014-11-17T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/publishing-restrictions-and-search">
 <meta property="og:type" content="website">
 
@@ -114,25 +131,31 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Publishing restrictions and&nbsp;search
+        Publishing restrictions and search
         </h1>
+            <div class="meta">Published 17 November 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/lucene" class="p-1 mr-1 bg-gray-100 rounded-md"> Lucene</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>I had to deal with a bug report in some Sitecore 6.6 / <a href="http://sitecorian.github.io/SitecoreSearchContrib/" target="_blank" rel="noopener noreferrer">Advanced Database Crawler</a> search code recently, relating to items with publishing restrictions not disappearing from search results until another publish occurred. It struck me that there's not much written about how publishing restrictions interact with search, so I figured I should take a bit of time to write down what I'd found while sorting the bug.<!--more--></p>
 <h2>How publishing restrictions work</h2>
 <p>There's a fair bit <a href="http://www.sitecore.net/en-gb/learn/blogs/technical-blogs/john-west-sitecore-blog/posts/2013/01/all-about-publishing-restrictions-in-the-sitecore-aspnet-cms.aspx" title="Publishing Restrictions" target="_blank" rel="noopener noreferrer">written about publishing restrictions in general</a>, but the idea is that you can define a time and date range during which either the whole item, or a specific version of the item is valid for publishing. The settings are made via a dialog in Page Editor:</p>
 <p><a href="/img/2014/2014-11-restrictions.png" target="_blank"><img alt="Restrictions" src="/img/2014/2014-11-restrictions.png"></a></p>
-<p>Clicking the "Change" button on the "Publish" ribbon opens the dialog. The editor can choose between the "version" and "item" tabs depending on which sort of restriction they wish to set. In both cases, the editor can choose if the item should ever be published (with the checkbox) or set a date/time range for publishing with the date and time selectors.</p>
+<p>Clicking the &quot;Change&quot; button on the &quot;Publish&quot; ribbon opens the dialog. The editor can choose between the &quot;version&quot; and &quot;item&quot; tabs depending on which sort of restriction they wish to set. In both cases, the editor can choose if the item should ever be published (with the checkbox) or set a date/time range for publishing with the date and time selectors.</p>
 <h2>How this interacts with search</h2>
-<p>Lucene indexes items as a result of events which update the Sitecore databases. This can be when you click "save" in the Content Editor (to index the Master version) or when a publish operation copies the data to the Web database (or potentially another publishing target).</p>
-<p>If you set "do not publish" on an item via the Publishing Restrictions dialog then you will not get a version in the Web Database – hence you won't get an index entry for that item. Also, items with future publishing dates appear to be ignored by the indexer.</p>
+<p>Lucene indexes items as a result of events which update the Sitecore databases. This can be when you click &quot;save&quot; in the Content Editor (to index the Master version) or when a publish operation copies the data to the Web database (or potentially another publishing target).</p>
+<p>If you set &quot;do not publish&quot; on an item via the Publishing Restrictions dialog then you will not get a version in the Web Database – hence you won't get an index entry for that item. Also, items with future publishing dates appear to be ignored by the indexer.</p>
 <p>The items that are added to an index can also be affected by the configuration for indexing – you may set up an index to receive items from only one database for example.</p>
 <p>When indexing is applied, the restriction fields get indexed into the following Lucene fields:</p>
 <ul>
@@ -145,11 +168,11 @@ Another important thing to remember is that the default configuration of indexin
 <p><a href="/img/2014/2014-11-timerestrictions.png" target="_blank"><img alt="TimeRestrictions" src="/img/2014/2014-11-timerestrictions.png"></a></p>
 <p>the indexed data looks like:</p>
 <p><a href="/img/2014/2014-11-timeindex.png" target="_blank"><img alt="TimeIndex" src="/img/2014/2014-11-timeindex.png"></a></p>
-<p>No times go into Lucene - so you can only filter search results on a "per day" basis. It's also worth noting that if you don't set a value for a publishing restriction then the value added to the index is "00010101" – which is 01/01/0001 in Lucene's format.</p>
+<p>No times go into Lucene - so you can only filter search results on a &quot;per day&quot; basis. It's also worth noting that if you don't set a value for a publishing restriction then the value added to the index is &quot;00010101&quot; – which is 01/01/0001 in Lucene's format.</p>
 <h2>Filtering results on Publishing Restriction</h2>
 <p>If you need code to filter out results that have passed their unpublish date, you can extra clauses to your search query. Something along these lines:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">string _unpublishedField = "__unpublish";
-string _validToField = "__valid to";
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">string _unpublishedField = &quot;__unpublish&quot;;
+string _validToField = &quot;__valid to&quot;;
         
 string _noDate = Lucene.Net.Documents.DateTools.DateToString(new DateTime(0001, 01, 01), Lucene.Net.Documents.DateTools.Resolution.DAY);
 string _futureDate = Lucene.Net.Documents.DateTools.DateToString(new DateTime(2100, 01, 01), Lucene.Net.Documents.DateTools.Resolution.DAY);
@@ -175,10 +198,11 @@ public void AddPublishingRestrictionsTerm(this BooleanQuery query)
     query.Add(clause, BooleanClause.Occur.MUST);
 }
 </pre>
-<p>The <code>_noDate</code> and <code>_futureDate</code> fields declare two values that will be used for comparisons later. As mentioned before, Lucene stores "no date" as 01/01/01, and we can format that appropriately with the <code>DateTools.DateToString()</code> method. The future date is an arbitrary value in the far future.</p>
+<p>The <code>_noDate</code> and <code>_futureDate</code> fields declare two values that will be used for comparisons later. As mentioned before, Lucene stores &quot;no date&quot; as 01/01/01, and we can format that appropriately with the <code>DateTools.DateToString()</code> method. The future date is an arbitrary value in the far future.</p>
 <p>In the <code>AddPublishingRestrictionsTerm()</code> method, we add two new clauses to the search. Both must evaluate as true for a result to be returned. Both clauses follow the same code pattern, but refer to different index fields. To cover both Item and Version expiries, we need to look at both the <code>__unpublish</code> and <code>__valid to</code> fields.</p>
-<p>For each of these we test two things. Firstly, is the value of the field equal to the "no date" value. Secondly, is the value of the field between today and our "future" date. If either of these is true this field is valid for display.</p>
+<p>For each of these we test two things. Firstly, is the value of the field equal to the &quot;no date&quot; value. Secondly, is the value of the field between today and our &quot;future&quot; date. If either of these is true this field is valid for display.</p>
 <p>Applying these clauses should mean that once an item or version's publishing restrictions expire, it will no longer be included in search results.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -233,7 +257,7 @@ public void AddPublishingRestrictionsTerm(this BooleanQuery query)
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

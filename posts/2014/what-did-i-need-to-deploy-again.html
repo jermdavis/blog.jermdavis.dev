@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Recently I found myself at the end of a sprint where a collection of developers had worked on a lot of different things in a pre-existing Sitecore solution. I needed to be able to deploy only the changes that were part of the sprint, and I had to generate a deployment package that could be installed by the client. And I didn&amp;#x27;t have access to any fancy tools such as &amp;lt;a href=&amp;quot;http://www.hhogdev.com/products/team-development-for-sitecore/overview.aspx&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;Hedgehog TDS&amp;lt;/a&amp;gt;, that can be used to automate these things in other ways.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - What did I need to deploy&nbsp;again?</title>
+    <title>Jeremy Davis - What did I need to deploy&#xA0;again?</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/what-did-i-need-to-deploy-again">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - What did I need to deploy&nbsp;again?">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - What did I need to deploy&amp;#xA0;again?">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/what-did-i-need-to-deploy-again-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "What did I need to deploy&#xA0;again?",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/what-did-i-need-to-deploy-again-social.png"
+        ],
+        "datePublished": "2014-07-18T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/what-did-i-need-to-deploy-again">
 <meta property="og:type" content="website">
 
@@ -114,20 +131,27 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        What did I need to deploy&nbsp;again?
+        What did I need to deploy again?
         </h1>
+            <div class="meta">Published 18 July 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/team-foundation-server" class="p-1 mr-1 bg-gray-100 rounded-md"> Team Foundation Server</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Recently I found myself at the end of a sprint where a collection of developers had worked on a lot of different things in a pre-existing Sitecore solution. I needed to be able to deploy only the changes that were part of the sprint, and I had to generate a deployment package that could be installed by the client. And I didn't have access to any fancy tools such as <a href="http://www.hhogdev.com/products/team-development-for-sitecore/overview.aspx" target="_blank" rel="noopener noreferrer">Hedgehog TDS</a>, that can be used to automate these things in other ways.<!--more--></p>
 <p>Following the old adage that it's better to automate once than to do a boring or difficult job many times, I sat down to see whether I could create a script for deciding what stuff needed to go into the package. All the changes were checked into Team Foundation Server, so I tried experimenting to see if I could extract this data automatically. The results of my experiment are described below. It needs polishing into something more generally usable, but it's good enough for a quick write up:</p>
-<p>The starting point for this was the <a href="https://www.google.co.uk/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=1&amp;cad=rja&amp;uact=8&amp;ved=0CCAQFjAA&amp;url=http%3A%2F%2Fmsdn.microsoft.com%2Fen-us%2Flibrary%2Fz51z7zy0(v%3Dvs.100).aspx&amp;ei=xUO9U8GcKanY7AbH2ICoCQ&amp;usg=AFQjCNEpM1fEbdUJ0S8EA9bKVSBGmE2poQ&amp;sig2=XMODAvnfoHgpArG2naS12A&amp;bvm=bv.70138588,d.cWc" target="_blank" rel="noopener noreferrer">Team Foundation Server command line tool</a> <code>tf.exe</code>. Its "history" command allow you to list out sets of changes, but it requires a bit of digging to work out the correct command line syntax for this job. In the best traditions of powerful command line tools, it's a bit obtuse... But after a bit of trial and error, I settled on the following command pattern: (line breaks included for readability – this should all be on one line)</p>
+<p>The starting point for this was the <a href="https://www.google.co.uk/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=1&amp;cad=rja&amp;uact=8&amp;ved=0CCAQFjAA&amp;url=http%3A%2F%2Fmsdn.microsoft.com%2Fen-us%2Flibrary%2Fz51z7zy0(v%3Dvs.100).aspx&amp;ei=xUO9U8GcKanY7AbH2ICoCQ&amp;usg=AFQjCNEpM1fEbdUJ0S8EA9bKVSBGmE2poQ&amp;sig2=XMODAvnfoHgpArG2naS12A&amp;bvm=bv.70138588,d.cWc" target="_blank" rel="noopener noreferrer">Team Foundation Server command line tool</a> <code>tf.exe</code>. Its &quot;history&quot; command allow you to list out sets of changes, but it requires a bit of digging to work out the correct command line syntax for this job. In the best traditions of powerful command line tools, it's a bit obtuse... But after a bit of trial and error, I settled on the following command pattern: (line breaks included for readability – this should all be on one line)</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">tf.exe 
   history
   c:\myWorkingFolder\
@@ -136,7 +160,7 @@
   /noprompt
   /version:C27893~
 </pre>
-<p>The <code>history</code> command tells <code>tf.exe</code> that we're interested in what's been checked in. The next parameter is the path to the working folder for the project. Then <code>/recursive</code> tells TFS to look for changes in child folders of the path we supplied as well. The <code>/format:detailed</code> switch tells TFS that we want to know about each change set, and the files that were changed in it. The <code>/noprompt</code> switch means that the output will be sent to the console rather than to a TFS window. And finally the real magic is the <code>/version:C27893~</code> switch. This says "return changes in the changeset 27893, and any subsequent changesets as well. The "C" prefix means changeset, and the "~" sufix means "and anything after this".</p>
+<p>The <code>history</code> command tells <code>tf.exe</code> that we're interested in what's been checked in. The next parameter is the path to the working folder for the project. Then <code>/recursive</code> tells TFS to look for changes in child folders of the path we supplied as well. The <code>/format:detailed</code> switch tells TFS that we want to know about each change set, and the files that were changed in it. The <code>/noprompt</code> switch means that the output will be sent to the console rather than to a TFS window. And finally the real magic is the <code>/version:C27893~</code> switch. This says &quot;return changes in the changeset 27893, and any subsequent changesets as well. The &quot;C&quot; prefix means changeset, and the &quot;~&quot; sufix means &quot;and anything after this&quot;.</p>
 <p>So if 27893 is the changeset number for the first change after the last deployment (ie the first of the new changes we need to deploy) then that command will list out all the changesets and changed files that have been checked in since then – and that's the starting point for a deployment package. It ends up filling your console with text that looks like this:</p>
 <p><a href="/img/2014/2014-07-changes.png" target="_blank"><img alt="changes" src="/img/2014/2014-07-changes.png"></a></p>
 <p>You could manually use that output to build yourself a package, but to be honest the format of that data is not particularly helpful. It would be much better if we could de-duplicate the data, filter out the lines that aren't deployable changes, and sort it all into a helpful list.</p>
@@ -144,21 +168,21 @@
 <p>The first job is to get that TFS change data into memory in PowerShell. That can be done by running the <code>tf.exe</code> tool and capturing its output:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">$firstChange = 27893
 
-Write-host "Finding set of changes..."
+Write-host &quot;Finding set of changes...&quot;
 
-$cmd = `c:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\TF.exe` history .\ /recursive /format:detailed /noprompt /version:C$firstChange~"
+$cmd = `c:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\TF.exe` history .\ /recursive /format:detailed /noprompt /version:C$firstChange~&quot;
 $result = cmd.exe /c `$cmd` | out-string
 </pre>
-<p>First of all, we stick the first changeset to process into a variable, so we can pass it to TFS later. (In a "proper" solution, that should be read from the command line – but that's a job for another day) Then we build up the command we need to run. We'll assume the PowerShell script will be run in the working folder we need to process, so we adjust the command line from the previous example a bit, and assign it to the <code>$cmd</code> variable. Note the use of <code>$firstChange</code> in this string - PowerShell will automatically replace that with the value of our variable. Also note the quote mark and back-tick antics required for this string. The outer speech marks are normal string delimiters. But we need to ensure we pass the inner speech marks to our command as the path has spaces in it – hence the back-ticks. They say "treat this string as a literal – don't try to parse it". And that stops PowerShell seeing the inner speech marks as the end of a string and the beginning of another.</p>
+<p>First of all, we stick the first changeset to process into a variable, so we can pass it to TFS later. (In a &quot;proper&quot; solution, that should be read from the command line – but that's a job for another day) Then we build up the command we need to run. We'll assume the PowerShell script will be run in the working folder we need to process, so we adjust the command line from the previous example a bit, and assign it to the <code>$cmd</code> variable. Note the use of <code>$firstChange</code> in this string - PowerShell will automatically replace that with the value of our variable. Also note the quote mark and back-tick antics required for this string. The outer speech marks are normal string delimiters. But we need to ensure we pass the inner speech marks to our command as the path has spaces in it – hence the back-ticks. They say &quot;treat this string as a literal – don't try to parse it&quot;. And that stops PowerShell seeing the inner speech marks as the end of a string and the beginning of another.</p>
 <p>Then finally we run <code>cmd.exe</code> and pass it the command we just generated, and pipe its output into a variable. Now the text from the screengrab above is in memory.</p>
-<p>So the next job is to process it into something more useful. Looking at the output, all the lines we care about (the ones that represent file changes) start with "edit", "add", "delete" or similar. So we can write some code to filter each line from the input, and leave us with only the useful ones:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">$changes = $result.Split(`n") | % { $_.Trim() } | Where-object { $_.StartsWith("edit") -or $_.StartsWith("delete") -or $_.StartsWith("add") } | Where-object { $_.Contains("$/") }
+<p>So the next job is to process it into something more useful. Looking at the output, all the lines we care about (the ones that represent file changes) start with &quot;edit&quot;, &quot;add&quot;, &quot;delete&quot; or similar. So we can write some code to filter each line from the input, and leave us with only the useful ones:</p>
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">$changes = $result.Split(`n&quot;) | % { $_.Trim() } | Where-object { $_.StartsWith(&quot;edit&quot;) -or $_.StartsWith(&quot;delete&quot;) -or $_.StartsWith(&quot;add&quot;) } | Where-object { $_.Contains(&quot;$/&quot;) }
 </pre>
-<p>We split the output of our command above at the new-line character, and trim off any extra whitespace from the result. Then filter it so we have only the lines that start with "add", "edit" or "delete". And finally filter again so we have only the lines that contain "$/" – a TFS-like path.</p>
+<p>We split the output of our command above at the new-line character, and trim off any extra whitespace from the result. Then filter it so we have only the lines that start with &quot;add&quot;, &quot;edit&quot; or &quot;delete&quot;. And finally filter again so we have only the lines that contain &quot;$/&quot; – a TFS-like path.</p>
 <p>Next job is to take that set of results – which might include duplicates, dedupe it and sort it:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">foreach($change in $changes)
 {
-    $parts = $change.Split(@('$'), [System.StringSplitOptions]::RemoveEmptyEntries)
+    $parts = $change.Split(&#64;(&#39;$&#39;), [System.StringSplitOptions]::RemoveEmptyEntries)
        
     if( $set.ContainsKey($parts[1]) )
     {
@@ -166,7 +190,7 @@ $result = cmd.exe /c `$cmd` | out-string
         $val = $set.Get_Item($parts[1])
         if( -not $val.Contains($op) )
         {
-            $val = $val + " " + $op
+            $val = $val + &quot; &quot; + $op
             $set.Set_Item($parts[1], $val)
         }
     }
@@ -176,11 +200,11 @@ $result = cmd.exe /c `$cmd` | out-string
     } 
 }
 </pre>
-<p>For each line in our list of changes, we split it by the "$" character and discard any empty parts returned. That gives us an operation (the "add", "edit", "delete" bit) and a path. So then we try to add each of these to a dictionary using the path as the key, and appending each new operation as the value. That means we end up with each path exactly once in our dictionary, and a list of the operations associated with it.</p>
+<p>For each line in our list of changes, we split it by the &quot;$&quot; character and discard any empty parts returned. That gives us an operation (the &quot;add&quot;, &quot;edit&quot;, &quot;delete&quot; bit) and a path. So then we try to add each of these to a dictionary using the path as the key, and appending each new operation as the value. That means we end up with each path exactly once in our dictionary, and a list of the operations associated with it.</p>
 <p>Finally we can write the output to a file, having sorted it and done a little more processing:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">if(Test-Path "changeList.txt")
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">if(Test-Path &quot;changeList.txt&quot;)
 {
-    del "changeList.txt"
+    del &quot;changeList.txt&quot;
 }
 
 $binaries = $FALSE
@@ -189,11 +213,11 @@ foreach($key in $set.Keys | Sort-Object)
 {
     $value = $set.Get_Item($key)
  
-    if(-not $key.EndsWith(".csproj") -and -not $key.EndsWith(".sln"))
+    if(-not $key.EndsWith(&quot;.csproj&quot;) -and -not $key.EndsWith(&quot;.sln&quot;))
     {
-        if(-not $key.EndsWith(".cs"))
+        if(-not $key.EndsWith(&quot;.cs&quot;))
         {
-            Add-Content "changeList.txt" "$key -- $value"
+            Add-Content &quot;changeList.txt&quot; &quot;$key -- $value&quot;
         }
         else
         {
@@ -204,12 +228,12 @@ foreach($key in $set.Keys | Sort-Object)
 
 if($binaries)
 {
-    Add-Content "changeList.txt" "Binaries"
+    Add-Content &quot;changeList.txt&quot; &quot;Binaries&quot;
 }
 </pre>
 <p>First of all, we delete the output file we're going to generate if it already exists. And we set a flag to indicate that at this point there's no reason to specify adding the binary files to our deployment package.</p>
-<p>Then we go through each key in our dictionary (having sorted them into order) and check each one in turn. If the path references a ".csproj" or ".sln" file (The Visual Studio Project or Solution) we can ignore it. If the path points to a ".cs" (code) file then we don't need to output it, but we do need to set our "deploy binaries" flag to true. Otherwise we add the item to our output file.</p>
-<p>Finally, we test the value of our "deploy binaries" flag, and if it is set, we add a line to the output to specify the binary files.</p>
+<p>Then we go through each key in our dictionary (having sorted them into order) and check each one in turn. If the path references a &quot;.csproj&quot; or &quot;.sln&quot; file (The Visual Studio Project or Solution) we can ignore it. If the path points to a &quot;.cs&quot; (code) file then we don't need to output it, but we do need to set our &quot;deploy binaries&quot; flag to true. Otherwise we add the item to our output file.</p>
+<p>Finally, we test the value of our &quot;deploy binaries&quot; flag, and if it is set, we add a line to the output to specify the binary files.</p>
 <p>And when we run that, instead of the complex mess from TFS, we get a nice list of required changes:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">/somefolder/ID1-PageMetadata.xslt -- edit
 /somefolder/Forms/HKShortCourse.ascx -- edit
@@ -221,6 +245,7 @@ Binaries
 <p>And that tells us what to package in a nice friendly format. Since we've scanned both the web project and the serialisation folder in TFS we get a list of both the .Net files to deploy and the Sitecore Items too.</p>
 <p>However I note it also includes a file that's part of the solution, rather than a deployable item – so a bit more refinement of the filters is needed, I think. If I get the chance at some point, the next step for this bit of work is to make it generate the package definition XML file directly. And working out how to use command line parameters with scripts.</p>
 <p>But that sounds like a job for a future blog post...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -275,7 +300,7 @@ Binaries
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

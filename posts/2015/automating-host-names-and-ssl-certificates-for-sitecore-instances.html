@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="When you install an instance of Sitecore via the .exe installer you get a single host name added to your machine, which matches the instance name you chose. But for real world projects this is rarely enough. Most websites need to respond to other host names, and they often also need SSL certificates installed so that these hosts can be accessed via HTTPS. Developers need these features set up so that they can code and test with them.&amp;#xA;Recently I&amp;#x27;ve been looking at automating more installation tasks via PowerShell, in order to try and standardise the processes developers use when setting up new instances for work. I&amp;#x27;ve been digging out helpful bits of script from across the internet, and I plan to write a few posts to document some of the approaches I&amp;#x27;ve been experimenting with. The first of these posts covers info on automating host names and their bindings: ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Automating host names and SSL certificates for Sitecore&nbsp;instances</title>
+    <title>Jeremy Davis - Automating host names and SSL certificates for Sitecore&#xA0;instances</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/automating-host-names-and-ssl-certificates-for-sitecore-instances">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Automating host names and SSL certificates for Sitecore&nbsp;instances">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Automating host names and SSL certificates for Sitecore&amp;#xA0;instances">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/automating-host-names-and-ssl-certificates-for-sitecore-instances-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Automating host names and SSL certificates for Sitecore&#xA0;instances",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/automating-host-names-and-ssl-certificates-for-sitecore-instances-social.png"
+        ],
+        "datePublished": "2015-06-08T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/automating-host-names-and-ssl-certificates-for-sitecore-instances">
 <meta property="og:type" content="website">
 
@@ -114,44 +130,49 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Automating host names and SSL certificates for Sitecore&nbsp;instances
+        Automating host names and SSL certificates for Sitecore instances
         </h1>
+            <div class="meta">Published 08 June 2015</div>
+            <div class="flex py-1">
+                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>When you install an instance of Sitecore via the .exe installer you get a single host name added to your machine, which matches the instance name you chose. But for real world projects this is rarely enough. Most websites need to respond to other host names, and they often also need SSL certificates installed so that these hosts can be accessed via HTTPS. Developers need these features set up so that they can code and test with them.</p>
 <p>Recently I've been looking at automating more installation tasks via PowerShell, in order to try and standardise the processes developers use when setting up new instances for work. I've been digging out helpful bits of script from across the internet, and I plan to write a few posts to document some of the approaches I've been experimenting with. The first of these posts covers info on automating host names and their bindings: <!--more--></p>
 <h2>Adding entries to the host file</h2>
 <p>The host file is just a text file, so you can use fairly simple PowerShell commands to modify it:</p>
 <pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-Host([string]$ipAddress, [string]$hostname) {
-  $entry = $ipAddress + `t" + $hostname
-  Out-File -encoding ASCII -append -filepath 'C:\Windows\System32\drivers\etc\hosts' -inputobject $entry
+  $entry = $ipAddress + `t&quot; + $hostname
+  Out-File -encoding ASCII -append -filepath &#39;C:\Windows\System32\drivers\etc\hosts&#39; -inputobject $entry
 }
 </pre>
 <p>The function takes the IP Address and the Host Name you want to bind. It formats the data that needs adding to the file by concatenating the IP address, a tab and the host name. It then appends that string to the host file to update it.</p>
 <p>This function can then be called as follows:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Add-Host '127.0.0.1' 'www.demosite.test'
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Add-Host &#39;127.0.0.1&#39; &#39;www.demosite.test&#39;
 </pre>
 <p>It can be called multiple times to add more than one entry.</p>
 <h2>Installing an SSL Certificate and binding the host to HTTP and HTTPS</h2>
 <p>The script for adding an SSL certificate and then binding it to a site is a bit more complex. Firstly it needs to ensure that the certificate is imported and available for use. The host name needs to be set up, and configured for use with HTTP and HTTPS in IIS. And finally the SSL Certificate needs to be bound to the HTTPS host.</p>
 <p>A function to do these tasks for a single host looks like:</p>
 <pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Bind-HostsWithSSL([string]$pfxFile, [string]$pfxPassword, [string]$site, [string]$hostName) {
-  $thumbprint = (Add-SSLCertificate $pfxFile $pfxPassword $site | foreach { $_.ToString("X2") }) -join ""
-  $cert = Get-Item "cert:\LocalMachine\MY\$thumbprint"
+  $thumbprint = (Add-SSLCertificate $pfxFile $pfxPassword $site | foreach { $_.ToString(&quot;X2&quot;) }) -join &quot;&quot;
+  $cert = Get-Item &quot;cert:\LocalMachine\MY\$thumbprint&quot;
 
-  Add-Host '127.0.0.1' $hostName
+  Add-Host &#39;127.0.0.1&#39; $hostName
 
   New-WebBinding -Name $site -Port 80 -Protocol http -HostHeader $hostName
   New-WebBinding -Name $site -Port 443 -Protocol https -HostHeader $hostName
 
-  Push-Location "IIS:\SSLBindings"
+  Push-Location &quot;IIS:\SSLBindings&quot;
   if( -not (Test-Path 0.0.0.0!443) ) {
       New-Item -Path 0.0.0.0!443 -Value $cert
   }
@@ -160,13 +181,14 @@
 </pre>
 <p>The function takes the path to and password for a <code>.PFX</code> file, the IIS site name and the host to bind.</p>
 <p>It starts by importing the PFX file with the <code>Add-SSLCertificate</code> commandlet. This returns an array of bytes representing the certificate's thumbprint. We need this later as a string, so the code then formats the array into a hex string and returns it. Next, the thumbprint is used to return the imported certificate object.</p>
-<p>The code then adds the host, and uses the <code>New-WebBinding</code> commandlet to attach the host name to ports 80 and 443 of the required IIS Site. By not specifying this binding for a particular IP address, we're telling IIS to bind to "All Unassigned".</p>
-<p>Finally, it ensures that an SSL Binding item exists to map the correct certificate. This doesn't specify a particular IP address, using "0.0.0.0" to match the IIS Site using "All Unassigned".</p>
+<p>The code then adds the host, and uses the <code>New-WebBinding</code> commandlet to attach the host name to ports 80 and 443 of the required IIS Site. By not specifying this binding for a particular IP address, we're telling IIS to bind to &quot;All Unassigned&quot;.</p>
+<p>Finally, it ensures that an SSL Binding item exists to map the correct certificate. This doesn't specify a particular IP address, using &quot;0.0.0.0&quot; to match the IIS Site using &quot;All Unassigned&quot;.</p>
 <p>This function can then be called as follows:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Bind-HostsWithSSL 'c:\TestSite.com.pfx' 'p@55w0rd' 'IISSiteName' 'www.testSite.com'
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Bind-HostsWithSSL &#39;c:\TestSite.com.pfx&#39; &#39;p&#64;55w0rd&#39; &#39;IISSiteName&#39; &#39;www.testSite.com&#39;
 </pre>
 <p>This code relies on a recent release of PowerShell – I'm working with V4, but I think this would work with V3.</p>
 <p>More to follow on scripted developer setup – once I've had a chance to write it up...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -221,7 +243,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

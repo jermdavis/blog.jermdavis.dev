@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="There&amp;#x27;s been a lot of movement towards &amp;amp;amp;quot;Docker for Sitecore&amp;amp;amp;quot; over the last year &amp;#x2013; to the extent that even I have finally jumped onto the bandwagon. And with any new tech, there are some rough edges to contend with. Right now (for me at least) one of those is being able to get the right Docker images built for the bit of work you need to do. In the future (crosses fingers) we&amp;#x27;ll see Sitecore offering a repo for these images &amp;#x2013; but for now it&amp;#x27;s up to us to build our own. So if you need something that&amp;#x27;s not v9.3, here&amp;#x27;s what I did to get there: ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Building Docker images for older versions of&nbsp;Sitecore</title>
+    <title>Jeremy Davis - Building Docker images for older versions of&#xA0;Sitecore</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2020/building-docker-images-for-older-versions-of-sitecore">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Building Docker images for older versions of&nbsp;Sitecore">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Building Docker images for older versions of&amp;#xA0;Sitecore">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/building-docker-images-for-older-versions-of-sitecore-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Building Docker images for older versions of&#xA0;Sitecore",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/building-docker-images-for-older-versions-of-sitecore-social.png"
+        ],
+        "datePublished": "2020-01-09T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2020/building-docker-images-for-older-versions-of-sitecore">
 <meta property="og:type" content="website">
 
@@ -114,18 +130,23 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Building Docker images for older versions of&nbsp;Sitecore
+        Building Docker images for older versions of Sitecore
         </h1>
+            <div class="meta">Published 09 January 2020</div>
+            <div class="flex py-1">
+                    <a href="/tags/docker" class="p-1 mr-1 bg-gray-100 rounded-md"> Docker</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
-                <p>There's been a lot of movement towards "Docker for Sitecore" over the last year – to the extent that even I have finally jumped onto the bandwagon. And with any new tech, there are some rough edges to contend with. Right now (for me at least) one of those is being able to get the right Docker images built for the bit of work you need to do. In the future (crosses fingers) we'll see Sitecore offering a repo for these images – but for now it's up to us to build our own. So if you need something that's not v9.3, here's what I did to get there: <!--more--></p>
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>There's been a lot of movement towards &quot;Docker for Sitecore&quot; over the last year – to the extent that even I have finally jumped onto the bandwagon. And with any new tech, there are some rough edges to contend with. Right now (for me at least) one of those is being able to get the right Docker images built for the bit of work you need to do. In the future (crosses fingers) we'll see Sitecore offering a repo for these images – but for now it's up to us to build our own. So if you need something that's not v9.3, here's what I did to get there: <!--more--></p>
 <blockquote>
 <strong><em>Updated</em></strong>: After I asked about these challenges on <a href="https://sitecorechat.slack.com/" rel="noopener" target="_blank">Sitecore Slack</a>, <a href="https://twitter.com/MichaelWest101/status/1217089300967383041" rel="noopener" target="_blank">Michael West</a> took up the challenge to try and make the build script better. He's <a href="https://github.com/Sitecore/docker-images/blob/master/Build.ps1" rel="noopener" target="_blank">done some great work to add filter parameters</a> so that you can easily specify things like the Sitecore and Windows version(s), the presence of SPE, or whether you need XM or XP images. 
 </blockquote>
@@ -134,24 +155,24 @@
 When you go to Sitecore's github repo for Docker container builds and run their "<a href="https://github.com/Sitecore/docker-images/blob/master/Build.ps1" rel="noopener" target="_blank">`build.ps1`</a>" script right now, what you end up with is a shiny set of v9.3 containers. Great for experimenting – but I find myself with a load of development work in earlier versions still. Hence I needed to spin up containers for v9.2 – and it wasn't initially obvious to me how to achieve that...
 <p>When you run the <code>build.ps1</code> script, some of the early output is a list of all the images it knows how to build, and whether it's going to or not:</p>
 <p><a href="/img/2020/2020-01-imagelist.png" target="_blank"><img alt="Image List" src="/img/2020/2020-01-imagelist.png"></a></p>
-<p>Reading through that (or looking at the folders under <a href="https://github.com/Sitecore/docker-images/tree/master/windows" rel="noopener" target="_blank"><code>\windows\</code></a> in the repo will show that it clearly knows how to generate older versions – but it chooses not to. The "Include" column in the output above is false for everything that's not v9.3.</p>
+<p>Reading through that (or looking at the folders under <a href="https://github.com/Sitecore/docker-images/tree/master/windows" rel="noopener" target="_blank"><code>\windows\</code></a> in the repo will show that it clearly knows how to generate older versions – but it chooses not to. The &quot;Include&quot; column in the output above is false for everything that's not v9.3.</p>
 <p>So where does that choice come from? Well if you delve through the script in the repo's <a href="https://github.com/Sitecore/docker-images/tree/master/modules/SitecoreImageBuilder" rel="noopener" target="_blank"><code>\modules\SitecoreImageBuilder\</code></a> folder you'll find that there are two commandlets there for generating images. <code>Invoke-PackageRestore</code> does the downloading of Sitecore files for you, and <code>Invoke-Build</code> uses those downloads to generate Docker images. Both of these commandlets have a <code>Tags</code> parameter:</p>
 <pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">[Parameter(Mandatory = $false)]
 [array]$Tags = (Get-LatestSupportedVersionTags)
 </pre>
-<p>And as you can see, it defaults to "get the latest version". So if you want to build something else, you need to specify the right value for these parameters.</p>
-<p>So what's right then? Well, if you look back at the list of tags above, you'll see they generally follow a pattern: "Sitecore", followed by, the platform config (XM/XP), the role (SQL, xConnect), whether things like SXA or PSE are included, the release version and finally what Windows image to build on top of. So the right data to pass is a string which can filter these values down to whatever you want.</p>
+<p>And as you can see, it defaults to &quot;get the latest version&quot;. So if you want to build something else, you need to specify the right value for these parameters.</p>
+<p>So what's right then? Well, if you look back at the list of tags above, you'll see they generally follow a pattern: &quot;Sitecore&quot;, followed by, the platform config (XM/XP), the role (SQL, xConnect), whether things like SXA or PSE are included, the release version and finally what Windows image to build on top of. So the right data to pass is a string which can filter these values down to whatever you want.</p>
 <p>I was after an XP release of v9.2, so initially the pattern I tried was <code>sitecore-xp-*:9.2.0*</code>. The wildcards there allow it to match all the tags for that pattern. And that happily changes the list of tags to build to include all the v9.2 stuff:</p>
 <p><a href="/img/2020/2020-01-v92imagelist.png" target="_blank"><img alt="v92 Image List" src="/img/2020/2020-01-v92imagelist.png"></a></p>
 <p>But, it turns out that the upstream respositories of Windows images do not necessarily include everything you think they might. Trying to run that build failed, with an error about being unable to pull down the base image for a specific Windows Server release:</p>
 <p><a href="/img/2020/2020-01-buildfailure.png" target="_blank"><img alt="Build Failure" src="/img/2020/2020-01-buildfailure.png"></a></p>
 <p>For google's sake, the error is:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3" data-enlighter-language="text" style="width:100%; overflow:scroll;">### External image 'mcr.microsoft.com/windows/nanoserver:1903' is latest.
+<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3" data-enlighter-language="text" style="width:100%; overflow:scroll;">### External image &#39;mcr.microsoft.com/windows/nanoserver:1903&#39; is latest.
 1909: Pulling from windows/servercore
 no matching manifest for windows/amd64 10.0.18362 in the manifest list entries
 Failed.
 At C:\docker\docker-images\modules\SitecoreImageBuilder\SitecoreImageBuilder.psm1:214 char:78
-+ ... CODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
++ ... CODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw &quot;Failed.&quot; }
 +                                                         ~~~~~~~~~~~~~~~
     + CategoryInfo          : OperationStopped: (Failed.:String) [], RuntimeException
     + FullyQualifiedErrorId : Failed.
@@ -159,41 +180,41 @@ At C:\docker\docker-images\modules\SitecoreImageBuilder\SitecoreImageBuilder.psm
 <p>So to get my build to work correctly, I had to adjust my tag filter to use only the available base images. The 1903 Windows release is available for everything, so this tag allowed the build to complete: <code>sitecore-xp-*:9.2.0*1903</code></p>
 <p>Now, I've skipped over a key point here: the <code>build.ps1</code> script doesn't actually allow you to pass in the Tags parameter that the internal commandlets need, so how do you actually make it work for this? Well you have two options:</p>
 <p>The first is just changing the build script, to include your required tags in the calls to the download and build commandlets. Editing the end of the file to look like:</p>
-<pre data-enlighter-highlight="14,22" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$ErrorActionPreference = "STOP"
-$ProgressPreference = "SilentlyContinue"
+<pre data-enlighter-highlight="14,22" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$ErrorActionPreference = &quot;STOP&quot;
+$ProgressPreference = &quot;SilentlyContinue&quot;
 
 # load module
-Import-Module (Join-Path $PSScriptRoot "\modules\SitecoreImageBuilder") -Force
+Import-Module (Join-Path $PSScriptRoot &quot;\modules\SitecoreImageBuilder&quot;) -Force
 
 # restore any missing packages
 SitecoreImageBuilder\Invoke-PackageRestore `
-    -Path (Join-Path $PSScriptRoot "\windows") `
+    -Path (Join-Path $PSScriptRoot &quot;\windows&quot;) `
     -Destination $InstallSourcePath `
     -SitecoreUsername $SitecoreUsername `
     -SitecorePassword $SitecorePassword `
     -WhatIf:$WhatIfPreference `
-    -Tags "sitecore-xp-*:9.2.0*1903"
+    -Tags &quot;sitecore-xp-*:9.2.0*1903&quot;
 
 # start the build
 SitecoreImageBuilder\Invoke-Build `
-    -Path (Join-Path $PSScriptRoot "\windows") `
+    -Path (Join-Path $PSScriptRoot &quot;\windows&quot;) `
     -InstallSourcePath $InstallSourcePath `
     -Registry $Registry `
     -WhatIf:$WhatIfPreference `
-    -Tags "sitecore-xp-*:9.2.0*1903"
+    -Tags &quot;sitecore-xp-*:9.2.0*1903&quot;
 </pre>
 <p>You probably want to save that with a new (and descriptive) name...</p>
 <p>Or alternatively you can change <code>build.ps1</code> to accept your choice of tags as an optional parameter. Firstly, add it to the parameter list at the start of the file:</p>
 <pre data-enlighter-highlight="4,5" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">    [Parameter(Mandatory = $false)]
-    [string]$RegistryPassword = ""
+    [string]$RegistryPassword = &quot;&quot;
     ,
     [Parameter(Mandatory = $false)]
-    [string]$Tags = ""
+    [string]$Tags = &quot;&quot;
 </pre>
 <p>And then change the commandlet calls to pass it through:</p>
 <pre data-enlighter-highlight="8,16" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># restore any missing packages
 SitecoreImageBuilder\Invoke-PackageRestore `
-    -Path (Join-Path $PSScriptRoot "\windows") `
+    -Path (Join-Path $PSScriptRoot &quot;\windows&quot;) `
     -Destination $InstallSourcePath `
     -SitecoreUsername $SitecoreUsername `
     -SitecorePassword $SitecorePassword `
@@ -202,13 +223,14 @@ SitecoreImageBuilder\Invoke-PackageRestore `
 
 # start the build
 SitecoreImageBuilder\Invoke-Build `
-    -Path (Join-Path $PSScriptRoot "\windows") `
+    -Path (Join-Path $PSScriptRoot &quot;\windows&quot;) `
     -InstallSourcePath $InstallSourcePath `
     -Registry $Registry `
     -WhatIf:$WhatIfPreference `
     -Tags $Tags
 </pre>
 <p>And you can get on and build just the images you need...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -263,7 +285,7 @@ SitecoreImageBuilder\Invoke-Build `
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

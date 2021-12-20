@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="In the first two posts in this series we&amp;#x27;ve looked at &amp;lt;a href=&amp;quot;/posts/2014/automatic-packages-from-tfs-1-overall-plan&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;commandline parameters and fetching data&amp;lt;/a&amp;gt;, and then &amp;lt;a href=&amp;quot;/posts/2014/automatic-packages-from-tfs-2-so-how-can-i-write-a-package-file&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;saving package files&amp;lt;/a&amp;gt;. This week, we&amp;#x27;ll look at how the fetched data can be transformed into the package data. ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Automatic packages from TFS: #3 – Pipelines and data&nbsp;transformation</title>
+    <title>Jeremy Davis - Automatic packages from TFS: #3 &#x2013; Pipelines and data&#xA0;transformation</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-3-pipelines-and-data-transformation">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Automatic packages from TFS: #3 – Pipelines and data&nbsp;transformation">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Automatic packages from TFS: #3 &amp;#x2013; Pipelines and data&amp;#xA0;transformation">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/automatic-packages-from-tfs-3-pipelines-and-data-transformation-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Automatic packages from TFS: #3 &#x2013; Pipelines and data&#xA0;transformation",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/automatic-packages-from-tfs-3-pipelines-and-data-transformation-social.png"
+        ],
+        "datePublished": "2014-08-17T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-3-pipelines-and-data-transformation">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,24 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Automatic packages from TFS: #3 – Pipelines and data&nbsp;transformation
+        Automatic packages from TFS: #3 – Pipelines and data transformation
         </h1>
+            <div class="meta">Published 17 August 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/team-foundation-server" class="p-1 mr-1 bg-gray-100 rounded-md"> Team Foundation Server</a>
+                    <a href="/tags/packages" class="p-1 mr-1 bg-gray-100 rounded-md"> Packages</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>In the first two posts in this series we've looked at <a href="/posts/2014/automatic-packages-from-tfs-1-overall-plan" target="_blank">commandline parameters and fetching data</a>, and then <a href="/posts/2014/automatic-packages-from-tfs-2-so-how-can-i-write-a-package-file" target="_blank">saving package files</a>. This week, we'll look at how the fetched data can be transformed into the package data. <!--more--></p>
 <p>I said back in the first post that I wanted to build this tool using a pipeline-style architecture. The approach is good because it's flexible – the set of pipeline components that can be run and the order that they are executed in can be configurable. That means the one tool can use config settings (and potentially extensions) to support different projects. So for this blog post I'll look at the code to configure and run the pipeline, and the set of components I've managed to come up with so far for my prototype.</p>
 <h2>Running the components</h2>
@@ -174,27 +198,27 @@
 <p>Since I made the first post in this series, I've revised the configuration approach for the code a bit. And one side effect of that is that have now moved most of the Sitecore-project-specific configuration into an external XML file which is read at runtime. That allows specifying assorted settings, but the key part for today is the pipeline components and their config.</p>
 <p>An example of the XML for the config file might be:</p>
 <pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration&gt;
-  &lt;input type="Sitecore.TFS.PackageGenerator.Inputs.TFSCommandLine,Sitecore.TFS.PackageGenerator"/&gt;
+  &lt;input type=&quot;Sitecore.TFS.PackageGenerator.Inputs.TFSCommandLine,Sitecore.TFS.PackageGenerator&quot;/&gt;
   &lt;workingFolder&gt;C:\ClientName&lt;/workingFolder&gt;
   &lt;pipelineComponents&gt;
-    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.SetPackageMetadata,Sitecore.TFS.PackageGenerator"/&gt;
-    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.RemoveUnwantedItems,Sitecore.TFS.PackageGenerator"/&gt;
-    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.RenameFiles,Sitecore.TFS.PackageGenerator"/&gt;
-    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractFilesToDeploy,Sitecore.TFS.PackageGenerator"/&gt;
-    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractItemsToDeploy,Sitecore.TFS.PackageGenerator"/&gt;
-    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractBinariesToDeploy,Sitecore.TFS.PackageGenerator"/&gt;
-    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractDeletionsToDeploy,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type=&quot;Sitecore.TFS.PackageGenerator.PipelineComponents.SetPackageMetadata,Sitecore.TFS.PackageGenerator&quot;/&gt;
+    &lt;component type=&quot;Sitecore.TFS.PackageGenerator.PipelineComponents.RemoveUnwantedItems,Sitecore.TFS.PackageGenerator&quot;/&gt;
+    &lt;component type=&quot;Sitecore.TFS.PackageGenerator.PipelineComponents.RenameFiles,Sitecore.TFS.PackageGenerator&quot;/&gt;
+    &lt;component type=&quot;Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractFilesToDeploy,Sitecore.TFS.PackageGenerator&quot;/&gt;
+    &lt;component type=&quot;Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractItemsToDeploy,Sitecore.TFS.PackageGenerator&quot;/&gt;
+    &lt;component type=&quot;Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractBinariesToDeploy,Sitecore.TFS.PackageGenerator&quot;/&gt;
+    &lt;component type=&quot;Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractDeletionsToDeploy,Sitecore.TFS.PackageGenerator&quot;/&gt;
   &lt;/pipelineComponents&gt;
   &lt;settings&gt;
-    &lt;setting name="TFSCommandLine.ToolPath" value="C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE\TF.exe"/&gt;
-    &lt;setting name="SetPackageMetadata.PackageName" value="GeneratedPackage" /&gt;
-    &lt;setting name="RemoveUnwantedItems.ExtensionsToIgnore" value=".scproj,.csproj,.sln,.vspscc,.tds,.sql,web.config,web.debug.config,web.release.config,packages.config"/&gt;
-    &lt;setting name="RemoveUnwantedItems.FoldersToIgnore" value="/deployments/,.TDS_Debug.,/css/includes/,/externalpackages/,/buildconfig/"/&gt;
-    &lt;setting name="RenameFiles.Extensions" value=".less|.css"/&gt;
-    &lt;setting name="ExtractFilesToDeploy.WebProjectFolder" value="/ClientName/ProjectName/Main/Source/Client.Project.Website"/&gt;
-    &lt;setting name="ExtractBinariesToDeploy.ProjectPathMap" value="Client.Project.Website|/bin/Client.Project.Website.dll|/bin/Client.Project.Website.pdb" /&gt;
+    &lt;setting name=&quot;TFSCommandLine.ToolPath&quot; value=&quot;C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE\TF.exe&quot;/&gt;
+    &lt;setting name=&quot;SetPackageMetadata.PackageName&quot; value=&quot;GeneratedPackage&quot; /&gt;
+    &lt;setting name=&quot;RemoveUnwantedItems.ExtensionsToIgnore&quot; value=&quot;.scproj,.csproj,.sln,.vspscc,.tds,.sql,web.config,web.debug.config,web.release.config,packages.config&quot;/&gt;
+    &lt;setting name=&quot;RemoveUnwantedItems.FoldersToIgnore&quot; value=&quot;/deployments/,.TDS_Debug.,/css/includes/,/externalpackages/,/buildconfig/&quot;/&gt;
+    &lt;setting name=&quot;RenameFiles.Extensions&quot; value=&quot;.less|.css&quot;/&gt;
+    &lt;setting name=&quot;ExtractFilesToDeploy.WebProjectFolder&quot; value=&quot;/ClientName/ProjectName/Main/Source/Client.Project.Website&quot;/&gt;
+    &lt;setting name=&quot;ExtractBinariesToDeploy.ProjectPathMap&quot; value=&quot;Client.Project.Website|/bin/Client.Project.Website.dll|/bin/Client.Project.Website.pdb&quot; /&gt;
   &lt;/settings&gt;
-  &lt;output type="Sitecore.TFS.PackageGenerator.Outputs.SaveXmlToDisk,Sitecore.TFS.PackageGenerator"/&gt;
+  &lt;output type=&quot;Sitecore.TFS.PackageGenerator.Outputs.SaveXmlToDisk,Sitecore.TFS.PackageGenerator&quot;/&gt;
 &lt;/configuration&gt;
 </pre>
 <p>The two bits of this we're interested in for the moment is the <code>&lt;pipelineComponents/&gt;</code> and the <code>&lt;settings&gt;</code> elements.</p>
@@ -232,19 +256,19 @@
 <p>Parsing the XML is done via:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    private void parse(XDocument xml)
     {
-        XElement root = xml.Element("configuration");
+        XElement root = xml.Element(&quot;configuration&quot;);
 
-        string inputType = root.Element("input").Attribute("type").Value;
+        string inputType = root.Element(&quot;input&quot;).Attribute(&quot;type&quot;).Value;
         Input = createInstance&lt;IInput&gt;(inputType);
 
-        string outputType = root.Element("output").Attribute("type").Value;
+        string outputType = root.Element(&quot;output&quot;).Attribute(&quot;type&quot;).Value;
         Output = createInstance&lt;IOutput&gt;(outputType);
 
-        WorkingFolder = root.Element("workingFolder").Value;
+        WorkingFolder = root.Element(&quot;workingFolder&quot;).Value;
 
-        foreach (var component in root.Element("pipelineComponents").Elements("component"))
+        foreach (var component in root.Element(&quot;pipelineComponents&quot;).Elements(&quot;component&quot;))
         {
-            string type = component.Attribute("type").Value;
+            string type = component.Attribute(&quot;type&quot;).Value;
 
             Type t = Type.GetType(type);
             System.Reflection.ConstructorInfo ci = t.GetConstructor(System.Type.EmptyTypes);
@@ -253,9 +277,9 @@
             PipelineComponents.Add(cmp);
         }
 
-        foreach (var item in root.Element("settings").Elements("setting"))
+        foreach (var item in root.Element(&quot;settings&quot;).Elements(&quot;setting&quot;))
         {
-            Settings.Add(item.Attribute("name").Value, item.Attribute("value").Value);
+            Settings.Add(item.Attribute(&quot;name&quot;).Value, item.Attribute(&quot;value&quot;).Value);
         }
     }
 </pre>
@@ -299,10 +323,11 @@ Likewise, this component will find all of the <code>.item</code> changes reporte
 <li><strong>Extract Binaries to Deploy</strong>
 This component finds the C# changes reported by TFS, and matches them against the names of projects included in the configuration to generate the correct set of binary files to add to the package.</li>
 <li><strong>Extract Deletions to deploy</strong>
-Finally, any Source Control operations marked as "delete" are found by this code and enumerated in the package "Read Me" metadata – since there is no automated way to delete individual files or items through a package.</li>
+Finally, any Source Control operations marked as &quot;delete&quot; are found by this code and enumerated in the package &quot;Read Me&quot; metadata – since there is no automated way to delete individual files or items through a package.</li>
 </ul>
 <p>At the back of my mind I'm considering the possibility of <a href="/posts/2014/late-to-the-post-step-party" target="_blank">post deployment steps</a> for automatically deleting, running SQL scripts etc. But those are still just ideas at this stage.</p>
 <p>Next week, I plan to drill down into the code for these individual pipeline components to show how they work, and how they interact with the configuration data.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -357,7 +382,7 @@ Finally, any Source Control operations marked as "delete" are found by this code
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

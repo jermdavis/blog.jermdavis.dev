@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="The other day I was having a conversation with a colleague who was bemoaning the lack of a fast way to paste a Sitecore item path into the UI and have the Content Editor change selection to that item. I suggested using the search box or the Navigate button, but apparently they weren&amp;#x27;t right. The person wanted to paste a link and have the content tree change without any other clicking about.&amp;#xA;So, in the spirit of being a helpful co-worker, I hacked up a quick command extension to solve this problem. It&amp;#x27;s trivially simple, but I figured someone else might find it useful, or learn something that helps them... ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - A quick “find that item”&nbsp;hack</title>
+    <title>Jeremy Davis - A quick &#x201C;find that item&#x201D;&#xA0;hack</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/a-quick-find-that-item-hack">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - A quick “find that item”&nbsp;hack">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - A quick &amp;#x201C;find that item&amp;#x201D;&amp;#xA0;hack">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-quick-find-that-item-hack-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "A quick &#x201C;find that item&#x201D;&#xA0;hack",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/a-quick-find-that-item-hack-social.png"
+        ],
+        "datePublished": "2014-10-06T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/a-quick-find-that-item-hack">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,24 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        A quick “find that item”&nbsp;hack
+        A quick “find that item” hack
         </h1>
+            <div class="meta">Published 06 October 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/ui" class="p-1 mr-1 bg-gray-100 rounded-md"> UI</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>The other day I was having a conversation with a colleague who was bemoaning the lack of a fast way to paste a Sitecore item path into the UI and have the Content Editor change selection to that item. I suggested using the search box or the Navigate button, but apparently they weren't right. The person wanted to paste a link and have the content tree change without any other clicking about.</p>
 <p>So, in the spirit of being a helpful co-worker, I hacked up a quick command extension to solve this problem. It's trivially simple, but I figured someone else might find it useful, or learn something that helps them... <!--more--></p>
 <p>The problem can be solved with a simple <code>Command</code>:</p>
@@ -133,55 +157,55 @@
     public override void Execute(CommandContext context)
     {
         ClientPipelineArgs args = new ClientPipelineArgs();
-        args.CustomData.Add("db", context.Items[0].Database.Name);
+        args.CustomData.Add(&quot;db&quot;, context.Items[0].Database.Name);
 
-        Context.ClientPage.Start(this, "Run", args);
+        Context.ClientPage.Start(this, &quot;Run&quot;, args);
     }
 
     protected void Run(ClientPipelineArgs args)
     {
         if (!args.IsPostBack)
         {
-            SheerResponse.Input("Enter a path or id: ", string.Empty);
+            SheerResponse.Input(&quot;Enter a path or id: &quot;, string.Empty);
             args.WaitForPostBack();
         }
         else
         {
             if (args.HasResult)
             {
-                string dbName = (string)args.CustomData["db"];
+                string dbName = (string)args.CustomData[&quot;db&quot;];
                 Database db = Sitecore.Configuration.Factory.GetDatabase(dbName);
                 Item itm = db.GetItem(args.Result);
 
                 if (itm != null)
                 {
-                    Context.ClientPage.SendMessage(this, string.Format("item:load(id={0})", itm.ID.ToString()));
+                    Context.ClientPage.SendMessage(this, string.Format(&quot;item:load(id={0})&quot;, itm.ID.ToString()));
                 }
                 else
                 {
-                    SheerResponse.ShowError("Item not found", string.Format("The item '{0}' was not found.", args.Result));
+                    SheerResponse.ShowError(&quot;Item not found&quot;, string.Format(&quot;The item &#39;{0}&#39; was not found.&quot;, args.Result));
                 }
             }
         }
     }
 }
 </pre>
-<p>When the command is triggered by clicking a button, the code records the database that the context item was found in. (That's whatever item was selected in the content tree when the user clicked the button triggering our command) The "context" database for commands is always Core, so we need this information because the user might actually be looking at Master or Web when they click the button. This is then passed into the <code>Run()</code> method.</p>
+<p>When the command is triggered by clicking a button, the code records the database that the context item was found in. (That's whatever item was selected in the content tree when the user clicked the button triggering our command) The &quot;context&quot; database for commands is always Core, so we need this information because the user might actually be looking at Master or Web when they click the button. This is then passed into the <code>Run()</code> method.</p>
 <p>The first time <code>Run()</code> is triggered no postback has occurred, so we need to ask the user to enter the path or ID of the item to select, and we need to wait for that data. The <code>SheerResponse.Input()</code> method shows a simple dialog with a text entry field. If you were feeling fancy you could create a custom dialog using Sheer here, but this basic dialog will do for our needs.</p>
 <p>The second time <code>Run()</code> is triggered the postback from the input dialog should have occurred. If it has, and if the postback has provided us with some data, then we can try and make the Content Tree change focus. To do that we want to load the item to verify it exits. That means extracting the database name from the arguments passed in, fetching a reference to the database and then trying to load the item.</p>
-<p>If we get an item back from the database, we can use the <code>SendMessage()</code> method to trigger the "load an item" behaviour. This will cause the Content Editor to load the item specified, refresh the content tree so it has focus, and refresh the editor pane to show the appropriate data. And if we get no item back we can show an error using the <code>ShowError()</code> method.</p>
+<p>If we get an item back from the database, we can use the <code>SendMessage()</code> method to trigger the &quot;load an item&quot; behaviour. This will cause the Content Editor to load the item specified, refresh the content tree so it has focus, and refresh the editor pane to show the appropriate data. And if we get no item back we can show an error using the <code>ShowError()</code> method.</p>
 <p>Simple, huh?</p>
 <p>To enable the user to trigger our command we need to wire it up using the same old techniques we've used for commands in the past. First you have to map the class above to a command string by adding an entry to the Commands.config file with a patch:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch=&quot;http://www.sitecore.net/xmlconfig/&quot;&gt;
   &lt;sitecore&gt;
     &lt;commands&gt;
-      &lt;command name="testing:navigate" type="Testing.NavigateCommand,Testing" /&gt;
+      &lt;command name=&quot;testing:navigate&quot; type=&quot;Testing.NavigateCommand,Testing&quot; /&gt;
     &lt;/commands&gt;
   &lt;/sitecore&gt;
 &lt;/configuration&gt;
 </pre>
 <p>(Obviously you need your namespace and dll name in the <code>type</code> attribute above...</p>
-<p>Then you need to create a button in the UI to trigger this command. For example, to add it to the "Go to" chunk of the Developer ribbon tab, you can add a new item at <code>/sitecore/content/Applications/Content Editor/Ribbons/Chunks/Goto</code> in the <code>Core</code> database. Using the <code>/sitecore/templates/System/Ribbon/Large Button</code> template add something like:</p>
+<p>Then you need to create a button in the UI to trigger this command. For example, to add it to the &quot;Go to&quot; chunk of the Developer ribbon tab, you can add a new item at <code>/sitecore/content/Applications/Content Editor/Ribbons/Chunks/Goto</code> in the <code>Core</code> database. Using the <code>/sitecore/templates/System/Ribbon/Large Button</code> template add something like:</p>
 <p><a href="/img/2014/2014-10-navigatebutton.png" target="_blank"><img alt="Navigate Button" src="/img/2014/2014-10-navigatebutton.png"></a></p>
 <p>Choose a suitable icon, fill in the <code>click</code> event with the command name defined above, and give it whatever name you fancy.</p>
 <p>So to test it, switch back to <code>Master</code> and click your new button:</p>
@@ -189,6 +213,7 @@
 <p>If you enter the path <code>/sitecore/system/Marketing Center/Analytics Filters/Report Filters/Country/Australia</code> and click ok, the content tree will change:</p>
 <p><a href="/img/2014/2014-10-navigated.png" target="_blank"><img alt="Navigated" src="/img/2014/2014-10-navigated.png"></a></p>
 <p>Bingo. Happy colleague...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -243,7 +268,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

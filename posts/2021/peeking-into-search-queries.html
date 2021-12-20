@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="An issue I&amp;#x27;ve bumped into a number of times over the years, is that sometimes developers want to be able to look at the query that got generated when they did something with Sitecore&amp;#x27;s ContentSearch APIs. The traditional answer of &amp;amp;amp;quot;go look in the logs&amp;amp;amp;quot; is one way to deal with this, but some recent project work got me wondering if there were alternatives...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Peeking into search&nbsp;queries</title>
+    <title>Jeremy Davis - Peeking into search&#xA0;queries</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/peeking-into-search-queries">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Peeking into search&nbsp;queries">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Peeking into search&amp;#xA0;queries">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/peeking-into-search-queries-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Peeking into search&#xA0;queries",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/peeking-into-search-queries-social.png"
+        ],
+        "datePublished": "2021-01-20T00:00:00+00:00",
+        "dateModified": "2021-02-01T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/peeking-into-search-queries">
 <meta property="og:type" content="website">
 
@@ -114,21 +131,28 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Peeking into search&nbsp;queries
+        Peeking into search queries
         </h1>
+            <div class="meta">Published 20 January 2021</div>
+                <div class="meta">Updated 01 February 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/contentsearch" class="p-1 mr-1 bg-gray-100 rounded-md"> ContentSearch</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/solr" class="p-1 mr-1 bg-gray-100 rounded-md"> Solr</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
-                <p>An issue I've bumped into a number of times over the years, is that sometimes developers want to be able to look at the query that got generated when they did something with Sitecore's ContentSearch APIs. The traditional answer of "go look in the logs" is one way to deal with this, but some recent project work got me wondering if there were alternatives...<!--more--></p>
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>An issue I've bumped into a number of times over the years, is that sometimes developers want to be able to look at the query that got generated when they did something with Sitecore's ContentSearch APIs. The traditional answer of &quot;go look in the logs&quot; is one way to deal with this, but some recent project work got me wondering if there were alternatives...<!--more--></p>
 <h2>What's the issue?</h2>
 <p>When you fire up some code for a query, you're generally using something vaguely along the lines of:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name");
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex(&quot;your_index_name&quot;);
 using (var context = index.CreateSearchContext())
 {
     var query = context.GetQueryable&lt;SearchResultItem&gt;();
@@ -142,7 +166,7 @@ using (var context = index.CreateSearchContext())
     // do somethig with the results
 }
 </pre>
-<p>But what happens if you need to debug this query? A call to <code>GetQueryable&lt;T&gt;()</code> gets you back an <code>IQueryable&lt;T&gt;</code>. And based on that type there's no obvious "here's your query" property. And that makes sense, when you think about it. The <code>IQueryable&lt;T&gt;</code> interface is a generic representation of a query - it doesn't know anything specific about Solr, Azure Search or any other Sitecore provider. But that raw quey must get generated at some point in order to run the search – and we know it turns up in the logs. You can look at any of the <code>Search.log.*.*.txt</code> files that Sitecore writes and see things like:</p>
+<p>But what happens if you need to debug this query? A call to <code>GetQueryable&lt;T&gt;()</code> gets you back an <code>IQueryable&lt;T&gt;</code>. And based on that type there's no obvious &quot;here's your query&quot; property. And that makes sense, when you think about it. The <code>IQueryable&lt;T&gt;</code> interface is a generic representation of a query - it doesn't know anything specific about Solr, Azure Search or any other Sitecore provider. But that raw quey must get generated at some point in order to run the search – and we know it turns up in the logs. You can look at any of the <code>Search.log.*.*.txt</code> files that Sitecore writes and see things like:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-highlight="4" data-enlighter-language="text" style="width:100%; overflow:scroll;">3044 15:25:54 INFO  Warming and Caching your search indexes
 3044 15:25:54 INFO  /******* Warming Queries ********/
 3044 15:25:54 INFO  /*************************/
@@ -187,13 +211,13 @@ using (var context = index.CreateSearchContext())
 </pre>
 <p>A query serialiser seems like exactly what would help...</p>
 <p>So what happens if we pull that together into a code snippet and give it a try? Well you need to <a href="https://sitecore.myget.org/feed/sc-packages/package/nuget/Sitecore.ContentSearch.Linq.Solr/10.0.0" rel="noopener" target="_blank">add a reference to <code>Sitecore.ContentSearch.Linq.Solr.dll</code></a> in order to do this, but it works out fairly simply:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name");
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex(&quot;your_index_name&quot;);
 using (var context = index.CreateSearchContext())
 {
     var q = context.GetQueryable&lt;SearchResultItem&gt;();
 
     // Set up your query with something appropriate to your work..
-    q = q.Where(r =&gt; r.Name == "test");
+    q = q.Where(r =&gt; r.Name == &quot;test&quot;);
     // add whatever else is necessary for ordering etc.
 
     var genericQuery = q as GenericQueryable&lt;SearchResultItem, SolrCompositeQuery&gt;;
@@ -207,6 +231,7 @@ using (var context = index.CreateSearchContext())
 <p><a href="/img/2021/2021-01-querytest.png" target="_blank"><img alt="Query Test" src="/img/2021/2021-01-querytest.png"></a></p>
 <p>That looks like success...</p>
 <p>I've not tested this with Azure search, but based on a bit of poking around with <a href="https://github.com/icsharpcode/ILSpy" rel="noopener" target="_blank">ILSpy</a> it looks like <code>Sitecore.ContentSearch.Azure.Query.CloudQuery</code> is the equivalent of <code>SolrCompositeQuery</code> if you're not using Solr. That type returns a string that looks like it should be the query text.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -261,7 +286,7 @@ using (var context = index.CreateSearchContext())
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

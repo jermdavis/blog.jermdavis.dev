@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="I&amp;#x27;m in the middle of preparing a talk for an upcoming Sitecore user group on the subject of using PowerShell DSC for Sitecore installs. (I&amp;#x27;ll post a write up of the talk after I&amp;#x27;ve given it) And one of the things I&amp;#x27;ve discovered is that once you get into the guts of it, using configuration variables alongside Script Resources can be a bit confusing.&amp;#xA;So, for the benefit of my future self (I&amp;#x27;m bound to forget this as I am taking time off from my preparation to head over to the US for &amp;lt;a href=&amp;quot;http://www.sitecore.net/events/mvp-summit-2015/home.aspx&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;this&amp;lt;/a&amp;gt; and &amp;lt;a href=&amp;quot;http://sugcon.com/&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;this&amp;lt;/a&amp;gt;) I&amp;#x27;m writing down what I&amp;#x27;ve worked out... ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Config variables in PowerShell DSC can&nbsp;confuse</title>
+    <title>Jeremy Davis - Config variables in PowerShell DSC can&#xA0;confuse</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/config-variables-in-powershell-dsc-can-confuse">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Config variables in PowerShell DSC can&nbsp;confuse">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Config variables in PowerShell DSC can&amp;#xA0;confuse">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/config-variables-in-powershell-dsc-can-confuse-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Config variables in PowerShell DSC can&#xA0;confuse",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/config-variables-in-powershell-dsc-can-confuse-social.png"
+        ],
+        "datePublished": "2015-09-28T00:00:00+00:00",
+        "dateModified": "2018-06-26T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/config-variables-in-powershell-dsc-can-confuse">
 <meta property="og:type" content="website">
 
@@ -114,36 +131,42 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Config variables in PowerShell DSC can&nbsp;confuse
+        Config variables in PowerShell DSC can confuse
         </h1>
+            <div class="meta">Published 28 September 2015</div>
+                <div class="meta">Updated 26 June 2018</div>
+            <div class="flex py-1">
+                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+                    <a href="/tags/powershell-dsc" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell DSC</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>I'm in the middle of preparing a talk for an upcoming Sitecore user group on the subject of using PowerShell DSC for Sitecore installs. (I'll post a write up of the talk after I've given it) And one of the things I've discovered is that once you get into the guts of it, using configuration variables alongside Script Resources can be a bit confusing.</p>
 <p>So, for the benefit of my future self (I'm bound to forget this as I am taking time off from my preparation to head over to the US for <a href="http://www.sitecore.net/events/mvp-summit-2015/home.aspx" target="_blank" rel="noopener noreferrer">this</a> and <a href="http://sugcon.com/" target="_blank" rel="noopener noreferrer">this</a>) I'm writing down what I've worked out... <!--more--></p>
 <p>Once you move away from very basic configurations, it seems to me I'll end up with nested dictionaries of Name/Value pairs in the configuration for my DSC scripts. I found myself with something along the lines of:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">@{
-    AllNodes = @(
-        @{
-            NodeName = "My-Server"
-            Role = "RoleOne, RoleTwo"
+<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">&#64;{
+    AllNodes = &#64;(
+        &#64;{
+            NodeName = &quot;My-Server&quot;
+            Role = &quot;RoleOne, RoleTwo&quot;
             
-            RoleOneSoftware = @{
-                DiskPath = "c:\SomeFolder\"
-                SettingOne = "alpha"
-                SettingTwo = "bravo"
+            RoleOneSoftware = &#64;{
+                DiskPath = &quot;c:\SomeFolder\&quot;
+                SettingOne = &quot;alpha&quot;
+                SettingTwo = &quot;bravo&quot;
             }
 
-            RoleTwoSoftware = @{
-                DiskPath = "c:\OtherFolder\"
-                SettingOne = "charlie"
-                SettingTwo = "delta"
+            RoleTwoSoftware = &#64;{
+                DiskPath = &quot;c:\OtherFolder\&quot;
+                SettingOne = &quot;charlie&quot;
+                SettingTwo = &quot;delta&quot;
             }
          }
     );
@@ -151,27 +174,27 @@
 </pre>
 <p>Contrived example – but the idea is that in order to keep the setting names sensible, you probably end up nesting things. Easy enough to declare, and better (I think) from the perspective of managing your config settings in the future.</p>
 <p>But what happens when you try to make use of these values?</p>
-<p>Well for most of DSC's Resources, it's not too bad. Inside your <code>Node</code> block, there's a variable defined for you called <code>$Node</code> that contains the data above for the node which has been selected by the script when it's executed. And it's a dictionary object that works a bit like a "dynamic" variable in C# so you can just reference the properties:</p>
+<p>Well for most of DSC's Resources, it's not too bad. Inside your <code>Node</code> block, there's a variable defined for you called <code>$Node</code> that contains the data above for the node which has been selected by the script when it's executed. And it's a dictionary object that works a bit like a &quot;dynamic&quot; variable in C# so you can just reference the properties:</p>
 <pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Configuration ContrivedExample
 {
-    Node $AllNodes.where{ $_.Role.Contains("RoleOne") }.NodeName
+    Node $AllNodes.where{ $_.Role.Contains(&quot;RoleOne&quot;) }.NodeName
     {
         File CreateTheRoleFolder
         {
-            Type = "Directory"
-            DestinationPath = "$($Node.RoleOneSoftware.SomeFolder)"
-            Ensure = "Present"
+            Type = &quot;Directory&quot;
+            DestinationPath = &quot;$($Node.RoleOneSoftware.SomeFolder)&quot;
+            Ensure = &quot;Present&quot;
         }
     }
 }
 </pre>
 <p>The enclosing <code>$()</code> force PowerShell to treat what's inside as a variable name, in order to prevent any confusion on its part. I don't think this is always necessary – but in my head at least it's easier to use it everywhere than occasionally be confused when a particular Resource fails because you forgot to use it when you needed to.</p>
 <p>Things get a bit more complicated when the resource in question is a Script resource though. A side-effect of how these are implemented is that when you're filling in the <code>GetScript</code>, <code>TestScript</code> and <code>SetScript</code> properties, you're specifying strings not scripts. So you need to be very careful about how you specify variables because the usual rules of how PowerShell does variable replacement don't quite work with your configuration data.</p>
-<p>There are two things to remember. By default, variables you write in the normal <code>$someName</code> way are going to be evaluated at the point that your script code is modifying a server. That's not the point where you run the Configuration you're declaring here. That means you can't reference variables declared by PowerShell DSC in this way (for example <code>$Node</code>) because their values are not available when the script runs. For those variables, there's a special syntax. You have to write <code>$using:Node</code> instead. This causes PowerShell DSC to inject the value correctly into the output when it "compiles" your DSC script into the file which Windows uses to change the state of your computer.</p>
+<p>There are two things to remember. By default, variables you write in the normal <code>$someName</code> way are going to be evaluated at the point that your script code is modifying a server. That's not the point where you run the Configuration you're declaring here. That means you can't reference variables declared by PowerShell DSC in this way (for example <code>$Node</code>) because their values are not available when the script runs. For those variables, there's a special syntax. You have to write <code>$using:Node</code> instead. This causes PowerShell DSC to inject the value correctly into the output when it &quot;compiles&quot; your DSC script into the file which Windows uses to change the state of your computer.</p>
 <p>The trouble is this starts to look very messy when you're dealing with configuration variables, and I had a lot of trouble getting it to work for a while. Where I've ended up is that I've found myself declaring a lot of temporary variables, to make the code a bit clearer to me. For example:</p>
 <pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Configuration ContrivedExample
 {
-    Node $AllNodes.where{ $_.Role.Contains("RoleOne") }.NodeName
+    Node $AllNodes.where{ $_.Role.Contains(&quot;RoleOne&quot;) }.NodeName
     {
         Script DemonstrateVariables
         {
@@ -185,9 +208,9 @@
                $diskPath = $using:Node.RoleOneSoftware.DiskPath
                $settingOne = $using:Node.RoleOneSoftware.SettingOne
 
-               $computedValue = "$diskPath\$settingOne"
+               $computedValue = &quot;$diskPath\$settingOne&quot;
 
-               Write-Verbose "The computed value is $computedValue"
+               Write-Verbose &quot;The computed value is $computedValue&quot;
             }
         }
     }
@@ -195,6 +218,7 @@
 </pre>
 <p>It's not pretty – but using that approach has worked for me.</p>
 <p>Hopefully as my DSC knowledge increases I'll work out how to make better use of this...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -249,7 +273,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

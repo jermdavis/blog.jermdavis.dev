@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="After &amp;lt;a href=&amp;quot;/posts/2015/development-environments-with-powershell-dsc-part-6&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;last week&amp;#x27;s work on installing the Coveo search service&amp;lt;/a&amp;gt;, this week we&amp;#x27;ll move on to how that script can be extended to install the Coveo REST API and the Coveo for Sitecore package.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;7</title>
+    <title>Jeremy Davis - Development environments with PowerShell DSC &#x2013; Part&#xA0;7</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-7">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;7">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC &amp;#x2013; Part&amp;#xA0;7">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-7-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Development environments with PowerShell DSC &#x2013; Part&#xA0;7",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-7-social.png"
+        ],
+        "datePublished": "2015-12-07T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-7">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,25 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Development environments with PowerShell DSC – Part&nbsp;7
+        Development environments with PowerShell DSC – Part 7
         </h1>
+            <div class="meta">Published 07 December 2015</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/coveo" class="p-1 mr-1 bg-gray-100 rounded-md"> Coveo</a>
+                    <a href="/tags/powershell-dsc" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell DSC</a>
+                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+                    <a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md"> Installation</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>After <a href="/posts/2015/development-environments-with-powershell-dsc-part-6" target="_blank">last week's work on installing the Coveo search service</a>, this week we'll move on to how that script can be extended to install the Coveo REST API and the Coveo for Sitecore package.<!--more--></p>
 <p><i>(<b>Edited to add:</b> Links to all posts in this series: <a href="/posts/2015/development-environments-with-powershell-dsc-part-1" target="_blank">1:Introduction to DSC</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-2" target="_blank">2:Windows Features</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-3" target="_blank">3:Mongo DB</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-4" target="_blank">4:SQL Server</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">5:Sitecore</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-6" target="_blank">6:Coveo CES</a> – 7:Coveo REST API &amp; Coveo for Sitecore)</i></p>
 <blockquote>
@@ -134,26 +159,26 @@
 <p>Adding the REST service follows a similar pattern to last week's installations of prerequisites: Copy over the file described in the config data, and then use a <code>Script</code> resource to run the installation. Appending the following to last week's work can do this:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyCoveoApi
 {
-    DependsOn = "[script]InstallCoveo"
-    SourcePath = "$PackagePath\$($Node.Coveo.CESAPIInstaller)"
-    DestinationPath = "$($Node.TempFolder)\$($Node.Coveo.CESAPIInstaller)"
-    Ensure = "Present"
+    DependsOn = &quot;[script]InstallCoveo&quot;
+    SourcePath = &quot;$PackagePath\$($Node.Coveo.CESAPIInstaller)&quot;
+    DestinationPath = &quot;$($Node.TempFolder)\$($Node.Coveo.CESAPIInstaller)&quot;
+    Ensure = &quot;Present&quot;
 }
 
 Script InstallCoveoApi
 {
     Credential = $cred
-    DependsOn = "[file]CopyCoveoApi"
+    DependsOn = &quot;[file]CopyCoveoApi&quot;
     GetScript = { 
-        @{ Feature = "Install Coveo REST API" }
+        &#64;{ Feature = &quot;Install Coveo REST API&quot; }
     }
     TestScript = { $False }
     SetScript = {
-        $tmp = "$($using:Node.TempFolder)"
-        $inst = "$($tmp)\$($using:Node.Coveo.CESAPIInstaller)"
-        $secret = "$($using:Node.Coveo.AppSecret)"
+        $tmp = &quot;$($using:Node.TempFolder)&quot;
+        $inst = &quot;$($tmp)\$($using:Node.Coveo.CESAPIInstaller)&quot;
+        $secret = &quot;$($using:Node.Coveo.AppSecret)&quot;
 
-        &amp;$inst /exelog "$($tmp)\coveo-api.log" /qn "APPLICATION_SECRET=$secret" | Out-Null
+        &amp;$inst /exelog &quot;$($tmp)\coveo-api.log&quot; /qn &quot;APPLICATION_SECRET=$secret&quot; | Out-Null
     }
 }
 </pre>
@@ -164,40 +189,40 @@ Script InstallCoveoApi
 <p>To install the extension we need to copy over the package file (described in our config) and then call the remote install endpoint to trigger the installation:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File AddPSEPackage
 {
-    SourcePath = "$PackagePath\$($Node.Sitecore.PowerShellExtensions)"
-    DestinationPath = "$($Node.WWWRoot)\$($Node.Sitecore.InstanceName)\Data\packages"
-    Type = "File"
-    Ensure = "Present"
+    SourcePath = &quot;$PackagePath\$($Node.Sitecore.PowerShellExtensions)&quot;
+    DestinationPath = &quot;$($Node.WWWRoot)\$($Node.Sitecore.InstanceName)\Data\packages&quot;
+    Type = &quot;File&quot;
+    Ensure = &quot;Present&quot;
 }
 
 Script InstallPSE
 {
-    DependsOn = "[file]AddPSEPackage"
+    DependsOn = &quot;[file]AddPSEPackage&quot;
     GetScript = {
-        @{ Feature = "Install PowerShell Extensions" }
+        &#64;{ Feature = &quot;Install PowerShell Extensions&quot; }
     }
     TestScript = {
-        Test-Path "$using:Node.WWWRoot\$using:Node.Sitecore.InstanceName\Website\App_Config\Include\Cognifide.PowerShell.config"
+        Test-Path &quot;$using:Node.WWWRoot\$using:Node.Sitecore.InstanceName\Website\App_Config\Include\Cognifide.PowerShell.config&quot;
     }
     SetScript = {
         $siteName = $using:Node.Sitecore.InstanceName
-        $sitecoreFolder = "$($using:Node.WWWRoot)\$($siteName)\Data\packages"   
+        $sitecoreFolder = &quot;$($using:Node.WWWRoot)\$($siteName)\Data\packages&quot;   
     
-        $module = "$($using:Node.Sitecore.PowerShellExtensions)"
+        $module = &quot;$($using:Node.Sitecore.PowerShellExtensions)&quot;
 
         $query = (Split-Path -Path $module -Leaf)
                
-        Write-Verbose "Calling package upload tool for $using:query"
+        Write-Verbose &quot;Calling package upload tool for $using:query&quot;
     
-        $url = "http://$siteName/PackageDeploy.aspx?modules=$query"
-        $result = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 600 -OutFile ".\$siteName-PackageResponse-$query.log" -PassThru
+        $url = &quot;http://$siteName/PackageDeploy.aspx?modules=$query&quot;
+        $result = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 600 -OutFile &quot;.\$siteName-PackageResponse-$query.log&quot; -PassThru
         
         if($result.StatusCode -ne 200) {
-            Write-Verbose "StatusCode: $($result.StatusCode)"
-            throw "Package install failed for $query"
+            Write-Verbose &quot;StatusCode: $($result.StatusCode)&quot;
+            throw &quot;Package install failed for $query&quot;
         }
         else {
-            Write-Verbose "Install ok"
+            Write-Verbose &quot;Install ok&quot;
         }
         
         $file = Join-Path $sitecoreFolder $query
@@ -209,49 +234,49 @@ Script InstallPSE
 <p>PowerShell extensions allows for remoting - you can call run scripts from inside DSC which execute inside Sitecore. To enable this we have to add a module to PowerShell. This can be done by unzipping the remoting files from Marketplace into your PowerShell modules folder:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Archive EnableSPERemoting
 {
-    Path = "$PackagePath\$($Node.Sitecore.PowerShellRemoting)"
-    Destination = "$Env:ProgramFiles\WindowsPowerShell\Modules\SPE"
+    Path = &quot;$PackagePath\$($Node.Sitecore.PowerShellRemoting)&quot;
+    Destination = &quot;$Env:ProgramFiles\WindowsPowerShell\Modules\SPE&quot;
 }
 </pre>
 <p>With that in place, the code can copy over the Coveo for Sitecore package and use the same approach to install it:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File AddCoveoPackage
 {
-    DependsOn = "[script]InstallCoveoApi"
-    SourcePath = "$PackagePath\$($Node.Coveo.CoveoForSitecore)"
-    DestinationPath = "$($Node.WWWRoot)\$($Node.Sitecore.InstanceName)\Data\packages"
-    Type = "File"
-    Ensure = "Present"
+    DependsOn = &quot;[script]InstallCoveoApi&quot;
+    SourcePath = &quot;$PackagePath\$($Node.Coveo.CoveoForSitecore)&quot;
+    DestinationPath = &quot;$($Node.WWWRoot)\$($Node.Sitecore.InstanceName)\Data\packages&quot;
+    Type = &quot;File&quot;
+    Ensure = &quot;Present&quot;
 }
        
 Script InstallCoveoPackage
 {
-    DependsOn = "[file]AddCoveoPackage"
+    DependsOn = &quot;[file]AddCoveoPackage&quot;
     GetScript = {
-        @{ Feature = "Install Coveo for Sitecore" }
+        &#64;{ Feature = &quot;Install Coveo for Sitecore&quot; }
     }
     TestScript = {
-        $folder = "$($using:Node.WWWRoot)\$($using:Node.Sitecore.InstanceName)\Website\Coveo"
+        $folder = &quot;$($using:Node.WWWRoot)\$($using:Node.Sitecore.InstanceName)\Website\Coveo&quot;
         Test-Path -Path $folder
     }
     SetScript = {
         $siteName = $using:Node.Sitecore.InstanceName
-        $sitecoreFolder = "$($using:Node.WWWRoot)\$($siteName)\Data\packages"   
+        $sitecoreFolder = &quot;$($using:Node.WWWRoot)\$($siteName)\Data\packages&quot;   
     
-        $module = "$($using:Node.Coveo.CoveoForSitecore)"
+        $module = &quot;$($using:Node.Coveo.CoveoForSitecore)&quot;
 
         $query = (Split-Path -Path $module -Leaf)
                
-        Write-Verbose "Calling package upload tool for $using:query"
+        Write-Verbose &quot;Calling package upload tool for $using:query&quot;
     
-        $url = "http://$siteName/PackageDeploy.aspx?modules=$query"
-        $result = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 600 -OutFile ".\$siteName-PackageResponse-$query.log" -PassThru
+        $url = &quot;http://$siteName/PackageDeploy.aspx?modules=$query&quot;
+        $result = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 600 -OutFile &quot;.\$siteName-PackageResponse-$query.log&quot; -PassThru
         
         if($result.StatusCode -ne 200) {
-            Write-Verbose "StatusCode: $($result.StatusCode)"
-            throw "Package install failed for $query"
+            Write-Verbose &quot;StatusCode: $($result.StatusCode)&quot;
+            throw &quot;Package install failed for $query&quot;
         }
         else {
-            Write-Verbose "Install ok"
+            Write-Verbose &quot;Install ok&quot;
         }
         
         $file = Join-Path $sitecoreFolder $query
@@ -259,12 +284,12 @@ Script InstallCoveoPackage
     }
 }
 </pre>
-<p>So now the script needs to provide all the same configuration that the post-install steps. The first thing it needs to do is to create the "Top Results" folder. That can be done using the PowerShell extensions remoting:</p>
+<p>So now the script needs to provide all the same configuration that the post-install steps. The first thing it needs to do is to create the &quot;Top Results&quot; folder. That can be done using the PowerShell extensions remoting:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script CreateTopResults
 {
-    DependsOn = "[script]InstallCoveoPackage"
+    DependsOn = &quot;[script]InstallCoveoPackage&quot;
     GetScript = {
-        @{ Feature = "Create Coveo Top Results folder" }
+        &#64;{ Feature = &quot;Create Coveo Top Results folder&quot; }
     }
     TestScript = {
         $False
@@ -274,55 +299,55 @@ Script InstallCoveoPackage
 
         $siteName = $using:Node.Sitecore.InstanceName
 
-        $session = New-ScriptSession -Username admin -Password b -ConnectionUri "http://$siteName"
+        $session = New-ScriptSession -Username admin -Password b -ConnectionUri &quot;http://$siteName&quot;
 
         Invoke-RemoteScript -Session $session -ScriptBlock { 
-            New-Item -Path "master:/sitecore/system/Modules" -Name "Coveo" -ItemType "/sitecore/templates/System/Node"
-            New-Item -Path "master:/sitecore/system/Modules/Coveo" -Name "Top Results" -ItemType "/sitecore/templates/CoveoModule/Search/Top Results/Top Result Folder"
+            New-Item -Path &quot;master:/sitecore/system/Modules&quot; -Name &quot;Coveo&quot; -ItemType &quot;/sitecore/templates/System/Node&quot;
+            New-Item -Path &quot;master:/sitecore/system/Modules/Coveo&quot; -Name &quot;Top Results&quot; -ItemType &quot;/sitecore/templates/CoveoModule/Search/Top Results/Top Result Folder&quot;
         }
     }
 }
 </pre>
 <p>This imports the remoting module we installed later, creates a remote connection to our Sitecore instance, and then runs the two <code>New-Item</code> statements required to ensure the right folders exist in this remote session.</p>
 <p>Next we need to provide the appropriate configuration for the Coveo extension. Having tried automating the code under the surface of the post-install steps wizard without much success, I've fallen back to taking the configuration files from a manual install and deploying them via file copy. Three files are required: The Coveo license data (which can be found next to the Sitecore license after the post-install steps have been completed) and then the Search Provider and Search Provider REST API config files, which are found in the <code>App_Config/include</code> folder. You can do a manual install with the settings you need, and then take the appropriate files from that.</p>
-<p>One minor change is required to the default files before Coveo will work, however. When you use the post-install steps UI, it saves a password for Rabbit MQ into the configuration. By default it encrypts these credentials. If you copy the encrypted credentials to a different machine, these won't work. So you need to change the encrypted value to plain text. The default password is "guest", so you can change the <code>&lt;QueuePassword&gt;</code> in the <code>Coveo.SearchProvider.config</code> file before adding it and the others to the <code>PackagePath</code> folder.</p>
+<p>One minor change is required to the default files before Coveo will work, however. When you use the post-install steps UI, it saves a password for Rabbit MQ into the configuration. By default it encrypts these credentials. If you copy the encrypted credentials to a different machine, these won't work. So you need to change the encrypted value to plain text. The default password is &quot;guest&quot;, so you can change the <code>&lt;QueuePassword&gt;</code> in the <code>Coveo.SearchProvider.config</code> file before adding it and the others to the <code>PackagePath</code> folder.</p>
 <p>They can then be deployed to the right places with <code>File</code> resources:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyCoveoLicense
 {
-    DependsOn = "[script]InstallCoveoPackage"
-    SourcePath = "$PackagePath\coveolicense.xml"
-    DestinationPath = "$($Node.WWWRoot)\$($Node.Sitecore.InstanceName)\Data\coveolicense.xml"
-    Type = "File"
-    Ensure = "Present"
+    DependsOn = &quot;[script]InstallCoveoPackage&quot;
+    SourcePath = &quot;$PackagePath\coveolicense.xml&quot;
+    DestinationPath = &quot;$($Node.WWWRoot)\$($Node.Sitecore.InstanceName)\Data\coveolicense.xml&quot;
+    Type = &quot;File&quot;
+    Ensure = &quot;Present&quot;
     Force = $True
 }
 
 File CopySearchProviderConfig
 {
-    DependsOn = "[File]CopyCoveoLicense"
-    SourcePath = "$PackagePath\Coveo.SearchProvider.config"
-    DestinationPath = "$($Node.WWWRoot)\$($Node.Sitecore.InstanceName)\Website\App_Config\include\Coveo.SearchProvider.config"
-    Type = "File"
-    Ensure = "Present"
+    DependsOn = &quot;[File]CopyCoveoLicense&quot;
+    SourcePath = &quot;$PackagePath\Coveo.SearchProvider.config&quot;
+    DestinationPath = &quot;$($Node.WWWRoot)\$($Node.Sitecore.InstanceName)\Website\App_Config\include\Coveo.SearchProvider.config&quot;
+    Type = &quot;File&quot;
+    Ensure = &quot;Present&quot;
     Force = $True
 }
 
 File CopySearchProviderRestConfig
 {
-    DependsOn = "[File]CopyCoveoLicense"
-    SourcePath = "$PackagePath\Coveo.SearchProvider.Rest.config"
-    DestinationPath = "$($Node.WWWRoot)\$($Node.Sitecore.InstanceName)\Website\App_Config\include\Coveo.SearchProvider.Rest.config"
-    Type = "File"
-    Ensure = "Present"
+    DependsOn = &quot;[File]CopyCoveoLicense&quot;
+    SourcePath = &quot;$PackagePath\Coveo.SearchProvider.Rest.config&quot;
+    DestinationPath = &quot;$($Node.WWWRoot)\$($Node.Sitecore.InstanceName)\Website\App_Config\include\Coveo.SearchProvider.Rest.config&quot;
+    Type = &quot;File&quot;
+    Ensure = &quot;Present&quot;
     Force = $True
 }
 </pre>
 <p>With all the config in place, there's one more thing to do. The Sitecore part of Coveo configures <a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">the CES services we installed in the last</a> post when you first build an index. Hence we need to trigger a build of the Coveo instances to finish off. PowerShell Extensions can achive this for us:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script RebuildCoveoIndexes
 {
-    DependsOn = "[file]CopySearchProviderConfig", "[file]CopySearchProviderRestConfig", "[file]CopyCoveoLicense"
+    DependsOn = &quot;[file]CopySearchProviderConfig&quot;, &quot;[file]CopySearchProviderRestConfig&quot;, &quot;[file]CopyCoveoLicense&quot;
     GetScript = {
-        @{ Feature = "Rebuild Coveo indexes" }
+        &#64;{ Feature = &quot;Rebuild Coveo indexes&quot; }
     }
     TestScript = {
         $False
@@ -330,7 +355,7 @@ File CopySearchProviderRestConfig
     SetScript = {
         $siteName = $using:Node.Sitecore.InstanceName
 
-        $session = New-ScriptSession -Username admin -Password b -ConnectionUri "http://$siteName"
+        $session = New-ScriptSession -Username admin -Password b -ConnectionUri &quot;http://$siteName&quot;
 
         Invoke-RemoteScript -Session $session -ScriptBlock { 
             Rebuild-SearchIndex -Name coveo_master_index
@@ -344,6 +369,7 @@ File CopySearchProviderRestConfig
 <p><a href="/img/2015/2015-11-coveodiagnostics.png" target="_blank"><img alt="Coveo Diagnostics" src="/img/2015/2015-11-coveodiagnostics.png"></a></p>
 <p>And with that, you're ready to do some development work...</p>
 <p><i>PS:</i> I have noted that occasionally, when you look at the diagnostics you will get a red error for the REST endpoint after installation. This didn't happen on the test virtual machine I developed these scripts on, but did sometimes happen on the VMs being used for actual development work. (I've not worked out why this happened, however) If you encounter this problem, I found that restarting the Coveo CES service before you rebuild the indexes seemed to resolve the issue.  The <a href="https://msdn.microsoft.com/en-us/powershell/dsc/serviceresource" target="_blank" rel="noopener noreferrer">DSC Resource  for Windows services</a> can be used to automate this.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -398,7 +424,7 @@ File CopySearchProviderRestConfig
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

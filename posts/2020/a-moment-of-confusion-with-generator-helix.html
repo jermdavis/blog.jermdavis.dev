@@ -3,7 +3,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Because of the old maxim &amp;amp;amp;quot;anything you do more than once should be automated&amp;amp;amp;quot;, we all find ourselves working with tools to auto-generate projects and solutions for &amp;lt;a href=&amp;quot;https://helix.sitecore.net/&amp;quot; rel=&amp;quot;noopener&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;Helix architecture&amp;lt;/a&amp;gt; these days. Mostly these tools work fine &amp;#x2013; but every so often you can bump your head against unexpected behaviour &amp;#x2013; as I did recently:">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
@@ -22,8 +22,24 @@
 
     
     <meta property="og:title" content="Jeremy Davis - A moment of confusion with generator-helix">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-moment-of-confusion-with-generator-helix-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "A moment of confusion with generator-helix",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/a-moment-of-confusion-with-generator-helix-social.png"
+        ],
+        "datePublished": "2020-02-03T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2020/a-moment-of-confusion-with-generator-helix">
 <meta property="og:type" content="website">
 
@@ -114,32 +130,38 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
         A moment of confusion with generator-helix
         </h1>
+            <div class="meta">Published 03 February 2020</div>
+            <div class="flex py-1">
+                    <a href="/tags/helix" class="p-1 mr-1 bg-gray-100 rounded-md"> Helix</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
-                <p>Because of the old maxim "anything you do more than once should be automated", we all find ourselves working with tools to auto-generate projects and solutions for <a href="https://helix.sitecore.net/" rel="noopener" target="_blank">Helix architecture</a> these days. Mostly these tools work fine – but every so often you can bump your head against unexpected behaviour – as I did recently:<!--more--></p>
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>Because of the old maxim &quot;anything you do more than once should be automated&quot;, we all find ourselves working with tools to auto-generate projects and solutions for <a href="https://helix.sitecore.net/" rel="noopener" target="_blank">Helix architecture</a> these days. Mostly these tools work fine – but every so often you can bump your head against unexpected behaviour – as I did recently:<!--more--></p>
 <h2>My confusion</h2>
 <p>I was doing some experimentation with a helix solution that used the <a href="https://www.npmjs.com/package/generator-helix" rel="noopener" target="_blank">Generator-Helix</a> package for Yeoman. Everything was working fine for a while – but I needed to make a change I wasn't sure about, so for simplicity's sake I took a copy of the solution file before I ran the next command – and suddenly my Yeoman commands stopped updating the solution open in Visual Studio:</p>
 <p><a href="/img/2020/2020-01-solutionfolde.png" target="_blank"><img alt="Solution Folder" src="/img/2020/2020-01-solutionfolde.png"></a></p>
 <p>Cue some head scratching...</p>
 <h2>The issue</h2>
-<p>After some digging through the code deployed by NPM, it turns out this tool is using a simple "find the first file in the solution folder that matches *.sln" to decide which solution to update. It doesn't use the Solution's name when finding the file to modify. Looking into the code for the generator (in <code>generator-helix/generators/add</code> wherever NPM put the module), you find this in the <code>writing()</code> function in <code>index.js</code>:</p>
+<p>After some digging through the code deployed by NPM, it turns out this tool is using a simple &quot;find the first file in the solution folder that matches *.sln&quot; to decide which solution to update. It doesn't use the Solution's name when finding the file to modify. Looking into the code for the generator (in <code>generator-helix/generators/add</code> wherever NPM put the module), you find this in the <code>writing()</code> function in <code>index.js</code>:</p>
 <pre data-enlighter-highlight="2" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">const files = fs.readdirSync(this.destinationPath());
-const SolutionFile = files.find(file =&gt; file.toUpperCase().endsWith(".SLN"));
-const scriptParameters = '-SolutionFile \'' + this.destinationPath(SolutionFile) + '\' -Name ' + this.settings.LayerPrefixedProjectName + ' -Type ' + this.layer + ' -ProjectPath \'' + this.settings.ProjectPath + '\'' + ' -SolutionFolderName ' + this.templatedata.projectname;
+const SolutionFile = files.find(file =&gt; file.toUpperCase().endsWith(&quot;.SLN&quot;));
+const scriptParameters = &#39;-SolutionFile \&#39;&#39; + this.destinationPath(SolutionFile) + &#39;\&#39; -Name &#39; + this.settings.LayerPrefixedProjectName + &#39; -Type &#39; + this.layer + &#39; -ProjectPath \&#39;&#39; + this.settings.ProjectPath + &#39;\&#39;&#39; + &#39; -SolutionFolderName &#39; + this.templatedata.projectname;
 </pre>
 <p>This is the code that gets called when you run <code>yo helix:add</code> – So because my backup file was coming up first in the solution folder's file listing, the change was getting made to my backup file – not to my active solution. A behaviour I could quickly check with a diff between these two files, to show that it was the copy which had recevied my updates:</p>
 <p><a href="/img/2020/2020-01-solutiondiff.png" target="_blank"><img alt="Solution Diff" src="/img/2020/2020-01-solutiondiff.png"></a></p>
 <p>Confusion resolved! And a simple change to rename the backup file so it would sort last fixed my problem.</p>
-<p>And yes, I know – I could just use Source Control to undo changes rather than messing with backups. But sometimes "the lazy answer" teaches you something new. And it's not uncommon for me to find source trees with multiple solution files...</p>
+<p>And yes, I know – I could just use Source Control to undo changes rather than messing with backups. But sometimes &quot;the lazy answer&quot; teaches you something new. And it's not uncommon for me to find source trees with multiple solution files...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -194,7 +216,7 @@ const scriptParameters = '-SolutionFile \'' + this.destinationPath(SolutionFile)
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

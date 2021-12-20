@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="There are some things in Sitecore that you just take for granted will work. Loading items is a good example of this. I&amp;#x27;ll admit that user error can get in your way, but usually if you can see an item in the content tree, you can write code that will load it without issues. So I&amp;#x27;ll admit I was pretty confused when I came across a scenario recently where this did not appear to work correctly. In case anyone else hits this challenge, here&amp;#x27;s what happened:">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - What do you mean you can't fetch that item by its&nbsp;path?</title>
+    <title>Jeremy Davis - What do you mean you can&#x27;t fetch that item by its&#xA0;path?</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2018/what-do-you-mean-you-cant-fetch-that-item-by-its-path">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - What do you mean you can't fetch that item by its&nbsp;path?">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - What do you mean you can&amp;#x27;t fetch that item by its&amp;#xA0;path?">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/what-do-you-mean-you-cant-fetch-that-item-by-its-path-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "What do you mean you can&#x27;t fetch that item by its&#xA0;path?",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/what-do-you-mean-you-cant-fetch-that-item-by-its-path-social.png"
+        ],
+        "datePublished": "2018-12-10T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/what-do-you-mean-you-cant-fetch-that-item-by-its-path">
 <meta property="og:type" content="website">
 
@@ -114,38 +130,43 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        What do you mean you can't fetch that item by its&nbsp;path?
+        What do you mean you can't fetch that item by its path?
         </h1>
+            <div class="meta">Published 10 December 2018</div>
+            <div class="flex py-1">
+                    <a href="/tags/commerce-connect" class="p-1 mr-1 bg-gray-100 rounded-md"> Commerce Connect</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>There are some things in Sitecore that you just take for granted will work. Loading items is a good example of this. I'll admit that user error can get in your way, but usually if you can see an item in the content tree, you can write code that will load it without issues. So I'll admit I was pretty confused when I came across a scenario recently where this did not appear to work correctly. In case anyone else hits this challenge, here's what happened:<!--more--></p>
 <h2>The problem</h2>
 <p>I have a client who is making use of the <a href="https://doc.sitecore.net/sitecore_commerce/commerce_connect_components/introducing_commerce_connect" rel="noopener" target="_blank">Commerce Connect</a> module to pull in data about product categories for an sales website. The back-end commerce system is their own, but they have made added some customisation to Commerce Connect to allow their data to be moved from the back-end system into Sitecore each night. They had noticed that sometimes, when new trees of content were being added by the import process some of the data would come over, but other bits would not. And that's where I got involved – looking to see what might be going wrong with the import process.</p>
-<p>After working through the custom bits of their integration code in the Visual Studio debugger, I spotted a place where this behaviour might occur. When it tried to import a new item of "product category" data, it was looking to load the correct parent item. (So the new child could be created under it) It looked like when a parent didn't exist, it would fail to process new children for that item. But oddly in some circumstances I could step through the code and see that the parent item was visible in the Sitecore content tree, but the request to load it still failed.</p>
+<p>After working through the custom bits of their integration code in the Visual Studio debugger, I spotted a place where this behaviour might occur. When it tried to import a new item of &quot;product category&quot; data, it was looking to load the correct parent item. (So the new child could be created under it) It looked like when a parent didn't exist, it would fail to process new children for that item. But oddly in some circumstances I could step through the code and see that the parent item was visible in the Sitecore content tree, but the request to load it still failed.</p>
 <p>That confused me. So I did what I usually do when code confuses me: I try to reproduce the situation with the simplest possible thing. And after a few tries, I hit on the following process:</p>
 <p>If I deleted all the product category data from Sitecore, I could run the Commerce Connect synchronisation process and it would complete ok. But having done that I could run some simple PowerShell that showed the problem:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">get-childitem "/sitecore/content/Product Repository/Product Classifications/storeName/Grocery/Baby Store"
-Write-host "--"
-get-item "/sitecore/content/Product Repository/Product Classifications/storeName/Grocery/Baby Store/Baby Bath Skin Care"
-Write-host "--"
-get-item -path master: -ID "{F3D09AFA-D9B3-11C7-14B1-4D1096878F21}" | select -ExpandProperty Paths | select FullPath
+<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">get-childitem &quot;/sitecore/content/Product Repository/Product Classifications/storeName/Grocery/Baby Store&quot;
+Write-host &quot;--&quot;
+get-item &quot;/sitecore/content/Product Repository/Product Classifications/storeName/Grocery/Baby Store/Baby Bath Skin Care&quot;
+Write-host &quot;--&quot;
+get-item -path master: -ID &quot;{F3D09AFA-D9B3-11C7-14B1-4D1096878F21}&quot; | select -ExpandProperty Paths | select FullPath
 </pre>
 <p>Which gave the following result:</p>
 <p><a href="/img/2018/2018-11-image_2018-11-14_04-43-03_pm.png" target="_blank"><img alt="Odd Script Result" src="/img/2018/2018-11-image_2018-11-14_04-43-03_pm.png"></a></p>
-<p>Attempting to load the parent item and show its children worked fine – and it would show that "Baby Bath Skin Care" was a child of the parent. But trying to load that item explicitly by it's path failed with an "item not found error". However asking for that "Baby Bath Skin Care" item by its ID worked fine.</p>
+<p>Attempting to load the parent item and show its children worked fine – and it would show that &quot;Baby Bath Skin Care&quot; was a child of the parent. But trying to load that item explicitly by it's path failed with an &quot;item not found error&quot;. However asking for that &quot;Baby Bath Skin Care&quot; item by its ID worked fine.</p>
 <p>Why on earth would loading an item by path fail when it was clearly present in the content tree?</p>
 <h2>Further digging</h2>
-<p>Some other issues we'd been looking at for this client had centred around <a href="/posts/2018/a-fast-query-edge-case-that-might-bite-you" target="_blank">the publishing service and the descendants tables</a> in Sitecore databases. That lead me to realising that the "cleanup database" option in the Control Panel could fix my issue: If I clicked it, and then re-ran my test script afterwards, it would succeed... Clearly this wasn't a fast query issue – so what was going on?</p>
+<p>Some other issues we'd been looking at for this client had centred around <a href="/posts/2018/a-fast-query-edge-case-that-might-bite-you" target="_blank">the publishing service and the descendants tables</a> in Sitecore databases. That lead me to realising that the &quot;cleanup database&quot; option in the Control Panel could fix my issue: If I clicked it, and then re-ran my test script afterwards, it would succeed... Clearly this wasn't a fast query issue – so what was going on?</p>
 <p>A good hint towards what was up came from my colleague <a href="http://sitecoreskills.blogspot.com/" rel="noopener" target="_blank">Martin</a> – who suggested that the database cleanup would be clearing caches as well as its other operations. So I tried using cache.aspx to clear caches instead of the database cleanup, and that too fixed the issue when I ran my test script – so Martin was definitely on to something.</p>
 <p>But out of the box you can't look at Sitecore's caches in any more detail, so I fell back to <a href="https://briancaos.wordpress.com/2017/05/01/sitecore-caching-clear-caches-individually/" rel="noopener" target="_blank">this excellent post about looking at individual caches</a>. (Thank you <a href="https://twitter.com/briancaos" rel="noopener" target="_blank">Brian</a>!) You need to make a couple of tweaks to this for it to work with recent releases of Sitecore, and I took the opportunity to quickly hack in some code to show what was in a particular cache, to help with my debugging. [<a href="https://gist.github.com/jermdavis/fc4c8004ba1bd21540c8d2561ae4b279" rel="noopener" target="_blank">Code here, if you think it might help your work</a>]</p>
-<p>So I repeated my test a few times, clearing one cache, until I was able to work out that it was the "master[paths]" cache that was causing my issues. Clearing just that one would allow the script to complete ok.</p>
+<p>So I repeated my test a few times, clearing one cache, until I was able to work out that it was the &quot;master[paths]&quot; cache that was causing my issues. Clearing just that one would allow the script to complete ok.</p>
 <p>Before clearing this cache, it included an entry for the item that wouldn't load:</p>
 <p><a href="/img/2018/2018-11-badcache.png" target="_blank"><img alt="Bad Cache Info" src="/img/2018/2018-11-badcache.png"></a></p>
 <p>But after clearing it and re-running the script the contents would look like this:</p>
@@ -154,6 +175,7 @@ get-item -path master: -ID "{F3D09AFA-D9B3-11C7-14B1-4D1096878F21}" | select -Ex
 <h2>Resolution...</h2>
 <p>I've raised this issue with Sitecore Support, who have confirmed a bug in how the caching behaviour works with Commerce Connect, that will get fixed in a future release. In the mean time, if you find yourself encountering a similar issue you can reference bug 157425 when talking to support.</p>
 <p>But if you need to work around the problem, just clearing the <code>master[paths]</code> cache after your Commerce Connect import runs should help you.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -208,7 +230,7 @@ get-item -path master: -ID "{F3D09AFA-D9B3-11C7-14B1-4D1096878F21}" | select -Ex
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

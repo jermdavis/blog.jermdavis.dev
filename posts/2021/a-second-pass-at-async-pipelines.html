@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="&amp;lt;a href=&amp;quot;/posts/2021/pipelines-and-async&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;Last time out I was looking at applying async/await patterns to some pipeline patterns for C#&amp;lt;/a&amp;gt;. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - A second pass at async&nbsp;pipelines</title>
+    <title>Jeremy Davis - A second pass at async&#xA0;pipelines</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/a-second-pass-at-async-pipelines">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - A second pass at async&nbsp;pipelines">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - A second pass at async&amp;#xA0;pipelines">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-second-pass-at-async-pipelines-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "A second pass at async&#xA0;pipelines",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/a-second-pass-at-async-pipelines-social.png"
+        ],
+        "datePublished": "2021-06-21T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/a-second-pass-at-async-pipelines">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,21 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        A second pass at async&nbsp;pipelines
+        A second pass at async pipelines
         </h1>
+            <div class="meta">Published 21 June 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p><a href="/posts/2021/pipelines-and-async" target="_blank">Last time out I was looking at applying async/await patterns to some pipeline patterns for C#</a>. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...<!--more--></p>
 <h2>Execution ordering and async</h2>
 <p>Writing code that uses the <code>async</code>/<code>await</code> patterns from the previous post can have some interesting effects on the order of execution for some of the code. An example to demonstrate that is fairly simple to construct. Expanding on the example code I started last time, consider a pipeline with three steps:</p>
@@ -147,12 +167,12 @@
 
 	public async Task&lt;string&gt; ProcessAsync(Task&lt;Uri&gt; Input)
 	{
-		Console.WriteLine("Entering HttpFetchAsyncStep #1");
+		Console.WriteLine(&quot;Entering HttpFetchAsyncStep #1&quot;);
 		
 		var uri = await Input;
-		Console.WriteLine("Have Input HttpFetchAsyncStep #1");
+		Console.WriteLine(&quot;Have Input HttpFetchAsyncStep #1&quot;);
 		
-		Console.WriteLine("Leaving HttpFetchAsyncStep #1");
+		Console.WriteLine(&quot;Leaving HttpFetchAsyncStep #1&quot;);
 		
 		return await _client.GetStringAsync(uri);
 	}
@@ -163,14 +183,14 @@
 {
 	public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input)
 	{
-		Console.WriteLine("Entering ModifyTextAsyncStep #2");
+		Console.WriteLine(&quot;Entering ModifyTextAsyncStep #2&quot;);
 
 		var txt = await Input;
-		Console.WriteLine("Have Input ModifyTextAsyncStep #2");
+		Console.WriteLine(&quot;Have Input ModifyTextAsyncStep #2&quot;);
 
-		var output = txt.Replace("BBC", "Not the BBC");
+		var output = txt.Replace(&quot;BBC&quot;, &quot;Not the BBC&quot;);
 
-		Console.WriteLine("Leaving ModifyTextAsyncStep #2");
+		Console.WriteLine(&quot;Leaving ModifyTextAsyncStep #2&quot;);
 
 		return output;
 	}
@@ -181,17 +201,17 @@
 {
 	public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input)
 	{
-		Console.WriteLine("Entering DiskWriteAsyncStep #3");
+		Console.WriteLine(&quot;Entering DiskWriteAsyncStep #3&quot;);
 		
 		var data = await Input;
-		Console.WriteLine("Have Input DiskWriteAsyncStep #3");
+		Console.WriteLine(&quot;Have Input DiskWriteAsyncStep #3&quot;);
 		
 		var desktopFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-		var fileName =  System.IO.Path.Combine(desktopFolder, "test.txt");
+		var fileName =  System.IO.Path.Combine(desktopFolder, &quot;test.txt&quot;);
 
 		await System.IO.File.WriteAllTextAsync(fileName, data);
 
-		Console.WriteLine("Leaving DiskWriteAsyncStep #3");
+		Console.WriteLine(&quot;Leaving DiskWriteAsyncStep #3&quot;);
 
 		return fileName;
 	}
@@ -210,7 +230,7 @@ Leaving DiskWriteAsyncStep #3
 </pre>
 <p>The first step proceeds as we'd expect – entering, getting data, and returning. But then the second step enters, and then immediately the third step enters. Then the second step gets its input and leaves before the third step does the same...</p>
 <p>Initially that seems wrong – why would parts of step two and three appear to happen out of order? But I think this is actually a side-effect of how async code works. A statement which awaits a task is going to do one of two things. Either the task is complete and the value is returned immediately, or the task is not complete and the code tries to find something else to do in order to fill its time. In our case, the first step's <code>await</code> is of the first case - the input task already has its value, because the source uri was provided at the start of the pipeline. So that just runs through linearly that code without any distractions.</p>
-<p>But when we get to step two, its input is the task to read from the remote website. The code enters that step as usual, but the <code>await</code> cannot immediately resolve into downloaded html. So the compiler's clever rewriting takes over. This bit of code gets "parked" while it waits for the promise-of-future-data to resolve, and the flow of execution moves on to something else that can be run. In this case, it tries to start the third step, and prints its debug data because that doesn't depend on anything else. But once it gets to awaiting step three's input, the execution has to stall again because that <code>await</code> depends on step two's output. So now the flow of execution has nothing else to do but wait for step two's input to resolve, so it can then finish that step, and then finish step three.</p>
+<p>But when we get to step two, its input is the task to read from the remote website. The code enters that step as usual, but the <code>await</code> cannot immediately resolve into downloaded html. So the compiler's clever rewriting takes over. This bit of code gets &quot;parked&quot; while it waits for the promise-of-future-data to resolve, and the flow of execution moves on to something else that can be run. In this case, it tries to start the third step, and prints its debug data because that doesn't depend on anything else. But once it gets to awaiting step three's input, the execution has to stall again because that <code>await</code> depends on step two's output. So now the flow of execution has nothing else to do but wait for step two's input to resolve, so it can then finish that step, and then finish step three.</p>
 <p>And that's what we're seeing in the output above...</p>
 <h2>Here be dragons!</h2>
 <p>Now broadly that's not an issue – the code does end up doing all its work in the right order.</p>
@@ -232,7 +252,7 @@ Leaving DiskWriteAsyncStep #3
     }
 }
 </pre>
-<p>And with just the right "wrong code" happening before that initial await I'm pretty sure it would be possible to cause deadlocks, and really mess up your day.</p>
+<p>And with just the right &quot;wrong code&quot; happening before that initial await I'm pretty sure it would be possible to cause deadlocks, and really mess up your day.</p>
 <p>Clearly this code pattern is not great. So how can we resolve this issue?</p>
 <h2>Tweaking the pattern to address that</h2>
 <p>Having sat and thought about all this, I realised there was a better way to express all of this. If the code changes so that the <code>await</code> behaviour for the <code>Task</code> is moved out of the individual pipeline steps then it's not possible for people writing steps to make a mistake with this.</p>
@@ -276,9 +296,9 @@ Leaving DiskWriteAsyncStep #3
 
 	public async Task&lt;string&gt; ProcessAsync(Uri Input)
 	{
-		Console.WriteLine("Entering HttpFetchAsyncStep #1");
+		Console.WriteLine(&quot;Entering HttpFetchAsyncStep #1&quot;);
 		
-		Console.WriteLine("Leaving HttpFetchAsyncStep #1");
+		Console.WriteLine(&quot;Leaving HttpFetchAsyncStep #1&quot;);
 		
 		return await _client.GetStringAsync(Input);
 	}
@@ -288,11 +308,11 @@ public class ModifyTextAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
 	public async Task&lt;string&gt; ProcessAsync(string Input)
 	{
-		Console.WriteLine("Entering ModifyTextAsyncStep #2");
+		Console.WriteLine(&quot;Entering ModifyTextAsyncStep #2&quot;);
 
-		var output = Input.Replace("BBC", "Not the BBC");
+		var output = Input.Replace(&quot;BBC&quot;, &quot;Not the BBC&quot;);
 
-		Console.WriteLine("Leaving ModifyTextAsyncStep #2");
+		Console.WriteLine(&quot;Leaving ModifyTextAsyncStep #2&quot;);
 
 		return output;
 	}
@@ -302,14 +322,14 @@ public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
 	public async Task&lt;string&gt; ProcessAsync(string Input)
 	{
-		Console.WriteLine("Entering DiskWriteAsyncStep #3");
+		Console.WriteLine(&quot;Entering DiskWriteAsyncStep #3&quot;);
 		
 		var desktopFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-		var fileName =  System.IO.Path.Combine(desktopFolder, "test.txt");
+		var fileName =  System.IO.Path.Combine(desktopFolder, &quot;test.txt&quot;);
 
 		await System.IO.File.WriteAllTextAsync(fileName, Input);
 
-		Console.WriteLine("Leaving DiskWriteAsyncStep #3");
+		Console.WriteLine(&quot;Leaving DiskWriteAsyncStep #3&quot;);
 
 		return fileName;
 	}
@@ -332,6 +352,7 @@ public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 <p>And running it produces the output we'd expect:</p>
 <p><a href="/img/2021/2021-06-executionorder.png" target="_blank"><img alt="Pipeline results" src="/img/2021/2021-06-executionorder.png"></a></p>
 <p>As before, <a href="https://gist.github.com/jermdavis/49ecd692a16b10899eb2ee2b50770499" rel="noopener" target="_blank">this version of the code is available as a gist</a> if you want to play with it.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -386,7 +407,7 @@ public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Sitemap files are a requirement for most websites these days. They help SEO by ensuring that search engines index the files and images they might not otherwise find, and that you think are most important. Whilst there are assorted pre-built add-ons for Sitecore that can help with this, that&amp;#x27;s no fun. It&amp;#x27;s much more fun to build your own...&amp;#xA;Real work is getting in the way of blogging time at the moment, so I&amp;#x27;m going to break up my investigations into this into three posts. This week I&amp;#x27;ll look some requirements, core configuration and overall algorithm. The next part will look at the core code. And the final one will look at adding image data to the sitemap files.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Custom Sitemap files – Part One</title>
+    <title>Jeremy Davis - Custom Sitemap files &#x2013; Part One</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/custom-sitemap-filespart-one">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Custom Sitemap files – Part One">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Custom Sitemap files &amp;#x2013; Part One">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/custom-sitemap-filespart-one-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Custom Sitemap files &#x2013; Part One",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/custom-sitemap-filespart-one-social.png"
+        ],
+        "datePublished": "2014-05-12T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/custom-sitemap-filespart-one">
 <meta property="og:type" content="website">
 
@@ -114,23 +131,29 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
         Custom Sitemap files – Part One
         </h1>
+            <div class="meta">Published 12 May 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Sitemap files are a requirement for most websites these days. They help SEO by ensuring that search engines index the files and images they might not otherwise find, and that you think are most important. Whilst there are assorted pre-built add-ons for Sitecore that can help with this, that's no fun. It's much more fun to build your own...</p>
 <p>Real work is getting in the way of blogging time at the moment, so I'm going to break up my investigations into this into three posts. This week I'll look some requirements, core configuration and overall algorithm. The next part will look at the core code. And the final one will look at adding image data to the sitemap files.<!--more--></p>
 <p>When I started looking at this, I had the following requirements to consider:</p>
 <ul>
 <li>Build the core sitemap file at publish time.</li>
-<li>Support optional "Sitemap Index Files" – where multiple sitemap files are grouped together in an "index file".</li>
+<li>Support optional &quot;Sitemap Index Files&quot; – where multiple sitemap files are grouped together in an &quot;index file&quot;.</li>
 <li>Be able to specify the output filenames.</li>
 <li>Be able to choose the root Sitecore Item for each sitemap file.</li>
 <li>Be able to choose which Templates and Languages an Item must be based on in order to be included in the Sitemap.</li>
@@ -140,7 +163,7 @@
 <li>Avoid using configuration files, but let editors control the sitemap through Item data.</li>
 </ul>
 <h2>Configuration settings</h2>
-<p>A common place to put configuration for extension modules like this is under <code>/sitecore/System/Modules</code> – so we'll create a "Sitemap" folder under here and make a note of its ID for later. Within that we're going to want to create an items for Sitemap Index files or Sitemap files that don't have an index. And they'll need templates.</p>
+<p>A common place to put configuration for extension modules like this is under <code>/sitecore/System/Modules</code> – so we'll create a &quot;Sitemap&quot; folder under here and make a note of its ID for later. Within that we're going to want to create an items for Sitemap Index files or Sitemap files that don't have an index. And they'll need templates.</p>
 <p>The <a href="https://support.google.com/webmasters/answer/71453?hl=en" target="_blank" rel="noopener noreferrer">Sitemap Index File</a> only needs configuration for its file name and the set of Sitemap files it's going to refer to. Filename is easy – that's just a single line text field. So we can create a simple template for <code>SitemapIndexFile</code>:</p>
 <a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapIndexFileTemplate.png">
 <img alt="Sitemap index file template" src="/img/2014/SitemapIndexFileTemplate.png">
@@ -149,17 +172,17 @@
 <a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapFileItem.png">
 <img alt="Sitemap file item" src="/img/2014/SitemapFileItem.png">
 </a>
-<p>This one is a bit more complex. First of all it also needs a file name, but it requires some other settings too. When the publish operation runs you don't know what the "context" database is, so we'll need to record a reference to the database that you want the Sitemap file to be generated from. In this case I've made that a Droplist field that points to a set of database names. Most of the time you'd set this to "Web" (since that's the database which holds all the published data) however for testing purposes you might want to change this to "Master". Next the template allows editors to specify the root item that sitemap processing will start from. This allows configuring multiple sitemaps for different site roots, or for subsections of a website. The last two fields allow the editor to select a set of language versions that will be included in the output, and a set of templates that will be included. In both cases, selecting nothing here will be treated as "include all".</p>
+<p>This one is a bit more complex. First of all it also needs a file name, but it requires some other settings too. When the publish operation runs you don't know what the &quot;context&quot; database is, so we'll need to record a reference to the database that you want the Sitemap file to be generated from. In this case I've made that a Droplist field that points to a set of database names. Most of the time you'd set this to &quot;Web&quot; (since that's the database which holds all the published data) however for testing purposes you might want to change this to &quot;Master&quot;. Next the template allows editors to specify the root item that sitemap processing will start from. This allows configuring multiple sitemaps for different site roots, or for subsections of a website. The last two fields allow the editor to select a set of language versions that will be included in the output, and a set of templates that will be included. In both cases, selecting nothing here will be treated as &quot;include all&quot;.</p>
 <p>So, with these templates we can set up basic configuration for a couple of sitemap files:</p>
 <a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapTree.png">
 <img alt="Sitemap tree" src="/img/2014/SitemapTree.png">
 </a>
-<p>Here "CustomSitemap" is a sitemap file on its own, where "TestIndexFile" is a sitemap index that contains one sitemap file.</p>
+<p>Here &quot;CustomSitemap&quot; is a sitemap file on its own, where &quot;TestIndexFile&quot; is a sitemap index that contains one sitemap file.</p>
 <p>The other thing that we need to create for configuration is a template to extend your web page items. We need to be able to specify the bits of configuration needed for individual pages:</p>
 <a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapItemExtensionsTemplate.png">
 <img alt="Sitemap Item Extensions template" src="/img/2014/SitemapItemExtensionsTemplate.png">
 </a>
-<p>A checkbox field SitemapInclude lets editors specify whether this item should be considered for sitemap processing or not. The SitemapPriority field lets them specify a relative value of how important this page is on your site, <a href="http://www.sitemaps.org/protocol.html#prioritydef" target="_blank" rel="noopener noreferrer">as per the sitemap schema</a>. Finally, editors can choose a Droplist value for the expected change frequency of this page, <a href="http://www.sitemaps.org/protocol.html#changefreqdef" target="_blank" rel="noopener noreferrer">as per the schema</a>. Note the use of the "Shared" flag for these fields – the requirements I was thinking about needed these settings to be shared between all language versions of each page – but that might not be true for other sites and you might want to think about whether that's applicable in any work you do based on this approach.</p>
+<p>A checkbox field SitemapInclude lets editors specify whether this item should be considered for sitemap processing or not. The SitemapPriority field lets them specify a relative value of how important this page is on your site, <a href="http://www.sitemaps.org/protocol.html#prioritydef" target="_blank" rel="noopener noreferrer">as per the sitemap schema</a>. Finally, editors can choose a Droplist value for the expected change frequency of this page, <a href="http://www.sitemaps.org/protocol.html#changefreqdef" target="_blank" rel="noopener noreferrer">as per the schema</a>. Note the use of the &quot;Shared&quot; flag for these fields – the requirements I was thinking about needed these settings to be shared between all language versions of each page – but that might not be true for other sites and you might want to think about whether that's applicable in any work you do based on this approach.</p>
 <p>This template can then be added to the template for the pages on your site:</p>
 <a target="_blank" rel="noopener noreferrer" href="/img/2014/HomeItemSettings.png">
 <img alt="Sitemap settings on Home" src="/img/2014/HomeItemSettings.png">
@@ -200,7 +223,7 @@
 <li>Then save all the metadata into the sitemap file in the correct XML schema.</li>
 </ul>
 <p>Nothing particularly difficult there – but it's quite a few things to do.</p>
-<p>One area that can be done in a variety of ways is how to write the data for the sitemap files out to disk in the right schema. My first attempt at this code made use of the XML Serialisation infrastructure in the .Net framework. It worked, but it was quite fiddly and required quite a lot of mucking about to get the namespaces correct. It was also quite complicated to deal with "empty" attributes of an item in a sitemap file, so I ended up reverting to some custom code to write the file using the <code>XDocument</code> classes from Linq as this works more simply.</p>
+<p>One area that can be done in a variety of ways is how to write the data for the sitemap files out to disk in the right schema. My first attempt at this code made use of the XML Serialisation infrastructure in the .Net framework. It worked, but it was quite fiddly and required quite a lot of mucking about to get the namespaces correct. It was also quite complicated to deal with &quot;empty&quot; attributes of an item in a sitemap file, so I ended up reverting to some custom code to write the file using the <code>XDocument</code> classes from Linq as this works more simply.</p>
 <p>However for large sites this approach is not particularly scalable (It can generate a lot of in-memory objects). It would be better to write the data out directly via an <code>XmlTextWriter</code>. If you need to generate sitemaps for big files it would be sensible to consider this approach as an alternative.</p>
 <h2>Code</h2>
 <p>So with all those configuration options available we can start on some code. Usual rules apply – I'm ignoring error handling and patterns like Glass for simplicity. Production code would include those things.</p>
@@ -217,20 +240,21 @@
 }
 </pre>
 <p>And that can be configured with a simple config patch:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8" ?&gt;
-&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
+&lt;configuration xmlns:patch=&quot;http://www.sitecore.net/xmlconfig/&quot;&gt;
   &lt;sitecore&gt;
     &lt;events&gt;
-      &lt;event name="publish:end"&gt;
-        &lt;handler method="Publish" type="Testing.Sitemaps.Publisher" /&gt;
+      &lt;event name=&quot;publish:end&quot;&gt;
+        &lt;handler method=&quot;Publish&quot; type=&quot;Testing.Sitemaps.Publisher&quot; /&gt;
       &lt;/event&gt;
     &lt;/events&gt;
   &lt;/sitecore&gt;
 &lt;/configuration&gt;
 </pre>
-<p>This will cause the <code>Publish()</code> method to be called every time someone triggers a publish on this server. But if your website has multiple web servers, you will need to enable the "Scalability Settings" configuration that ships disabled with Sitecore by default, and then trigger your <code>Publish()</code> method on the <code>publish:end:remote</code> event as well. This event is fired on all the other servers in your cluster at publish time.</p>
+<p>This will cause the <code>Publish()</code> method to be called every time someone triggers a publish on this server. But if your website has multiple web servers, you will need to enable the &quot;Scalability Settings&quot; configuration that ships disabled with Sitecore by default, and then trigger your <code>Publish()</code> method on the <code>publish:end:remote</code> event as well. This event is fired on all the other servers in your cluster at publish time.</p>
 <p>So now our code will get triggered, we need to be able to configure a sitemap.</p>
 <p>And we'll look at the code for that in part two...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -285,7 +309,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

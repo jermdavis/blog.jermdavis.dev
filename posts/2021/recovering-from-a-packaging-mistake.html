@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="A while back I got a support issue where a client&amp;#x27;s Content Editor was suddenly very broken. No UI &amp;#x2013; just a giant YSOD. It&amp;#x27;s turned out to be the sort of mistake which I could see happening to others, so here&amp;#x27;s some info on what happened and ways the problem can be resolved.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Recovering from a packaging&nbsp;mistake</title>
+    <title>Jeremy Davis - Recovering from a packaging&#xA0;mistake</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/recovering-from-a-packaging-mistake">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Recovering from a packaging&nbsp;mistake">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Recovering from a packaging&amp;#xA0;mistake">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/recovering-from-a-packaging-mistake-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Recovering from a packaging&#xA0;mistake",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/recovering-from-a-packaging-mistake-social.png"
+        ],
+        "datePublished": "2021-08-30T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/recovering-from-a-packaging-mistake">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,21 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Recovering from a packaging&nbsp;mistake
+        Recovering from a packaging mistake
         </h1>
+            <div class="meta">Published 30 August 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>A while back I got a support issue where a client's Content Editor was suddenly very broken. No UI – just a giant YSOD. It's turned out to be the sort of mistake which I could see happening to others, so here's some info on what happened and ways the problem can be resolved.<!--more--></p>
 <h2>The report</h2>
 <p>A bunch of people were working on content entry and migration on a new instance of Sitecore, and suddenly they found Content Editor was broken. Users could log in to Sitecore, the desktop was fine and Experience Editor seemed ok, but as soon as they tried to go to Content Editor it would crash:</p>
@@ -165,19 +185,20 @@ Source: Sitecore.Buckets
 </pre>
 <h2>The issue</h2>
 <p>Thankfully there's a <a href="https://stackoverflow.com/questions/54368811/sitecore-content-editor-throws-server-error-in-application-error" rel="noopener" target="_blank">fair amount in Google about this error</a> – it comes down to having an item in your content tree whose template does not exist. The Content Editor UI was not implemented to cope with this (fairly exceptional) situation. Hence the exception...</p>
-<p>That crash is generally a bit of an issue when it happens with any old item – but it's particularly bad if the item in question happens to be "Home". The first item named "home" found under "/sitecore/content" is the one loaded automatically when Content Editor starts. So if this item is broken, then you're a bit stuffed, because Content Editor can't start up without encountering this crash.</p>
+<p>That crash is generally a bit of an issue when it happens with any old item – but it's particularly bad if the item in question happens to be &quot;Home&quot;. The first item named &quot;home&quot; found under &quot;/sitecore/content&quot; is the one loaded automatically when Content Editor starts. So if this item is broken, then you're a bit stuffed, because Content Editor can't start up without encountering this crash.</p>
 <h2>The cause</h2>
-<p>After doing some digging, the cause of the issue here turned out to be that a whole tree of content had been imported from the "old website" instance of Sitecore. To people migrating content this made sense – it's easier to move stuff about and reformat it if it's in the same content tree as your new site. But unfortunately the editors in this case didn't realise that the new instance of Sitecore didn't have any of the templates from the old instance – so they'd accidentally created a tree of hundreds of items, none of which had valid templates.</p>
+<p>After doing some digging, the cause of the issue here turned out to be that a whole tree of content had been imported from the &quot;old website&quot; instance of Sitecore. To people migrating content this made sense – it's easier to move stuff about and reformat it if it's in the same content tree as your new site. But unfortunately the editors in this case didn't realise that the new instance of Sitecore didn't have any of the templates from the old instance – so they'd accidentally created a tree of hundreds of items, none of which had valid templates.</p>
 <h2>So how can this be fixed?</h2>
-<p>Well the standard answer would be "install a package containing the right templates!" because if you do that, Content Editor will go back to being happy again immediately. But in this case that wasn't the right solution, because we didn't really want to have all the legacy content and templates in the shiny new instance of Sitecore.</p>
-<p>The alternative is that you need to get rid of the item which is causing all the issues. Not having access to Content Editor makes that slightly less easy, but you still have choices. Maybe you have PowerShell Extensions installed? If so that can be used to call <code>Remove-Item</code> to perform the deletion. But if you don't, it's time to break out a classic old admin tool: DB Browser! You can access this from the <code>/sitecore/admin/</code> url on your CM instance, and picking "DB Browser" from the menu:</p>
+<p>Well the standard answer would be &quot;install a package containing the right templates!&quot; because if you do that, Content Editor will go back to being happy again immediately. But in this case that wasn't the right solution, because we didn't really want to have all the legacy content and templates in the shiny new instance of Sitecore.</p>
+<p>The alternative is that you need to get rid of the item which is causing all the issues. Not having access to Content Editor makes that slightly less easy, but you still have choices. Maybe you have PowerShell Extensions installed? If so that can be used to call <code>Remove-Item</code> to perform the deletion. But if you don't, it's time to break out a classic old admin tool: DB Browser! You can access this from the <code>/sitecore/admin/</code> url on your CM instance, and picking &quot;DB Browser&quot; from the menu:</p>
 <p><a href="/img/2021/2021-08-dbbrowser.png" target="_blank"><img alt="DB Browser" src="/img/2021/2021-08-dbbrowser.png"></a></p>
 <p>As well as a useful tool, this image actually gives another clue to what's broken. When you look at a working item in DB Browser, it shows you the set of templates the item relies on to the right of the item's path:</p>
 <p><a href="/img/2021/2021-08-working.png" target="_blank"><img alt="Working Item" src="/img/2021/2021-08-working.png"></a></p>
 <p>But in the case of our issue, (or similarly broken items) you'll see template(s) missing. In this case, since these items had no valid templates, that space to the right of the path was entirely empty:</p>
 <p><a href="/img/2021/2021-08-broken.png" target="_blank"><img alt="Broken Item" src="/img/2021/2021-08-broken.png"></a></p>
-<p>But with this tool, it's an easy job to remove the broken item, by clicking the "Delete" button in the row of commands. With that done, Content Editor will sort itself out.</p>
+<p>But with this tool, it's an easy job to remove the broken item, by clicking the &quot;Delete&quot; button in the row of commands. With that done, Content Editor will sort itself out.</p>
 <p>In my case, that was all that needed doing to resolve the issue – well, that and a bit of user education to ensure everyone understood what had gone wrong...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -232,7 +253,7 @@ Source: Sitecore.Buckets
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

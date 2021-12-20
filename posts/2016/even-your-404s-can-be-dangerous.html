@@ -3,7 +3,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Every website needs to be able to deal with requests for pages which don&amp;#x27;t exist &amp;#x2013; some sort of 404 handling is a feature of pretty much every Sitecore project. But, as I discovered when sorting out an issue on a client&amp;#x27;s site recently, it&amp;#x27;s a bit of code which can bite if you&amp;#x27;re not careful... ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
@@ -22,8 +22,24 @@
 
     
     <meta property="og:title" content="Jeremy Davis - Even your 404s can be dangerous...">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/even-your-404s-can-be-dangerous-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Even your 404s can be dangerous...",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/even-your-404s-can-be-dangerous-social.png"
+        ],
+        "datePublished": "2016-11-28T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/even-your-404s-can-be-dangerous">
 <meta property="og:type" content="website">
 
@@ -114,20 +130,24 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
         Even your 404s can be dangerous...
         </h1>
+            <div class="meta">Published 28 November 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Every website needs to be able to deal with requests for pages which don't exist – some sort of 404 handling is a feature of pretty much every Sitecore project. But, as I discovered when sorting out an issue on a client's site recently, it's a bit of code which can bite if you're not careful... <!--more--></p>
 <h2>The scenario...</h2>
-<p>Out of the box, Sitecore's default approach to handling page-not-found errors is to redirect the user to an error page. While this works fine, SEO requirements mean that it's common for projects to need the errors served on the same URL that the user originally requested, but using a bit of "error page" content from a different Sitecore item. (Returning a 404 response directly rather than a 302 redirection to an error page is considered better) It's pretty easy to implement this sort of response to not-found errors in Sitecore using pipeline processors. The code for the pipeline component I was looking at was doing the following:</p>
+<p>Out of the box, Sitecore's default approach to handling page-not-found errors is to redirect the user to an error page. While this works fine, SEO requirements mean that it's common for projects to need the errors served on the same URL that the user originally requested, but using a bit of &quot;error page&quot; content from a different Sitecore item. (Returning a 404 response directly rather than a 302 redirection to an error page is considered better) It's pretty easy to implement this sort of response to not-found errors in Sitecore using pipeline processors. The code for the pipeline component I was looking at was doing the following:</p>
 <ol>
 <li>Detect the situation where Item resolution has failed for the current request.<br>
 Basically, after the "item resolver" pipeline component(s) have run, is the context item still null?</li>
@@ -140,7 +160,7 @@ Basically, after the "item resolver" pipeline component(s) have run, is the cont
 <p>After a bit of digging, it turned out that the following was happening:</p>
 <ul>
 <li>A request was arriving on a host name that had no <code>&lt;site/&gt;</code> explicitly bound to it.</li>
-<li>The request was being handled by a "catch all" <code>&lt;site/&gt;</code> whose content tree did not include the content-managed 404 page item.</li>
+<li>The request was being handled by a &quot;catch all&quot; <code>&lt;site/&gt;</code> whose content tree did not include the content-managed 404 page item.</li>
 <li>The 404 pipeline was triggering and making its request for the 404 page on the same un-mapped domain.</li>
 <li>Hence the request for the 404 page was itself generating a 404 and triggering the pipeline component.</li>
 <li>And once this starts, the server gets itself stuck in a loop, becoming unresponsive to external requests...</li>
@@ -154,12 +174,13 @@ The pipeline component should test whether the URL that caused the 404 it's hand
 <li><strong>Pay attention to the <site> context of the requests the 404 code is processing.</site></strong>
 You should ensure your custom 404 code only triggers for requests that have been mapped to sites which the pipeline processor is appropriate for. (And as a side issue of this. you should also think about whether the pipeline code should respond to things like media requests)</li>
 <li><strong>You may need to be careful about the user's cookies.</strong>
-If the 404 content that's being requested internally has things like "login/logout" links on it (or perhaps personalisation) then you must make sure that you are passing the current user's cookies when fetching its markup. The commonly used Sitecore helper function for making web requests <code>WebUtil.ExecuteWebPage()</code> does not seem to include code to handle this. When cookies aren't passed, users can be confused when their current state isn't reflected by the 404 content.</li>
+If the 404 content that's being requested internally has things like &quot;login/logout&quot; links on it (or perhaps personalisation) then you must make sure that you are passing the current user's cookies when fetching its markup. The commonly used Sitecore helper function for making web requests <code>WebUtil.ExecuteWebPage()</code> does not seem to include code to handle this. When cookies aren't passed, users can be confused when their current state isn't reflected by the 404 content.</li>
 <li><strong>You should consider whether you need a to add a simple, non-content-managed 404 page.</strong>
 If the requirements for the work demand a content-managed 404 page, it may be wise to have a (simplified) static 404 page to deal with the scenario where your custom pipeline can't find or use the content-managed one.</li>
 </ul>
 <p>That way, you're less likely to find yourself with an accidentally crashed site... 😉</p>
-<p>In reality, it's probably best to avoid writing entirely fresh code for requirements like this. There are lots of interesting examples that you can use for a starting point in your work. While writing up this post, a search on <a target="_blank" rel="noopener noreferrer" href="http://sitecore.link">http://sitecore.link/</a> (give that site a try – it's a searchable index of loads of useful Sitecore information) pointed me to this helpful post from <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/mike_i_reynolds">Mike Reynolds</a> titled "<a target="_blank" rel="noopener noreferrer" href="https://sitecorejunkie.com/2016/01/24/yet-another-httprequestbegin-pipeline-processor-to-handle-page-not-found-404-status-code/">Yet Another <httprequestbegin> Pipeline Processor to Handle "Page Not Found" (404 Status Code) in Sitecore</httprequestbegin></a>". That gives example code for most of the stuff mentioned above and is a good starting point for customisation specific to your site...</p>
+<p>In reality, it's probably best to avoid writing entirely fresh code for requirements like this. There are lots of interesting examples that you can use for a starting point in your work. While writing up this post, a search on <a target="_blank" rel="noopener noreferrer" href="http://sitecore.link">http://sitecore.link/</a> (give that site a try – it's a searchable index of loads of useful Sitecore information) pointed me to this helpful post from <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/mike_i_reynolds">Mike Reynolds</a> titled &quot;<a target="_blank" rel="noopener noreferrer" href="https://sitecorejunkie.com/2016/01/24/yet-another-httprequestbegin-pipeline-processor-to-handle-page-not-found-404-status-code/">Yet Another <httprequestbegin> Pipeline Processor to Handle &quot;Page Not Found&quot; (404 Status Code) in Sitecore</httprequestbegin></a>&quot;. That gives example code for most of the stuff mentioned above and is a good starting point for customisation specific to your site...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -214,7 +235,7 @@ If the requirements for the work demand a content-managed 404 page, it may be wi
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

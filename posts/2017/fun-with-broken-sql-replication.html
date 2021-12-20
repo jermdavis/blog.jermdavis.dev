@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Recently I&amp;#x27;ve spent some time debugging some issues with a client site. One problem that came up during this work (which, sadly wasn&amp;#x27;t actually the problem I was looking for) was a set of errors from SQL Replication appearing in the Sitecore logs. In keeping with &amp;lt;a href=&amp;quot;/posts/2017/that-sound-you-can-hear-its-your-log-files-weeping&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;my previous ranting about keeping your Sitecore logs as error free as possible&amp;lt;/a&amp;gt; I spent some time working out how to solve this.&amp;#xA;Since I&amp;#x27;d not looked at databases at this sort of level for some considerable time, I&amp;#x27;m writing down some notes for my future self, next time I have to worry about this sort of thing...">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Fun with broken SQL&nbsp;Replication</title>
+    <title>Jeremy Davis - Fun with broken SQL&#xA0;Replication</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2017/fun-with-broken-sql-replication">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Fun with broken SQL&nbsp;Replication">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Fun with broken SQL&amp;#xA0;Replication">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/fun-with-broken-sql-replication-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Fun with broken SQL&#xA0;Replication",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/fun-with-broken-sql-replication-social.png"
+        ],
+        "datePublished": "2017-09-04T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2017/fun-with-broken-sql-replication">
 <meta property="og:type" content="website">
 
@@ -114,17 +130,22 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Fun with broken SQL&nbsp;Replication
+        Fun with broken SQL Replication
         </h1>
+            <div class="meta">Published 04 September 2017</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/sql-server" class="p-1 mr-1 bg-gray-100 rounded-md"> SQL Server</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Recently I've spent some time debugging some issues with a client site. One problem that came up during this work (which, sadly wasn't actually the problem I was looking for) was a set of errors from SQL Replication appearing in the Sitecore logs. In keeping with <a href="/posts/2017/that-sound-you-can-hear-its-your-log-files-weeping" target="_blank">my previous ranting about keeping your Sitecore logs as error free as possible</a> I spent some time working out how to solve this.</p>
 <p>Since I'd not looked at databases at this sort of level for some considerable time, I'm writing down some notes for my future self, next time I have to worry about this sort of thing...<!--more--></p>
 <h2>The symptoms</h2>
@@ -132,7 +153,7 @@
 <p>But there were fairly regular exceptions appearing in the log, with epic stack traces like this:</p>
 <pre data-enlighter-theme="droide-text" data-enlighter-highlight="3,4" data-enlighter-language="text" style="width:100%; overflow:scroll;">3836 06:50:18 ERROR Application error.
 Exception: System.Exception
-Message: Table '[dbo].[ClientData]' into which you are trying to insert, update, or delete data is currently being upgraded or initialized for merge replication. On the publisher data modifications are disallowed until the upgrade completes and snapshot has successfully run. On subscriber data modifications are disallowed until the upgrade completes or the initial snapshot has been successfully applied and it has synchronized with the publisher.
+Message: Table &#39;[dbo].[ClientData]&#39; into which you are trying to insert, update, or delete data is currently being upgraded or initialized for merge replication. On the publisher data modifications are disallowed until the upgrade completes and snapshot has successfully run. On subscriber data modifications are disallowed until the upgrade completes or the initial snapshot has been successfully applied and it has synchronized with the publisher.
 The transaction ended in the trigger. The batch has been aborted.
 Source: Sitecore.Kernel
    at Sitecore.Data.DataProviders.Sql.DataProviderCommand.ExecuteNonQuery()
@@ -173,7 +194,7 @@ Source: Sitecore.Kernel
 <p>Digging back through the history for this project, it turns out that there was a data centre outage in the past, and the replication was broken when the infrastructure was restored. So that tends to suggest that the posts above might be the right thing here.</p>
 <p>Those posts suggest you can investigate if this is the issue by looking at the results of running a query like this on your affected database to tell you what triggers are defined:</p>
 <pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">SELECT
-       o.name as 'TableName', t.* 
+       o.name as &#39;TableName&#39;, t.* 
 FROM
        sys.triggers t
        LEFT JOIN sys.objects o ON t.parent_id = o.object_id
@@ -182,12 +203,13 @@ FROM
 <p>Looking at the source database of the broken replication, I saw:</p>
 <p><a href="/img/2017/2017-08-triggers.png" target="_blank"><img alt="Triggers" src="/img/2017/2017-08-triggers.png"></a></p>
 <p>Bingo. A load of <code>MSmerge_disabledml</code> triggers are still defined on tables that shouldn't be replicated anyway. According to Google, these get created during the process of configuring replication but should be tidied up if the replication setup succeeds. At some point one of the attempts to restore replication after the outage seems to have left these lying about.</p>
-<p>The "right" fix for this is to remove the replication configuration, ensure all those triggers are removed, and then re-configure the replication correctly. But that would have required downtime of the site. So to get a fix for the Sitecore errors in place quickly (which can then be tidied up later, at a more convenient time) I started by disabling the unwanted triggers.</p>
+<p>The &quot;right&quot; fix for this is to remove the replication configuration, ensure all those triggers are removed, and then re-configure the replication correctly. But that would have required downtime of the site. So to get a fix for the Sitecore errors in place quickly (which can then be tidied up later, at a more convenient time) I started by disabling the unwanted triggers.</p>
 <p>You can't write directly to the <code>sys.triggers</code> table to do that, because it belongs to SQL Server. But you can use the <code>DISABLE TRIGGER</code> command instead. When using the appropriate database you can run something like:</p>
 <pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">DISABLE TRIGGER MSmerge_disabledml_0152EE111E9F4B0D9DA847F08E0B6248 ON ClientData
 </pre>
 <p>for each of the triggers that need disabling. You should then see the <code>is_disabled</code> column change from zero to one in the <code>sys.triggers</code> table. (The trigger name there has to match the name in the second column of the query above)</p>
 <p>Doing that for all the unwanted triggers gets rid of the errors in the Sitecore log, and lets things go back to normal.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -242,7 +264,7 @@ FROM
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

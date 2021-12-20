@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="A while back I wrote &amp;lt;a href=&amp;quot;/posts/2016/an-alternative-approach-to-pipelines&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;a couple&amp;lt;/a&amp;gt; &amp;lt;a href=&amp;quot;/posts/2016/getting-pipelines-from-config&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;of posts&amp;lt;/a&amp;gt; on the subject of how code pipelines can work in a more functional .Net world. I&amp;#x27;ve made use of those patterns in some code of my own, and I&amp;#x27;ve found these posts have generated quite a lot of questions from readers here and followers on twitter. But I&amp;#x27;ve never been quite happy with the implementation in my own code... ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Thinking about errors in code&nbsp;pipelines</title>
+    <title>Jeremy Davis - Thinking about errors in code&#xA0;pipelines</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2019/thinking-about-errors-in-code-pipelines">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Thinking about errors in code&nbsp;pipelines">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Thinking about errors in code&amp;#xA0;pipelines">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/thinking-about-errors-in-code-pipelines-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Thinking about errors in code&#xA0;pipelines",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/thinking-about-errors-in-code-pipelines-social.png"
+        ],
+        "datePublished": "2019-02-18T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/thinking-about-errors-in-code-pipelines">
 <meta property="og:type" content="website">
 
@@ -114,24 +130,29 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Thinking about errors in code&nbsp;pipelines
+        Thinking about errors in code pipelines
         </h1>
+            <div class="meta">Published 18 February 2019</div>
+            <div class="flex py-1">
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+                    <a href="/tags/pipelines" class="p-1 mr-1 bg-gray-100 rounded-md"> Pipelines</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>A while back I wrote <a href="/posts/2016/an-alternative-approach-to-pipelines" target="_blank">a couple</a> <a href="/posts/2016/getting-pipelines-from-config" target="_blank">of posts</a> on the subject of how code pipelines can work in a more functional .Net world. I've made use of those patterns in some code of my own, and I've found these posts have generated quite a lot of questions from readers here and followers on twitter. But I've never been quite happy with the implementation in my own code... <!--more--></p>
 <h2>The challenge</h2>
-<p>The key place I'd made use of these patterns was in my homebrew RSS reader tool. That has two pipelines in its update logic: The first takes a feed URL and transforms it into a set of "post" objects that need processing. The second takes a post object and transforms it (by fetching HTML, removing scripts, working out dates etc) into a complete entry for the content database.</p>
+<p>The key place I'd made use of these patterns was in my homebrew RSS reader tool. That has two pipelines in its update logic: The first takes a feed URL and transforms it into a set of &quot;post&quot; objects that need processing. The second takes a post object and transforms it (by fetching HTML, removing scripts, working out dates etc) into a complete entry for the content database.</p>
 <p>Now the thing that didn't really fit here was that any attempt to fetch data over the internet can fail, but my original pipeline couldn't really handle that gracefully. You could either throw an exception that was caught outside of the pipeline, or you could include data in the pipeline's output model that specified what had gone wrong. But to my mind, neither of these is really the right way of solving the problem.</p>
 <p>So how could you adapt the original pipeline model to better describe problems?</p>
 <h2>Stealing another idea from Functional programming</h2>
-<p>The world of functional programming tries to solve issues like this with a wrapper type often refered to as "Either". This represents a result that can be one of two types. It's generally used to wrap "Either a success object or a failure object", but it can also be used to handle a situation where you can have two different successful results from an operation. So could we try and redefine the basic pipeline interfaces in terms of receiving and returning <code>Either</code> objects?</p>
+<p>The world of functional programming tries to solve issues like this with a wrapper type often refered to as &quot;Either&quot;. This represents a result that can be one of two types. It's generally used to wrap &quot;Either a success object or a failure object&quot;, but it can also be used to handle a situation where you can have two different successful results from an operation. So could we try and redefine the basic pipeline interfaces in terms of receiving and returning <code>Either</code> objects?</p>
 <p>For the sort of pipeline I'm thinking about for my RSS Reader, we're probably thinking about a pipeline that can return either a successful data object, or an error exception that occurred while the data was being processed. So the type looks something like:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public struct Either&lt;SUCCESS, FAILURE&gt;
 {
@@ -223,7 +244,7 @@ public static implicit operator FAILURE(Either&lt;SUCCESS, FAILURE&gt; value) =&
     }
 }
 </pre>
-<p>The <code>Process()</code> method now just decides whether the input is a success or failure type, and calls the appropriate method on it. Most of the time I think the failure path will just "do nothing and pass on the existing error", so that can be a virtual method with this as default behaviour. But the opposite is true for the success path – pretty much every pipeline step will have some custom logic here, so it makes sense for that to be an abstract method.</p>
+<p>The <code>Process()</code> method now just decides whether the input is a success or failure type, and calls the appropriate method on it. Most of the time I think the failure path will just &quot;do nothing and pass on the existing error&quot;, so that can be a virtual method with this as default behaviour. But the opposite is true for the success path – pretty much every pipeline step will have some custom logic here, so it makes sense for that to be an abstract method.</p>
 <p>And that's most of the basic logic we need to try this out...</p>
 <h2>An example</h2>
 <p>Lets make up some trivial pipeline steps to try this out. A very simple example of a step that might have an error is parsing a string to a number. So lets try a step that does that:</p>
@@ -238,12 +259,12 @@ public static implicit operator FAILURE(Either&lt;SUCCESS, FAILURE&gt; value) =&
         }
         else
         {
-            return new Exception("Can't parse string to integer");
+            return new Exception(&quot;Can&#39;t parse string to integer&quot;);
         }
     }
 }
 </pre>
-<p>So the step is defined in terms of taking in a string, returning an integer or returning an exception. It doesn't have any behaviour for the "failure" path, so no need to override that method, but the happy path can try to parse the string and return either the integer or the exception.</p>
+<p>So the step is defined in terms of taking in a string, returning an integer or returning an exception. It doesn't have any behaviour for the &quot;failure&quot; path, so no need to override that method, but the happy path can try to parse the string and return either the integer or the exception.</p>
 <p>(And note that thanks to the explicit conversions we defined before, there's no need to explicitly cast the return values – the compiler sorts that out for us)</p>
 <p>Another simple test component could multiply our result by a float to get a float result:</p>
 <pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ErrorAwareMultiplyStep : ErrorAwarePipelineStep&lt;int, float, Exception&gt;
@@ -264,7 +285,7 @@ public static implicit operator FAILURE(Either&lt;SUCCESS, FAILURE&gt; value) =&
 
     public override Either&lt;float, Exception&gt; ProcessErrorInput(Either&lt;float, Exception&gt; input)
     {
-        return new Exception("This is a custom exception", input.FailureValue);
+        return new Exception(&quot;This is a custom exception&quot;, input.FailureValue);
     }
 }
 </pre>
@@ -302,13 +323,13 @@ public static implicit operator FAILURE(Either&lt;SUCCESS, FAILURE&gt; value) =&
 
     private static void runPipeline(string input)
     {
-        Console.WriteLine("Running pipeline:");
+        Console.WriteLine(&quot;Running pipeline:&quot;);
 
         var result = _pipeline
             .Process(input)
             .Match(
-                f =&gt; $"Success: Transformed {input}[{input.GetType().Name}] to {f}[{f.GetType().Name}]",
-                f =&gt; $"Error: Transformed {input}[{input.GetType().Name}] to {f}[{f.GetType().Name}]"
+                f =&gt; $&quot;Success: Transformed {input}[{input.GetType().Name}] to {f}[{f.GetType().Name}]&quot;,
+                f =&gt; $&quot;Error: Transformed {input}[{input.GetType().Name}] to {f}[{f.GetType().Name}]&quot;
             );
 
         Console.WriteLine(result);
@@ -317,10 +338,10 @@ public static implicit operator FAILURE(Either&lt;SUCCESS, FAILURE&gt; value) =&
 
     private static void Main(string[] args)
     {
-        runPipeline("27");
-        runPipeline("0");
-        runPipeline("0.1");
-        runPipeline("hello");
+        runPipeline(&quot;27&quot;);
+        runPipeline(&quot;0&quot;);
+        runPipeline(&quot;0.1&quot;);
+        runPipeline(&quot;hello&quot;);
     }
 }
 </pre>
@@ -329,9 +350,10 @@ public static implicit operator FAILURE(Either&lt;SUCCESS, FAILURE&gt; value) =&
 <p>Where the pipeline can successfully process the input, the result is the expected data. And where it can't we get an exception wrapped up in the way the final component specified...</p>
 <p>The <a href="https://gist.github.com/jermdavis/0b27c613e7e252e4a1cd68fc530b7d77" rel="noopener noreferrer" target="_blank">code for this is available in a gist</a> if you want it all together.</p>
 <h2>Conclusions</h2>
-<p>It does make the error handling pattern for the pipelines easier, I think – now that there's an explicit path for what happens to error data. I can see a way to recompose my RSS pipelines so that an error message comes out, and then a third pipeline that can translate an exception record from one of those pipelines into the "feed error" record that I want to store in my RSS reader's database. And once the infrastructure described above is in place, the individual pipeline components don't really change that much from what I had before.</p>
+<p>It does make the error handling pattern for the pipelines easier, I think – now that there's an explicit path for what happens to error data. I can see a way to recompose my RSS pipelines so that an error message comes out, and then a third pipeline that can translate an exception record from one of those pipelines into the &quot;feed error&quot; record that I want to store in my RSS reader's database. And once the infrastructure described above is in place, the individual pipeline components don't really change that much from what I had before.</p>
 <p>But the counterpoint to that is that the interfaces of the various types involved in the pipeline infrastructure got more complex, and less readable as a result. And I'm not sure I've got to the bottom of the set of type casts and helper methods necessary to ensure that it's easy to use <code>Either</code> in the midst of other code.</p>
 <p>But I'm pretty sure Functional developers have already solved those problems – I just need to work out what the rough edges I need to sort out are. And to be sure of what they are I need to write some more code using this pattern...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -386,7 +408,7 @@ public static implicit operator FAILURE(Either&lt;SUCCESS, FAILURE&gt; value) =&
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

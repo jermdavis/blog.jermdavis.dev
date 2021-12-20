@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="I was asked to enable Sitecore&amp;#x27;s ItemService endpoints on a containerised instance of Sitecore recently, and my first pass through this didn&amp;#x27;t work. Turns out there&amp;#x27;s a key bit of documentation that seems to be missing for this scenario. Hence a quick post to help get info into Google. So if you need to do this, read on: ">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Using ItemService in&nbsp;containers</title>
+    <title>Jeremy Davis - Using ItemService in&#xA0;containers</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/using-itemservice-in-containers">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,25 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Using ItemService in&nbsp;containers">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Using ItemService in&amp;#xA0;containers">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/using-itemservice-in-containers-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Using ItemService in&#xA0;containers",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/using-itemservice-in-containers-social.png"
+        ],
+        "datePublished": "2021-09-13T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/using-itemservice-in-containers">
 <meta property="og:type" content="website">
 
@@ -114,26 +130,32 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Using ItemService in&nbsp;containers
+        Using ItemService in containers
         </h1>
+            <div class="meta">Published 13 September 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/docker" class="p-1 mr-1 bg-gray-100 rounded-md"> Docker</a>
+                    <a href="/tags/kubernetes" class="p-1 mr-1 bg-gray-100 rounded-md"> Kubernetes</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>I was asked to enable Sitecore's ItemService endpoints on a containerised instance of Sitecore recently, and my first pass through this didn't work. Turns out there's a key bit of documentation that seems to be missing for this scenario. Hence a quick post to help get info into Google. So if you need to do this, read on: <!--more--></p>
 <h2>The issue</h2>
 <p>Out-of-the-box, the <a href="https://doc.sitecore.com/en/developers/90/sitecore-experience-manager/the-itemservice.html" rel="noopener" target="_blank">ItemService</a> endpoints aren't available to external requests. The project I was working on needed this to be available to other apps from the CM role, to allow for some other work that was going on. So <a href="https://doc.sitecore.com/en/developers/90/sitecore-experience-manager/sitecore-services-client-security.html#security-policies_body" rel="noopener" target="_blank">based on the existing documentation</a> for this, I added a config patch to the solution:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0"?&gt;
-&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/" xmlns:role="http://www.sitecore.net/xmlconfig/role/"&gt;
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;configuration xmlns:patch=&quot;http://www.sitecore.net/xmlconfig/&quot; xmlns:role=&quot;http://www.sitecore.net/xmlconfig/role/&quot;&gt;
     &lt;sitecore&gt;
         &lt;settings&gt;
-            &lt;setting name="Sitecore.Services.SecurityPolicy" role:require="ContentManagement"&gt;
-                &lt;patch:attribute name="value"&gt;Sitecore.Services.Infrastructure.Web.Http.Security.ServicesOnPolicy, Sitecore.Services.Infrastructure&lt;/patch:attribute&gt;
+            &lt;setting name=&quot;Sitecore.Services.SecurityPolicy&quot; role:require=&quot;ContentManagement&quot;&gt;
+                &lt;patch:attribute name=&quot;value&quot;&gt;Sitecore.Services.Infrastructure.Web.Http.Security.ServicesOnPolicy, Sitecore.Services.Infrastructure&lt;/patch:attribute&gt;
             &lt;/setting&gt;
         &lt;/settings&gt;
     &lt;/sitecore&gt;
@@ -150,14 +172,14 @@
 {
 	public override void OnAuthorization(HttpActionContext actionContext)
 	{
-		Assert.ArgumentNotNull(actionContext, "actionContext");
+		Assert.ArgumentNotNull(actionContext, &quot;actionContext&quot;);
 		HttpRequestMessage request = actionContext.get_Request();
 		if (!(request.get_RequestUri().Scheme == Uri.UriSchemeHttps) &amp;&amp; !_configurationSettings.get_AllowToLoginWithHttp())
 		{
-			if (request.get_Method().get_Method() == "GET")
+			if (request.get_Method().get_Method() == &quot;GET&quot;)
 			{
 				actionContext.set_Response(HttpRequestMessageExtensions.CreateResponse(request, HttpStatusCode.Found));
-				actionContext.get_Response().set_Content((HttpContent)new StringContent("HTTPS is required", Encoding.UTF8, "text/html"));
+				actionContext.get_Response().set_Content((HttpContent)new StringContent(&quot;HTTPS is required&quot;, Encoding.UTF8, &quot;text/html&quot;));
 				UriBuilder uriBuilder = new UriBuilder(request.get_RequestUri())
 				{
 					Scheme = Uri.UriSchemeHttps,
@@ -168,26 +190,27 @@
 			else
 			{
 				actionContext.set_Response(HttpRequestMessageExtensions.CreateResponse(request, HttpStatusCode.NotFound));
-				actionContext.get_Response().set_Content((HttpContent)new StringContent("HTTPS is required", Encoding.UTF8, "text/html"));
+				actionContext.get_Response().set_Content((HttpContent)new StringContent(&quot;HTTPS is required&quot;, Encoding.UTF8, &quot;text/html&quot;));
 			}
 		}
 	}
 }
 </pre>
-<p>And the answer to fixing this is hiding there in the highlighted line. There's a config setting you can supply to disable this "require HTTPS" behaviour.</p>
+<p>And the answer to fixing this is hiding there in the highlighted line. There's a config setting you can supply to disable this &quot;require HTTPS&quot; behaviour.</p>
 <p>Doing a bit of a search, it turns out that setting has its default set in the <code>Sitecore.Services.Client.config</code> file. So a second bit of config patching will make all this work happily in the containers:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0"?&gt;
-&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/" xmlns:role="http://www.sitecore.net/xmlconfig/role/"&gt;
+<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;configuration xmlns:patch=&quot;http://www.sitecore.net/xmlconfig/&quot; xmlns:role=&quot;http://www.sitecore.net/xmlconfig/role/&quot;&gt;
     &lt;sitecore&gt;
         &lt;settings&gt;
-            &lt;setting name="Sitecore.Services.AllowToLoginWithHttp" role:require="ContentManagement"&gt;
-                &lt;patch:attribute name="value"&gt;true&lt;/patch:attribute&gt;
+            &lt;setting name=&quot;Sitecore.Services.AllowToLoginWithHttp&quot; role:require=&quot;ContentManagement&quot;&gt;
+                &lt;patch:attribute name=&quot;value&quot;&gt;true&lt;/patch:attribute&gt;
             &lt;/setting&gt;
         &lt;/settings&gt;
     &lt;/sitecore&gt;
 &lt;/configuration&gt;
 </pre>
 <p>Problem solved.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -242,7 +265,7 @@
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

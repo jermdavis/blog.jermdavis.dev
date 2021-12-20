@@ -3,7 +3,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="Recently a client of mine came up with some requirements that involved submitting data to the Web Forms for Marketers database via code. Having done a bit of Googling, I came across a &amp;lt;a href=&amp;quot;http://stackoverflow.com/a/22196958/847953&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;Stack Overflow answer on the same subject&amp;lt;/a&amp;gt; which seemed to offer a solution. Implementing this code did indeed allow submitting data &amp;#x2013; however it didn&amp;#x27;t trigger Save Actions. So while the data will go to the configured WFfM data store, emails or CRM integrations won&amp;#x27;t get triggered.&amp;#xA;That was an issue for my client, who wanted to have email notifications as well. So starting from the Stack Overflow responses, I looked into how the WFfM save actions can be correctly triggered via code.">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
@@ -22,8 +22,25 @@
 
     
     <meta property="og:title" content="Jeremy Davis - Programmatic WFfM submissions">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/programmatic-wffm-submissions-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Programmatic WFfM submissions",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/programmatic-wffm-submissions-social.png"
+        ],
+        "datePublished": "2015-05-18T00:00:00+00:00",
+        "dateModified": "2016-08-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/programmatic-wffm-submissions">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,24 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
         Programmatic WFfM submissions
         </h1>
+            <div class="meta">Published 18 May 2015</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/wffm" class="p-1 mr-1 bg-gray-100 rounded-md"> WFfM</a>
+                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>Recently a client of mine came up with some requirements that involved submitting data to the Web Forms for Marketers database via code. Having done a bit of Googling, I came across a <a href="http://stackoverflow.com/a/22196958/847953" target="_blank" rel="noopener noreferrer">Stack Overflow answer on the same subject</a> which seemed to offer a solution. Implementing this code did indeed allow submitting data – however it didn't trigger Save Actions. So while the data will go to the configured WFfM data store, emails or CRM integrations won't get triggered.</p>
 <p>That was an issue for my client, who wanted to have email notifications as well. So starting from the Stack Overflow responses, I looked into how the WFfM save actions can be correctly triggered via code.<!--more--></p>
 <h2>Starting point</h2>
@@ -133,18 +157,18 @@
 <p>You need to add the set of fields you want to be able to submit automatically, and you need to make a note of the IDs of the form item and each of the field items.</p>
 <p>You also need to set up the correct set of Save Actions – here I've set the form to save to the forms database and to send an email.</p>
 <p>The bare minimum of code to save data, based on the Stack Overflow answers might look a bit like this:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private ID _formID = new ID("{9A4FC79F-4F26-48EC-BAD6-CB34E83F2900}");
-private string _nameFieldID = "{EE4286A7-5ED0-4374-A983-4207AAE31587}";
-private string _emailFieldID = "{0869EE16-316E-44B3-B399-2BA2B0DE61E6}";
-private string _messageFieldID = "{B81DA4AC-A30E-44A1-AD53-3A6DD34BD708}";
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private ID _formID = new ID(&quot;{9A4FC79F-4F26-48EC-BAD6-CB34E83F2900}&quot;);
+private string _nameFieldID = &quot;{EE4286A7-5ED0-4374-A983-4207AAE31587}&quot;;
+private string _emailFieldID = &quot;{0869EE16-316E-44B3-B399-2BA2B0DE61E6}&quot;;
+private string _messageFieldID = &quot;{B81DA4AC-A30E-44A1-AD53-3A6DD34BD708}&quot;;
 
 public void SubmitData()
 {
     var acrList = new List&lt;AdaptedControlResult&gt;();
             
-    acrList.Add(makeAdaptedControlResult(_nameFieldID, "Name", "John Smith"));
-    acrList.Add(makeAdaptedControlResult(_emailFieldID, "Email", "J.Smith@test.com"));
-    acrList.Add(makeAdaptedControlResult(_messageFieldID, "Message", "Lorem ipsum dolor sit"));
+    acrList.Add(makeAdaptedControlResult(_nameFieldID, &quot;Name&quot;, &quot;John Smith&quot;));
+    acrList.Add(makeAdaptedControlResult(_emailFieldID, &quot;Email&quot;, &quot;J.Smith&#64;test.com&quot;));
+    acrList.Add(makeAdaptedControlResult(_messageFieldID, &quot;Message&quot;, &quot;Lorem ipsum dolor sit&quot;));
 
     var arl = new AdaptedResultList(acrList);
 
@@ -170,17 +194,17 @@ private AdaptedControlResult makeAdaptedControlResult(string fieldID, string fie
 <p>When you're looking at <code>SubmitActionManager</code> the obvious approach to getting the set of Actions for your form is the <code>GetActions()</code> method on that class. Initially this appears fine - it returns a set of Actions and they seem to match up with the actions defined in your form. However when you try to use these to submit a form, it doesn't work... I spent some time trying to work out why – but unhelpfully the <code>Execute()</code> method doesn't return any useful error messages. Looking at the code it discards the errors that are returned from internal call to <code>ExecuteSaving()</code>.</p>
 <p>That lead to me trying calling that method via Reflection. And this showed that any Save Action that required configuration (of which the email sending one is a prime example) was returning errors that implied missing configuration. So clearly <code>GetActions()</code> returns the right objects but without the required configuration. Back to the drawing board...</p>
 <p>Further time spent trying to work out exactly what happens when WFfM does this itself lead me on to the configuration data being exposed by the <code>SitecoreSimpleForm</code> class. And this lead me towards the following basic code:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private ID _formID = new ID("{9A4FC79F-4F26-48EC-BAD6-CB34E83F2900}");
-private string _nameFieldID = "{EE4286A7-5ED0-4374-A983-4207AAE31587}";
-private string _emailFieldID = "{0869EE16-316E-44B3-B399-2BA2B0DE61E6}";
-private string _messageFieldID = "{B81DA4AC-A30E-44A1-AD53-3A6DD34BD708}";
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private ID _formID = new ID(&quot;{9A4FC79F-4F26-48EC-BAD6-CB34E83F2900}&quot;);
+private string _nameFieldID = &quot;{EE4286A7-5ED0-4374-A983-4207AAE31587}&quot;;
+private string _emailFieldID = &quot;{0869EE16-316E-44B3-B399-2BA2B0DE61E6}&quot;;
+private string _messageFieldID = &quot;{B81DA4AC-A30E-44A1-AD53-3A6DD34BD708}&quot;;
 
 public void SubmitData()
 {
     var results = new List&lt;ControlResult&gt;();
-    results.Add(makeControlResult(_nameFieldID, "Name", "Bob Jones"));
-    results.Add(makeControlResult(_emailFieldID, "Email", "B.Jones@test.com"));
-    results.Add(makeControlResult(_messageFieldID, "Message", "Dolor sit amet."));
+    results.Add(makeControlResult(_nameFieldID, &quot;Name&quot;, &quot;Bob Jones&quot;));
+    results.Add(makeControlResult(_emailFieldID, &quot;Email&quot;, &quot;B.Jones&#64;test.com&quot;));
+    results.Add(makeControlResult(_messageFieldID, &quot;Message&quot;, &quot;Dolor sit amet.&quot;));
 
     var formItem = Sitecore.Context.Database.GetItem(_formID);
 
@@ -213,11 +237,12 @@ private ControlResult makeControlResult(string fieldID, string fieldName, string
 <p><a href="/img/2015/2015-05-formemail.png" target="_blank"><img alt="Form Email" src="/img/2015/2015-05-formemail.png"></a></p>
 <p>Success!</p>
 <p>If you need to retrieve any error messages from this process, you can replace the call to <code>SubmitActionManager.Execute()</code> with the following bit of reflection:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var execSaveMethod = typeof(SubmitActionManager).GetMethod("ExecuteSaving", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var execSaveMethod = typeof(SubmitActionManager).GetMethod(&quot;ExecuteSaving&quot;, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
 var parameters = new object[] { _formID, results.ToArray(), actionDefinitions.ToArray(), true, Sitecore.Form.Core.Analytics.AnalyticsTracker.SessionId };
 var result = (ExecuteResult)execSaveMethod.Invoke(null, parameters);
 </pre>
 <p>You can then look at the contents of <code>result.Failures</code> to see what (if any) errors were raised by your Save Actions.</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -272,7 +297,7 @@ var result = (ExecuteResult)execSaveMethod.Invoke(null, parameters);
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">

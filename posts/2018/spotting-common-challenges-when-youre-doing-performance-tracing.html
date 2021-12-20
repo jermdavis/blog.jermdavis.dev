@@ -3,11 +3,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="Sitecore, C# and web development">
+        <meta name="description" content="I find myself doing quite a lot of work on performance for Sitecore websites at the moment. Whenever I do a similar job for a group of clients, I start to spot patterns in the sites I&amp;#x27;m working on &amp;#x2013; and it struck me that there are some common performance issues that can be spotted just from the overview graphs you see when you collect trace data.&amp;#xA;So to try and help you all improve the sites you ship, here are three that I&amp;#x27;ve come across in a few projects recently:">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
-    <title>Jeremy Davis - Spotting common challenges when you're doing performance&nbsp;tracing</title>
+    <title>Jeremy Davis - Spotting common challenges when you&#x27;re doing performance&#xA0;tracing</title>
 
     <link rel="canonical" href="https://blog.jermdavis.dev/posts/2018/spotting-common-challenges-when-youre-doing-performance-tracing">
     <meta name="robots" content="index, follow">
@@ -21,9 +21,26 @@
     <link rel="manifest" href="/manifest.json">
 
     
-    <meta property="og:title" content="Jeremy Davis - Spotting common challenges when you're doing performance&nbsp;tracing">
-    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
-    <meta property="og:description" content="Sitecore, C# and web development">
+    <meta property="og:title" content="Jeremy Davis - Spotting common challenges when you&amp;#x27;re doing performance&amp;#xA0;tracing">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/spotting-common-challenges-when-youre-doing-performance-tracing-social.png">
+    <meta property="og:description" content="">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Spotting common challenges when you&#x27;re doing performance&#xA0;tracing",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/spotting-common-challenges-when-youre-doing-performance-tracing-social.png"
+        ],
+        "datePublished": "2018-02-05T00:00:00+00:00",
+        "dateModified": "2018-02-06T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    </script>
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/spotting-common-challenges-when-youre-doing-performance-tracing">
 <meta property="og:type" content="website">
 
@@ -114,17 +131,23 @@
     </div>
 </div>
 
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="site-heading">
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
         <h1 class="text-5xl mb-4 pb-1">
-        Spotting common challenges when you're doing performance&nbsp;tracing
+        Spotting common challenges when you're doing performance tracing
         </h1>
+            <div class="meta">Published 05 February 2018</div>
+                <div class="meta">Updated 06 February 2018</div>
+            <div class="flex py-1">
+                    <a href="/tags/performance" class="p-1 mr-1 bg-gray-100 rounded-md"> Performance</a>
+                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
                 <p>I find myself doing quite a lot of work on performance for Sitecore websites at the moment. Whenever I do a similar job for a group of clients, I start to spot patterns in the sites I'm working on – and it struck me that there are some common performance issues that can be spotted just from the overview graphs you see when you collect trace data.</p>
 <p>So to try and help you all improve the sites you ship, here are three that I've come across in a few projects recently:<!--more--></p>
 <h2>1. The hard-working CPU</h2>
@@ -135,7 +158,7 @@ Wide, mostly solid rectangles on the CPU-time graph for your threads. Sometimes 
 Simply put, you're working the CPU hard when a request looks like this. There are lots of potential reasons for this, but some common scenarios are:</p>
 <ul>
 <li>Poor queries against the Sitecore content APIs. Especially where a big chunk of data gets returned, and is then filtered by Linq-to-Objects in memory. For example, work hard to avoid queries that look like this:<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var results = Sitecore.Context.Item
-                .Axes("//*")
+                .Axes(&quot;//*&quot;)
                 .Where(i =&gt; i.TemplateID == requiredTemplateID);
 </pre>
 because it's a classic performance bottleneck – it can fetch a lot of items from the database (which is itself a problem due to query time and cache churn) but then it filters them in memory, using up lots more CPU time and discarding a chunk of the data that Sitecore worked hard to fetch.</li>
@@ -152,9 +175,9 @@ The graph of memory in use over time rises as long as the app keeps running. Gar
 <p><b>Why does it look like this?</b><br>
 The .Net runtime's Garbage Collector is good, but there are still ways for your app to leak (or appear to leak) memory. Something going on in your code is preventing the GC from taking back control of some of the memory you're using. In desktop applications this can be kind-of normal (If you keep adding more text and images to a Word document, Word has to keep asking for more memory...), but for web applications it's less common for that sort of state data to stick around in memory between requests. Some common scenarios that might lead to high memory usage are:</p>
 <ul>
-<li>Memory is being referenced by a static field, event or object. Statics don't get garbage collected, as they live for the entire duration of the app-pool's life. So if a static keeps a reference to some other objects, those objects can't be garbage collected either. Imagine a "cache" object in static scope which never removes any data due to age, but just adds new things as it sees them.</li>
-<li>Your code is allocating lots of big chunks of memory. Single objects over 85kb in size go on the "large object heap", where <a href="https://stackoverflow.com/a/8953503/847953" rel="noopener" target="_blank">garbage collection behaves a bit differently</a>. This heap is not usually compacted when memory is released, so while spaces are freed up, the total heap size allocated tends to grow more than the normal heap. That's because if an 86kb object is freed and then a 87kb object is allocated, the new one doesn't fit in the old space so more heap memory is required for the new allocation. You can spot this behaviour because the overall heap size grows, whilst the size of all your managed objects does not necessarily grow at the same rate.</li>
-<li>Your code is doing interop with something unmanaged, and the external code relies on pointers to absolute memory locations in managed memory space. This requires objects to be "<a href="https://stackoverflow.com/a/2490933/847953" rel="noopener" target="_blank">pinned</a>" in place (so the GC cannot automatically compact them), which can lead to similar heap issues as large objects. Generally us web developers don't write code like this very much, but you might be using a 3rd party library which does. I've seen image manipulation libraries in native code cause this sort of issue in the past.</li>
+<li>Memory is being referenced by a static field, event or object. Statics don't get garbage collected, as they live for the entire duration of the app-pool's life. So if a static keeps a reference to some other objects, those objects can't be garbage collected either. Imagine a &quot;cache&quot; object in static scope which never removes any data due to age, but just adds new things as it sees them.</li>
+<li>Your code is allocating lots of big chunks of memory. Single objects over 85kb in size go on the &quot;large object heap&quot;, where <a href="https://stackoverflow.com/a/8953503/847953" rel="noopener" target="_blank">garbage collection behaves a bit differently</a>. This heap is not usually compacted when memory is released, so while spaces are freed up, the total heap size allocated tends to grow more than the normal heap. That's because if an 86kb object is freed and then a 87kb object is allocated, the new one doesn't fit in the old space so more heap memory is required for the new allocation. You can spot this behaviour because the overall heap size grows, whilst the size of all your managed objects does not necessarily grow at the same rate.</li>
+<li>Your code is doing interop with something unmanaged, and the external code relies on pointers to absolute memory locations in managed memory space. This requires objects to be &quot;<a href="https://stackoverflow.com/a/2490933/847953" rel="noopener" target="_blank">pinned</a>&quot; in place (so the GC cannot automatically compact them), which can lead to similar heap issues as large objects. Generally us web developers don't write code like this very much, but you might be using a 3rd party library which does. I've seen image manipulation libraries in native code cause this sort of issue in the past.</li>
 <li>Failure to use IDisposable objects correctly. If code doesn't call <code>Dispose()</code> at an appropriate point, these objects can hang on to memory until the .Net runtime gets around to calling their finaliser method. You don't know how long it will be before that happens, so even if they're no longer held in memory by references, their heap space can still be occupied.</li>
 </ul>
 <p><b>What should you do about it?</b><br>
@@ -167,10 +190,11 @@ The CPU-time trace for your request has a definite <a href="https://www.google.c
 <p><b>Why does it look like this?</b><br>
 This is usually down to threads waiting for locks or for some sort of IO operation. Locks might be accesses to thread-safe collections, or use of <code>lock(){}</code> blocks in your code. Waiting for IO will most likely be calls to blocking methods like <code>Read()</code> or async code which explicitly calls <code>Await()</code> to block until something completes.</p>
 <p><b>What should you do about it?</b><br>
-If your code includes locks, you'll need to consider if it's possible to refactor to remove or reduce the scope of these operations. Ideally, avoid code which needs to explicitly lock anything. If you have to have <code>lock(){}</code> blocks, try to ensure they wrap the smallest (and fastest) section code you possibly can. You should also be very careful of any code which needs to lock two things - this is classic "deadlock" territory, and they can be really hard to debug...</p>
+If your code includes locks, you'll need to consider if it's possible to refactor to remove or reduce the scope of these operations. Ideally, avoid code which needs to explicitly lock anything. If you have to have <code>lock(){}</code> blocks, try to ensure they wrap the smallest (and fastest) section code you possibly can. You should also be very careful of any code which needs to lock two things - this is classic &quot;deadlock&quot; territory, and they can be really hard to debug...</p>
 <p>Where you're dealing with IO, the ideal scenario is to allow is to get rid of the need to block entirely. If you can refactor your code to allow operations to complete asynchronously in parallel with other operation then this is probably the best bet. C#'s <code>async</code> features can be very helpful for this. Otherwise, consider if you can reduce the effort involved in reads and writes - can you reduce the number of small operations by doing one big one, to increase efficiency? Or is it possible to cache data in memory and reduce the amount of I/O you're doing overall?</p>
 <h2>Conclusions</h2>
 <p>As with anything performance related, I'd repeat the key theme from <a href="/posts/2017/measure-if-you-want-to-go-faster" target="_blank">my Manchester User Group talk</a>: Check your performance early and often. It's much easier (and hence cheaper) to change things early on in your project development cycle than later. An hopefully the comments above will help you spot some common problem patterns before they become a launch-day criss for you...</p>
+
 
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -225,7 +249,7 @@ If your code includes locks, you'll need to consider if it's possible to refacto
 
     <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
     <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>© <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2021</div>
     </div>
 
     <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
