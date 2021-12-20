@@ -3,7 +3,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="So, finally, we've got the prerequisites (<a href=&quot;/posts/2015/development-environments-with-powershell-dsc-part-2&quot; target=&quot;_blank&quot;>Windows</a>, <a href=&quot;/posts/2015/development-environments-with-powershell-dsc-part-3&quot; target=&quot;_blank&quot;>Mongo</a>, <a href=&quot;/posts/2015/development-environments-with-powershell-dsc-part-4&quot; target=&quot;_blank&quot;>SQL</a>) out of the way, we can get to installing Sitecore in this post. There are a load of ways of going about this, but my usual choice is automating the Sitecore <code>.exe</code> installer. Doing this via DSC gives you the basis of an installation which can be used across all your platforms. The process below is based on the approach I've used with ordinary PowerShell in the past, but adapted for DSC:">
+        <meta name="description" content="Sitecore, C# and web development">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
@@ -22,25 +22,8 @@
 
     
     <meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;5">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-5-social.png">
-    <meta property="og:description" content="">
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Development environments with PowerShell DSC &#x2013; Part&#xA0;5",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-5-social.png"
-        ],
-        "datePublished": "2015-11-09T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    </script>
+    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+    <meta property="og:description" content="Sitecore, C# and web development">
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-5">
 <meta property="og:type" content="website">
 
@@ -132,24 +115,16 @@
 </div>
 
     <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="post-heading">
+    <div class="site-heading">
         <h1 class="text-5xl mb-4 pb-1">
         Development environments with PowerShell DSC – Part&nbsp;5
         </h1>
-            <div class="meta">Published 09 November 2015</div>
-                <div class="meta">Updated 25 August 2016</div>
-            <div class="flex py-1">
-                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
-                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-                    <a href="/tags/powershell-dsc" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell DSC</a>
-                    <a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md"> Installation</a>
-            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
                 <p>So, finally, we've got the prerequisites (<a href="/posts/2015/development-environments-with-powershell-dsc-part-2" target="_blank">Windows</a>, <a href="/posts/2015/development-environments-with-powershell-dsc-part-3" target="_blank">Mongo</a>, <a href="/posts/2015/development-environments-with-powershell-dsc-part-4" target="_blank">SQL</a>) out of the way, we can get to installing Sitecore in this post. There are a load of ways of going about this, but my usual choice is automating the Sitecore <code>.exe</code> installer. Doing this via DSC gives you the basis of an installation which can be used across all your platforms. The process below is based on the approach I've used with ordinary PowerShell in the past, but adapted for DSC:<!--more--></p>
 <p><i>(<b>Edited to add:</b> Links to all posts in this series: <a href="/posts/2015/development-environments-with-powershell-dsc-part-1" target="_blank">1:Introduction to DSC</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-2" target="_blank">2:Windows Features</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-3" target="_blank">3:Mongo DB</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-4" target="_blank">4:SQL Server</a> – 5:Sitecore – <a href="/posts/2015/development-environments-with-powershell-dsc-part-6" target="_blank">6:Coveo CES</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-7" target="_blank">7:Coveo REST API &amp; Coveo for Sitecore</a>)</i></p>
 <blockquote>
@@ -378,7 +353,6 @@ File SitecoreLicense
 <p>The <code>GetScript</code> and <code>TestScript</code> properties aren't filled in here, as they don't really make sense to me in this context. The <code>SetScript</code> makes HTTP requests to the sitecore public site until we get back a "success" response. (Whilst we're telling <code>Invoke-WebRequest</code> to apply no timeout, you do still get timeout exceptions from this code - hence the try/catch block) We then repeat the same process to load the Sitecore admin site as well.</p>
 <p>And that's Sitecore ready to go for your development.</p>
 
-
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
                 <section class="mvp">
@@ -395,7 +369,7 @@ File SitecoreLicense
                     <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
                     <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
                     <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (12)</a>
+                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (13)</a>
                     <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
                     <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
                     <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>

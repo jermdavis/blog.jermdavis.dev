@@ -6,8 +6,62 @@
 		<description />
 		<copyright>2014-2021</copyright>
 		<managingEditor>Jeremy Davis</managingEditor>
-		<pubDate>Wed, 08 Dec 2021 17:53:07 GMT</pubDate>
-		<lastBuildDate>Wed, 08 Dec 2021 17:53:07 GMT</lastBuildDate>
+		<pubDate>Mon, 20 Dec 2021 08:22:07 GMT</pubDate>
+		<lastBuildDate>Mon, 20 Dec 2021 08:22:07 GMT</lastBuildDate>
+		<item>
+			<title>A blog migration story</title>
+			<link>https://blog.jermdavis.dev/posts/2021/blog-migration</link>
+			<description>&lt;p&gt;It's been a while coming, but over the last couple of months I've finally gone throught the process of migrating my blog content off WordPress and onto a statically hosted site.  A few people have asked me why I'd go to the trouble of doing this, so while I'm having a festive break from proper Sitecore stuff, I thought I should write about my reasoning: &lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
+			<guid>https://blog.jermdavis.dev/posts/2021/blog-migration</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;It's been a while coming, but over the last couple of months I've finally gone throught the process of migrating my blog content off WordPress and onto a statically hosted site.  A few people have asked me why I'd go to the trouble of doing this, so while I'm having a festive break from proper Sitecore stuff, I thought I should write about my reasoning: &lt;!--more--&gt;&lt;/p&gt;
+&lt;h2 id="why-migrate"&gt;Why migrate?&lt;/h2&gt;
+&lt;p&gt;This isn't the first time I've changed providers. Back in 2014 when I first started writing, I tried &lt;a href="https://www.blogger.com/" target="_blank" rel="noopener"&gt;Blogger&lt;/a&gt; initially. That didn't last long though - I found formatting code samples to be such a pain there that it drove me to &lt;a href="https://wordpress.com/" target="_blank" rel="noopener"&gt;WordPress&lt;/a&gt; after a few months.&lt;/p&gt;
+&lt;p&gt;And WordPress has kept me mostly happy for the years since. But of late they've started &lt;a href="https://en.wikipedia.org/wiki/Who_Moved_My_Cheese%3F" target="_blank" rel="noopener"&gt;moving my cheese&lt;/a&gt; quite a bit. They're in the midst of rolling out a series of enhancements towards a more modern editing UI. But in doing that they've made the workflow I've been using harder - and it's started to get on my nerves. Basically I don't get on with the new block editor.&lt;/p&gt;
+&lt;p&gt;So about a year ago I started looking into the idea of moving. I toyed with a few other more recent blogging platforms, but didn't find one I liked. So I started looking at hosting it myself, in order to have more control...&lt;/p&gt;
+&lt;p&gt;I tried a collection of JavaScript-based site generation tools like &lt;a href="https://www.gatsbyjs.com/" target="_blank" rel="noopener"&gt;Gatsby&lt;/a&gt;, &lt;a href="https://nextjs.org/" target="_blank" rel="noopener"&gt;NextJS&lt;/a&gt; and &lt;a href="https://hexo.io/" target="_blank" rel="noopener"&gt;Hexo&lt;/a&gt;. I quite liked Hexo, and got fairly far with creating a site based on that - but kept bumping into how my lack of JavaScript knowledge would cause issues for customising it.&lt;/p&gt;
+&lt;p&gt;So I went back to the drawing board and looked for something .Net based. And after a while I came across &lt;a href="https://www.statiq.dev/" target="_blank" rel="noopener"&gt;Statiq&lt;/a&gt;. It's an ongoing project to build a modern SSG using .Net core - and it fit my skills better.&lt;/p&gt;
+&lt;p&gt;So moving away from Wordpress gives me:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Better performance&lt;/strong&gt;&lt;br&gt;
+Using an SSG is much better for &lt;a href="https://developers.google.com/web/tools/lighthouse" target="_blank" rel="noopener"&gt;lighthouse scores&lt;/a&gt;. Static files don't need runtime processing to render the content, so I can have pages that score very well:
+&lt;a target="__blank" rel="noopener" href="https://blog.jermdavis.dev/img/2021/2021-12-Lighthouse.png"&gt;&lt;img src="https://blog.jermdavis.dev/img/2021/2021-12-Lighthouse.png"&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Control over the layout and style&lt;/strong&gt;&lt;br&gt;
+There have been a few occasions over the years where I've wanted to be able to mess about with the blog theme more than the freebie WordPress behaviour lets you. Not an issue if I build the HTML myself. Though I'm sure my designer friends would say this freedom is bad for other reasons... ;-)&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Picking my own domain&lt;/strong&gt;&lt;br&gt;
+Again, something I could have done with paid WordPress - but is easier with a static site, and ensures I keep ownership and control over everything.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Reduced risk of the platform moving out from under me&lt;/strong&gt;&lt;br&gt;
+While Statiq might change in the future, it's open source, so I can always revert to a version which suits me. And while maybe one day I'll have to move hosting or DNS provider, neither of those are as big an issue as WordPress changing in ways I don't like.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So I spent some time on hacking up my own site theme, and pulled together a migration tool to transfer content. And then spent far too long fiddling with the details...&lt;/p&gt;
+&lt;h2 id="what-is-the-tech-stack"&gt;What is the tech stack?&lt;/h2&gt;
+&lt;p&gt;As mentioned the SSG for the new site is Statiq. It's an open source project built on .Net Core. It takes a theme built on Razor Pages, and applies it to markdown files for all your pages and posts. Statiq is just a framework for running content creation pipelines, so you can compile it into whatever application you want.&lt;/p&gt;
+&lt;p&gt;It comes with pipelines which do all the common blog applications, and I found I didn't need to tweak very much of its out-of-the-box behaviour, outside of the razor files:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" rel="noopeners" href="https://blog.jermdavis.dev/img/2021/2021-12-Statiq.png"&gt;&lt;img src="https://blog.jermdavis.dev/img/2021/2021-12-Statiq.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;So I've got a .Net Core console app project (which happens to be running under .Net 6 - I was very pleased with how easy upgrading to that was) which generates all the mark-up, and handles the static files for the site. And I've made a couple of changes to the standard behaviour:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;I modified the default code-block formatting to use the &lt;a href="https://github.com/EnlighterJS/EnlighterJS" target="_blank" rel="noopener"&gt;Enlighter.js&lt;/a&gt; framework. That gives me pretty code blocks in a style that I like.&lt;/li&gt;
+&lt;li&gt;I added a pipleline to generate OpenGraph images for each post, based on &lt;a href="https://wellsb.com/csharp/aspnet/generate-images-statiq-imagesharp" target="_blank" rel="noopener"&gt;the example in this blog post&lt;/a&gt;. So social shares for any page get an image (along with other metadata) without any extra authoing effort.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Both of those were pretty easy changes to make thanks to the way Statiq works.&lt;/p&gt;
+&lt;p&gt;The theme then uses &lt;a href="https://tailwindcss.com/" target="_blank" rel="noopener"&gt;Tailwind CSS&lt;/a&gt; and &lt;a href="https://alpinejs.dev/" target="_blank" rel="noopener"&gt;Alpine.js&lt;/a&gt;. I've made a first pass at minimising Tailwind, but there's more to do there to get to "nice" styles.&lt;/p&gt;
+&lt;p&gt;The build process for Statiq isn't that fast with 260+ posts and all their images. But it works, and the output is easy to host. I'm pushing that to a &lt;a href="https://pages.github.com/" target="_blank" rel="noopener"&gt;GitHub pages&lt;/a&gt; site, with a bit of powershell to automate the build-and-commit task. While there are lots of different static file hosting solutions I could have used for this, that was just the simplest choice.&lt;/p&gt;
+&lt;p&gt;And finally, the DNS for the custom domain for the GitHub Pages site is handled by &lt;a href="https://www.cloudflare.com/" target="_blank" rel="noopener"&gt;Cloudflare&lt;/a&gt;. Nothing clever there - just a CNAME entry in the DNS that points to the relevant thing in GitHub.&lt;/p&gt;
+&lt;h2 id="whats-still-to-do"&gt;What's still to do?&lt;/h2&gt;
+&lt;p&gt;Plenty. Other than a few more years of writing every couple of weeks, I've got a bit of a backlog of work still to do:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;There are a few migration tasks left. There are some big files left on WordPress that I don't want to host in GitHub Pages. So they need a new home. And eventually I'll need to exclude the old site from Google too.&lt;/li&gt;
+&lt;li&gt;The styling is pretty hacky right now. While I've used the Tailwind CLI to minimise the default CSS file and got it fairly small, most of the UI still has lots of basic Tailwind classes applied. So eventually I'll need to work out how to put a better approach to styling in. Statiq does automatically compile sass into CSS - but I've not looked into how you can "include" other frameworks yet. So maybe I'll need to make use of a more traditional css build script. Similarly I'm pretty sure I could reduce the size of the JS being delivered with some more work.&lt;/li&gt;
+&lt;li&gt;There's some particular situation which can cause the initial start-up of the Statiq build/preview engine to fail. Sometimes a bit of data in their pipeline state appears to go wrong and it gets a lot of null-value exceptions as it processes your templates. Restarting it, or clearing out the current output and cache seems to resolve the issue. But I don't know why yet, and I'd like to understand that and (hopefully) fix it. So there's a debugging task there.&lt;/li&gt;
+&lt;li&gt;I'm not a fan of the current cookie banner code. Apart from not being convinced it's needed, it annoys me that it will still flash up briefly on page loads after it's been dismissed. I must be able to do better than that.&lt;/li&gt;
+&lt;li&gt;And I need to find a better markdown file editor - I need to do a bit of research into customisable editors, where I have have snippet insertion, so I don't have to keep looking up the right order for brackets in markdown links...&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;But despite those things that need sorting, the initial migration seems to be a success. I wonder how long it'll take me to finish all those remaining migration tasks?&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Is your hot disaster recovery causing a hot mess?</title>
 			<link>https://blog.jermdavis.dev/posts/2021/hot-dr-hot-mess</link>
@@ -806,67 +860,6 @@ cm-d1e9220abd-emvke -&amp;gt; 2s    cm-4630ff27d7-qfubm -&amp;gt; 6s
 cm-f4653da2ef-dcehw -&amp;gt; 3s    cm-6f34d6f2c9-ritip -&amp;gt; 9s
 &lt;/pre&gt;
 &lt;p&gt;That gives a reasonable spread of values for whatever string we the code starts from, and they're repeatable rather than random.&lt;/p&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Revisiting waiting for Kubernetes deployments</title>
-			<link>https://blog.jermdavis.dev/posts/2021/revisiting-waiting-for-kubernetes-deployments</link>
-			<description>&lt;p&gt;Some time back, when &lt;a href="https://blog.jermdavis.dev/posts/2021/waiting-for-kubernetes" target="_blank"&gt;I was looking at how to release containerised Sitecore into Azure Kubernetes Clusters&lt;/a&gt;, I worked through the question of "how do I make DevOps wait for the new images to be deployed", because you might want to run further work after the new containers are spun up. While what I tried back then was mostly working, I've found some reasons to try a different tack since then. &lt;/p&gt;</description>
-			<author>Jeremy Davis</author>
-			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
-			<guid>https://blog.jermdavis.dev/posts/2021/revisiting-waiting-for-kubernetes-deployments</guid>
-			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
-			<content:encoded>&lt;p&gt;Some time back, when &lt;a href="https://blog.jermdavis.dev/posts/2021/waiting-for-kubernetes" target="_blank"&gt;I was looking at how to release containerised Sitecore into Azure Kubernetes Clusters&lt;/a&gt;, I worked through the question of "how do I make DevOps wait for the new images to be deployed", because you might want to run further work after the new containers are spun up. While what I tried back then was mostly working, I've found some reasons to try a different tack since then. &lt;!--more--&gt;&lt;/p&gt;
-&lt;h2&gt;The challenge&lt;/h2&gt;
-&lt;p&gt;When I first worked through the problem of "make DevOps wait for Kubernetes to finish an operation", I tried making the DevOps release wait based on the status of pods. A command like:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;kubectl.exe wait --for=condition=Ready pods -l app=cm -n &amp;lt;YourNamespace&amp;gt; --timeout=2700s
-&lt;/pre&gt;
-&lt;p&gt;That seemed to be working OK for a while – but recently I've seen some issues. On some deployments I'd do a release in DevOps which would complete ok, but when I went to smoke-test it afterwards it would be clear that the Unicorn updates were missing. This was odd, as I could see the DevOps logs saying that the step which fired off the Unicorn sync had completed ok:&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-07-unicorn.png" target="_blank"&gt;&lt;img alt="Unicorn success" src="https://blog.jermdavis.dev/img/2021/2021-07-unicorn.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;It took me a while to realise that while that step was completing OK, the detailed log for the step showed that the sync had run, but had no changes to apply. And that was clearly wrong – my release definitlely included changes. And if I subsequently went to the Unicorn UI via the Sitecore CM, running "sync everything" from there would do the updates I was expecting.&lt;/p&gt;
-&lt;p&gt;After a certain amount of thinking, it struck me that the most obvious solution to the quandry was "the sync has run on a CM pod which has not been upgraded to the new image". That explains the odd behaviour – if sync ran on an old CM image it would indeed have no changes to apply. But why would it be doing that – DevOps is waiting for the new CM image to be ready before it tries the Unicorn sync.&lt;/p&gt;
-&lt;p&gt;The answer to that was kind of obvious in retrospect. When I sat back and thought about all the deployments I was doing, I could see a clear pattern:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;If the K8s cluster ran a single CM instance, everything was fine.&lt;/li&gt;
-&lt;li&gt;But if the K8s cluster had more than once CM instance, I might see this issue.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;And that lead me to understand what was up:&lt;/p&gt;
-&lt;p&gt;The wait command above works fine when you are releasing a change to a single CM pod. But if you have multiple pods, it can go wrong: The "wait" can complete when only one of the pod replicas has been updated, which means you have a roughly 50% chance that the HTTPS request to sync Unicorn gets routed through the ingress controller to an old pod, rather than a newly updated one.&lt;/p&gt;
-&lt;p&gt;So how can DevOps ensure that all of the CM pods have been updated before it tries the Unicorn Job?&lt;/p&gt;
-&lt;h2&gt;A possible solution&lt;/h2&gt;
-&lt;p&gt;After spending a bit of time with my friend Google, I came across another approach. Instead of waiting on the state of a pod, it turns out you can wait on the state of a deployment:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;kubectl.exe rollout status deployment cm -n &amp;lt;YourNamespace&amp;gt;
-&lt;/pre&gt;
-&lt;p&gt;By default that command will keep waiting until all the changes from an "apply" operation for a deployment called "cm" have finished. Which should include any replicas spinning up.&lt;/p&gt;
-&lt;p&gt;But it's worth noting that timeouts behave differently here than they do with the "wait" command above. In the original pattern, you passed a timeout flag on the command line, kubectl.exe would wait for "the pod to be ready, or that timeout to expire". The "rollout" command doesn't work that way. There's no command line parameter to control the timeout. It is done via the yaml file for the deployment, using a parameter called "progressDeadlineSeconds". It took me a while to get this one right, as the docs say "it's a child of the spec node", but aren't entirely clear which one, because your yaml probably includes more than one. It's the highest level "spec" that needs this setting:&lt;/p&gt;
-&lt;pre data-enlighter-highlight="9" data-enlighter-language="yaml" style="width:100%; overflow:scroll;"&gt;apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: cm
-  labels:
-    app: cm
-spec:
-  replicas: 2
-  progressDeadlineSeconds: 1800
-  selector:
-    matchLabels:
-      app: cm
-  template:
-    metadata:
-      labels:
-        app: cm
-    spec:
-      nodeSelector:
-        kubernetes.io/os: windows
-      initContainers:
-        - name: wait-xdbcollection
-          image: mcr.microsoft.com/powershell:lts-nanoserver-1809
-          command: ["pwsh", "-Command", "do { Start-Sleep -Seconds 3 } until ($(try {(iwr http://xdbcollection/healthz/ready).StatusCode -eq 200} catch { $false }));"]
-... etc ...
-&lt;/pre&gt;
-&lt;p&gt;The "&lt;a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds" rel="noopener" target="_blank"&gt;progressDeadlineSeconds&lt;/a&gt;" value controls how long the Kubernetes control code waits for the deployment to complete before it's declared to be in an error state. If that occurs the wait will end and report that error. What happens to the deployment seems to depend on what caused it to take that long. If it's actually failing (maybe the image can't be downloaded?) then the deployment won't complete. But if it's hit that timeout because it's just taking longer, then the deployment will probably finish ok despite the wait receving the "error" state for its length.&lt;/p&gt;
-&lt;p&gt;I've done a few test deployments with this alternative pattern, and they've worked ok. But I think I need to run more real deployments before I'll be confident it is all better. More to come, perhaps...&lt;/p&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>

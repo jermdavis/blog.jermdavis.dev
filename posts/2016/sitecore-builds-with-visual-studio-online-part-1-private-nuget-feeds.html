@@ -3,7 +3,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-        <meta name="description" content="While I've read plenty of articles in the past about configuring build servers for Sitecore projects, I've not seen much written about using <a href=&quot;https://www.visualstudio.com/en-us/products/what-is-visual-studio-online-vs.aspx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Visual Studio Online</a>. (Or &quot;Team Foundation Services&quot;, or whatever it's called this week) Since the company I work for are in the process of transitioning all their development infrastructure to <a href=&quot;https://azure.microsoft.com/en-gb/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Azure</a>, trying to get hosted builds working in VSO seemed like a userful area of research for me. This is the first part of what will probably turn into a few posts on the topic of how I got to the point of being able to run a hosted build for a Sitecore / <a href=&quot;http://www.teamdevelopmentforsitecore.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>TDS</a> / <a href=&quot;https://github.com/sergeyshushlyapin/Sitecore.FakeDb&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>FakeDB</a> solution...">
+        <meta name="description" content="Sitecore, C# and web development">
         <meta name="author" content="Jeremy Davis">
         <meta name="copyright" content="Jeremy Davis">
 
@@ -22,25 +22,8 @@
 
     
     <meta property="og:title" content="Jeremy Davis - Sitecore builds with Visual Studio Online – Part 1: Private NuGet&nbsp;feeds">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds-social.png">
-    <meta property="og:description" content="">
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Sitecore builds with Visual Studio Online &#x2013; Part 1: Private NuGet&#xA0;feeds",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds-social.png"
-        ],
-        "datePublished": "2016-08-08T00:00:00+00:00",
-        "dateModified": "2016-09-08T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    </script>
+    <meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+    <meta property="og:description" content="Sitecore, C# and web development">
 <meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds">
 <meta property="og:type" content="website">
 
@@ -132,22 +115,16 @@
 </div>
 
     <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&quot;/&quot;);">
-    <div class="post-heading">
+    <div class="site-heading">
         <h1 class="text-5xl mb-4 pb-1">
         Sitecore builds with Visual Studio Online – Part 1: Private NuGet&nbsp;feeds
         </h1>
-            <div class="meta">Published 08 August 2016</div>
-                <div class="meta">Updated 08 September 2016</div>
-            <div class="flex py-1">
-                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-                    <a href="/tags/visual-studio-online" class="p-1 mr-1 bg-gray-100 rounded-md"> Visual Studio Online</a>
-            </div>
     </div>
 </header>
 
     <div class="py-2 lg:pl-3">
         <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 ">
                 <p>While I've read plenty of articles in the past about configuring build servers for Sitecore projects, I've not seen much written about using <a href="https://www.visualstudio.com/en-us/products/what-is-visual-studio-online-vs.aspx" target="_blank" rel="noopener noreferrer">Visual Studio Online</a>. (Or "Team Foundation Services", or whatever it's called this week) Since the company I work for are in the process of transitioning all their development infrastructure to <a href="https://azure.microsoft.com/en-gb/" target="_blank" rel="noopener noreferrer">Azure</a>, trying to get hosted builds working in VSO seemed like a userful area of research for me. This is the first part of what will probably turn into a few posts on the topic of how I got to the point of being able to run a hosted build for a Sitecore / <a href="http://www.teamdevelopmentforsitecore.com/" target="_blank" rel="noopener noreferrer">TDS</a> / <a href="https://github.com/sergeyshushlyapin/Sitecore.FakeDb" target="_blank" rel="noopener noreferrer">FakeDB</a> solution...<!--more--></p>
 <h2>Packages, and where to put them...</h2>
 <p>To get a build working you're going to need NuGet packages. Most of these are easy, as they can come from the main NuGet.org feed. But some of them are more complicated – the TDS build package and Sitecore references can't be added to public feeds. Historically <a href="http://www.myget.org/" target="_blank" rel="noopener noreferrer">MyGet</a> has been a good solution for hosting these packages but Visual Studio Online has recently acquired a development feature for hosting private feeds. I don't think this is officially released yet (and I don't think they offer support on it outside of the US) but it does appear to work well enough.</p>
@@ -201,7 +178,6 @@
 <p>With that created and committed to your source control, you can now add any packages from your custom feed or from the main public feed. Local or hosted builds will be able to restore them.</p>
 <p>And that's the first part of this odyssey. <a href="/posts/2016/sitecore-builds-with-visual-studio-online-part-2-building-code-and-running-tests" target="_blank">In part 2 we'll look at getting a solution set up so that the hosted build can generate TDS packages and run FakeDB tests</a>.</p>
 
-
             </div>
             <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
                 <section class="mvp">
@@ -218,7 +194,7 @@
                     <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
                     <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
                     <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (12)</a>
+                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (13)</a>
                     <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
                     <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
                     <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
