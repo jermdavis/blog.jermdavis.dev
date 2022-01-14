@@ -1,30 +1,25 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <meta name="description" content="A colleague of mine recently hit upon an odd issue with the Sitecore integration for the &amp;lt;a href=&amp;quot;https://51degrees.com/device-detection&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;51Degrees&amp;lt;/a&amp;gt; browser detection service. It worked fine for most of his testing, but raised an exception in some circumstances. Trying to dig into this and create a test to demonstrate the bug kept us amused for a few hours &amp;#x2013; maybe it will help you to?">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Chasing down a browser detection&#xA0;bug</title>
-
-    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2017/chasing-down-a-browser-detection-bug">
-    <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.json">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Chasing down a browser detection&amp;#xA0;bug">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/chasing-down-a-browser-detection-bug-social.png">
-    <meta property="og:description" content="">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="A colleague of mine recently hit upon an odd issue with the Sitecore integration for the <a href=&quot;https://51degrees.com/device-detection&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>51Degrees</a> browser detection service. It worked fine for most of his testing, but raised an exception in some circumstances. Trying to dig into this and create a test to demonstrate the bug kept us amused for a few hours – maybe it will help you to?">
+		<meta property="og:description" content="A colleague of mine recently hit upon an odd issue with the Sitecore integration for the <a href=&quot;https://51degrees.com/device-detection&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>51Degrees</a> browser detection service. It worked fine for most of his testing, but raised an exception in some circumstances. Trying to dig into this and create a test to demonstrate the bug kept us amused for a few hours – maybe it will help you to?">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Chasing down a browser detection&nbsp;bug</title>
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2017/chasing-down-a-browser-detection-bug">
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.json">
+		<meta property="og:title" content="Jeremy Davis - Chasing down a browser detection&amp;#xA0;bug">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/chasing-down-a-browser-detection-bug-social.png">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -39,388 +34,350 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2017/chasing-down-a-browser-detection-bug">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
-
     
-
-    
-    <!-- 13/01/2022 20:21:56 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="-mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="-mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <h1 class="text-5xl mb-4 pb-1">
-        Chasing down a browser detection bug
-        </h1>
-            <div class="meta">Published 01 May 2017</div>
-            <div class="flex py-1">
-                    <a href="/tags/browser-detection" class="p-1 mr-1 bg-gray-100 rounded-md"> Browser Detection</a>
-                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-                    <a href="/tags/unit-test" class="p-1 mr-1 bg-gray-100 rounded-md"> Unit Test</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>A colleague of mine recently hit upon an odd issue with the Sitecore integration for the <a href="https://51degrees.com/device-detection" target="_blank" rel="noopener noreferrer">51Degrees</a> browser detection service. It worked fine for most of his testing, but raised an exception in some circumstances. Trying to dig into this and create a test to demonstrate the bug kept us amused for a few hours – maybe it will help you to?<!--more--></p>
-<h2>The bug we saw...</h2>
-<p>A set of changes were deployed to our QA servers for a particular client, which added code making use of <a href="https://github.com/chowson/Sitecore.51Degrees.CloudDeviceDetection" target="_blank" rel="noopener noreferrer">a particular Sitecore wrapper</a> for the <a href="https://51degrees.com/device-detection/cloud" target="_blank" rel="noopener noreferrer">51Degrees browser detection</a> service. At a certain point our new code was making a decision based on ASP.Net's property for the requesting <a href="https://msdn.microsoft.com/en-us/library/system.web.configuration.httpcapabilitiesbase.screenpixelswidth(v=vs.110).aspx" target="_blank" rel="noopener noreferrer">device's screen pixel-width</a>.</p>
-<p>QA reported that for mobile browsers this was all fine, and the new code worked as expected, but for desktop browsers the following exception was occurring when the browser property was accessed for the first time:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">System.FormatException: Input string was not in a correct format.
-   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer&amp; number, NumberFormatInfo info, Boolean parseDecimal)
-   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
-   at System.Web.Configuration.HttpCapabilitiesBase.get_ScreenPixelsWidth()
-</pre>
-<h2>Why was it happening?</h2>
-<p>Looking at the <code>ScreenPixelWidth</code> property with <a href="http://ilspy.net/" target="_blank" rel="noopener noreferrer">ILSpy</a>, the crash was happening here:</p>
-<pre data-enlighter-highlight="35" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public virtual int ScreenPixelsWidth
-{
-	get
-	{
-		if (!this._haveScreenPixelsWidth)
-		{
-			if (this[&quot;screenPixelsWidth&quot;] == null)
-			{
-				int num = 80;
-				int num2 = 8;
-				if (this[&quot;screenCharactersWidth&quot;] != null &amp;&amp; this[&quot;characterWidth&quot;] != null)
-				{
-					num = Convert.ToInt32(this[&quot;screenCharactersWidth&quot;], CultureInfo.InvariantCulture);
-					num2 = Convert.ToInt32(this[&quot;characterWidth&quot;], CultureInfo.InvariantCulture);
-				}
-				else if (this[&quot;screenCharactersWidth&quot;] != null)
-				{
-					num = Convert.ToInt32(this[&quot;screenCharactersWidth&quot;], CultureInfo.InvariantCulture);
-					num2 = Convert.ToInt32(this[&quot;defaultCharacterWidth&quot;], CultureInfo.InvariantCulture);
-				}
-				else if (this[&quot;characterWidth&quot;] != null)
-				{
-					num = Convert.ToInt32(this[&quot;defaultScreenCharactersWidth&quot;], CultureInfo.InvariantCulture);
-					num2 = Convert.ToInt32(this[&quot;characterWidth&quot;], CultureInfo.InvariantCulture);
-				}
-				else if (this[&quot;defaultScreenPixelsWidth&quot;] != null)
-				{
-					num = Convert.ToInt32(this[&quot;defaultScreenPixelsWidth&quot;], CultureInfo.InvariantCulture);
-					num2 = 1;
-				}
-				this._screenPixelsWidth = num * num2;
-			}
-			else
-			{
-				this._screenPixelsWidth = Convert.ToInt32(this[&quot;screenPixelsWidth&quot;], CultureInfo.InvariantCulture);
-			}
-			this._haveScreenPixelsWidth = true;
-		}
-		return this._screenPixelsWidth;
-	}
-}
-</pre>
-<p>Basically, if this property has not already cached a value, and the raw browser capability property &quot;screenPixelsWidth&quot; has a value, then the code tries to parse that value as an integer. So if we're getting an exception here, that value can't be something that can be cast...</p>
-<p>So what is the value appearing there?</p>
-<p>Delving into <a href="https://github.com/chowson/Sitecore.51Degrees.CloudDeviceDetection/blob/1a5532e436b41240250b8bbb7cb8d1915ee466b8/Sitecore.51Degrees.CloudDeviceDetection/Services/FiftyOneDegreesService.cs" target="_blank" rel="noopener noreferrer">the code for the Sitecore integration module</a>, it asks the 51 Degrees service for capabilities data for the current browser, and then calls this code to move that data into the raw data used by the .Net capabilities object:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void SetBrowserCapabilities()
-{
-    if (_httpContextWrapper.Items.Contains(&quot;FiftyOneDegreesService.SetBrowserCapabilities&quot;))
-    {
-        return;
-    }
-
-    var detectedDevice = GetDetectedDevice();
-
-    if (detectedDevice != null)
-    {
-        var browserCapabilities = _httpContextWrapper.Request.Browser;
-
-        foreach (var deviceProperty in detectedDevice.DeviceProperties)
-        {
-            var value = detectedDevice[deviceProperty];
-
-            browserCapabilities.Capabilities[deviceProperty] = value;
-        }
-
-        browserCapabilities.Capabilities[&quot;isMobileDevice&quot;] = IsMobileDevice(detectedDevice);
-        browserCapabilities.Capabilities[&quot;isTabletDevice&quot;] = IsTabletDevice(detectedDevice);
-    }
-
-    _httpContextWrapper.Items.Add(&quot;FiftyOneDegreesService.SetBrowserCapabilities&quot;, true);
-}
-</pre>
-<p>So, it seems logical that the issue would be with what the 51 Degrees service returns. What is the data that comes back for a desktop browser?</p>
-<p><a href="/img/2017/2017-04-detectedbrowser.png" target="_blank"><img alt="Detected Browser" src="/img/2017/2017-04-detectedbrowser.png"></a></p>
-<p>The value that comes back from the service is the string &quot;Unknown&quot; – clearly something we can't cast to an Integer...</p>
-<p>So the fix is fairly obvious – we need to make sure the value &quot;Unknown&quot; gets replaced with some sort of sensible alternative. But to do that properly, we need a test to prove the bug and then our fix.</p>
-<h2>Building a test to reproduce the issue in dev</h2>
-<p>The integration with Sitecore registers a pipeline component which calls <code>FiftyOneDegreesService</code> class's <code>SetBrowserCapabilities()</code> method to look at the current request and update the browser detection data with 51Degrees' data. So that's the class we need to write a test for. The constructor for that class requires a set of dependencies passed in – so we need to provide those objects.</p>
-<p>The first object we need is an <code>ISitecoreSettingsWrapper</code>, which is used to read some settings from Sitecore's config files, via the <code>GetSetting()</code> method. So initially we can mock that to return nothing. If we need to add any specific behaviour to it we can do so later:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var setting = new Mock&lt;ISitecoreSettingsWrapper&gt;();
-setting.Setup(i =&gt; i.GetSetting(It.IsAny&lt;string&gt;())).Returns(string.Empty);
-</pre>
-<p>Next up is an instance of 51Degrees' <code>IHttpContextWrapper</code>. That has to wrap around the current <code>HttpContext</code>‘s request, to provide access to things like the browser detection data, the Browser's agent string. Experience tells me that trying to mock this will be challenging, but that Microsoft's code is usually flexible enough to create a request using their objects. So the first thing to do is to create a bogus request and assign it to the current context:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var request = new HttpRequest(&quot;&quot;, &quot;http://test.com&quot;, &quot;&quot;);
-HttpContext.Current = new HttpContext(request, new HttpResponse(new StringWriter()));
-</pre>
-<p>A check with the debugger shows that when you create a request like this, the Browser Capabilities data is all null – so we need to initialise that:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var capsdictionary = new Dictionary&lt;string, object&gt;(StringComparer.OrdinalIgnoreCase);
-HttpContext.Current.Request.Browser = new HttpBrowserCapabilities() { Capabilities = capsdictionary };
-</pre>
-<p>Note that the dictionary created here has a case-insensitive string comparison – that's important. In creating all of this I spent some time wondering why the test didn't work as expected, all because initially I created a case-sensitive dictionary...</p>
-<p>Then we can wrap up our context ready to give it to the 51Degrees class:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpcontextWrapper = new Sitecore.FiftyOneDegrees.CloudDeviceDetection.System.Wrappers.HttpContextWrapper(HttpContext.Current);
-</pre>
-<p>Next up, the 51Degrees class needs an <code>IHttpRuntimeCacheWrapper</code>. Caching isn't important to the test, so lets just provide a mock for that:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpruntimeCache = new Mock&lt;IHttpRuntimeCacheWrapper&gt;();
-</pre>
-<p>So finally we need an <code>IWebRequestWrapper</code> object. Digging through the code, this is used to issue the web service request to the 51Degrees service. We don't really want to issue that request and deal with processing and deserialising the response. There's only one method, so let's just make a fake:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FakeWebRequestWrapper : IWebRequestWrapper
-{
-    public T GetJson&lt;T&gt;(string requestUrl)
-    {
-        var serialiser = new JsonSerializer();
-        var device = serialiser.Deserialize&lt;T&gt;(&quot;{\&quot;MatchMethod\&quot;:\&quot;Exact\&quot;,\&quot;Difference\&quot;:0,\&quot;DetectionTime\&quot;:0.0,\&quot;Values\&quot;:{\&quot;BrowserName\&quot;:[\&quot;Chrome\&quot;],\&quot;BrowserVersion\&quot;:[\&quot;57\&quot;],\&quot;DeviceType\&quot;:[\&quot;Desktop\&quot;],\&quot;IsConsole\&quot;:[\&quot;False\&quot;],\&quot;IsEReader\&quot;:[\&quot;False\&quot;],\&quot;IsMediaHub\&quot;:[\&quot;False\&quot;],\&quot;IsMobile\&quot;:[\&quot;False\&quot;],\&quot;IsSmallScreen\&quot;:[\&quot;False\&quot;],\&quot;IsSmartPhone\&quot;:[\&quot;False\&quot;],\&quot;IsTablet\&quot;:[\&quot;False\&quot;],\&quot;IsTv\&quot;:[\&quot;False\&quot;],\&quot;PlatformName\&quot;:[\&quot;Windows\&quot;],\&quot;PlatformVersion\&quot;:[\&quot;8.1\&quot;],\&quot;ScreenPixelsHeight\&quot;:[\&quot;Unknown\&quot;],\&quot;ScreenPixelsWidth\&quot;:[\&quot;Unknown\&quot;]},\&quot;DataSetName\&quot;:\&quot;PremiumV3\&quot;,\&quot;Published\&quot;:\&quot;2017-04-19T00:00:00Z\&quot;,\&quot;SignaturesCompared\&quot;:0,\&quot;ProfileIds\&quot;:{\&quot;1\&quot;:15364,\&quot;2\&quot;:21460,\&quot;3\&quot;:69850,\&quot;4\&quot;:18092},\&quot;Useragent\&quot;:\&quot;Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko  Chrome/57            Safari/537\&quot;,\&quot;TargetUseragent\&quot;:\&quot;Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36\&quot;}&quot;);
-        return device;
-    }
-}
-</pre>
-<p>The Json data there was captured from a real request (which threw the exception) using <a href="http://www.telerik.com/fiddler" target="_blank" rel="noopener noreferrer">Fiddler</a> to intercept the traffic. The class just ignores the input and returns the deserialised object for the captured data. And it's trivial to create an instance:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpWebRequest = new FakeWebRequestWrapper();
-</pre>
-<p>So finally, we can create the object to test and we can test what happens when we access the <code>ScreenPixelsWidth</code>:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var sut = new FiftyOneDegreesService(setting.Object, httpcontextWrapper, httpruntimeCache.Object, httpWebRequest);
-sut.SetBrowserCapabilities();
-
-Assert.AreEqual(0, request.Browser.ScreenPixelsWidth);
-</pre>
-<p>The <a href="https://gist.github.com/jermdavis/964180ed93e9519f1eb6004e5454c4b1" target="_blank" rel="noopener noreferrer">complete code for the test is available in a Gist</a>. And when we run it:</p>
-<p><a href="/img/2017/2017-04-failedtestresult.png" target="_blank"><img alt="Failed Test Result" src="/img/2017/2017-04-failedtestresult.png"></a></p>
-<p>Bingo - a failed test, with the same exception message we saw on our QA site.</p>
-<h2>A bit of a detour...</h2>
-<p>While I was working through the construction of the test with my colleague, I went down a bit of a rabbit hole about how we could fake the <code>UserAgent</code> for our test request. It turns out that because of the <code>FakeWebRequestWrapper</code> fake, this isn't actually necessary. But to help my future self (who will inevitably need to do this somewhere else) I figured I should include it...</p>
-<p>If you try to write to the <code>UserAgent</code> property of the request, you'll realise it doesn't have a setter. And if you try to add a header for the user agent, you'll get a <code>PlatformNotSupportedException</code> for your trouble.</p>
-<p>So what can you do?</p>
-<p>Diving through the code for how a request is initialised, it starts off as an <code>HttpWorkerRequest</code> object, which implements a <code>GetKnownRequestHeader()</code>. That gets called with the value &quot;39&quot; when the runtime tries to retrieve the user agent string.</p>
-<p>So we can just mock up one of those? Sadly, not that simple. The constructor for <code>HttpRequest</code> which initialises it with a <code>HttpWorkerRequest</code> isn't public. But we can cheat a bit for a test scenario and use reflection to poke that object into the <code>HttpRequest</code> after it's been initialised the normal way. A bit of decompilation tells us that the <code>HttpWorkerRequest</code> object is stored in a field called &quot;_wr&quot;. So:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var workerrequest = new Mock&lt;HttpWorkerRequest&gt;();
-workerrequest.Setup(w =&gt; w.GetKnownRequestHeader(39)).Returns(&quot;Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36&quot;);
-
-var type = request.GetType();
-var field = type.GetField(&quot;_wr&quot;, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-field.SetValue(request, workerrequest.Object);
-</pre>
-<p>Not pretty – but it does work.</p>
-<p>But getting back to the important stuff...</p>
-<h2>The fix</h2>
-<p>Fixing the issue is pretty simple. We just need to ensure that if the code is copying a 51Degrees property into the .Net browser capabilities, it replaces any &quot;Unknown&quot; values with a value that will parse as an integer:</p>
-<pre data-enlighter-highlight="17,18,19,20" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void SetBrowserCapabilities()
-{
-    if (_httpContextWrapper.Items.Contains(&quot;FiftyOneDegreesService.SetBrowserCapabilities&quot;))
-    {
-        return;
-    }
-
-    var detectedDevice = GetDetectedDevice();
-
-    if (detectedDevice != null)
-    {
-        var browserCapabilities = _httpContextWrapper.Request.Browser;
-
-        foreach (var deviceProperty in detectedDevice.DeviceProperties)
-        {
-            var value = detectedDevice[deviceProperty];
-            if(value.ToLower() == &quot;unknown&quot;)
-            {
-                value = &quot;0&quot;;
-            }
-            browserCapabilities.Capabilities[deviceProperty] = value;
-        }
-
-        browserCapabilities.Capabilities[&quot;isMobileDevice&quot;] = IsMobileDevice(detectedDevice);
-        browserCapabilities.Capabilities[&quot;isTabletDevice&quot;] = IsTabletDevice(detectedDevice);
-    }
-
-    _httpContextWrapper.Items.Add(&quot;FiftyOneDegreesService.SetBrowserCapabilities&quot;, true);
-}
-</pre>
-<p>And if we re-run the test:</p>
-<p><a href="/img/2017/2017-04-passedtestresult.png" target="_blank"><img alt="Passed Test Result" src="/img/2017/2017-04-passedtestresult.png"></a></p>
-<p>A win!</p>
-<p>I'm not sure whether zero is the right default value to use here – but it's a good starting point.</p>
-<p>My colleague will be putting in a PR to fix this, so hopefully the underlying issue won't be in the code for long, but it was interesting getting to this fix.</p>
-
-
-            </div>
-            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (194)</a>
-                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
-                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (13)</a>
-                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
-                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2021-12">2021 - December</a></div>
-                <div><a class="text-lg" href="/posts/2021-11">2021 - November</a></div>
-                <div><a class="text-lg" href="/posts/2021-10">2021 - October</a></div>
-                <div><a class="text-lg" href="/posts/2021-09">2021 - September</a></div>
-                <div><a class="text-lg" href="/posts/2021-08">2021 - August</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2017/chasing-down-a-browser-detection-bug">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+		
+		<!-- 14/01/2022 14:21:58 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="-mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="-mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<h1 class="text-5xl mb-4 pb-1">
+					Chasing down a browser detection&nbsp;bug
+				</h1>
+				<div class="meta">Published 01 May 2017</div>
+				<div class="flex py-1">
+					<a href="/tags/browser-detection" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Browser Detection</a>
+					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/unit-test" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Unit Test</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>A colleague of mine recently hit upon an odd issue with the Sitecore integration for the
+						<a href="https://51degrees.com/device-detection" target="_blank" rel="noopener noreferrer">51Degrees</a>
+						browser detection service. It worked fine for most of his testing, but raised an exception in some circumstances. Trying to dig into this and create a test to demonstrate the bug kept us amused for a few hours – maybe it will help you to?
+						<!--more-->
+					</p>
+					<h2>The bug we saw...</h2>
+					<p>A set of changes were deployed to our QA servers for a particular client, which added code making use of
+						<a href="https://github.com/chowson/Sitecore.51Degrees.CloudDeviceDetection" target="_blank" rel="noopener noreferrer">a particular Sitecore wrapper</a>
+						for the
+						<a href="https://51degrees.com/device-detection/cloud" target="_blank" rel="noopener noreferrer">51Degrees browser detection</a>
+						service. At a certain point our new code was making a decision based on ASP.Net's property for the requesting
+						<a href="https://msdn.microsoft.com/en-us/library/system.web.configuration.httpcapabilitiesbase.screenpixelswidth(v=vs.110).aspx" target="_blank" rel="noopener noreferrer">device's screen pixel-width</a>.</p>
+					<p>QA reported that for mobile browsers this was all fine, and the new code worked as expected, but for desktop browsers the following exception was occurring when the browser property was accessed for the first time:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">System.FormatException: Input string was not in a correct format.    at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer&amp; number, NumberFormatInfo info, Boolean parseDecimal)    at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)    at System.Web.Configuration.HttpCapabilitiesBase.get_ScreenPixelsWidth()
+					</pre>
+					<h2>Why was it happening?</h2>
+					<p>Looking at the
+						<code>ScreenPixelWidth</code>
+						property with
+						<a href="http://ilspy.net/" target="_blank" rel="noopener noreferrer">ILSpy</a>, the crash was happening here:</p>
+					<pre data-enlighter-highlight="35" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public virtual int ScreenPixelsWidth { 	get 	{ 		if (!this._haveScreenPixelsWidth) 		{ 			if (this["screenPixelsWidth"] == null) 			{ 				int num = 80; 				int num2 = 8; 				if (this["screenCharactersWidth"] != null &amp;&amp; this["characterWidth"] != null) 				{ 					num = Convert.ToInt32(this["screenCharactersWidth"], CultureInfo.InvariantCulture); 					num2 = Convert.ToInt32(this["characterWidth"], CultureInfo.InvariantCulture); 				} 				else if (this["screenCharactersWidth"] != null) 				{ 					num = Convert.ToInt32(this["screenCharactersWidth"], CultureInfo.InvariantCulture); 					num2 = Convert.ToInt32(this["defaultCharacterWidth"], CultureInfo.InvariantCulture); 				} 				else if (this["characterWidth"] != null) 				{ 					num = Convert.ToInt32(this["defaultScreenCharactersWidth"], CultureInfo.InvariantCulture); 					num2 = Convert.ToInt32(this["characterWidth"], CultureInfo.InvariantCulture); 				} 				else if (this["defaultScreenPixelsWidth"] != null) 				{ 					num = Convert.ToInt32(this["defaultScreenPixelsWidth"], CultureInfo.InvariantCulture); 					num2 = 1; 				} 				this._screenPixelsWidth = num * num2; 			} 			else 			{ 				this._screenPixelsWidth = Convert.ToInt32(this["screenPixelsWidth"], CultureInfo.InvariantCulture); 			} 			this._haveScreenPixelsWidth = true; 		} 		return this._screenPixelsWidth; 	} }
+					</pre>
+					<p>Basically, if this property has not already cached a value, and the raw browser capability property "screenPixelsWidth" has a value, then the code tries to parse that value as an integer. So if we're getting an exception here, that value can't be something that can be cast...</p>
+					<p>So what is the value appearing there?</p>
+					<p>Delving into
+						<a href="https://github.com/chowson/Sitecore.51Degrees.CloudDeviceDetection/blob/1a5532e436b41240250b8bbb7cb8d1915ee466b8/Sitecore.51Degrees.CloudDeviceDetection/Services/FiftyOneDegreesService.cs" target="_blank" rel="noopener noreferrer">the code for the Sitecore integration module</a>, it asks the 51 Degrees service for capabilities data for the current browser, and then calls this code to move that data into the raw data used by the .Net capabilities object:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void SetBrowserCapabilities() {     if (_httpContextWrapper.Items.Contains("FiftyOneDegreesService.SetBrowserCapabilities"))     {         return;     }      var detectedDevice = GetDetectedDevice();      if (detectedDevice != null)     {         var browserCapabilities = _httpContextWrapper.Request.Browser;          foreach (var deviceProperty in detectedDevice.DeviceProperties)         {             var value = detectedDevice[deviceProperty];              browserCapabilities.Capabilities[deviceProperty] = value;         }          browserCapabilities.Capabilities["isMobileDevice"] = IsMobileDevice(detectedDevice);         browserCapabilities.Capabilities["isTabletDevice"] = IsTabletDevice(detectedDevice);     }      _httpContextWrapper.Items.Add("FiftyOneDegreesService.SetBrowserCapabilities", true); }
+					</pre>
+					<p>So, it seems logical that the issue would be with what the 51 Degrees service returns. What is the data that comes back for a desktop browser?</p>
+					<p>
+						<a href="/img/2017/2017-04-detectedbrowser.png" target="_blank">
+							<img alt="Detected Browser" src="/img/2017/2017-04-detectedbrowser.png">
+						</a>
+					</p>
+					<p>The value that comes back from the service is the string "Unknown" – clearly something we can't cast to an Integer...</p>
+					<p>So the fix is fairly obvious – we need to make sure the value "Unknown" gets replaced with some sort of sensible alternative. But to do that properly, we need a test to prove the bug and then our fix.</p>
+					<h2>Building a test to reproduce the issue in dev</h2>
+					<p>The integration with Sitecore registers a pipeline component which calls
+						<code>FiftyOneDegreesService</code>
+						class's
+						<code>SetBrowserCapabilities()</code>
+						method to look at the current request and update the browser detection data with 51Degrees' data. So that's the class we need to write a test for. The constructor for that class requires a set of dependencies passed in – so we need to provide those objects.</p>
+					<p>The first object we need is an
+						<code>ISitecoreSettingsWrapper</code>, which is used to read some settings from Sitecore's config files, via the
+						<code>GetSetting()</code>
+						method. So initially we can mock that to return nothing. If we need to add any specific behaviour to it we can do so later:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var setting = new Mock&lt;ISitecoreSettingsWrapper&gt;(); setting.Setup(i =&gt; i.GetSetting(It.IsAny&lt;string&gt;())).Returns(string.Empty);
+					</pre>
+					<p>Next up is an instance of 51Degrees'
+						<code>IHttpContextWrapper</code>. That has to wrap around the current
+						<code>HttpContext</code>‘s request, to provide access to things like the browser detection data, the Browser's agent string. Experience tells me that trying to mock this will be challenging, but that Microsoft's code is usually flexible enough to create a request using their objects. So the first thing to do is to create a bogus request and assign it to the current context:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var request = new HttpRequest("", "http://test.com", ""); HttpContext.Current = new HttpContext(request, new HttpResponse(new StringWriter()));
+					</pre>
+					<p>A check with the debugger shows that when you create a request like this, the Browser Capabilities data is all null – so we need to initialise that:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var capsdictionary = new Dictionary&lt;string, object&gt;(StringComparer.OrdinalIgnoreCase); HttpContext.Current.Request.Browser = new HttpBrowserCapabilities() { Capabilities = capsdictionary };
+					</pre>
+					<p>Note that the dictionary created here has a case-insensitive string comparison – that's important. In creating all of this I spent some time wondering why the test didn't work as expected, all because initially I created a case-sensitive dictionary...</p>
+					<p>Then we can wrap up our context ready to give it to the 51Degrees class:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpcontextWrapper = new Sitecore.FiftyOneDegrees.CloudDeviceDetection.System.Wrappers.HttpContextWrapper(HttpContext.Current);
+					</pre>
+					<p>Next up, the 51Degrees class needs an
+						<code>IHttpRuntimeCacheWrapper</code>. Caching isn't important to the test, so lets just provide a mock for that:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpruntimeCache = new Mock&lt;IHttpRuntimeCacheWrapper&gt;();
+					</pre>
+					<p>So finally we need an
+						<code>IWebRequestWrapper</code>
+						object. Digging through the code, this is used to issue the web service request to the 51Degrees service. We don't really want to issue that request and deal with processing and deserialising the response. There's only one method, so let's just make a fake:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FakeWebRequestWrapper : IWebRequestWrapper {     public T GetJson&lt;T&gt;(string requestUrl)     {         var serialiser = new JsonSerializer();         var device = serialiser.Deserialize&lt;T&gt;("{\"MatchMethod\":\"Exact\",\"Difference\":0,\"DetectionTime\":0.0,\"Values\":{\"BrowserName\":[\"Chrome\"],\"BrowserVersion\":[\"57\"],\"DeviceType\":[\"Desktop\"],\"IsConsole\":[\"False\"],\"IsEReader\":[\"False\"],\"IsMediaHub\":[\"False\"],\"IsMobile\":[\"False\"],\"IsSmallScreen\":[\"False\"],\"IsSmartPhone\":[\"False\"],\"IsTablet\":[\"False\"],\"IsTv\":[\"False\"],\"PlatformName\":[\"Windows\"],\"PlatformVersion\":[\"8.1\"],\"ScreenPixelsHeight\":[\"Unknown\"],\"ScreenPixelsWidth\":[\"Unknown\"]},\"DataSetName\":\"PremiumV3\",\"Published\":\"2017-04-19T00:00:00Z\",\"SignaturesCompared\":0,\"ProfileIds\":{\"1\":15364,\"2\":21460,\"3\":69850,\"4\":18092},\"Useragent\":\"Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko  Chrome/57            Safari/537\",\"TargetUseragent\":\"Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36\"}");         return device;     } }
+					</pre>
+					<p>The Json data there was captured from a real request (which threw the exception) using
+						<a href="http://www.telerik.com/fiddler" target="_blank" rel="noopener noreferrer">Fiddler</a>
+						to intercept the traffic. The class just ignores the input and returns the deserialised object for the captured data. And it's trivial to create an instance:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpWebRequest = new FakeWebRequestWrapper();
+					</pre>
+					<p>So finally, we can create the object to test and we can test what happens when we access the
+						<code>ScreenPixelsWidth</code>:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var sut = new FiftyOneDegreesService(setting.Object, httpcontextWrapper, httpruntimeCache.Object, httpWebRequest); sut.SetBrowserCapabilities();  Assert.AreEqual(0, request.Browser.ScreenPixelsWidth);
+					</pre>
+					<p>The
+						<a href="https://gist.github.com/jermdavis/964180ed93e9519f1eb6004e5454c4b1" target="_blank" rel="noopener noreferrer">complete code for the test is available in a Gist</a>. And when we run it:</p>
+					<p>
+						<a href="/img/2017/2017-04-failedtestresult.png" target="_blank">
+							<img alt="Failed Test Result" src="/img/2017/2017-04-failedtestresult.png">
+						</a>
+					</p>
+					<p>Bingo - a failed test, with the same exception message we saw on our QA site.</p>
+					<h2>A bit of a detour...</h2>
+					<p>While I was working through the construction of the test with my colleague, I went down a bit of a rabbit hole about how we could fake the
+						<code>UserAgent</code>
+						for our test request. It turns out that because of the
+						<code>FakeWebRequestWrapper</code>
+						fake, this isn't actually necessary. But to help my future self (who will inevitably need to do this somewhere else) I figured I should include it...</p>
+					<p>If you try to write to the
+						<code>UserAgent</code>
+						property of the request, you'll realise it doesn't have a setter. And if you try to add a header for the user agent, you'll get a
+						<code>PlatformNotSupportedException</code>
+						for your trouble.</p>
+					<p>So what can you do?</p>
+					<p>Diving through the code for how a request is initialised, it starts off as an
+						<code>HttpWorkerRequest</code>
+						object, which implements a
+						<code>GetKnownRequestHeader()</code>. That gets called with the value "39" when the runtime tries to retrieve the user agent string.</p>
+					<p>So we can just mock up one of those? Sadly, not that simple. The constructor for
+						<code>HttpRequest</code>
+						which initialises it with a
+						<code>HttpWorkerRequest</code>
+						isn't public. But we can cheat a bit for a test scenario and use reflection to poke that object into the
+						<code>HttpRequest</code>
+						after it's been initialised the normal way. A bit of decompilation tells us that the
+						<code>HttpWorkerRequest</code>
+						object is stored in a field called "_wr". So:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var workerrequest = new Mock&lt;HttpWorkerRequest&gt;(); workerrequest.Setup(w =&gt; w.GetKnownRequestHeader(39)).Returns("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36");  var type = request.GetType(); var field = type.GetField("_wr", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance); field.SetValue(request, workerrequest.Object);
+					</pre>
+					<p>Not pretty – but it does work.</p>
+					<p>But getting back to the important stuff...</p>
+					<h2>The fix</h2>
+					<p>Fixing the issue is pretty simple. We just need to ensure that if the code is copying a 51Degrees property into the .Net browser capabilities, it replaces any "Unknown" values with a value that will parse as an integer:</p>
+					<pre data-enlighter-highlight="17,18,19,20" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void SetBrowserCapabilities() {     if (_httpContextWrapper.Items.Contains("FiftyOneDegreesService.SetBrowserCapabilities"))     {         return;     }      var detectedDevice = GetDetectedDevice();      if (detectedDevice != null)     {         var browserCapabilities = _httpContextWrapper.Request.Browser;          foreach (var deviceProperty in detectedDevice.DeviceProperties)         {             var value = detectedDevice[deviceProperty];             if(value.ToLower() == "unknown")             {                 value = "0";             }             browserCapabilities.Capabilities[deviceProperty] = value;         }          browserCapabilities.Capabilities["isMobileDevice"] = IsMobileDevice(detectedDevice);         browserCapabilities.Capabilities["isTabletDevice"] = IsTabletDevice(detectedDevice);     }      _httpContextWrapper.Items.Add("FiftyOneDegreesService.SetBrowserCapabilities", true); }
+					</pre>
+					<p>And if we re-run the test:</p>
+					<p>
+						<a href="/img/2017/2017-04-passedtestresult.png" target="_blank">
+							<img alt="Passed Test Result" src="/img/2017/2017-04-passedtestresult.png">
+						</a>
+					</p>
+					<p>A win!</p>
+					<p>I'm not sure whether zero is the right default value to use here – but it's a good starting point.</p>
+					<p>My colleague will be putting in a PR to fix this, so hopefully the underlying issue won't be in the code for long, but it was interesting getting to this fix.</p>
+				</div>
+				<div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (194)</a>
+							<a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (45)</a>
+							<a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (13)</a>
+							<a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Visual Studio (11)</a>
+							<a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (10)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2021-12">2021 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-11">2021 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-10">2021 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-09">2021 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-08">2021 - August</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -429,21 +386,16 @@ field.SetValue(request, workerrequest.Object);
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

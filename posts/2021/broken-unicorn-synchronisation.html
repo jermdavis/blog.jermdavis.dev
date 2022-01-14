@@ -1,30 +1,25 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <meta name="description" content="Ever had a tool that works reliably suddenly not work? I had a problem like that recently, and it lead to some experimentation that I think I may need to come back to later. So this is mostly so I can remember what I was doing when I get back to this. But as we move toward a more &amp;amp;amp;quot;platform agnostic&amp;amp;amp;quot; with more use of .Net Core on Linux, maybe there&amp;#x27;s something here that might help you too...">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Broken Unicorn synchronisation</title>
-
-    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/broken-unicorn-synchronisation">
-    <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.json">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Broken Unicorn synchronisation">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/broken-unicorn-synchronisation-social.png">
-    <meta property="og:description" content="">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="Ever had a tool that works reliably suddenly not work? I had a problem like that recently, and it lead to some experimentation that I think I may need to come back to later. So this is mostly so I can remember what I was doing when I get back to this. But as we move toward a more &quot;platform agnostic&quot; with more use of .Net Core on Linux, maybe there's something here that might help you too...">
+		<meta property="og:description" content="Ever had a tool that works reliably suddenly not work? I had a problem like that recently, and it lead to some experimentation that I think I may need to come back to later. So this is mostly so I can remember what I was doing when I get back to this. But as we move toward a more &quot;platform agnostic&quot; with more use of .Net Core on Linux, maybe there's something here that might help you too...">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Broken Unicorn synchronisation</title>
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/broken-unicorn-synchronisation">
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.json">
+		<meta property="og:title" content="Jeremy Davis - Broken Unicorn synchronisation">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/broken-unicorn-synchronisation-social.png">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -39,249 +34,292 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/broken-unicorn-synchronisation">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
-
     
-
-    
-    <!-- 13/01/2022 20:21:55 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="-mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="-mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <h1 class="text-5xl mb-4 pb-1">
-        Broken Unicorn synchronisation
-        </h1>
-            <div class="meta">Published 18 January 2021</div>
-            <div class="flex py-1">
-                    <a href="/tags/devops" class="p-1 mr-1 bg-gray-100 rounded-md"> DevOps</a>
-                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-                    <a href="/tags/unicorn" class="p-1 mr-1 bg-gray-100 rounded-md"> Unicorn</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>Ever had a tool that works reliably suddenly not work? I had a problem like that recently, and it lead to some experimentation that I think I may need to come back to later. So this is mostly so I can remember what I was doing when I get back to this. But as we move toward a more &quot;platform agnostic&quot; with more use of .Net Core on Linux, maybe there's something here that might help you too...<!--more--></p>
-<h2>Setting the scene</h2>
-<p>I'm working on a client project right now, which has a pile of &quot;new to me&quot; technology in it. The big ones have been <a href="https://www.docker.com/" rel="noopener" target="_blank">Docker</a> and <a href="https://kubernetes.io/" rel="noopener" target="_blank">Kubernetes</a>. But the client doesn't own <a href="https://www.teamdevelopmentforsitecore.com/" rel="noopener" target="_blank">TDS</a> licenses, so serialisation for the solution uses <a href="https://github.com/SitecoreUnicorn/Unicorn" rel="noopener" target="_blank">Unicorn</a>. Development has been chugging away quietyly for a while – and the deployments to our internal QA infrastructure were working fine. Our <a href="https://azure.microsoft.com/en-gb/services/devops/?nav=min" rel="noopener" target="_blank">DevOps</a> build was collecting up all the Unicorn serialised items, ensuring they got to the target server, and then using the PowerShell script for &quot;remote sync&quot; to ask Unicorn on the CM box to pull in all the changed items.</p>
-<p>Nothing surprising there.</p>
-<p>But then the client sorted out some of their internal infrastructure for the project, and tried to run a deployment over to their kit instead of ours. And this one failed. The Unicorn sync step would not run.</p>
-<p>After a bit of digging and thinking we hit on the likely cause: Our internal releases were using Microsoft's Hosted release agents running Windows – which are happy to run the .Net 4.x DLL that the Unicorn sync uses. But the client was using their own private release agents which were running on Linux with <a href="https://github.com/PowerShell/PowerShell" rel="noopener" target="_blank">PowerShell Core</a>. It seems that configuration could not run the .Net 4 code and hence the failure.</p>
-<h2>Fixing the immediate problem</h2>
-<p>That was pretty easy – the client did also have some Windows agents available on their network, so we split the Unicorn sync task into a separate job which could run on the Windows agent. The main bulk of the release needed to stay on the Unix agents for network security – they access to Kubernetes APIs. But moving the sync part of the release allowed that code to run, and the process to complete.</p>
-<p>But it also piqued my interest...</p>
-<h2>Fixing things via a different route</h2>
-<p>What could I do if there wasn't a Windows agent available? Well the obvious answer is that the Unicorn Sync would need to be triggered using some .Net Core code. What would that involve?</p>
-<p>Well the sync is basically two things: A PowerShell script that controls the process, and a DLL that includes some code for authentication. The DLL is <a href="https://github.com/kamsar/MicroCHAP" rel="noopener" target="_blank">available in a Github repo</a>, so I took a fork of that...</p>
-<p>It includes a few classes and some tests. It's was using XUnit for the tests though – which for some reason I could not make run on the laptop I was doing this with. (Everything built and ran, but all the tests were marked as &quot;not run&quot; and the tests log had a warning about lacking a test adapater nuget project) So I took a quick detour and changed it over to using MSTest just to make some progress. Having done that, a couple of the tests didn't pass:</p>
-<p><a href="/img/2021/2021-01-failedtests.png" target="_blank"><img alt="Failed Tests" src="/img/2021/2021-01-failedtests.png"></a></p>
-<p>Tests seem important for this, so I figured I should fix them. So what's the fault?</p>
-<p><a href="/img/2021/2021-01-error.png" target="_blank"><img alt="Test Error" src="/img/2021/2021-01-error.png"></a></p>
-<p>Why is the logger null? Well looks like it's created that way in the current code:</p>
-<pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IChapServer CreateTestServer()
-{
-	var responseService = Substitute.For&lt;ISignatureService&gt;();
-	var signatureResult = new SignatureResult { SignatureHash = &quot;RESPONSE&quot; };
-	responseService.CreateSignature(Arg.Any&lt;string&gt;(), Arg.Any&lt;string&gt;(), Arg.Any&lt;IEnumerable&lt;SignatureFactor&gt;&gt;()).Returns(signatureResult);
-
-	return new ChapServer(responseService, new InMemoryChallengeStore(null));
-}
-</pre>
-<p>So the simplest fix is to give it what it wants – a substitute object:</p>
-<pre data-enlighter-highlight="3,8" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IChapServer CreateTestServer()
-{
-	var logger = Substitute.For&lt;IChallengeStoreLogger&gt;();
-	var responseService = Substitute.For&lt;ISignatureService&gt;();
-	var signatureResult = new SignatureResult { SignatureHash = &quot;RESPONSE&quot; };
-	responseService.CreateSignature(Arg.Any&lt;string&gt;(), Arg.Any&lt;string&gt;(), Arg.Any&lt;IEnumerable&lt;SignatureFactor&gt;&gt;()).Returns(signatureResult);
-
-	return new ChapServer(responseService, new InMemoryChallengeStore(logger));
-}
-</pre>
-<p>And doing the same thing for the other failed test brings everything back to green...</p>
-<p>Next step then, is to add a .Net Core project (plus test project), and work out what files it needs to contain. Looking at <a href="https://github.com/SitecoreUnicorn/Unicorn/blob/d9c601cffc8aeae1ae1ecaf03527b88c66f42b85/doc/PowerShell%20Remote%20Scripting/Unicorn.psm1#L59" rel="noopener" target="_blank">the PowerShell code used for the sync</a>, the important bit seems to be the use of the <code>SignatureService</code> class - so that's a good starting point. Compiling that points out that <code>ISignatureService</code>, <code>SignatureFactir</code> and <code>SignatureResult</code> are needed too. And pulling <code>SignatureServiceTests</code> into the test project (along with the Nuget package for <a href="https://fluentassertions.com/" rel="noopener" target="_blank">Fluent Assertions</a>) allows it all to compile and tests to pass.</p>
-<p>So with that built, the PowerShell module for running the sync needs a small tweak because I changed the DLL name above - (It needs to call <code>Add-Type</code> on <code>MicroCHAP.Core.dll</code> and the construct the <code>SignatureService</code> from this new namespace with <code>New-Object</code>) but that should allow the code to run.</p>
-<h2>Attempting a test...</h2>
-<p>This weekend tinkering didn't involve the client's systems – so I tried testing this using local docker containers...</p>
-<p>Clearly there's something I don't understand about how Powershell Core images are built, or what the client's release agent config was. I tried running up a copy of <code>mcr.microsoft.com/powershell</code> using Linux Containers in docker, assuming this would show similar behaviour. But it was able to run the original code happily (and ran the new code too).</p>
-<p>So I'll need to find some time to come back to this at some point, when I can do a more accurate test, and verify this actually fixes the issue. So for the moment I'll leave this here as a note to myself for later, along with <a href="https://github.com/jermdavis/MicroCHAP" rel="noopener" target="_blank">the tweaked code on Github</a>. And maybe it'll be of use to someone else too...</p>
-
-
-            </div>
-            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (194)</a>
-                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
-                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (13)</a>
-                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
-                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2021-12">2021 - December</a></div>
-                <div><a class="text-lg" href="/posts/2021-11">2021 - November</a></div>
-                <div><a class="text-lg" href="/posts/2021-10">2021 - October</a></div>
-                <div><a class="text-lg" href="/posts/2021-09">2021 - September</a></div>
-                <div><a class="text-lg" href="/posts/2021-08">2021 - August</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/broken-unicorn-synchronisation">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+		
+		<!-- 14/01/2022 14:21:56 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="-mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="-mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<h1 class="text-5xl mb-4 pb-1">
+					Broken Unicorn synchronisation
+				</h1>
+				<div class="meta">Published 18 January 2021</div>
+				<div class="flex py-1">
+					<a href="/tags/devops" class="p-1 mr-1 bg-gray-100 rounded-md">
+						DevOps</a>
+					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/unicorn" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Unicorn</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>Ever had a tool that works reliably suddenly not work? I had a problem like that recently, and it lead to some experimentation that I think I may need to come back to later. So this is mostly so I can remember what I was doing when I get back to this. But as we move toward a more "platform agnostic" with more use of .Net Core on Linux, maybe there's something here that might help you too...
+						<!--more-->
+					</p>
+					<h2>Setting the scene</h2>
+					<p>I'm working on a client project right now, which has a pile of "new to me" technology in it. The big ones have been
+						<a href="https://www.docker.com/" rel="noopener" target="_blank">Docker</a>
+						and
+						<a href="https://kubernetes.io/" rel="noopener" target="_blank">Kubernetes</a>. But the client doesn't own
+						<a href="https://www.teamdevelopmentforsitecore.com/" rel="noopener" target="_blank">TDS</a>
+						licenses, so serialisation for the solution uses
+						<a href="https://github.com/SitecoreUnicorn/Unicorn" rel="noopener" target="_blank">Unicorn</a>. Development has been chugging away quietyly for a while – and the deployments to our internal QA infrastructure were working fine. Our
+						<a href="https://azure.microsoft.com/en-gb/services/devops/?nav=min" rel="noopener" target="_blank">DevOps</a>
+						build was collecting up all the Unicorn serialised items, ensuring they got to the target server, and then using the PowerShell script for "remote sync" to ask Unicorn on the CM box to pull in all the changed items.</p>
+					<p>Nothing surprising there.</p>
+					<p>But then the client sorted out some of their internal infrastructure for the project, and tried to run a deployment over to their kit instead of ours. And this one failed. The Unicorn sync step would not run.</p>
+					<p>After a bit of digging and thinking we hit on the likely cause: Our internal releases were using Microsoft's Hosted release agents running Windows – which are happy to run the .Net 4.x DLL that the Unicorn sync uses. But the client was using their own private release agents which were running on Linux with
+						<a href="https://github.com/PowerShell/PowerShell" rel="noopener" target="_blank">PowerShell Core</a>. It seems that configuration could not run the .Net 4 code and hence the failure.</p>
+					<h2>Fixing the immediate problem</h2>
+					<p>That was pretty easy – the client did also have some Windows agents available on their network, so we split the Unicorn sync task into a separate job which could run on the Windows agent. The main bulk of the release needed to stay on the Unix agents for network security – they access to Kubernetes APIs. But moving the sync part of the release allowed that code to run, and the process to complete.</p>
+					<p>But it also piqued my interest...</p>
+					<h2>Fixing things via a different route</h2>
+					<p>What could I do if there wasn't a Windows agent available? Well the obvious answer is that the Unicorn Sync would need to be triggered using some .Net Core code. What would that involve?</p>
+					<p>Well the sync is basically two things: A PowerShell script that controls the process, and a DLL that includes some code for authentication. The DLL is
+						<a href="https://github.com/kamsar/MicroCHAP" rel="noopener" target="_blank">available in a Github repo</a>, so I took a fork of that...</p>
+					<p>It includes a few classes and some tests. It's was using XUnit for the tests though – which for some reason I could not make run on the laptop I was doing this with. (Everything built and ran, but all the tests were marked as "not run" and the tests log had a warning about lacking a test adapater nuget project) So I took a quick detour and changed it over to using MSTest just to make some progress. Having done that, a couple of the tests didn't pass:</p>
+					<p>
+						<a href="/img/2021/2021-01-failedtests.png" target="_blank">
+							<img alt="Failed Tests" src="/img/2021/2021-01-failedtests.png">
+						</a>
+					</p>
+					<p>Tests seem important for this, so I figured I should fix them. So what's the fault?</p>
+					<p>
+						<a href="/img/2021/2021-01-error.png" target="_blank">
+							<img alt="Test Error" src="/img/2021/2021-01-error.png">
+						</a>
+					</p>
+					<p>Why is the logger null? Well looks like it's created that way in the current code:</p>
+					<pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IChapServer CreateTestServer() { 	var responseService = Substitute.For&lt;ISignatureService&gt;(); 	var signatureResult = new SignatureResult { SignatureHash = "RESPONSE" }; 	responseService.CreateSignature(Arg.Any&lt;string&gt;(), Arg.Any&lt;string&gt;(), Arg.Any&lt;IEnumerable&lt;SignatureFactor&gt;&gt;()).Returns(signatureResult);  	return new ChapServer(responseService, new InMemoryChallengeStore(null)); }
+					</pre>
+					<p>So the simplest fix is to give it what it wants – a substitute object:</p>
+					<pre data-enlighter-highlight="3,8" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IChapServer CreateTestServer() { 	var logger = Substitute.For&lt;IChallengeStoreLogger&gt;(); 	var responseService = Substitute.For&lt;ISignatureService&gt;(); 	var signatureResult = new SignatureResult { SignatureHash = "RESPONSE" }; 	responseService.CreateSignature(Arg.Any&lt;string&gt;(), Arg.Any&lt;string&gt;(), Arg.Any&lt;IEnumerable&lt;SignatureFactor&gt;&gt;()).Returns(signatureResult);  	return new ChapServer(responseService, new InMemoryChallengeStore(logger)); }
+					</pre>
+					<p>And doing the same thing for the other failed test brings everything back to green...</p>
+					<p>Next step then, is to add a .Net Core project (plus test project), and work out what files it needs to contain. Looking at
+						<a href="https://github.com/SitecoreUnicorn/Unicorn/blob/d9c601cffc8aeae1ae1ecaf03527b88c66f42b85/doc/PowerShell%20Remote%20Scripting/Unicorn.psm1#L59" rel="noopener" target="_blank">the PowerShell code used for the sync</a>, the important bit seems to be the use of the
+						<code>SignatureService</code>
+						class - so that's a good starting point. Compiling that points out that
+						<code>ISignatureService</code>,
+						<code>SignatureFactir</code>
+						and
+						<code>SignatureResult</code>
+						are needed too. And pulling
+						<code>SignatureServiceTests</code>
+						into the test project (along with the Nuget package for
+						<a href="https://fluentassertions.com/" rel="noopener" target="_blank">Fluent Assertions</a>) allows it all to compile and tests to pass.</p>
+					<p>So with that built, the PowerShell module for running the sync needs a small tweak because I changed the DLL name above - (It needs to call
+						<code>Add-Type</code>
+						on
+						<code>MicroCHAP.Core.dll</code>
+						and the construct the
+						<code>SignatureService</code>
+						from this new namespace with
+						<code>New-Object</code>) but that should allow the code to run.</p>
+					<h2>Attempting a test...</h2>
+					<p>This weekend tinkering didn't involve the client's systems – so I tried testing this using local docker containers...</p>
+					<p>Clearly there's something I don't understand about how Powershell Core images are built, or what the client's release agent config was. I tried running up a copy of
+						<code>mcr.microsoft.com/powershell</code>
+						using Linux Containers in docker, assuming this would show similar behaviour. But it was able to run the original code happily (and ran the new code too).</p>
+					<p>So I'll need to find some time to come back to this at some point, when I can do a more accurate test, and verify this actually fixes the issue. So for the moment I'll leave this here as a note to myself for later, along with
+						<a href="https://github.com/jermdavis/MicroCHAP" rel="noopener" target="_blank">the tweaked code on Github</a>. And maybe it'll be of use to someone else too...</p>
+				</div>
+				<div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (194)</a>
+							<a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (45)</a>
+							<a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (13)</a>
+							<a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Visual Studio (11)</a>
+							<a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (10)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2021-12">2021 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-11">2021 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-10">2021 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-09">2021 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-08">2021 - August</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -290,21 +328,16 @@
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

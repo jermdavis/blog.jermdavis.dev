@@ -1,30 +1,27 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <meta name="description" content="I&amp;#x27;m in the middle of preparing a talk for an upcoming Sitecore user group on the subject of using PowerShell DSC for Sitecore installs. (I&amp;#x27;ll post a write up of the talk after I&amp;#x27;ve given it) And one of the things I&amp;#x27;ve discovered is that once you get into the guts of it, using configuration variables alongside Script Resources can be a bit confusing.&amp;#xA;So, for the benefit of my future self (I&amp;#x27;m bound to forget this as I am taking time off from my preparation to head over to the US for &amp;lt;a href=&amp;quot;http://www.sitecore.net/events/mvp-summit-2015/home.aspx&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;this&amp;lt;/a&amp;gt; and &amp;lt;a href=&amp;quot;http://sugcon.com/&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;this&amp;lt;/a&amp;gt;) I&amp;#x27;m writing down what I&amp;#x27;ve worked out... ">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Config variables in PowerShell DSC can&#xA0;confuse</title>
-
-    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/config-variables-in-powershell-dsc-can-confuse">
-    <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.json">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Config variables in PowerShell DSC can&amp;#xA0;confuse">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/config-variables-in-powershell-dsc-can-confuse-social.png">
-    <meta property="og:description" content="">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="I'm in the middle of preparing a talk for an upcoming Sitecore user group on the subject of using PowerShell DSC for Sitecore installs. (I'll post a write up of the talk after I've given it) And one of the things I've discovered is that once you get into the guts of it, using configuration variables alongside Script Resources can be a bit confusing.
+So, for the benefit of my future self (I'm bound to forget this as I am taking time off from my preparation to head over to the US for <a href=&quot;http://www.sitecore.net/events/mvp-summit-2015/home.aspx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>this</a> and <a href=&quot;http://sugcon.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>this</a>) I'm writing down what I've worked out... ">
+		<meta property="og:description" content="I'm in the middle of preparing a talk for an upcoming Sitecore user group on the subject of using PowerShell DSC for Sitecore installs. (I'll post a write up of the talk after I've given it) And one of the things I've discovered is that once you get into the guts of it, using configuration variables alongside Script Resources can be a bit confusing.
+So, for the benefit of my future self (I'm bound to forget this as I am taking time off from my preparation to head over to the US for <a href=&quot;http://www.sitecore.net/events/mvp-summit-2015/home.aspx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>this</a> and <a href=&quot;http://sugcon.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>this</a>) I'm writing down what I've worked out... ">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Config variables in PowerShell DSC can&nbsp;confuse</title>
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/config-variables-in-powershell-dsc-can-confuse">
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.json">
+		<meta property="og:title" content="Jeremy Davis - Config variables in PowerShell DSC can&amp;#xA0;confuse">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/config-variables-in-powershell-dsc-can-confuse-social.png">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -40,275 +37,260 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/config-variables-in-powershell-dsc-can-confuse">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
-
     
-
-    
-    <!-- 13/01/2022 20:21:56 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="-mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="-mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <h1 class="text-5xl mb-4 pb-1">
-        Config variables in PowerShell DSC can confuse
-        </h1>
-            <div class="meta">Published 28 September 2015</div>
-                <div class="meta">Updated 26 June 2018</div>
-            <div class="flex py-1">
-                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
-                    <a href="/tags/powershell-dsc" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell DSC</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>I'm in the middle of preparing a talk for an upcoming Sitecore user group on the subject of using PowerShell DSC for Sitecore installs. (I'll post a write up of the talk after I've given it) And one of the things I've discovered is that once you get into the guts of it, using configuration variables alongside Script Resources can be a bit confusing.</p>
-<p>So, for the benefit of my future self (I'm bound to forget this as I am taking time off from my preparation to head over to the US for <a href="http://www.sitecore.net/events/mvp-summit-2015/home.aspx" target="_blank" rel="noopener noreferrer">this</a> and <a href="http://sugcon.com/" target="_blank" rel="noopener noreferrer">this</a>) I'm writing down what I've worked out... <!--more--></p>
-<p>Once you move away from very basic configurations, it seems to me I'll end up with nested dictionaries of Name/Value pairs in the configuration for my DSC scripts. I found myself with something along the lines of:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">&#64;{
-    AllNodes = &#64;(
-        &#64;{
-            NodeName = &quot;My-Server&quot;
-            Role = &quot;RoleOne, RoleTwo&quot;
-            
-            RoleOneSoftware = &#64;{
-                DiskPath = &quot;c:\SomeFolder\&quot;
-                SettingOne = &quot;alpha&quot;
-                SettingTwo = &quot;bravo&quot;
-            }
-
-            RoleTwoSoftware = &#64;{
-                DiskPath = &quot;c:\OtherFolder\&quot;
-                SettingOne = &quot;charlie&quot;
-                SettingTwo = &quot;delta&quot;
-            }
-         }
-    );
-}
-</pre>
-<p>Contrived example – but the idea is that in order to keep the setting names sensible, you probably end up nesting things. Easy enough to declare, and better (I think) from the perspective of managing your config settings in the future.</p>
-<p>But what happens when you try to make use of these values?</p>
-<p>Well for most of DSC's Resources, it's not too bad. Inside your <code>Node</code> block, there's a variable defined for you called <code>$Node</code> that contains the data above for the node which has been selected by the script when it's executed. And it's a dictionary object that works a bit like a &quot;dynamic&quot; variable in C# so you can just reference the properties:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Configuration ContrivedExample
-{
-    Node $AllNodes.where{ $_.Role.Contains(&quot;RoleOne&quot;) }.NodeName
-    {
-        File CreateTheRoleFolder
-        {
-            Type = &quot;Directory&quot;
-            DestinationPath = &quot;$($Node.RoleOneSoftware.SomeFolder)&quot;
-            Ensure = &quot;Present&quot;
-        }
-    }
-}
-</pre>
-<p>The enclosing <code>$()</code> force PowerShell to treat what's inside as a variable name, in order to prevent any confusion on its part. I don't think this is always necessary – but in my head at least it's easier to use it everywhere than occasionally be confused when a particular Resource fails because you forgot to use it when you needed to.</p>
-<p>Things get a bit more complicated when the resource in question is a Script resource though. A side-effect of how these are implemented is that when you're filling in the <code>GetScript</code>, <code>TestScript</code> and <code>SetScript</code> properties, you're specifying strings not scripts. So you need to be very careful about how you specify variables because the usual rules of how PowerShell does variable replacement don't quite work with your configuration data.</p>
-<p>There are two things to remember. By default, variables you write in the normal <code>$someName</code> way are going to be evaluated at the point that your script code is modifying a server. That's not the point where you run the Configuration you're declaring here. That means you can't reference variables declared by PowerShell DSC in this way (for example <code>$Node</code>) because their values are not available when the script runs. For those variables, there's a special syntax. You have to write <code>$using:Node</code> instead. This causes PowerShell DSC to inject the value correctly into the output when it &quot;compiles&quot; your DSC script into the file which Windows uses to change the state of your computer.</p>
-<p>The trouble is this starts to look very messy when you're dealing with configuration variables, and I had a lot of trouble getting it to work for a while. Where I've ended up is that I've found myself declaring a lot of temporary variables, to make the code a bit clearer to me. For example:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Configuration ContrivedExample
-{
-    Node $AllNodes.where{ $_.Role.Contains(&quot;RoleOne&quot;) }.NodeName
-    {
-        Script DemonstrateVariables
-        {
-            GetScript = {
-               # whatever code goes here
-            }
-            TestScript = {
-               # whatever code goes here
-            }
-            SetScript = {
-               $diskPath = $using:Node.RoleOneSoftware.DiskPath
-               $settingOne = $using:Node.RoleOneSoftware.SettingOne
-
-               $computedValue = &quot;$diskPath\$settingOne&quot;
-
-               Write-Verbose &quot;The computed value is $computedValue&quot;
-            }
-        }
-    }
-}
-</pre>
-<p>It's not pretty – but using that approach has worked for me.</p>
-<p>Hopefully as my DSC knowledge increases I'll work out how to make better use of this...</p>
-
-
-            </div>
-            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (194)</a>
-                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
-                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (13)</a>
-                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
-                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2021-12">2021 - December</a></div>
-                <div><a class="text-lg" href="/posts/2021-11">2021 - November</a></div>
-                <div><a class="text-lg" href="/posts/2021-10">2021 - October</a></div>
-                <div><a class="text-lg" href="/posts/2021-09">2021 - September</a></div>
-                <div><a class="text-lg" href="/posts/2021-08">2021 - August</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/config-variables-in-powershell-dsc-can-confuse">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+		
+		<!-- 14/01/2022 14:21:57 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="-mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="-mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<h1 class="text-5xl mb-4 pb-1">
+					Config variables in PowerShell DSC can&nbsp;confuse
+				</h1>
+				<div class="meta">Published 28 September 2015</div>
+				<div class="meta">Updated 26 June 2018</div>
+				<div class="flex py-1">
+					<a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md">
+						PowerShell</a>
+					<a href="/tags/powershell-dsc" class="p-1 mr-1 bg-gray-100 rounded-md">
+						PowerShell DSC</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I'm in the middle of preparing a talk for an upcoming Sitecore user group on the subject of using PowerShell DSC for Sitecore installs. (I'll post a write up of the talk after I've given it) And one of the things I've discovered is that once you get into the guts of it, using configuration variables alongside Script Resources can be a bit confusing.</p>
+					<p>So, for the benefit of my future self (I'm bound to forget this as I am taking time off from my preparation to head over to the US for
+						<a href="http://www.sitecore.net/events/mvp-summit-2015/home.aspx" target="_blank" rel="noopener noreferrer">this</a>
+						and
+						<a href="http://sugcon.com/" target="_blank" rel="noopener noreferrer">this</a>) I'm writing down what I've worked out... 
+						<!--more-->
+					</p>
+					<p>Once you move away from very basic configurations, it seems to me I'll end up with nested dictionaries of Name/Value pairs in the configuration for my DSC scripts. I found myself with something along the lines of:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">@{     AllNodes = @(         @{             NodeName = "My-Server"             Role = "RoleOne, RoleTwo"                          RoleOneSoftware = @{                 DiskPath = "c:\SomeFolder\"                 SettingOne = "alpha"                 SettingTwo = "bravo"             }              RoleTwoSoftware = @{                 DiskPath = "c:\OtherFolder\"                 SettingOne = "charlie"                 SettingTwo = "delta"             }          }     ); }
+					</pre>
+					<p>Contrived example – but the idea is that in order to keep the setting names sensible, you probably end up nesting things. Easy enough to declare, and better (I think) from the perspective of managing your config settings in the future.</p>
+					<p>But what happens when you try to make use of these values?</p>
+					<p>Well for most of DSC's Resources, it's not too bad. Inside your
+						<code>Node</code>
+						block, there's a variable defined for you called
+						<code>$Node</code>
+						that contains the data above for the node which has been selected by the script when it's executed. And it's a dictionary object that works a bit like a "dynamic" variable in C# so you can just reference the properties:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Configuration ContrivedExample {     Node $AllNodes.where{ $_.Role.Contains("RoleOne") }.NodeName     {         File CreateTheRoleFolder         {             Type = "Directory"             DestinationPath = "$($Node.RoleOneSoftware.SomeFolder)"             Ensure = "Present"         }     } }
+					</pre>
+					<p>The enclosing
+						<code>$()</code>
+						force PowerShell to treat what's inside as a variable name, in order to prevent any confusion on its part. I don't think this is always necessary – but in my head at least it's easier to use it everywhere than occasionally be confused when a particular Resource fails because you forgot to use it when you needed to.</p>
+					<p>Things get a bit more complicated when the resource in question is a Script resource though. A side-effect of how these are implemented is that when you're filling in the
+						<code>GetScript</code>,
+						<code>TestScript</code>
+						and
+						<code>SetScript</code>
+						properties, you're specifying strings not scripts. So you need to be very careful about how you specify variables because the usual rules of how PowerShell does variable replacement don't quite work with your configuration data.</p>
+					<p>There are two things to remember. By default, variables you write in the normal
+						<code>$someName</code>
+						way are going to be evaluated at the point that your script code is modifying a server. That's not the point where you run the Configuration you're declaring here. That means you can't reference variables declared by PowerShell DSC in this way (for example
+						<code>$Node</code>) because their values are not available when the script runs. For those variables, there's a special syntax. You have to write
+						<code>$using:Node</code>
+						instead. This causes PowerShell DSC to inject the value correctly into the output when it "compiles" your DSC script into the file which Windows uses to change the state of your computer.</p>
+					<p>The trouble is this starts to look very messy when you're dealing with configuration variables, and I had a lot of trouble getting it to work for a while. Where I've ended up is that I've found myself declaring a lot of temporary variables, to make the code a bit clearer to me. For example:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Configuration ContrivedExample {     Node $AllNodes.where{ $_.Role.Contains("RoleOne") }.NodeName     {         Script DemonstrateVariables         {             GetScript = {                # whatever code goes here             }             TestScript = {                # whatever code goes here             }             SetScript = {                $diskPath = $using:Node.RoleOneSoftware.DiskPath                $settingOne = $using:Node.RoleOneSoftware.SettingOne                 $computedValue = "$diskPath\$settingOne"                 Write-Verbose "The computed value is $computedValue"             }         }     } }
+					</pre>
+					<p>It's not pretty – but using that approach has worked for me.</p>
+					<p>Hopefully as my DSC knowledge increases I'll work out how to make better use of this...</p>
+				</div>
+				<div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (194)</a>
+							<a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (45)</a>
+							<a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (13)</a>
+							<a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Visual Studio (11)</a>
+							<a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (10)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2021-12">2021 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-11">2021 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-10">2021 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-09">2021 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-08">2021 - August</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -317,21 +299,16 @@
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

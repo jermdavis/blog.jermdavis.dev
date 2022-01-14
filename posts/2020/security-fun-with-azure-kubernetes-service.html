@@ -1,30 +1,25 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <meta name="description" content="I&amp;#x27;ve been working on a deployment of Sitecore using containers recently, and hit a scenario which isn&amp;#x27;t discussed much in the Microsoft documentation: How do you go about setting it all up if you can&amp;#x27;t use Active Directory accounts across your DevOps and Azure instances? Having done some digging, here&amp;#x27;s what I&amp;#x27;ve learned so far: ">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Security fun with Azure Kubernetes&#xA0;Service</title>
-
-    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2020/security-fun-with-azure-kubernetes-service">
-    <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.json">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Security fun with Azure Kubernetes&amp;#xA0;Service">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/security-fun-with-azure-kubernetes-service-social.png">
-    <meta property="og:description" content="">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="I've been working on a deployment of Sitecore using containers recently, and hit a scenario which isn't discussed much in the Microsoft documentation: How do you go about setting it all up if you can't use Active Directory accounts across your DevOps and Azure instances? Having done some digging, here's what I've learned so far: ">
+		<meta property="og:description" content="I've been working on a deployment of Sitecore using containers recently, and hit a scenario which isn't discussed much in the Microsoft documentation: How do you go about setting it all up if you can't use Active Directory accounts across your DevOps and Azure instances? Having done some digging, here's what I've learned so far: ">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Security fun with Azure Kubernetes&nbsp;Service</title>
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2020/security-fun-with-azure-kubernetes-service">
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.json">
+		<meta property="og:title" content="Jeremy Davis - Security fun with Azure Kubernetes&amp;#xA0;Service">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/security-fun-with-azure-kubernetes-service-social.png">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -39,326 +34,316 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2020/security-fun-with-azure-kubernetes-service">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
-
     
-
-    
-    <!-- 13/01/2022 20:22:12 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="-mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="-mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <h1 class="text-5xl mb-4 pb-1">
-        Security fun with Azure Kubernetes Service
-        </h1>
-            <div class="meta">Published 21 December 2020</div>
-            <div class="flex py-1">
-                    <a href="/tags/azure" class="p-1 mr-1 bg-gray-100 rounded-md"> Azure</a>
-                    <a href="/tags/devops" class="p-1 mr-1 bg-gray-100 rounded-md"> DevOps</a>
-                    <a href="/tags/kubernetes" class="p-1 mr-1 bg-gray-100 rounded-md"> Kubernetes</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>I've been working on a deployment of Sitecore using containers recently, and hit a scenario which isn't discussed much in the Microsoft documentation: How do you go about setting it all up if you can't use Active Directory accounts across your DevOps and Azure instances? Having done some digging, here's what I've learned so far: <!--more--></p>
-<h2>My issue</h2>
-<p>I needed to run Sitecore in <a href="https://azure.microsoft.com/en-gb/services/kubernetes-service/" rel="noopener" target="_blank">AKS</a>, but there was a security boundary between DevOps (owned and run by my client) and my dev/QA Azure instance (owned and run by my company). Normally this would be pretty easy – in DevOps you can create a <a href="https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&amp;tabs=yaml" rel="noopener" target="_blank">Service Connection</a> for an instance of AKS and give it your AD credentials for Azure. But that doesn't work for me – for tedious technical reasons it is not possible for me to log in as my Azure account when I'm accessing the client's DevOps, so I can't create one of these easy authentication tokens.</p>
-<p>(For the curious: I have &quot;username&#64;mycompany.com&quot; Azure AD account which is used for my Azure access in my company. But I also have the same username as a standard Microsoft account which is not tied to my company AD. The client used the standard Microsoft account to grant me access to their DevOps because they don't have access to our company AD either. So whenever I try to fill in the Service Connection form to give my credentials to set up this link, DevOps only accepts my Microsoft Account password. I cannot use the company AD account which would actually grant rights to the AKS instance. A silly issue – but a blocker none the less)</p>
-<p><a href="/img/2020/2020-12-untitled-diagram.png" target="_blank"><img alt="Security Boundary Issue" src="/img/2020/2020-12-untitled-diagram.png"></a></p>
-<p>So how can I give DevOps permissions to push new deployments into my AKS instance?</p>
-<h2>K8s tokens</h2>
-<p>It turns out that Kubernetes has its own approach to security – and this is something I can use to solve my problem. Most of the docs that you come across for AKS assume that you'll be using Active Directory, but it turns out you can use role-based access control (referred to as <a href="https://en.wikipedia.org/wiki/Role-based_access_control" rel="noopener" target="_blank">RBAC</a> in the docs) with internal accounts too. So you can create an account in Kubernetes, grant it some permissions and then give its authentication tokens to DevOps to use when it connects.</p>
-<p>Sounds simple – but like many things here, it requires some thought.</p>
-<h2>Getting an account</h2>
-<p>Kubernetes has the concept of &quot;service accounts&quot; – users which can perform actions in the system but are expected to be used by other computers rather than people. Some documentation only discusses this inside your cluster, when pods need to communicate. However there is also some documentation that discusses how these can be used for external systems to perform actions in your cluster.</p>
-<p>From the command line you can create a new service account with <code>kubectl</code>. So I started by creating one in my Sitecore deployment's namespace. However despite a variety of experiments here, I was unable to make that work correctly – it was easy to create the account, but AKS would always refuse to perform any actions under these credentials. After a lot of research, I found one article that described putting your service account into the &quot;kube-system&quot; namespace. And this worked for me.</p>
-<p>So the command I created the user with ended up as:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl -n kube-system create serviceaccount azure-pipeline
-</pre>
-<p>Once you have an account, you need to &quot;bind&quot; it to a role, telling AKS which rights the account should have. Kubernetes calls this a &quot;role binding&quot;. And Kubernetes roles can be scoped to either your application or to the entire cluster. Given the issue above, a cluster scoped role and binding seems more appropriate.</p>
-<p>Again, I tried creating my own role, with what I thought was the right set of permissions, but was unable to make it work. So I fell back to one of the built-in admin roles. While this isn't best security practice, it's good enough to make the whole thing work while I learn more.</p>
-<p>So the role binding to a cluster role can be set up:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl create clusterrolebinding azure-pipeline-binding --clusterrole=cluster-admin --serviceaccount=kube-system:azure-pipeline
-</pre>
-<p>Note how the namespace here is specified by prefixing the user <code>&lt;namespace&gt;:&lt;user&gt;</code> rather than with the <code>-n</code> parameter here.</p>
-<p>(You can also do this from Yaml files, of course – but I'll stick to the command line here)</p>
-<h2>Getting the credentials to use</h2>
-<p>When you click &quot;Manage&quot; for the AKS service connection in DevOps, you need to change the authentication method to &quot;Service Account&quot; to use this approach. That requires you to fill in two key bits of info:</p>
-<p><a href="/img/2020/2020-12-serviceaccount.png" target="_blank"><img alt="Service Account" src="/img/2020/2020-12-serviceaccount.png"></a></p>
-<p>First is the server url. As you can see from the image above, DevOps suggests a command to get this info. But when I paste that into my console, I get this:</p>
-<p><a href="/img/2020/2020-12-servererror.png" target="_blank"><img alt="Server Error" src="/img/2020/2020-12-servererror.png"></a></p>
-<p>But if you remove the &quot;jsonpath&quot; there, it will give you the data you need:</p>
-<p><a href="/img/2020/2020-12-validserver-1.png" target="_blank"><img alt="Valid Server" src="/img/2020/2020-12-validserver-1.png"></a></p>
-<p>The server URL is highlighted here – and you can copy that into the DevOps field.</p>
-<p>You then need the authentication data. Again, DevOps gives you some commands to run, and again these break for me. So cue some more research... What I found I could do was get all the service accounts by running</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl get serviceaccounts azure-pipeline -o custom-columns=&quot;:secrets[0].name&quot; -n kube-system
-</pre>
-<p>to get the name of the token inside AKS – something like <code>azure-pipeline-token-ajdsa</code> And then you can pass the token name you get to a second command:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl get secret azure-pipeline-token-ajdsa -o json -n kube-system
-</pre>
-<p>to get a blob of json:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">{
-    &quot;apiVersion&quot;: &quot;v1&quot;,
-    &quot;data&quot;: {
-        &quot;ca.crt&quot;: &quot;... redacted ...&quot;,
-        &quot;namespace&quot;: &quot;a3ViZS1zeXN0ZW0=&quot;,
-        &quot;token&quot;: &quot;... redacted ...&quot;
-    },
-    &quot;kind&quot;: &quot;Secret&quot;,
-    &quot;metadata&quot;: {
-        &quot;annotations&quot;: {
-            &quot;kubernetes.io/service-account.name&quot;: &quot;azure-pipeline&quot;,
-            &quot;kubernetes.io/service-account.uid&quot;: &quot;37d737b1-2e91-42c9-8e29-0104956ade8d&quot;
-        },
-        &quot;creationTimestamp&quot;: &quot;2020-12-04T09:56:03Z&quot;,
-        &quot;name&quot;: &quot;azure-pipeline-token-ajdsa&quot;,
-        &quot;namespace&quot;: &quot;kube-system&quot;,
-        &quot;resourceVersion&quot;: &quot;11194&quot;,
-        &quot;selfLink&quot;: &quot;/api/v1/namespaces/kube-system/secrets/azure-pipeline-token-ajdsa&quot;,
-        &quot;uid&quot;: &quot;80ea29fc-26b4-46a5-bdaf-509aac101fba&quot;
-    },
-    &quot;type&quot;: &quot;kubernetes.io/service-account-token&quot;
-}
-</pre>
-<p>And this is what you need to paste into the DevOps form. Once that's done and saved in your Service Connection, the DevOps kubectl step can use it to connect to your AKS instance.</p>
-<h2>Another thing that tripped me up...</h2>
-<p>Early on in this process I came across some documentation describing the <code>can-i</code> command for checking if a user can do an operation. In theory, you can use a command like:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl auth can-i create deployment -n my-deployment --as azure-pipeline
-</pre>
-<p>and the response comes back as &quot;yes&quot; or &quot;no&quot; depending on whether that user has the appropriate rights or not.</p>
-<p>But I cannot make this work. Following the pattern above I was able to create an accound that worked correctly with DevOps. But no matter what query I make via the command line to test those rights, it always says &quot;no&quot;.</p>
-<p>This caused me a certain amount of delay when I was working out the steps above. I was trying to avoid running deployments – as they take a while. I assume there's some key thing I've missed here about how the <code>can-i</code> command works which explains this issue. But I've not worked it out yet...</p>
-<h2>And there was one more thing to trip me up...</h2>
-<p>Before I started trying to get the DevOps release to work, I'd been testing some releases from the command line. Those had been working fine. So when I ran the first DevOps release that succeeded, I was surprised to find that after DevOps declared it had finished applying the release I was seeing AKS erroring because it was unable to pull the requisite images.</p>
-<p>Stepping back and thinking about it, that did make some sense. My AKS instance is sitting with my ACR instance in my DevOps. That means when I ran command line deploys as &quot;me&quot; they were running with the correct security tokens to access both AKS and ACR. But once DevOps takes over using its special token above, that doesn't have access to my ACR...</p>
-<p>Another pass through the documentation teaches me another new thing. You can add the auth details for your ACR as a secret in your AKS instance:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl create secret docker-registry my-company-acr --docker-server=myacr.azurecr.io --docker-username=myacr --docker-password=1234343+sdasdsdaKJKweq --docker-email=my-email&#64;somewhere.com
-</pre>
-<p>(You need to enable the &quot;admin account&quot; option under &quot;Access Keys&quot; in your ACR to get a standard username / password to use here)</p>
-<p>And then you can tweak the yaml files for the pods you're deploying, by telling them the name of the secret you created above. It took me a couple of goes to get this in the right place in my files. I am developing a profound hatred of significant whitespace in config files 😉</p>
-<p>Anyway, the right thing to set is:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-highlight="19,20" data-enlighter-language="text" style="width:100%; overflow:scroll;">apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: xdbrefdata
-  labels:
-    app: xdbrefdata
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: xdbrefdata
-  template:
-    metadata:
-      labels:
-        app: xdbrefdata
-    spec:
-      nodeSelector:
-        kubernetes.io/os: windows
-      imagePullSecrets:
-      - name: my-company-acr
-      containers:
-      - name: sitecore-xp1-xdbrefdata
-        image: myacr.azurecr.io/mysite-xp1-xdbrefdata:latest
-        ports:
-        - containerPort: 80
-        env:
-        - name: Database_Server
-          valueFrom:
-            secretKeyRef:
-              name: sitecore-database
-              key: sitecore-databaseservername.txt
-        livenessProbe:
-          httpGet:
-            path: /healthz/live
-            port: 80
-            httpHeaders:
-            - name: X-Kubernetes-Probe
-              value: Liveness
-          timeoutSeconds: 300
-          periodSeconds: 30
-          failureThreshold: 3
-</pre>
-<p>And with that in place, my deployments work from both the command line and from DevOps.</p>
-<p>I need to work out how to reduce the rights given to the DevOps deploy process, but at least it works now...</p>
-
-
-            </div>
-            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (194)</a>
-                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
-                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (13)</a>
-                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
-                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2021-12">2021 - December</a></div>
-                <div><a class="text-lg" href="/posts/2021-11">2021 - November</a></div>
-                <div><a class="text-lg" href="/posts/2021-10">2021 - October</a></div>
-                <div><a class="text-lg" href="/posts/2021-09">2021 - September</a></div>
-                <div><a class="text-lg" href="/posts/2021-08">2021 - August</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2020/security-fun-with-azure-kubernetes-service">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+		
+		<!-- 14/01/2022 14:22:39 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="-mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="-mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<h1 class="text-5xl mb-4 pb-1">
+					Security fun with Azure Kubernetes&nbsp;Service
+				</h1>
+				<div class="meta">Published 21 December 2020</div>
+				<div class="flex py-1">
+					<a href="/tags/azure" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Azure</a>
+					<a href="/tags/devops" class="p-1 mr-1 bg-gray-100 rounded-md">
+						DevOps</a>
+					<a href="/tags/kubernetes" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Kubernetes</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I've been working on a deployment of Sitecore using containers recently, and hit a scenario which isn't discussed much in the Microsoft documentation: How do you go about setting it all up if you can't use Active Directory accounts across your DevOps and Azure instances? Having done some digging, here's what I've learned so far: 
+						<!--more-->
+					</p>
+					<h2>My issue</h2>
+					<p>I needed to run Sitecore in
+						<a href="https://azure.microsoft.com/en-gb/services/kubernetes-service/" rel="noopener" target="_blank">AKS</a>, but there was a security boundary between DevOps (owned and run by my client) and my dev/QA Azure instance (owned and run by my company). Normally this would be pretty easy – in DevOps you can create a
+						<a href="https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&amp;tabs=yaml" rel="noopener" target="_blank">Service Connection</a>
+						for an instance of AKS and give it your AD credentials for Azure. But that doesn't work for me – for tedious technical reasons it is not possible for me to log in as my Azure account when I'm accessing the client's DevOps, so I can't create one of these easy authentication tokens.</p>
+					<p>(For the curious: I have "username@mycompany.com" Azure AD account which is used for my Azure access in my company. But I also have the same username as a standard Microsoft account which is not tied to my company AD. The client used the standard Microsoft account to grant me access to their DevOps because they don't have access to our company AD either. So whenever I try to fill in the Service Connection form to give my credentials to set up this link, DevOps only accepts my Microsoft Account password. I cannot use the company AD account which would actually grant rights to the AKS instance. A silly issue – but a blocker none the less)</p>
+					<p>
+						<a href="/img/2020/2020-12-untitled-diagram.png" target="_blank">
+							<img alt="Security Boundary Issue" src="/img/2020/2020-12-untitled-diagram.png">
+						</a>
+					</p>
+					<p>So how can I give DevOps permissions to push new deployments into my AKS instance?</p>
+					<h2>K8s tokens</h2>
+					<p>It turns out that Kubernetes has its own approach to security – and this is something I can use to solve my problem. Most of the docs that you come across for AKS assume that you'll be using Active Directory, but it turns out you can use role-based access control (referred to as
+						<a href="https://en.wikipedia.org/wiki/Role-based_access_control" rel="noopener" target="_blank">RBAC</a>
+						in the docs) with internal accounts too. So you can create an account in Kubernetes, grant it some permissions and then give its authentication tokens to DevOps to use when it connects.</p>
+					<p>Sounds simple – but like many things here, it requires some thought.</p>
+					<h2>Getting an account</h2>
+					<p>Kubernetes has the concept of "service accounts" – users which can perform actions in the system but are expected to be used by other computers rather than people. Some documentation only discusses this inside your cluster, when pods need to communicate. However there is also some documentation that discusses how these can be used for external systems to perform actions in your cluster.</p>
+					<p>From the command line you can create a new service account with
+						<code>kubectl</code>. So I started by creating one in my Sitecore deployment's namespace. However despite a variety of experiments here, I was unable to make that work correctly – it was easy to create the account, but AKS would always refuse to perform any actions under these credentials. After a lot of research, I found one article that described putting your service account into the "kube-system" namespace. And this worked for me.</p>
+					<p>So the command I created the user with ended up as:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl -n kube-system create serviceaccount azure-pipeline
+					</pre>
+					<p>Once you have an account, you need to "bind" it to a role, telling AKS which rights the account should have. Kubernetes calls this a "role binding". And Kubernetes roles can be scoped to either your application or to the entire cluster. Given the issue above, a cluster scoped role and binding seems more appropriate.</p>
+					<p>Again, I tried creating my own role, with what I thought was the right set of permissions, but was unable to make it work. So I fell back to one of the built-in admin roles. While this isn't best security practice, it's good enough to make the whole thing work while I learn more.</p>
+					<p>So the role binding to a cluster role can be set up:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl create clusterrolebinding azure-pipeline-binding --clusterrole=cluster-admin --serviceaccount=kube-system:azure-pipeline
+					</pre>
+					<p>Note how the namespace here is specified by prefixing the user
+						<code>&lt;namespace&gt;:&lt;user&gt;</code>
+						rather than with the
+						<code>-n</code>
+						parameter here.</p>
+					<p>(You can also do this from Yaml files, of course – but I'll stick to the command line here)</p>
+					<h2>Getting the credentials to use</h2>
+					<p>When you click "Manage" for the AKS service connection in DevOps, you need to change the authentication method to "Service Account" to use this approach. That requires you to fill in two key bits of info:</p>
+					<p>
+						<a href="/img/2020/2020-12-serviceaccount.png" target="_blank">
+							<img alt="Service Account" src="/img/2020/2020-12-serviceaccount.png">
+						</a>
+					</p>
+					<p>First is the server url. As you can see from the image above, DevOps suggests a command to get this info. But when I paste that into my console, I get this:</p>
+					<p>
+						<a href="/img/2020/2020-12-servererror.png" target="_blank">
+							<img alt="Server Error" src="/img/2020/2020-12-servererror.png">
+						</a>
+					</p>
+					<p>But if you remove the "jsonpath" there, it will give you the data you need:</p>
+					<p>
+						<a href="/img/2020/2020-12-validserver-1.png" target="_blank">
+							<img alt="Valid Server" src="/img/2020/2020-12-validserver-1.png">
+						</a>
+					</p>
+					<p>The server URL is highlighted here – and you can copy that into the DevOps field.</p>
+					<p>You then need the authentication data. Again, DevOps gives you some commands to run, and again these break for me. So cue some more research... What I found I could do was get all the service accounts by running</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl get serviceaccounts azure-pipeline -o custom-columns=":secrets[0].name" -n kube-system
+					</pre>
+					<p>to get the name of the token inside AKS – something like
+						<code>azure-pipeline-token-ajdsa</code>
+						And then you can pass the token name you get to a second command:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl get secret azure-pipeline-token-ajdsa -o json -n kube-system
+					</pre>
+					<p>to get a blob of json:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">{     "apiVersion": "v1",     "data": {         "ca.crt": "... redacted ...",         "namespace": "a3ViZS1zeXN0ZW0=",         "token": "... redacted ..."     },     "kind": "Secret",     "metadata": {         "annotations": {             "kubernetes.io/service-account.name": "azure-pipeline",             "kubernetes.io/service-account.uid": "37d737b1-2e91-42c9-8e29-0104956ade8d"         },         "creationTimestamp": "2020-12-04T09:56:03Z",         "name": "azure-pipeline-token-ajdsa",         "namespace": "kube-system",         "resourceVersion": "11194",         "selfLink": "/api/v1/namespaces/kube-system/secrets/azure-pipeline-token-ajdsa",         "uid": "80ea29fc-26b4-46a5-bdaf-509aac101fba"     },     "type": "kubernetes.io/service-account-token" }
+					</pre>
+					<p>And this is what you need to paste into the DevOps form. Once that's done and saved in your Service Connection, the DevOps kubectl step can use it to connect to your AKS instance.</p>
+					<h2>Another thing that tripped me up...</h2>
+					<p>Early on in this process I came across some documentation describing the
+						<code>can-i</code>
+						command for checking if a user can do an operation. In theory, you can use a command like:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl auth can-i create deployment -n my-deployment --as azure-pipeline
+					</pre>
+					<p>and the response comes back as "yes" or "no" depending on whether that user has the appropriate rights or not.</p>
+					<p>But I cannot make this work. Following the pattern above I was able to create an accound that worked correctly with DevOps. But no matter what query I make via the command line to test those rights, it always says "no".</p>
+					<p>This caused me a certain amount of delay when I was working out the steps above. I was trying to avoid running deployments – as they take a while. I assume there's some key thing I've missed here about how the
+						<code>can-i</code>
+						command works which explains this issue. But I've not worked it out yet...</p>
+					<h2>And there was one more thing to trip me up...</h2>
+					<p>Before I started trying to get the DevOps release to work, I'd been testing some releases from the command line. Those had been working fine. So when I ran the first DevOps release that succeeded, I was surprised to find that after DevOps declared it had finished applying the release I was seeing AKS erroring because it was unable to pull the requisite images.</p>
+					<p>Stepping back and thinking about it, that did make some sense. My AKS instance is sitting with my ACR instance in my DevOps. That means when I ran command line deploys as "me" they were running with the correct security tokens to access both AKS and ACR. But once DevOps takes over using its special token above, that doesn't have access to my ACR...</p>
+					<p>Another pass through the documentation teaches me another new thing. You can add the auth details for your ACR as a secret in your AKS instance:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl create secret docker-registry my-company-acr --docker-server=myacr.azurecr.io --docker-username=myacr --docker-password=1234343+sdasdsdaKJKweq --docker-email=my-email@somewhere.com
+					</pre>
+					<p>(You need to enable the "admin account" option under "Access Keys" in your ACR to get a standard username / password to use here)</p>
+					<p>And then you can tweak the yaml files for the pods you're deploying, by telling them the name of the secret you created above. It took me a couple of goes to get this in the right place in my files. I am developing a profound hatred of significant whitespace in config files 😉</p>
+					<p>Anyway, the right thing to set is:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="19,20" data-enlighter-language="text" style="width:100%; overflow:scroll;">apiVersion: apps/v1 kind: Deployment metadata:   name: xdbrefdata   labels:     app: xdbrefdata spec:   replicas: 1   selector:     matchLabels:       app: xdbrefdata   template:     metadata:       labels:         app: xdbrefdata     spec:       nodeSelector:         kubernetes.io/os: windows       imagePullSecrets:       - name: my-company-acr       containers:       - name: sitecore-xp1-xdbrefdata         image: myacr.azurecr.io/mysite-xp1-xdbrefdata:latest         ports:         - containerPort: 80         env:         - name: Database_Server           valueFrom:             secretKeyRef:               name: sitecore-database               key: sitecore-databaseservername.txt         livenessProbe:           httpGet:             path: /healthz/live             port: 80             httpHeaders:             - name: X-Kubernetes-Probe               value: Liveness           timeoutSeconds: 300           periodSeconds: 30           failureThreshold: 3
+					</pre>
+					<p>And with that in place, my deployments work from both the command line and from DevOps.</p>
+					<p>I need to work out how to reduce the rights given to the DevOps deploy process, but at least it works now...</p>
+				</div>
+				<div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (194)</a>
+							<a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (45)</a>
+							<a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (13)</a>
+							<a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Visual Studio (11)</a>
+							<a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (10)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2021-12">2021 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-11">2021 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-10">2021 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-09">2021 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-08">2021 - August</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -367,21 +352,16 @@ spec:
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

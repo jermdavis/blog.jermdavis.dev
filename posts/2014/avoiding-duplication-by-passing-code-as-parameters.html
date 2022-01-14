@@ -1,30 +1,27 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <meta name="description" content="Recently I looked at &amp;lt;a href=&amp;quot;/posts/2014/delete-aliases-along-with-their-items&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;removing aliases when their owning items were deleted&amp;lt;/a&amp;gt;. I noted at the end of the post that the code ended up with some duplication in it. Duplication is generally a bad thing in code &amp;#x2013; copy/pastes of code tends to diverge over time and introduce bugs. So ideally we&amp;#x27;d work out a way to get rid of the duplication, and reduce the set of methods our class needs.&amp;#xA;Having been reading a bit on functional languages and F# in particular, I was thinking about how it can be done by passing code as parameters to more generic methods.">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Avoiding duplicated code with&#xA0;delegates...</title>
-
-    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/avoiding-duplication-by-passing-code-as-parameters">
-    <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.json">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Avoiding duplicated code with&amp;#xA0;delegates...">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/avoiding-duplication-by-passing-code-as-parameters-social.png">
-    <meta property="og:description" content="">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="Recently I looked at <a href=&quot;/posts/2014/delete-aliases-along-with-their-items&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>removing aliases when their owning items were deleted</a>. I noted at the end of the post that the code ended up with some duplication in it. Duplication is generally a bad thing in code – copy/pastes of code tends to diverge over time and introduce bugs. So ideally we'd work out a way to get rid of the duplication, and reduce the set of methods our class needs.
+Having been reading a bit on functional languages and F# in particular, I was thinking about how it can be done by passing code as parameters to more generic methods.">
+		<meta property="og:description" content="Recently I looked at <a href=&quot;/posts/2014/delete-aliases-along-with-their-items&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>removing aliases when their owning items were deleted</a>. I noted at the end of the post that the code ended up with some duplication in it. Duplication is generally a bad thing in code – copy/pastes of code tends to diverge over time and introduce bugs. So ideally we'd work out a way to get rid of the duplication, and reduce the set of methods our class needs.
+Having been reading a bit on functional languages and F# in particular, I was thinking about how it can be done by passing code as parameters to more generic methods.">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Avoiding duplicated code with&nbsp;delegates...</title>
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/avoiding-duplication-by-passing-code-as-parameters">
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.json">
+		<meta property="og:title" content="Jeremy Davis - Avoiding duplicated code with&amp;#xA0;delegates...">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/avoiding-duplication-by-passing-code-as-parameters-social.png">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -40,296 +37,299 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/avoiding-duplication-by-passing-code-as-parameters">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
-
     
-
-    
-    <!-- 13/01/2022 20:21:54 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="-mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="-mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <h1 class="text-5xl mb-4 pb-1">
-        Avoiding duplicated code with delegates...
-        </h1>
-            <div class="meta">Published 14 April 2014</div>
-                <div class="meta">Updated 25 August 2016</div>
-            <div class="flex py-1">
-                    <a href="/tags/general" class="p-1 mr-1 bg-gray-100 rounded-md"> General</a>
-                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
-                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>Recently I looked at <a href="/posts/2014/delete-aliases-along-with-their-items" target="_blank" rel="noopener noreferrer">removing aliases when their owning items were deleted</a>. I noted at the end of the post that the code ended up with some duplication in it. Duplication is generally a bad thing in code – copy/pastes of code tends to diverge over time and introduce bugs. So ideally we'd work out a way to get rid of the duplication, and reduce the set of methods our class needs.</p>
-<p>Having been reading a bit on functional languages and F# in particular, I was thinking about how it can be done by passing code as parameters to more generic methods.</p>
-<!--more-->
-<p>So looking back at the code from the other week, the pipeline class had the following methods:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteItems : ItemOperation
-{
-    public void CheckAndDeleteAliases(ClientPipelineArgs args);
-
-    private Database getDatabase(ClientPipelineArgs args);
-
-    private void removeAliases(ListString items, Database db);
-    private void removeAliases(Item item);
-
-    private int countAliases(ListString items, Database db);
-    private int countAliases(Item item);
-}
-</pre>
-<p>The key thing to note here is the similarity between the two <code>removeAliases()</code> and the two <code>countAliases()</code> methods. And looking at the code, the two methods with the <code>xxAliases(ListString items, Database db)</code> signature seem very similar:</p>
-<p><a target="_blank" rel="noopener noreferrer" href="/img/2014/compare.png"><img border="0" alt="Comparing Code" src="/img/2014/compare.png"></a></p>
-<p>In fact the only differences are in text strings, the return type and the other function they call.</p>
-<p>So how do we reduce the amount of code we need? Well, how about we try passing some of those differences in as parameters to a more generic function? For strings and normal types that's easy – we do it all the time. But what about the other function that gets called to process the individual Items? Well in .Net we have the concept of Delegates to represent pointers to functions. Historically you had to declare these yourself, but more recently the arrival of Linq gave the .Net Framework a series of generic types for representing pointers to methods and functions: <code>Action&lt;T&gt;</code> and its variants represent a pointer to a void method. <code>Func&lt;T, Result&gt;</code> and its variants represent a pointer to a function that returns the type TResult. You can read more about the <a target="_blank" rel="noopener noreferrer" href="http://msdn.microsoft.com/en-us/library/bb549151(v=vs.110).aspx">Func</a> and <a target="_blank" rel="noopener noreferrer" href="http://msdn.microsoft.com/en-us/library/018hxwa8(v=vs.110).aspx">Action</a> types at MSDN.</p>
-<p>So if we want to make our &quot;do something&quot; method into a parameter to some more generic code, we need to decide what it's signature should be. In this case we have two possibilities: <code>Action&lt;Item&gt;</code> or <code>Func&lt;Item, int&gt;</code> depending on which version of the <code>xxAliases()</code> methods you look at from last week's code. Since we can always ignore a return type if we want to, it seems that <code>Func&lt;Item, int&gt;</code> is the right choice here, as it lets us express both of our possible methods.</p>
-<p>Based on that and a bit of thinking, we can replace the two <code>xxAliases(ListString, Database)</code> methods with one new method that looks like this:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private int processItems(ListString items, Database db, string taskContext, Func&lt;Item, int&gt; process)
-{
-    int count = 0;
-
-    try
-    {
-        using (new TaskContext(taskContext))
-        {
-            using (new SecurityDisabler())
-            {
-                foreach (string item in items)
-                {
-                    Item itm = db.GetItem(item);
-                    if (itm != null)
-                    {
-                        // Count this one
-                        count += process(itm);
-
-                        // And process any descendent items too
-                        foreach(var descendantItm in itm.Axes.GetDescendants())
-                        {
-                            count += process(descendantItm);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    catch (Exception ex)
-    {
-        Log.Error(&quot;Error during: &quot; + taskContext, ex, this);
-        HttpUnhandledException ex2 = new HttpUnhandledException(ex.Message, ex);
-        string htmlErrorMessage = ex2.GetHtmlErrorMessage();
-        UrlString urlString = new UrlString(&quot;/sitecore/shell/controls/error.htm&quot;);
-        Context.ClientPage.ClientResponse.ShowModalDialog(urlString.ToString(), htmlErrorMessage);
-    }
-
-    return count;
-}
-</pre>
-<p>It does exactly the same thing, except that it takes the processing function for each Item as a parameter, and it also takes the name of the task for logging / error purposes as a parameter. And with that we can remove the two methods with the <code>xxAliases(ListString, Database)</code> signature.</p>
-<p>Making use of this is easy, since C# will implicitly type cast the name of a function into the appropriate <code>Func&lt;&gt;</code> type at compile time, so for counting aliases we can just write:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// Count the aliases for any items we have as parameters
-int aliases = processItems(items, db, &quot;DeleteItems pipeline - count aliases&quot;, countAliases);
-</pre>
-<p>and that will cause our <code>countAliases(Item)</code> method to be called for each item the <code>processItems()</code> code finds. But doing the same thing for the <code>removeAliases()</code> method would give a compiler error. That returns <code>void</code>, meaning it can't be typecast to a <code>Func&lt;&gt;</code> – so we have to cheat a little here and make <code>removeAliases(Item item)</code> return an integer instead of void. You can count the number of Alias items that actually get removed, or you can just return 0 – it doesn't matter to the rest of the code.</p>
-<p>It's worth mentioning here that you don't actually need to declare a method to call our <code>processItems()</code> function. Another of the nice features you get with this approach is that you can write methods and functions inline using Lambda expressions. So you can write:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">processItems(listOfItems, database, &quot;Example anonymous method&quot;, itm =&gt; {
-    // do something
-    return 0;
-});
-</pre>
-<p>And the compiler magic behind <code>=&gt;</code> works out that what you've declared and creates a method with a computer generated name and the correct signature without you having to type it all out.</p>
-<p>So with those changes made, our class now contains the following methods:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteItems : ItemOperation
-{
-    public void CheckAndDeleteAliases(ClientPipelineArgs args);
-
-    private Database getDatabase(ClientPipelineArgs args);
-
-    private int processItems(ListString items, Database db, string taskContext, Func&lt;Item,int&gt; process);
-
-    private int removeAliases(Item item);
-    private int countAliases(Item item);
-}
-</pre>
-<p>And we've successfully removed the duplication. Job's a good ‘un.</p>
-
-
-            </div>
-            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (194)</a>
-                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
-                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (13)</a>
-                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
-                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2021-12">2021 - December</a></div>
-                <div><a class="text-lg" href="/posts/2021-11">2021 - November</a></div>
-                <div><a class="text-lg" href="/posts/2021-10">2021 - October</a></div>
-                <div><a class="text-lg" href="/posts/2021-09">2021 - September</a></div>
-                <div><a class="text-lg" href="/posts/2021-08">2021 - August</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/avoiding-duplication-by-passing-code-as-parameters">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+		
+		<!-- 14/01/2022 14:21:58 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="-mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="-mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<h1 class="text-5xl mb-4 pb-1">
+					Avoiding duplicated code with&nbsp;delegates...
+				</h1>
+				<div class="meta">Published 14 April 2014</div>
+				<div class="meta">Updated 25 August 2016</div>
+				<div class="flex py-1">
+					<a href="/tags/general" class="p-1 mr-1 bg-gray-100 rounded-md">
+						General</a>
+					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
+						C#</a>
+					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>Recently I looked at
+						<a href="/posts/2014/delete-aliases-along-with-their-items" target="_blank" rel="noopener noreferrer">removing aliases when their owning items were deleted</a>. I noted at the end of the post that the code ended up with some duplication in it. Duplication is generally a bad thing in code – copy/pastes of code tends to diverge over time and introduce bugs. So ideally we'd work out a way to get rid of the duplication, and reduce the set of methods our class needs.</p>
+					<p>Having been reading a bit on functional languages and F# in particular, I was thinking about how it can be done by passing code as parameters to more generic methods.</p>
+					
+					<!--more-->
+					<p>So looking back at the code from the other week, the pipeline class had the following methods:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteItems : ItemOperation {     public void CheckAndDeleteAliases(ClientPipelineArgs args);      private Database getDatabase(ClientPipelineArgs args);      private void removeAliases(ListString items, Database db);     private void removeAliases(Item item);      private int countAliases(ListString items, Database db);     private int countAliases(Item item); }
+					</pre>
+					<p>The key thing to note here is the similarity between the two
+						<code>removeAliases()</code>
+						and the two
+						<code>countAliases()</code>
+						methods. And looking at the code, the two methods with the
+						<code>xxAliases(ListString items, Database db)</code>
+						signature seem very similar:</p>
+					<p>
+						<a target="_blank" rel="noopener noreferrer" href="/img/2014/compare.png">
+							<img border="0" alt="Comparing Code" src="/img/2014/compare.png">
+						</a>
+					</p>
+					<p>In fact the only differences are in text strings, the return type and the other function they call.</p>
+					<p>So how do we reduce the amount of code we need? Well, how about we try passing some of those differences in as parameters to a more generic function? For strings and normal types that's easy – we do it all the time. But what about the other function that gets called to process the individual Items? Well in .Net we have the concept of Delegates to represent pointers to functions. Historically you had to declare these yourself, but more recently the arrival of Linq gave the .Net Framework a series of generic types for representing pointers to methods and functions:
+						<code>Action&lt;T&gt;</code>
+						and its variants represent a pointer to a void method.
+						<code>Func&lt;T, Result&gt;</code>
+						and its variants represent a pointer to a function that returns the type TResult. You can read more about the
+						<a target="_blank" rel="noopener noreferrer" href="http://msdn.microsoft.com/en-us/library/bb549151(v=vs.110).aspx">Func</a>
+						and
+						<a target="_blank" rel="noopener noreferrer" href="http://msdn.microsoft.com/en-us/library/018hxwa8(v=vs.110).aspx">Action</a>
+						types at MSDN.</p>
+					<p>So if we want to make our "do something" method into a parameter to some more generic code, we need to decide what it's signature should be. In this case we have two possibilities:
+						<code>Action&lt;Item&gt;</code>
+						or
+						<code>Func&lt;Item, int&gt;</code>
+						depending on which version of the
+						<code>xxAliases()</code>
+						methods you look at from last week's code. Since we can always ignore a return type if we want to, it seems that
+						<code>Func&lt;Item, int&gt;</code>
+						is the right choice here, as it lets us express both of our possible methods.</p>
+					<p>Based on that and a bit of thinking, we can replace the two
+						<code>xxAliases(ListString, Database)</code>
+						methods with one new method that looks like this:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private int processItems(ListString items, Database db, string taskContext, Func&lt;Item, int&gt; process) {     int count = 0;      try     {         using (new TaskContext(taskContext))         {             using (new SecurityDisabler())             {                 foreach (string item in items)                 {                     Item itm = db.GetItem(item);                     if (itm != null)                     {                         // Count this one                         count += process(itm);                          // And process any descendent items too                         foreach(var descendantItm in itm.Axes.GetDescendants())                         {                             count += process(descendantItm);                         }                     }                 }             }         }     }     catch (Exception ex)     {         Log.Error("Error during: " + taskContext, ex, this);         HttpUnhandledException ex2 = new HttpUnhandledException(ex.Message, ex);         string htmlErrorMessage = ex2.GetHtmlErrorMessage();         UrlString urlString = new UrlString("/sitecore/shell/controls/error.htm");         Context.ClientPage.ClientResponse.ShowModalDialog(urlString.ToString(), htmlErrorMessage);     }      return count; }
+					</pre>
+					<p>It does exactly the same thing, except that it takes the processing function for each Item as a parameter, and it also takes the name of the task for logging / error purposes as a parameter. And with that we can remove the two methods with the
+						<code>xxAliases(ListString, Database)</code>
+						signature.</p>
+					<p>Making use of this is easy, since C# will implicitly type cast the name of a function into the appropriate
+						<code>Func&lt;&gt;</code>
+						type at compile time, so for counting aliases we can just write:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// Count the aliases for any items we have as parameters int aliases = processItems(items, db, "DeleteItems pipeline - count aliases", countAliases);
+					</pre>
+					<p>and that will cause our
+						<code>countAliases(Item)</code>
+						method to be called for each item the
+						<code>processItems()</code>
+						code finds. But doing the same thing for the
+						<code>removeAliases()</code>
+						method would give a compiler error. That returns
+						<code>void</code>, meaning it can't be typecast to a
+						<code>Func&lt;&gt;</code>
+						– so we have to cheat a little here and make
+						<code>removeAliases(Item item)</code>
+						return an integer instead of void. You can count the number of Alias items that actually get removed, or you can just return 0 – it doesn't matter to the rest of the code.</p>
+					<p>It's worth mentioning here that you don't actually need to declare a method to call our
+						<code>processItems()</code>
+						function. Another of the nice features you get with this approach is that you can write methods and functions inline using Lambda expressions. So you can write:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">processItems(listOfItems, database, "Example anonymous method", itm =&gt; {     // do something     return 0; });
+					</pre>
+					<p>And the compiler magic behind
+						<code>=&gt;</code>
+						works out that what you've declared and creates a method with a computer generated name and the correct signature without you having to type it all out.</p>
+					<p>So with those changes made, our class now contains the following methods:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteItems : ItemOperation {     public void CheckAndDeleteAliases(ClientPipelineArgs args);      private Database getDatabase(ClientPipelineArgs args);      private int processItems(ListString items, Database db, string taskContext, Func&lt;Item,int&gt; process);      private int removeAliases(Item item);     private int countAliases(Item item); }
+					</pre>
+					<p>And we've successfully removed the duplication. Job's a good ‘un.</p>
+				</div>
+				<div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (194)</a>
+							<a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (45)</a>
+							<a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (13)</a>
+							<a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Visual Studio (11)</a>
+							<a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (10)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2021-12">2021 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-11">2021 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-10">2021 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-09">2021 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-08">2021 - August</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -338,21 +338,16 @@ int aliases = processItems(items, db, &quot;DeleteItems pipeline - count aliases
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

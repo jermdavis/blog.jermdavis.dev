@@ -1,30 +1,25 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <meta name="description" content="While I&amp;#x27;ve read plenty of articles in the past about configuring build servers for Sitecore projects, I&amp;#x27;ve not seen much written about using &amp;lt;a href=&amp;quot;https://www.visualstudio.com/en-us/products/what-is-visual-studio-online-vs.aspx&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;Visual Studio Online&amp;lt;/a&amp;gt;. (Or &amp;amp;amp;quot;Team Foundation Services&amp;amp;amp;quot;, or whatever it&amp;#x27;s called this week) Since the company I work for are in the process of transitioning all their development infrastructure to &amp;lt;a href=&amp;quot;https://azure.microsoft.com/en-gb/&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;Azure&amp;lt;/a&amp;gt;, trying to get hosted builds working in VSO seemed like a userful area of research for me. This is the first part of what will probably turn into a few posts on the topic of how I got to the point of being able to run a hosted build for a Sitecore / &amp;lt;a href=&amp;quot;http://www.teamdevelopmentforsitecore.com/&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;TDS&amp;lt;/a&amp;gt; / &amp;lt;a href=&amp;quot;https://github.com/sergeyshushlyapin/Sitecore.FakeDb&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;FakeDB&amp;lt;/a&amp;gt; solution...">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Sitecore builds with Visual Studio Online &#x2013; Part 1: Private NuGet&#xA0;feeds</title>
-
-    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds">
-    <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.json">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Sitecore builds with Visual Studio Online &amp;#x2013; Part 1: Private NuGet&amp;#xA0;feeds">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds-social.png">
-    <meta property="og:description" content="">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="While I've read plenty of articles in the past about configuring build servers for Sitecore projects, I've not seen much written about using <a href=&quot;https://www.visualstudio.com/en-us/products/what-is-visual-studio-online-vs.aspx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Visual Studio Online</a>. (Or &quot;Team Foundation Services&quot;, or whatever it's called this week) Since the company I work for are in the process of transitioning all their development infrastructure to <a href=&quot;https://azure.microsoft.com/en-gb/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Azure</a>, trying to get hosted builds working in VSO seemed like a userful area of research for me. This is the first part of what will probably turn into a few posts on the topic of how I got to the point of being able to run a hosted build for a Sitecore / <a href=&quot;http://www.teamdevelopmentforsitecore.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>TDS</a> / <a href=&quot;https://github.com/sergeyshushlyapin/Sitecore.FakeDb&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>FakeDB</a> solution...">
+		<meta property="og:description" content="While I've read plenty of articles in the past about configuring build servers for Sitecore projects, I've not seen much written about using <a href=&quot;https://www.visualstudio.com/en-us/products/what-is-visual-studio-online-vs.aspx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Visual Studio Online</a>. (Or &quot;Team Foundation Services&quot;, or whatever it's called this week) Since the company I work for are in the process of transitioning all their development infrastructure to <a href=&quot;https://azure.microsoft.com/en-gb/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Azure</a>, trying to get hosted builds working in VSO seemed like a userful area of research for me. This is the first part of what will probably turn into a few posts on the topic of how I got to the point of being able to run a hosted build for a Sitecore / <a href=&quot;http://www.teamdevelopmentforsitecore.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>TDS</a> / <a href=&quot;https://github.com/sergeyshushlyapin/Sitecore.FakeDb&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>FakeDB</a> solution...">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Sitecore builds with Visual Studio Online – Part 1: Private NuGet&nbsp;feeds</title>
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds">
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.json">
+		<meta property="og:title" content="Jeremy Davis - Sitecore builds with Visual Studio Online &amp;#x2013; Part 1: Private NuGet&amp;#xA0;feeds">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds-social.png">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -40,257 +35,324 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
-
     
-
-    
-    <!-- 13/01/2022 20:22:12 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="-mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="-mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <h1 class="text-5xl mb-4 pb-1">
-        Sitecore builds with Visual Studio Online – Part 1: Private NuGet feeds
-        </h1>
-            <div class="meta">Published 08 August 2016</div>
-                <div class="meta">Updated 08 September 2016</div>
-            <div class="flex py-1">
-                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-                    <a href="/tags/visual-studio-online" class="p-1 mr-1 bg-gray-100 rounded-md"> Visual Studio Online</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>While I've read plenty of articles in the past about configuring build servers for Sitecore projects, I've not seen much written about using <a href="https://www.visualstudio.com/en-us/products/what-is-visual-studio-online-vs.aspx" target="_blank" rel="noopener noreferrer">Visual Studio Online</a>. (Or &quot;Team Foundation Services&quot;, or whatever it's called this week) Since the company I work for are in the process of transitioning all their development infrastructure to <a href="https://azure.microsoft.com/en-gb/" target="_blank" rel="noopener noreferrer">Azure</a>, trying to get hosted builds working in VSO seemed like a userful area of research for me. This is the first part of what will probably turn into a few posts on the topic of how I got to the point of being able to run a hosted build for a Sitecore / <a href="http://www.teamdevelopmentforsitecore.com/" target="_blank" rel="noopener noreferrer">TDS</a> / <a href="https://github.com/sergeyshushlyapin/Sitecore.FakeDb" target="_blank" rel="noopener noreferrer">FakeDB</a> solution...<!--more--></p>
-<h2>Packages, and where to put them...</h2>
-<p>To get a build working you're going to need NuGet packages. Most of these are easy, as they can come from the main NuGet.org feed. But some of them are more complicated – the TDS build package and Sitecore references can't be added to public feeds. Historically <a href="http://www.myget.org/" target="_blank" rel="noopener noreferrer">MyGet</a> has been a good solution for hosting these packages but Visual Studio Online has recently acquired a development feature for hosting private feeds. I don't think this is officially released yet (and I don't think they offer support on it outside of the US) but it does appear to work well enough.</p>
-<p>The package management feature that lets you host feeds isn't enabled by default. So once you've logged in to your VSO account you need to add it. Got to <a href="https://marketplace.visualstudio.com/items?itemName=ms.feed" target="_blank" rel="noopener noreferrer">the &quot;Package Management&quot; extension's marketplace page</a> and click the &quot;Install&quot; button. Once that completes, you'll have a new &quot;Package&quot; option in the VSO menu:</p>
-<p><a href="/img/2016/2016-07-vsomenu.png" target="_blank"><img alt="VSO Menu" src="/img/2016/2016-07-vsomenu.png"></a></p>
-<p>Clicking that menu gives you the feed management page. From there you can click the &quot;New Feed&quot; button, to create yourself a feed that's private to users of your Visual Studio Online account:</p>
-<p><a href="/img/2016/2016-07-newpackagedialog.png" target="_blank"><img alt="New Package Dialog" src="/img/2016/2016-07-newpackagedialog.png"></a></p>
-<p>The feed name needs to be valid for to be used as part of a URL, and it doesn't allow spaces. Whether you want to give all of your VSO accounts access or not is up to you, but you do need to allow both team members and build services to add packages, as we're going to need to push some packages up manually.</p>
-<p>Once it's created, you'll see the &quot;empty package&quot; information page:</p>
-<p><a href="/img/2016/2016-07-emptysource.png" target="_blank"><img alt="Empty Source" src="/img/2016/2016-07-emptysource.png"></a></p>
-<p><b>Don't ignore this!</b> I had all sorts of bother with some of the steps below, before realising that there are two separate sorts of credentials involved in accessing your new feed. The default <code>nuget.exe</code> that you (probably) already have doesn't appear to know how to talk to VSO's security. You need to click that &quot;Bundle: NuGet.exe + VSTS Credential Provider&quot; button to get the right version of NuGet if you're going to be pushing packages or managing your feed from the command line.</p>
-<p>(Edited to add: Turns out you can get this download at any time from the url <code>https://your-account.pkgs.visualstudio.com/_apis/public/nuget/client/CredentialProviderBundle.zip</code> if you need to)</p>
-<p>Ensure you've clicked &quot;unblock&quot; in the file properties for the download and then unzip the resulting file somewhere sensible. Keep the contents for later...</p>
-<p>With your feed created, you can now upload packages to your new feed in one of two ways:</p>
-<h2>You can use Hosted Build to do it...</h2>
-<p>The first option is that you can create a Visual Studio solution which contains the stuff to package and the appropriate <code>.nuspec</code> files. (<a href="/posts/2014/using-nuget-for-your-references-to-sitecore-dlls" target="_blank">Perhaps something like this</a> but you no longer need to configure running NuGet to build the packages in your project file) If you run a cloud build of a solution like that, you can use the special <a href="https://www.visualstudio.com/en-us/docs/build/steps/package/nuget-packager" target="_blank" rel="noopener noreferrer">NuGet packaging build tasks</a> to construct packages from any <code>.nuspec</code> files in the solution, and to push them into your feed. In the build definition you need something like:</p>
-<p><a href="/img/2016/2016-07-buildsteps.png" target="_blank"><img alt="Package Build Steps" src="/img/2016/2016-07-buildsteps.png"></a></p>
-<p>You'll need to know the &quot;package source URL&quot; for your feed. You can always get that from the feed page's &quot;Connect to feed&quot; button:</p>
-<p><a href="/img/2016/2016-07-feedconnectinfo.png" target="_blank"><img alt="Feed Connect Info" src="/img/2016/2016-07-feedconnectinfo.png"></a></p>
-<p>You paste that into the source URL for your package publishing build task.</p>
-<p>Note that the VS Project you're building here might compile code to make a package, or it could just contain files and DLLs from other sources which you want to put in a package. Yes, sticking binaries into source control isn't great – but it's an approach that does work for some scenarios. It's most useful where you have 3rd party code that you want a build to reference but you don't have its source.</p>
-<h2>Or you can upload stuff yourself from the command line...</h2>
-<p>Your second option is to take packages you've obtained from any source (your own build internal build, a third party or whatever) and push them up to the feed manually. You can do this via the command line using the special <code>NuGet.exe</code> you downloaded above.</p>
-<p>Again, you need that feed URL from above, and the command to run is:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">nuget.exe push -Source https://your-account.pkgs.visualstudio.com/_packaging/your-feed-name/nuget/v3/index.json -ApiKey VSO your-package-name.nupkg
-</pre>
-<p>Replace the url here with your package source, and the <code>.nupkg</code> file with the name of the file you want to push.</p>
-<p>You may get prompted for credentials. You should see a login-form dialog like this:</p>
-<p><a href="/img/2016/2016-07-credentialprompt.png" target="_blank"><img alt="Credential Prompt" src="/img/2016/2016-07-credentialprompt.png"></a></p>
-<p>If you get prompted with text in the command window, then you're running the version of NuGet that doesn't have the VSTS Credential Extension. See above about the importance of downloading it.</p>
-<p>Once you're authenticated, NuGet will validate your package and push it up to the cloud if it's acceptable.</p>
-<h2>Making use of your new feed</h2>
-<p>If you're building locally in Visual Studio to install and fetch packages from a private feed is pretty easy – there's a whole dialog box for it:</p>
-<p><a href="/img/2016/2016-08-packagesourcedialog.png" target="_blank"><img alt="Package Source Dialog" src="/img/2016/2016-08-packagesourcedialog.png"></a></p>
-<p>You just add the feed URL you created above as a new source here...</p>
-<p>But we're aiming to build in the cloud, where we won't have access to this dialog box. So what do we do? The answer is that you can create a <code>nuget.config</code> file in the root of your solution. This allows you to <a href="https://docs.nuget.org/consume/nuget-config-file" target="_blank" rel="noopener noreferrer">specify various configuration settings</a> - but the one we're interested in is the &quot;Package Sources&quot; option. You can have whatever other options you need, but the important line is:</p>
-<pre data-enlighter-highlight="10" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
-&lt;configuration&gt;
-  &lt;packageRestore&gt;
-    &lt;add key=&quot;enabled&quot; value=&quot;True&quot; /&gt;
-    &lt;add key=&quot;automatic&quot; value=&quot;True&quot; /&gt;
-  &lt;/packageRestore&gt;
-  &lt;packageSources&gt;
-    &lt;add key=&quot;nuget.org&quot; value=&quot;https://api.nuget.org/v3/index.json&quot; protocolVersion=&quot;3&quot; /&gt;
-    &lt;add key=&quot;nuget.org&quot; value=&quot;https://www.nuget.org/api/v2/&quot; /&gt;
-    &lt;add key=&quot;YourName Repository&quot; value=&quot;https://YourAccount.pkgs.visualstudio.com/_packaging/YourName-Sitecore/nuget/v3/index.json&quot; /&gt;
-  &lt;/packageSources&gt;
-&lt;/configuration&gt;
-</pre>
-<p>Where we add the custom repository URL.</p>
-<p>With that created and committed to your source control, you can now add any packages from your custom feed or from the main public feed. Local or hosted builds will be able to restore them.</p>
-<p>And that's the first part of this odyssey. <a href="/posts/2016/sitecore-builds-with-visual-studio-online-part-2-building-code-and-running-tests" target="_blank">In part 2 we'll look at getting a solution set up so that the hosted build can generate TDS packages and run FakeDB tests</a>.</p>
-
-
-            </div>
-            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (194)</a>
-                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
-                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (13)</a>
-                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
-                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2021-12">2021 - December</a></div>
-                <div><a class="text-lg" href="/posts/2021-11">2021 - November</a></div>
-                <div><a class="text-lg" href="/posts/2021-10">2021 - October</a></div>
-                <div><a class="text-lg" href="/posts/2021-09">2021 - September</a></div>
-                <div><a class="text-lg" href="/posts/2021-08">2021 - August</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+		
+		<!-- 14/01/2022 14:22:40 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="-mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="-mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<h1 class="text-5xl mb-4 pb-1">
+					Sitecore builds with Visual Studio Online – Part 1: Private NuGet&nbsp;feeds
+				</h1>
+				<div class="meta">Published 08 August 2016</div>
+				<div class="meta">Updated 08 September 2016</div>
+				<div class="flex py-1">
+					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/visual-studio-online" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Visual Studio Online</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>While I've read plenty of articles in the past about configuring build servers for Sitecore projects, I've not seen much written about using
+						<a href="https://www.visualstudio.com/en-us/products/what-is-visual-studio-online-vs.aspx" target="_blank" rel="noopener noreferrer">Visual Studio Online</a>. (Or "Team Foundation Services", or whatever it's called this week) Since the company I work for are in the process of transitioning all their development infrastructure to
+						<a href="https://azure.microsoft.com/en-gb/" target="_blank" rel="noopener noreferrer">Azure</a>, trying to get hosted builds working in VSO seemed like a userful area of research for me. This is the first part of what will probably turn into a few posts on the topic of how I got to the point of being able to run a hosted build for a Sitecore /
+						<a href="http://www.teamdevelopmentforsitecore.com/" target="_blank" rel="noopener noreferrer">TDS</a>
+						/
+						<a href="https://github.com/sergeyshushlyapin/Sitecore.FakeDb" target="_blank" rel="noopener noreferrer">FakeDB</a>
+						solution...
+						<!--more-->
+					</p>
+					<h2>Packages, and where to put them...</h2>
+					<p>To get a build working you're going to need NuGet packages. Most of these are easy, as they can come from the main NuGet.org feed. But some of them are more complicated – the TDS build package and Sitecore references can't be added to public feeds. Historically
+						<a href="http://www.myget.org/" target="_blank" rel="noopener noreferrer">MyGet</a>
+						has been a good solution for hosting these packages but Visual Studio Online has recently acquired a development feature for hosting private feeds. I don't think this is officially released yet (and I don't think they offer support on it outside of the US) but it does appear to work well enough.</p>
+					<p>The package management feature that lets you host feeds isn't enabled by default. So once you've logged in to your VSO account you need to add it. Got to
+						<a href="https://marketplace.visualstudio.com/items?itemName=ms.feed" target="_blank" rel="noopener noreferrer">the "Package Management" extension's marketplace page</a>
+						and click the "Install" button. Once that completes, you'll have a new "Package" option in the VSO menu:</p>
+					<p>
+						<a href="/img/2016/2016-07-vsomenu.png" target="_blank">
+							<img alt="VSO Menu" src="/img/2016/2016-07-vsomenu.png">
+						</a>
+					</p>
+					<p>Clicking that menu gives you the feed management page. From there you can click the "New Feed" button, to create yourself a feed that's private to users of your Visual Studio Online account:</p>
+					<p>
+						<a href="/img/2016/2016-07-newpackagedialog.png" target="_blank">
+							<img alt="New Package Dialog" src="/img/2016/2016-07-newpackagedialog.png">
+						</a>
+					</p>
+					<p>The feed name needs to be valid for to be used as part of a URL, and it doesn't allow spaces. Whether you want to give all of your VSO accounts access or not is up to you, but you do need to allow both team members and build services to add packages, as we're going to need to push some packages up manually.</p>
+					<p>Once it's created, you'll see the "empty package" information page:</p>
+					<p>
+						<a href="/img/2016/2016-07-emptysource.png" target="_blank">
+							<img alt="Empty Source" src="/img/2016/2016-07-emptysource.png">
+						</a>
+					</p>
+					<p>
+						<b>Don't ignore this!</b>
+						I had all sorts of bother with some of the steps below, before realising that there are two separate sorts of credentials involved in accessing your new feed. The default
+						<code>nuget.exe</code>
+						that you (probably) already have doesn't appear to know how to talk to VSO's security. You need to click that "Bundle: NuGet.exe + VSTS Credential Provider" button to get the right version of NuGet if you're going to be pushing packages or managing your feed from the command line.</p>
+					<p>(Edited to add: Turns out you can get this download at any time from the url
+						<code>https://your-account.pkgs.visualstudio.com/_apis/public/nuget/client/CredentialProviderBundle.zip</code>
+						if you need to)</p>
+					<p>Ensure you've clicked "unblock" in the file properties for the download and then unzip the resulting file somewhere sensible. Keep the contents for later...</p>
+					<p>With your feed created, you can now upload packages to your new feed in one of two ways:</p>
+					<h2>You can use Hosted Build to do it...</h2>
+					<p>The first option is that you can create a Visual Studio solution which contains the stuff to package and the appropriate
+						<code>.nuspec</code>
+						files. (<a href="/posts/2014/using-nuget-for-your-references-to-sitecore-dlls" target="_blank">Perhaps something like this</a>
+						but you no longer need to configure running NuGet to build the packages in your project file) If you run a cloud build of a solution like that, you can use the special
+						<a href="https://www.visualstudio.com/en-us/docs/build/steps/package/nuget-packager" target="_blank" rel="noopener noreferrer">NuGet packaging build tasks</a>
+						to construct packages from any
+						<code>.nuspec</code>
+						files in the solution, and to push them into your feed. In the build definition you need something like:</p>
+					<p>
+						<a href="/img/2016/2016-07-buildsteps.png" target="_blank">
+							<img alt="Package Build Steps" src="/img/2016/2016-07-buildsteps.png">
+						</a>
+					</p>
+					<p>You'll need to know the "package source URL" for your feed. You can always get that from the feed page's "Connect to feed" button:</p>
+					<p>
+						<a href="/img/2016/2016-07-feedconnectinfo.png" target="_blank">
+							<img alt="Feed Connect Info" src="/img/2016/2016-07-feedconnectinfo.png">
+						</a>
+					</p>
+					<p>You paste that into the source URL for your package publishing build task.</p>
+					<p>Note that the VS Project you're building here might compile code to make a package, or it could just contain files and DLLs from other sources which you want to put in a package. Yes, sticking binaries into source control isn't great – but it's an approach that does work for some scenarios. It's most useful where you have 3rd party code that you want a build to reference but you don't have its source.</p>
+					<h2>Or you can upload stuff yourself from the command line...</h2>
+					<p>Your second option is to take packages you've obtained from any source (your own build internal build, a third party or whatever) and push them up to the feed manually. You can do this via the command line using the special
+						<code>NuGet.exe</code>
+						you downloaded above.</p>
+					<p>Again, you need that feed URL from above, and the command to run is:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">nuget.exe push -Source https://your-account.pkgs.visualstudio.com/_packaging/your-feed-name/nuget/v3/index.json -ApiKey VSO your-package-name.nupkg
+					</pre>
+					<p>Replace the url here with your package source, and the
+						<code>.nupkg</code>
+						file with the name of the file you want to push.</p>
+					<p>You may get prompted for credentials. You should see a login-form dialog like this:</p>
+					<p>
+						<a href="/img/2016/2016-07-credentialprompt.png" target="_blank">
+							<img alt="Credential Prompt" src="/img/2016/2016-07-credentialprompt.png">
+						</a>
+					</p>
+					<p>If you get prompted with text in the command window, then you're running the version of NuGet that doesn't have the VSTS Credential Extension. See above about the importance of downloading it.</p>
+					<p>Once you're authenticated, NuGet will validate your package and push it up to the cloud if it's acceptable.</p>
+					<h2>Making use of your new feed</h2>
+					<p>If you're building locally in Visual Studio to install and fetch packages from a private feed is pretty easy – there's a whole dialog box for it:</p>
+					<p>
+						<a href="/img/2016/2016-08-packagesourcedialog.png" target="_blank">
+							<img alt="Package Source Dialog" src="/img/2016/2016-08-packagesourcedialog.png">
+						</a>
+					</p>
+					<p>You just add the feed URL you created above as a new source here...</p>
+					<p>But we're aiming to build in the cloud, where we won't have access to this dialog box. So what do we do? The answer is that you can create a
+						<code>nuget.config</code>
+						file in the root of your solution. This allows you to
+						<a href="https://docs.nuget.org/consume/nuget-config-file" target="_blank" rel="noopener noreferrer">specify various configuration settings</a>
+						- but the one we're interested in is the "Package Sources" option. You can have whatever other options you need, but the important line is:</p>
+					<pre data-enlighter-highlight="10" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8"?&gt; &lt;configuration&gt;   &lt;packageRestore&gt;     &lt;add key="enabled" value="True" /&gt;     &lt;add key="automatic" value="True" /&gt;   &lt;/packageRestore&gt;   &lt;packageSources&gt;     &lt;add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" /&gt;     &lt;add key="nuget.org" value="https://www.nuget.org/api/v2/" /&gt;     &lt;add key="YourName Repository" value="https://YourAccount.pkgs.visualstudio.com/_packaging/YourName-Sitecore/nuget/v3/index.json" /&gt;   &lt;/packageSources&gt; &lt;/configuration&gt;
+					</pre>
+					<p>Where we add the custom repository URL.</p>
+					<p>With that created and committed to your source control, you can now add any packages from your custom feed or from the main public feed. Local or hosted builds will be able to restore them.</p>
+					<p>And that's the first part of this odyssey.
+						<a href="/posts/2016/sitecore-builds-with-visual-studio-online-part-2-building-code-and-running-tests" target="_blank">In part 2 we'll look at getting a solution set up so that the hosted build can generate TDS packages and run FakeDB tests</a>.</p>
+				</div>
+				<div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (194)</a>
+							<a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (45)</a>
+							<a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (13)</a>
+							<a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Visual Studio (11)</a>
+							<a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (10)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2021-12">2021 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-11">2021 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-10">2021 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-09">2021 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-08">2021 - August</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -299,21 +361,16 @@
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

@@ -1,30 +1,25 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <meta name="description" content="In &amp;lt;a href=&amp;quot;/posts/2014/automatic-packages-from-tfs-3-pipelines-and-data-transformation&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;last week&amp;#x27;s entry I listed out the set of pipeline components required to generate a package&amp;lt;/a&amp;gt;. This week, lets have a look at what goes into each of those components and see how they interact with the configuration and source control data.">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Automatic packages from TFS: #4 &#x2013; Pipeline component&#xA0;internals</title>
-
-    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-4-pipeline-component-internals">
-    <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.json">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Automatic packages from TFS: #4 &amp;#x2013; Pipeline component&amp;#xA0;internals">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/automatic-packages-from-tfs-4-pipeline-component-internals-social.png">
-    <meta property="og:description" content="">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="In <a href=&quot;/posts/2014/automatic-packages-from-tfs-3-pipelines-and-data-transformation&quot; target=&quot;_blank&quot;>last week's entry I listed out the set of pipeline components required to generate a package</a>. This week, lets have a look at what goes into each of those components and see how they interact with the configuration and source control data.">
+		<meta property="og:description" content="In <a href=&quot;/posts/2014/automatic-packages-from-tfs-3-pipelines-and-data-transformation&quot; target=&quot;_blank&quot;>last week's entry I listed out the set of pipeline components required to generate a package</a>. This week, lets have a look at what goes into each of those components and see how they interact with the configuration and source control data.">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Automatic packages from TFS: #4 – Pipeline component&nbsp;internals</title>
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-4-pipeline-component-internals">
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.json">
+		<meta property="og:title" content="Jeremy Davis - Automatic packages from TFS: #4 &amp;#x2013; Pipeline component&amp;#xA0;internals">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/automatic-packages-from-tfs-4-pipeline-component-internals-social.png">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -40,623 +35,318 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-4-pipeline-component-internals">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
-
     
-
-    
-    <!-- 13/01/2022 20:21:53 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="-mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="-mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <h1 class="text-5xl mb-4 pb-1">
-        Automatic packages from TFS: #4 – Pipeline component internals
-        </h1>
-            <div class="meta">Published 25 August 2014</div>
-                <div class="meta">Updated 25 August 2016</div>
-            <div class="flex py-1">
-                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-                    <a href="/tags/team-foundation-server" class="p-1 mr-1 bg-gray-100 rounded-md"> Team Foundation Server</a>
-                    <a href="/tags/packages" class="p-1 mr-1 bg-gray-100 rounded-md"> Packages</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>In <a href="/posts/2014/automatic-packages-from-tfs-3-pipelines-and-data-transformation" target="_blank">last week's entry I listed out the set of pipeline components required to generate a package</a>. This week, lets have a look at what goes into each of those components and see how they interact with the configuration and source control data.<!--more--></p>
-<h2>1: Basic Package Metadata</h2>
-<p>The first component that runs is the <code>SetPackageMetadata</code>. This is a simple component that just sets some basic package metadata. For the moment that is just the package's name and the name of the package creator:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SetPackageMetadata : IPipelineComponent
-{
-    public const string PackageNameKey = &quot;SetPackageMetadata.PackageName&quot;;
-
-    public void Run(PipelineData data)
-    {
-        if (!data.Configuration.Settings.ContainsKey(PackageNameKey))
-        {
-            data.Configuration.ThrowMissingConfigurationException(PackageNameKey, &quot;This should be the name to set for the package&quot;);
-        }
-
-        data.Output.Metadata.Name = data.Configuration.Settings[PackageNameKey];
-        data.Output.Metadata.Author = System.Environment.UserDomainName + &quot;\\&quot; + System.Environment.UserName;
-    }
-}
-</pre>
-<p>All the pipeline components implement the <code>IPipelineComponent</code> interface and expose the <code>Run()</code> method that is called by the parent. When called, it does two things. First it looks at the configuration data that is passed in to the component. It checks to see if the configuration data includes a key called &quot;SetPackageMetadata.PackageName&quot;. (For all the configuration settings I've chosen to use a &quot;.&quot; pattern to avoid clashes) If the key does not exist in the configuration dictionary then the component can't continue – so it raises an exception to indicate this missing data. Otherwise it carries on and uses the configuration data and the system environment data to update properties in the package metadata.</p>
-<h2>2: Remove any unwanted changes</h2>
-<p>The second step in the pipeline is to remove any changed files from the Source Control data that we don't want to process. The job of the <code>RemoveUnwantedItems</code> is to fetch the configuration required for this, and then make use of the data to filter the Source Control Changes.</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class RemoveUnwantedItems : IPipelineComponent
-{
-    public const string ExtensionsToIgnoreKey = &quot;RemoveUnwantedItems.ExtensionsToIgnore&quot;;
-    public const string FoldersToIgnoreKey = &quot;RemoveUnwantedItems.FoldersToIgnore&quot;;
-
-    private string[] extensions;
-    private string[] folders;
-
-    public void Run(PipelineData data)
-    {
-        if (!data.Configuration.Settings.ContainsKey(ExtensionsToIgnoreKey))
-        {
-            data.Configuration.ThrowMissingConfigurationException(ExtensionsToIgnoreKey, &quot;A comman separated list of file extensions to ignore when processing. Processed by an &#39;ends with&#39; query.&quot;);
-        }
-        extensions = data.Configuration.Settings[ExtensionsToIgnoreKey].Split(&#39;,&#39;);
-
-        if (!data.Configuration.Settings.ContainsKey(FoldersToIgnoreKey))
-        {
-            data.Configuration.ThrowMissingConfigurationException(FoldersToIgnoreKey, &quot;A comman separted list of folders to ignore. Processed by a &#39;contains&#39; query.&quot;);
-        }
-        folders = data.Configuration.Settings[FoldersToIgnoreKey].Split(&#39;,&#39;);
-
-        string[] keys = new string[data.Input.Keys.Count];
-        data.Input.Keys.CopyTo(keys, 0);
-
-        foreach (string key in keys)
-        {
-            if (hasExcludedExtension(key) || containsExcludedFolder(key) || noExtension(key))
-            {
-                data.Input.Remove(key);
-            }
-        }
-    }
-}
-</pre>
-<p>Similarly to the previous code, the first thing to do is to fetch the configuration parameters. Here however, we also have to process them into arrays that we can iterate over later, as they are stored as comma separated lists. And once this is done, the code then needs to iterate the set of changes passed in through the input data for the pipeline. Since we need to iterate and modify this collection the code starts by copying the keys in the input dictionary, and then iterates that copy. For each key that it processes it checks whether it contains an excluded extension, an excluded folder in its path, or no extension at all. If one of those tests matches, then the item is removed from the input dictionary.</p>
-<p>The tests for extensions and folders are simple:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private bool hasExcludedExtension(string key)
-{
-    foreach (string extension in extensions)
-    {
-        if (key.EndsWith(extension, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-private bool containsExcludedFolder(string key)
-{
-    foreach (string folder in folders)
-    {
-        if (key.CaseInsensitiveContains(folder))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-private bool noExtension(string key)
-{
-    string remainder = key.Substring(key.LastIndexOf(&quot;/&quot;));
-
-    if (!remainder.Contains(&quot;.&quot;))
-    {
-        return true;
-    }
-
-    if (remainder == &quot;/&quot;)
-    {
-        return true;
-    }
-
-    return false;
-}
-</pre>
-<p>The <code>CaseInsensitiveContains()</code> is a helper method that hides the rather verbose uses <code>System.Globalization</code> to make this test.</p>
-<h2>3: Renaming files</h2>
-<p>If the input from source control contains things like changes to <code>.less</code> files that need to have the extension changed in the package output, then this component will process the change. It takes a slightly more complex input configuration to specify a list of old and new names, and then checks the source control data for entries that need changing:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class RenameFiles : IPipelineComponent
-{
-    public const string ExtensionsKey = &quot;RenameFiles.Extensions&quot;;
-
-    public void Run(PipelineData data)
-    {
-        if(!data.Configuration.Settings.ContainsKey(ExtensionsKey))
-        {
-            data.Configuration.ThrowMissingConfigurationException(ExtensionsKey, &quot;A list of renames to perform. Separate entries with commas Separate source and target names with a pipe.&quot;);
-        }
-        Dictionary&lt;string, string&gt; renames = new Dictionary&lt;string, string&gt;(StringComparer.CurrentCultureIgnoreCase);
-        var extensions = data.Configuration.Settings[ExtensionsKey].Split(&#39;,&#39;);
-        foreach (string extension in extensions)
-        {
-            var parts = extension.Split(&#39;|&#39;);
-            renames.Add(parts[0].Trim(), parts[1].Trim());
-        }
-
-        string[] files = new string[data.Input.Keys.Count];
-        data.Input.Keys.CopyTo(files, 0);
-
-        foreach (string file in files)
-        {
-            foreach (var rename in renames)
-            {
-                if (file.EndsWith(rename.Key, StringComparison.CurrentCultureIgnoreCase))
-                {
-                    SourceControlActions actions = data.Input[file];
-                    data.Input.Remove(file);
-
-                    string newKey = file.Substring(0, file.LastIndexOf(&#39;.&#39;)) + rename.Value;
-
-                    data.Input.Add(newKey, actions);
-
-                    break;
-                }
-            }
-        }
-    }
-}
-</pre>
-<p>This code follows similar patterns to the previous examples.</p>
-<h2>4: Getting the right files to deploy</h2>
-<p>Getting the relevant files to deploy is the next task to process. This requires knowing where the web project being deployed is located, in order to be able to adjust the paths returned by Source Control into the relative style of path required in a package:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractFilesToDeploy : IPipelineComponent
-{
-    public const string WebProjectFolderKey = &quot;ExtractFilesToDeploy.WebProjectFolder&quot;;
-
-    public void Run(PipelineData data)
-    {
-        if (!data.Configuration.Settings.ContainsKey(WebProjectFolderKey))
-        {
-            data.Configuration.ThrowMissingConfigurationException(WebProjectFolderKey, &quot;This should be the disk path to the web project folder.&quot;);
-        }
-        string webProjectFolder = data.Configuration.Settings[WebProjectFolderKey]; 
-            
-
-        var fs = new PackageModel.PackageSourceFiles();
-        fs.Name = &quot;Files to deploy&quot;;
-
-        foreach (var item in data.Input)
-        {
-            if (!item.Key.EndsWith(&quot;.item&quot;, StringComparison.CurrentCultureIgnoreCase) &amp;&amp; !item.Key.EndsWith(&quot;.cs&quot;, StringComparison.CurrentCultureIgnoreCase)  &amp;&amp; item.Value.IsNotDelete())
-            {
-                fs.Add(item.Key.Replace(webProjectFolder, &quot;&quot;));
-            }
-        }
-
-        data.Output.Sources.AddSource(fs);
-    }
-}
-</pre>
-<p>For each item in the source data we need to exclude anything that's a serialised item, a C# file or is a deletion operation. For all the source changes that remain the absolute Souce Control Working Folder path is adjusted by removing the web project location in order to turn it into a relative path. All of these items are added to a <code>PackageSourceFiles</code> object, which is in turn added to the output package itself.</p>
-<h2>5: Getting Sitecore items</h2>
-<p>The key bit of this tool is to get changes to serialised items into the output package. The <code>ExtractItemsToDeploy</code> item does this for us:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractItemsToDeploy : IPipelineComponent
-{
-    private ProjectConfiguration cfg;
-
-    public void Run(PipelineData data)
-    {
-        cfg = data.Configuration;
-
-        var pi = new PackageModel.PackageSourceItems();
-        pi.Name = &quot;Items to deploy&quot;;
-
-        foreach (var item in data.Input)
-        {
-            if (item.Key.EndsWith(&quot;.item&quot;, StringComparison.CurrentCultureIgnoreCase) &amp;&amp; item.Value.IsNotDelete())
-            {
-                try
-                {
-                    pi.Add(formatItemIdentifer(item.Key));
-                }
-                catch (FileNotFoundException)
-                {
-                    cfg.Log.WriteLine(&quot;Serialised Item not found for &#39;&quot; + item.Key + &quot;&#39; - Cannot add to package.&quot;);
-                }
-                    
-            }
-        }
-
-        data.Output.Sources.AddSource(pi);
-    }
-}
-</pre>
-<p>This goes through each item in our input data from Source Control and looks for those which are serialised Sitecore items and are not marked as deletions. Using the items that match this pattern, a <code>PackageSourceItems</code> is constructed and added to the overall package. So far so simple.</p>
-<p>But if you look at the XML in a set of Sitecore items you'll note that the definition of each item to package looks a bit odd compared to what we get from Source Control:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;xitems&gt;
-  ...
-  &lt;Entries&gt;
-    &lt;x-item&gt;/master/sitecore/system/Dictionary/ProjectName/Forms/Login/ce_Password_Strength/{DD5E504F-5FF9-477F-A2FB-B3905B76368C}/invariant/0&lt;/x-item&gt;
-    &lt;x-item&gt;/master/sitecore/system/Dictionary/ProjectName/Forms/Payment/ce_Payment_ChequeNext/{D6F0CC98-7FB2-4930-A42B-AABA89766AEB}/invariant/0&lt;/x-item&gt;
-  &lt;/Entries&gt;
-  ...
-&lt;/xitems&gt;
-</pre>
-<p>For each entry in the file, there's a path – but it looks a bit odd. It seems to start with the Sitecore database name, followed by the content tree path, and then followed by a GUID, an indication of the language code and finishing off with the version number.</p>
-<p>So how can we generate that string of data when all we know is the disk path of the serialised item, and we don't have access to Sitecore's APIs? After a fair amount of head scratching I hit upon a solution: Read the data from the serialised item file itself. And the method <code>formatItemItentifier()</code> above performs that process.</p>
-<p>If we look at the content of one of those files, we see roughly the following:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">----item----
-version: 1
-id: {DD5E504F-5FF9-477F-A2FB-B3905B76368C}
-database: master
-path: /sitecore/system/Dictionary/ChristiesEducation/Forms/Login/ce_Password_Strength
-parent: {36777232-C3FA-4AB3-A7C7-4EA0161F8FEC}
-name: ce_Password_Strength
-master: {00000000-0000-0000-0000-000000000000}
-template: {6D1CD897-1936-4A3A-A511-289A94C2A7B1}
-templatekey: Dictionary entry
-
-----field----
-field: {580C75A8-C01A-4580-83CB-987776CEB3AF}
-name: Key
-key: key
-content-length: 20
-
-ce_Password_Strength
-----version----
-language: en
-version: 1
-revision: 37cb107f-7b88-4d66-93aa-4f0f8914c989
-
-----field----
-field: {2BA3454A-9A9C-4CDF-A9F8-107FD484EB6E}
-name: Phrase
-key: phrase
-content-length: 68
-
-At least 7 characters, where one or more is a punctuation character.
-</pre>
-<p>You can see that all the data we need is stored in the &quot;item&quot; section that begins the file. It includes the GUID, the path. For the purposes of the prototype here I'm not bothered by specific item versions or languages, so we can fix those bits of the data to &quot;invariant&quot; for the language and &quot;0&quot; for the version in order to tell Sitecore to ignore those options when building the package.</p>
-<p>Hence we can write a very simple parser to turn the data into a dictionary. It ignores any blank lines, and looks for lines marked with four hyphens – processing data until it reaches one of these regions marked with a title other than &quot;item&quot;. And finally it breaks the remaining strings into name / value pairs:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IDictionary&lt;string, string&gt; parseFile(StreamReader sr)
-{
-    Dictionary&lt;string, string&gt; data = new Dictionary&lt;string, string&gt;(StringComparer.CurrentCultureIgnoreCase);
-    bool done = false;
-
-    string text = sr.ReadToEnd();
-    sr.BaseStream.Seek(0, SeekOrigin.Begin);
-
-    while (!done)
-    {
-        string line = sr.ReadLine();
-
-        if(string.IsNullOrWhiteSpace(line))
-        {
-            continue;
-        }
-
-        if (line.StartsWith(&quot;----&quot;))
-        {
-            string region = line.Replace(&quot;----&quot;, &quot;&quot;);
-
-            if (StringComparer.CurrentCultureIgnoreCase.Compare(region,&quot;item&quot;) != 0)
-            {
-                done = true;
-            }
-        }
-        else
-        {
-            string[] parts = line.Split(&#39;:&#39;);
-            data.Add(parts[0].Trim(), parts[1].Trim());
-        }
-    }
-
-    return data;
-}
-</pre>
-<p>And we can generate the correct path data using code as follows:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string formatItemIdentifer(string key)
-{
-    string identifier;
-
-    using (var tr = File.OpenText(key))
-    {
-        var data = parseFile(tr);
-
-        string db = data[&quot;database&quot;];
-        string id = data[&quot;id&quot;];
-        string path = data[&quot;path&quot;];
-
-        identifier = string.Format(&quot;/{0}{1}/{2}/invariant/0&quot;, db, path, id);
-    }
-
-    return identifier;
-}
-</pre>
-<p>It takes the disk path from Source Control and opens it as a text file and parses it using the code above. And then it generates the correct path using the data extracted from the disk file.</p>
-<p>Now this approach works well, and solves the core problem of not having access to Sitecore – however it requires that the data exists on disk. Hence this makes it a requirement of the tool that the current state of your working folder includes all the correct <code>.item</code> files. If you don't do a &quot;get-latest&quot; to ensure the files are available then you will see errors from the tool – <code>FileNotFoundException</code>s.</p>
-<p>Another possible thing to do with this tool in the future might be to add the ability to perform this get operation automatically. However I'm thinking of this tool being used in a build workflow where this job should already have been performed in order to perform the build itself.</p>
-<h2>6: Adding binary files to deploy</h2>
-<p>The last thing which needs to be added to the package is the binaries generated from the code in the web package. The <code>ExtractBinariesToDeploy</code> component does this. The configuration for this is a bit more complex, as it needs to be a set of project names, with their accompanying set of binaries. Currently that's a comma separated list, where each item is a pipe-separated list of one project followed by a number of binary files. The following bit of code parses the data out of the config setting into a Dictionary containing a list of strings:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private Dictionary&lt;string, List&lt;string&gt;&gt; extractProjectPathMap(PipelineData data)
-{
-	Dictionary&lt;string, List&lt;string&gt;&gt; projectPathMap = new Dictionary&lt;string, List&lt;string&gt;&gt;(StringComparer.CurrentCultureIgnoreCase);
-	var projectsCfg = data.Configuration.Settings[ProjectPathMapKey].Split(&#39;,&#39;);
-	foreach (string project in projectsCfg)
-	{
-		string[] parts = project.Split(&#39;|&#39;);
-
-		List&lt;string&gt; files = new List&lt;string&gt;();
-		for (int i = 1; i &lt; parts.Length; i++)
-		{
-			files.Add(parts[i]);
-		}
-
-		projectPathMap.Add(parts[0], files);
-	}
-
-	return projectPathMap;
-}
-</pre>
-<p>That code is used by the core of the pipeline component to parse the configuration before it starts to process the individual items. It goes through the set of projects configured, and for each one, it checks to see if it can find any C# source changes in the input data. For any configured projects that do have changes, it adds the relevant binaries to the package:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractBinariesToDeploy : IPipelineComponent
-{
-    public const string ProjectPathMapKey = &quot;ExtractBinariesToDeploy.ProjectPathMap&quot;;
-
-    public void Run(PipelineData data)
-    {
-        var fs = new PackageModel.PackageSourceFiles();
-        fs.Name = &quot;Binaries to deploy&quot;;
-
-        if (!data.Configuration.Settings.ContainsKey(ProjectPathMapKey))
-        {
-            data.Configuration.ThrowMissingConfigurationException(ProjectPathMapKey, &quot;A comma separated list of settings. Each one is a pipe separated items. The first part is the project path. All subsequent parts are binaries to add if C# files in the project have been changed.&quot;);
-        }
-
-        var projectPathMap = extractProjectPathMap(data);
-        var projects = projectPathMap.Keys.ToList();
-
-        foreach (var item in data.Input)
-        {
-            if (item.Key.EndsWith(&quot;.cs&quot;, StringComparison.CurrentCultureIgnoreCase))
-            {
-                foreach (string project in projects.ToArray())
-                {
-                    if (item.Key.CaseInsensitiveContains(project))
-                    {
-                        projects.Remove(project);
-
-                        foreach (string file in projectPathMap[project])
-                        {
-                            fs.Add(file);
-                        }
-                    }
-                }
-
-                if (projects.Count == 0)
-                {
-                    break;
-                }
-            }
-        }
-
-        data.Output.Sources.AddSource(fs);
-    }
-}
-</pre>
-<p>And finally this adds a <code>PackageSourceFiles</code> to the output package that holds all of the binaries that it was necessary to add.</p>
-<h2>7: Dealing with deletions</h2>
-<p>Since there's no direct approach to deleting individual files or items inside a Sitecore package, for the moment I'm addressing deletions by adding them as an instruction to the ReadMe section of the package metadata:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractDeletionsToDeploy : IPipelineComponent
-{
-    public void Run(PipelineData data)
-    {
-        bool deletionsFound = false;
-
-        StringBuilder sb = new StringBuilder();
-        sb.Append(&quot;The following items require deletion:\r\n&quot;);
-
-        foreach (var item in data.Input)
-        {
-            if ( (item.Value &amp; SourceControlActions.Delete) == SourceControlActions.Delete)
-            {
-                deletionsFound = true;
-                sb.Append(item.Key);
-                sb.Append(&quot;\r\n&quot;);
-            }
-        }
-
-        if (deletionsFound)
-        {
-            data.Output.Metadata.ReadMe = sb.ToString();
-        }
-    }
-}
-</pre>
-<p>I'm considering the idea that a post-deployment event might be able to automate the removal of these items in the future.</p>
-<h2>Next step...</h2>
-<p>So that's the set of pipeline components I'm using for my prototype – but as previously suggested, the code is designed to be extensible to allow them to be improved or replaced in future work.</p>
-<p>Next week's will be the last part of this, I think – a wrap up and the final source code.</p>
-
-
-            </div>
-            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (194)</a>
-                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
-                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (13)</a>
-                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
-                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2021-12">2021 - December</a></div>
-                <div><a class="text-lg" href="/posts/2021-11">2021 - November</a></div>
-                <div><a class="text-lg" href="/posts/2021-10">2021 - October</a></div>
-                <div><a class="text-lg" href="/posts/2021-09">2021 - September</a></div>
-                <div><a class="text-lg" href="/posts/2021-08">2021 - August</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-4-pipeline-component-internals">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+		
+		<!-- 14/01/2022 14:21:54 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="-mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="-mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<h1 class="text-5xl mb-4 pb-1">
+					Automatic packages from TFS: #4 – Pipeline component&nbsp;internals
+				</h1>
+				<div class="meta">Published 25 August 2014</div>
+				<div class="meta">Updated 25 August 2016</div>
+				<div class="flex py-1">
+					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/team-foundation-server" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Team Foundation Server</a>
+					<a href="/tags/packages" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Packages</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>In
+						<a href="/posts/2014/automatic-packages-from-tfs-3-pipelines-and-data-transformation" target="_blank">last week's entry I listed out the set of pipeline components required to generate a package</a>. This week, lets have a look at what goes into each of those components and see how they interact with the configuration and source control data.
+						<!--more-->
+					</p>
+					<h2>1: Basic Package Metadata</h2>
+					<p>The first component that runs is the
+						<code>SetPackageMetadata</code>. This is a simple component that just sets some basic package metadata. For the moment that is just the package's name and the name of the package creator:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SetPackageMetadata : IPipelineComponent {     public const string PackageNameKey = "SetPackageMetadata.PackageName";      public void Run(PipelineData data)     {         if (!data.Configuration.Settings.ContainsKey(PackageNameKey))         {             data.Configuration.ThrowMissingConfigurationException(PackageNameKey, "This should be the name to set for the package");         }          data.Output.Metadata.Name = data.Configuration.Settings[PackageNameKey];         data.Output.Metadata.Author = System.Environment.UserDomainName + "\\" + System.Environment.UserName;     } }
+					</pre>
+					<p>All the pipeline components implement the
+						<code>IPipelineComponent</code>
+						interface and expose the
+						<code>Run()</code>
+						method that is called by the parent. When called, it does two things. First it looks at the configuration data that is passed in to the component. It checks to see if the configuration data includes a key called "SetPackageMetadata.PackageName". (For all the configuration settings I've chosen to use a "." pattern to avoid clashes) If the key does not exist in the configuration dictionary then the component can't continue – so it raises an exception to indicate this missing data. Otherwise it carries on and uses the configuration data and the system environment data to update properties in the package metadata.</p>
+					<h2>2: Remove any unwanted changes</h2>
+					<p>The second step in the pipeline is to remove any changed files from the Source Control data that we don't want to process. The job of the
+						<code>RemoveUnwantedItems</code>
+						is to fetch the configuration required for this, and then make use of the data to filter the Source Control Changes.</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class RemoveUnwantedItems : IPipelineComponent {     public const string ExtensionsToIgnoreKey = "RemoveUnwantedItems.ExtensionsToIgnore";     public const string FoldersToIgnoreKey = "RemoveUnwantedItems.FoldersToIgnore";      private string[] extensions;     private string[] folders;      public void Run(PipelineData data)     {         if (!data.Configuration.Settings.ContainsKey(ExtensionsToIgnoreKey))         {             data.Configuration.ThrowMissingConfigurationException(ExtensionsToIgnoreKey, "A comman separated list of file extensions to ignore when processing. Processed by an 'ends with' query.");         }         extensions = data.Configuration.Settings[ExtensionsToIgnoreKey].Split(',');          if (!data.Configuration.Settings.ContainsKey(FoldersToIgnoreKey))         {             data.Configuration.ThrowMissingConfigurationException(FoldersToIgnoreKey, "A comman separted list of folders to ignore. Processed by a 'contains' query.");         }         folders = data.Configuration.Settings[FoldersToIgnoreKey].Split(',');          string[] keys = new string[data.Input.Keys.Count];         data.Input.Keys.CopyTo(keys, 0);          foreach (string key in keys)         {             if (hasExcludedExtension(key) || containsExcludedFolder(key) || noExtension(key))             {                 data.Input.Remove(key);             }         }     } }
+					</pre>
+					<p>Similarly to the previous code, the first thing to do is to fetch the configuration parameters. Here however, we also have to process them into arrays that we can iterate over later, as they are stored as comma separated lists. And once this is done, the code then needs to iterate the set of changes passed in through the input data for the pipeline. Since we need to iterate and modify this collection the code starts by copying the keys in the input dictionary, and then iterates that copy. For each key that it processes it checks whether it contains an excluded extension, an excluded folder in its path, or no extension at all. If one of those tests matches, then the item is removed from the input dictionary.</p>
+					<p>The tests for extensions and folders are simple:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private bool hasExcludedExtension(string key) {     foreach (string extension in extensions)     {         if (key.EndsWith(extension, StringComparison.InvariantCultureIgnoreCase))         {             return true;         }     }      return false; }  private bool containsExcludedFolder(string key) {     foreach (string folder in folders)     {         if (key.CaseInsensitiveContains(folder))         {             return true;         }     }      return false; }  private bool noExtension(string key) {     string remainder = key.Substring(key.LastIndexOf("/"));      if (!remainder.Contains("."))     {         return true;     }      if (remainder == "/")     {         return true;     }      return false; }
+					</pre>
+					<p>The
+						<code>CaseInsensitiveContains()</code>
+						is a helper method that hides the rather verbose uses
+						<code>System.Globalization</code>
+						to make this test.</p>
+					<h2>3: Renaming files</h2>
+					<p>If the input from source control contains things like changes to
+						<code>.less</code>
+						files that need to have the extension changed in the package output, then this component will process the change. It takes a slightly more complex input configuration to specify a list of old and new names, and then checks the source control data for entries that need changing:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class RenameFiles : IPipelineComponent {     public const string ExtensionsKey = "RenameFiles.Extensions";      public void Run(PipelineData data)     {         if(!data.Configuration.Settings.ContainsKey(ExtensionsKey))         {             data.Configuration.ThrowMissingConfigurationException(ExtensionsKey, "A list of renames to perform. Separate entries with commas Separate source and target names with a pipe.");         }         Dictionary&lt;string, string&gt; renames = new Dictionary&lt;string, string&gt;(StringComparer.CurrentCultureIgnoreCase);         var extensions = data.Configuration.Settings[ExtensionsKey].Split(',');         foreach (string extension in extensions)         {             var parts = extension.Split('|');             renames.Add(parts[0].Trim(), parts[1].Trim());         }          string[] files = new string[data.Input.Keys.Count];         data.Input.Keys.CopyTo(files, 0);          foreach (string file in files)         {             foreach (var rename in renames)             {                 if (file.EndsWith(rename.Key, StringComparison.CurrentCultureIgnoreCase))                 {                     SourceControlActions actions = data.Input[file];                     data.Input.Remove(file);                      string newKey = file.Substring(0, file.LastIndexOf('.')) + rename.Value;                      data.Input.Add(newKey, actions);                      break;                 }             }         }     } }
+					</pre>
+					<p>This code follows similar patterns to the previous examples.</p>
+					<h2>4: Getting the right files to deploy</h2>
+					<p>Getting the relevant files to deploy is the next task to process. This requires knowing where the web project being deployed is located, in order to be able to adjust the paths returned by Source Control into the relative style of path required in a package:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractFilesToDeploy : IPipelineComponent {     public const string WebProjectFolderKey = "ExtractFilesToDeploy.WebProjectFolder";      public void Run(PipelineData data)     {         if (!data.Configuration.Settings.ContainsKey(WebProjectFolderKey))         {             data.Configuration.ThrowMissingConfigurationException(WebProjectFolderKey, "This should be the disk path to the web project folder.");         }         string webProjectFolder = data.Configuration.Settings[WebProjectFolderKey];                        var fs = new PackageModel.PackageSourceFiles();         fs.Name = "Files to deploy";          foreach (var item in data.Input)         {             if (!item.Key.EndsWith(".item", StringComparison.CurrentCultureIgnoreCase) &amp;&amp; !item.Key.EndsWith(".cs", StringComparison.CurrentCultureIgnoreCase)  &amp;&amp; item.Value.IsNotDelete())             {                 fs.Add(item.Key.Replace(webProjectFolder, ""));             }         }          data.Output.Sources.AddSource(fs);     } }
+					</pre>
+					<p>For each item in the source data we need to exclude anything that's a serialised item, a C# file or is a deletion operation. For all the source changes that remain the absolute Souce Control Working Folder path is adjusted by removing the web project location in order to turn it into a relative path. All of these items are added to a
+						<code>PackageSourceFiles</code>
+						object, which is in turn added to the output package itself.</p>
+					<h2>5: Getting Sitecore items</h2>
+					<p>The key bit of this tool is to get changes to serialised items into the output package. The
+						<code>ExtractItemsToDeploy</code>
+						item does this for us:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractItemsToDeploy : IPipelineComponent {     private ProjectConfiguration cfg;      public void Run(PipelineData data)     {         cfg = data.Configuration;          var pi = new PackageModel.PackageSourceItems();         pi.Name = "Items to deploy";          foreach (var item in data.Input)         {             if (item.Key.EndsWith(".item", StringComparison.CurrentCultureIgnoreCase) &amp;&amp; item.Value.IsNotDelete())             {                 try                 {                     pi.Add(formatItemIdentifer(item.Key));                 }                 catch (FileNotFoundException)                 {                     cfg.Log.WriteLine("Serialised Item not found for '" + item.Key + "' - Cannot add to package.");                 }                                  }         }          data.Output.Sources.AddSource(pi);     } }
+					</pre>
+					<p>This goes through each item in our input data from Source Control and looks for those which are serialised Sitecore items and are not marked as deletions. Using the items that match this pattern, a
+						<code>PackageSourceItems</code>
+						is constructed and added to the overall package. So far so simple.</p>
+					<p>But if you look at the XML in a set of Sitecore items you'll note that the definition of each item to package looks a bit odd compared to what we get from Source Control:</p>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;xitems&gt;   ...   &lt;Entries&gt;     &lt;x-item&gt;/master/sitecore/system/Dictionary/ProjectName/Forms/Login/ce_Password_Strength/{DD5E504F-5FF9-477F-A2FB-B3905B76368C}/invariant/0&lt;/x-item&gt;     &lt;x-item&gt;/master/sitecore/system/Dictionary/ProjectName/Forms/Payment/ce_Payment_ChequeNext/{D6F0CC98-7FB2-4930-A42B-AABA89766AEB}/invariant/0&lt;/x-item&gt;   &lt;/Entries&gt;   ... &lt;/xitems&gt;
+					</pre>
+					<p>For each entry in the file, there's a path – but it looks a bit odd. It seems to start with the Sitecore database name, followed by the content tree path, and then followed by a GUID, an indication of the language code and finishing off with the version number.</p>
+					<p>So how can we generate that string of data when all we know is the disk path of the serialised item, and we don't have access to Sitecore's APIs? After a fair amount of head scratching I hit upon a solution: Read the data from the serialised item file itself. And the method
+						<code>formatItemItentifier()</code>
+						above performs that process.</p>
+					<p>If we look at the content of one of those files, we see roughly the following:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">----item---- version: 1 id: {DD5E504F-5FF9-477F-A2FB-B3905B76368C} database: master path: /sitecore/system/Dictionary/ChristiesEducation/Forms/Login/ce_Password_Strength parent: {36777232-C3FA-4AB3-A7C7-4EA0161F8FEC} name: ce_Password_Strength master: {00000000-0000-0000-0000-000000000000} template: {6D1CD897-1936-4A3A-A511-289A94C2A7B1} templatekey: Dictionary entry  ----field---- field: {580C75A8-C01A-4580-83CB-987776CEB3AF} name: Key key: key content-length: 20  ce_Password_Strength ----version---- language: en version: 1 revision: 37cb107f-7b88-4d66-93aa-4f0f8914c989  ----field---- field: {2BA3454A-9A9C-4CDF-A9F8-107FD484EB6E} name: Phrase key: phrase content-length: 68  At least 7 characters, where one or more is a punctuation character.
+					</pre>
+					<p>You can see that all the data we need is stored in the "item" section that begins the file. It includes the GUID, the path. For the purposes of the prototype here I'm not bothered by specific item versions or languages, so we can fix those bits of the data to "invariant" for the language and "0" for the version in order to tell Sitecore to ignore those options when building the package.</p>
+					<p>Hence we can write a very simple parser to turn the data into a dictionary. It ignores any blank lines, and looks for lines marked with four hyphens – processing data until it reaches one of these regions marked with a title other than "item". And finally it breaks the remaining strings into name / value pairs:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IDictionary&lt;string, string&gt; parseFile(StreamReader sr) {     Dictionary&lt;string, string&gt; data = new Dictionary&lt;string, string&gt;(StringComparer.CurrentCultureIgnoreCase);     bool done = false;      string text = sr.ReadToEnd();     sr.BaseStream.Seek(0, SeekOrigin.Begin);      while (!done)     {         string line = sr.ReadLine();          if(string.IsNullOrWhiteSpace(line))         {             continue;         }          if (line.StartsWith("----"))         {             string region = line.Replace("----", "");              if (StringComparer.CurrentCultureIgnoreCase.Compare(region,"item") != 0)             {                 done = true;             }         }         else         {             string[] parts = line.Split(':');             data.Add(parts[0].Trim(), parts[1].Trim());         }     }      return data; }
+					</pre>
+					<p>And we can generate the correct path data using code as follows:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string formatItemIdentifer(string key) {     string identifier;      using (var tr = File.OpenText(key))     {         var data = parseFile(tr);          string db = data["database"];         string id = data["id"];         string path = data["path"];          identifier = string.Format("/{0}{1}/{2}/invariant/0", db, path, id);     }      return identifier; }
+					</pre>
+					<p>It takes the disk path from Source Control and opens it as a text file and parses it using the code above. And then it generates the correct path using the data extracted from the disk file.</p>
+					<p>Now this approach works well, and solves the core problem of not having access to Sitecore – however it requires that the data exists on disk. Hence this makes it a requirement of the tool that the current state of your working folder includes all the correct
+						<code>.item</code>
+						files. If you don't do a "get-latest" to ensure the files are available then you will see errors from the tool –
+						<code>FileNotFoundException</code>s.</p>
+					<p>Another possible thing to do with this tool in the future might be to add the ability to perform this get operation automatically. However I'm thinking of this tool being used in a build workflow where this job should already have been performed in order to perform the build itself.</p>
+					<h2>6: Adding binary files to deploy</h2>
+					<p>The last thing which needs to be added to the package is the binaries generated from the code in the web package. The
+						<code>ExtractBinariesToDeploy</code>
+						component does this. The configuration for this is a bit more complex, as it needs to be a set of project names, with their accompanying set of binaries. Currently that's a comma separated list, where each item is a pipe-separated list of one project followed by a number of binary files. The following bit of code parses the data out of the config setting into a Dictionary containing a list of strings:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private Dictionary&lt;string, List&lt;string&gt;&gt; extractProjectPathMap(PipelineData data) { 	Dictionary&lt;string, List&lt;string&gt;&gt; projectPathMap = new Dictionary&lt;string, List&lt;string&gt;&gt;(StringComparer.CurrentCultureIgnoreCase); 	var projectsCfg = data.Configuration.Settings[ProjectPathMapKey].Split(','); 	foreach (string project in projectsCfg) 	{ 		string[] parts = project.Split('|');  		List&lt;string&gt; files = new List&lt;string&gt;(); 		for (int i = 1; i &lt; parts.Length; i++) 		{ 			files.Add(parts[i]); 		}  		projectPathMap.Add(parts[0], files); 	}  	return projectPathMap; }
+					</pre>
+					<p>That code is used by the core of the pipeline component to parse the configuration before it starts to process the individual items. It goes through the set of projects configured, and for each one, it checks to see if it can find any C# source changes in the input data. For any configured projects that do have changes, it adds the relevant binaries to the package:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractBinariesToDeploy : IPipelineComponent {     public const string ProjectPathMapKey = "ExtractBinariesToDeploy.ProjectPathMap";      public void Run(PipelineData data)     {         var fs = new PackageModel.PackageSourceFiles();         fs.Name = "Binaries to deploy";          if (!data.Configuration.Settings.ContainsKey(ProjectPathMapKey))         {             data.Configuration.ThrowMissingConfigurationException(ProjectPathMapKey, "A comma separated list of settings. Each one is a pipe separated items. The first part is the project path. All subsequent parts are binaries to add if C# files in the project have been changed.");         }          var projectPathMap = extractProjectPathMap(data);         var projects = projectPathMap.Keys.ToList();          foreach (var item in data.Input)         {             if (item.Key.EndsWith(".cs", StringComparison.CurrentCultureIgnoreCase))             {                 foreach (string project in projects.ToArray())                 {                     if (item.Key.CaseInsensitiveContains(project))                     {                         projects.Remove(project);                          foreach (string file in projectPathMap[project])                         {                             fs.Add(file);                         }                     }                 }                  if (projects.Count == 0)                 {                     break;                 }             }         }          data.Output.Sources.AddSource(fs);     } }
+					</pre>
+					<p>And finally this adds a
+						<code>PackageSourceFiles</code>
+						to the output package that holds all of the binaries that it was necessary to add.</p>
+					<h2>7: Dealing with deletions</h2>
+					<p>Since there's no direct approach to deleting individual files or items inside a Sitecore package, for the moment I'm addressing deletions by adding them as an instruction to the ReadMe section of the package metadata:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractDeletionsToDeploy : IPipelineComponent {     public void Run(PipelineData data)     {         bool deletionsFound = false;          StringBuilder sb = new StringBuilder();         sb.Append("The following items require deletion:\r\n");          foreach (var item in data.Input)         {             if ( (item.Value &amp; SourceControlActions.Delete) == SourceControlActions.Delete)             {                 deletionsFound = true;                 sb.Append(item.Key);                 sb.Append("\r\n");             }         }          if (deletionsFound)         {             data.Output.Metadata.ReadMe = sb.ToString();         }     } }
+					</pre>
+					<p>I'm considering the idea that a post-deployment event might be able to automate the removal of these items in the future.</p>
+					<h2>Next step...</h2>
+					<p>So that's the set of pipeline components I'm using for my prototype – but as previously suggested, the code is designed to be extensible to allow them to be improved or replaced in future work.</p>
+					<p>Next week's will be the last part of this, I think – a wrap up and the final source code.</p>
+				</div>
+				<div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (194)</a>
+							<a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (45)</a>
+							<a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (13)</a>
+							<a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Visual Studio (11)</a>
+							<a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (10)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2021-12">2021 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-11">2021 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-10">2021 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-09">2021 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-08">2021 - August</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -665,21 +355,16 @@ At least 7 characters, where one or more is a punctuation character.
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

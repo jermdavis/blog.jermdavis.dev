@@ -1,30 +1,27 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <meta name="description" content="Sitemap files are a requirement for most websites these days. They help SEO by ensuring that search engines index the files and images they might not otherwise find, and that you think are most important. Whilst there are assorted pre-built add-ons for Sitecore that can help with this, that&amp;#x27;s no fun. It&amp;#x27;s much more fun to build your own...&amp;#xA;Real work is getting in the way of blogging time at the moment, so I&amp;#x27;m going to break up my investigations into this into three posts. This week I&amp;#x27;ll look some requirements, core configuration and overall algorithm. The next part will look at the core code. And the final one will look at adding image data to the sitemap files.">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Custom Sitemap files &#x2013; Part One</title>
-
-    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/custom-sitemap-filespart-one">
-    <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.json">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Custom Sitemap files &amp;#x2013; Part One">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/custom-sitemap-filespart-one-social.png">
-    <meta property="og:description" content="">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="Sitemap files are a requirement for most websites these days. They help SEO by ensuring that search engines index the files and images they might not otherwise find, and that you think are most important. Whilst there are assorted pre-built add-ons for Sitecore that can help with this, that's no fun. It's much more fun to build your own...
+Real work is getting in the way of blogging time at the moment, so I'm going to break up my investigations into this into three posts. This week I'll look some requirements, core configuration and overall algorithm. The next part will look at the core code. And the final one will look at adding image data to the sitemap files.">
+		<meta property="og:description" content="Sitemap files are a requirement for most websites these days. They help SEO by ensuring that search engines index the files and images they might not otherwise find, and that you think are most important. Whilst there are assorted pre-built add-ons for Sitecore that can help with this, that's no fun. It's much more fun to build your own...
+Real work is getting in the way of blogging time at the moment, so I'm going to break up my investigations into this into three posts. This week I'll look some requirements, core configuration and overall algorithm. The next part will look at the core code. And the final one will look at adding image data to the sitemap files.">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Custom Sitemap files – Part One</title>
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/custom-sitemap-filespart-one">
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.json">
+		<meta property="og:title" content="Jeremy Davis - Custom Sitemap files &amp;#x2013; Part One">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/custom-sitemap-filespart-one-social.png">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -40,311 +37,335 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/custom-sitemap-filespart-one">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
-
     
-
-    
-    <!-- 13/01/2022 20:21:57 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="-mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="-mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <h1 class="text-5xl mb-4 pb-1">
-        Custom Sitemap files – Part One
-        </h1>
-            <div class="meta">Published 12 May 2014</div>
-                <div class="meta">Updated 25 August 2016</div>
-            <div class="flex py-1">
-                    <a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
-                    <a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>Sitemap files are a requirement for most websites these days. They help SEO by ensuring that search engines index the files and images they might not otherwise find, and that you think are most important. Whilst there are assorted pre-built add-ons for Sitecore that can help with this, that's no fun. It's much more fun to build your own...</p>
-<p>Real work is getting in the way of blogging time at the moment, so I'm going to break up my investigations into this into three posts. This week I'll look some requirements, core configuration and overall algorithm. The next part will look at the core code. And the final one will look at adding image data to the sitemap files.<!--more--></p>
-<p>When I started looking at this, I had the following requirements to consider:</p>
-<ul>
-<li>Build the core sitemap file at publish time.</li>
-<li>Support optional &quot;Sitemap Index Files&quot; – where multiple sitemap files are grouped together in an &quot;index file&quot;.</li>
-<li>Be able to specify the output filenames.</li>
-<li>Be able to choose the root Sitecore Item for each sitemap file.</li>
-<li>Be able to choose which Templates and Languages an Item must be based on in order to be included in the Sitemap.</li>
-<li>Allow individual pages to specify their sitemap properties, such as priority, inclusion, and change frequency.</li>
-<li>Allow individual sitemaps to have rules for what images to include.</li>
-<li>Allow images to be included from either fields on the Item, or from the Data Sources of components rendered by the Item.</li>
-<li>Avoid using configuration files, but let editors control the sitemap through Item data.</li>
-</ul>
-<h2>Configuration settings</h2>
-<p>A common place to put configuration for extension modules like this is under <code>/sitecore/System/Modules</code> – so we'll create a &quot;Sitemap&quot; folder under here and make a note of its ID for later. Within that we're going to want to create an items for Sitemap Index files or Sitemap files that don't have an index. And they'll need templates.</p>
-<p>The <a href="https://support.google.com/webmasters/answer/71453?hl=en" target="_blank" rel="noopener noreferrer">Sitemap Index File</a> only needs configuration for its file name and the set of Sitemap files it's going to refer to. Filename is easy – that's just a single line text field. So we can create a simple template for <code>SitemapIndexFile</code>:</p>
-<a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapIndexFileTemplate.png">
-<img alt="Sitemap index file template" src="/img/2014/SitemapIndexFileTemplate.png">
-</a>
-<p>The <a href="http://www.sitemaps.org/protocol.html" target="_blank" rel="noopener noreferrer">Sitemap Files</a> it's going to contain can be its children – so its insert options need to allow creating an instance of the <code>SitemapFile</code> template:</p>
-<a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapFileItem.png">
-<img alt="Sitemap file item" src="/img/2014/SitemapFileItem.png">
-</a>
-<p>This one is a bit more complex. First of all it also needs a file name, but it requires some other settings too. When the publish operation runs you don't know what the &quot;context&quot; database is, so we'll need to record a reference to the database that you want the Sitemap file to be generated from. In this case I've made that a Droplist field that points to a set of database names. Most of the time you'd set this to &quot;Web&quot; (since that's the database which holds all the published data) however for testing purposes you might want to change this to &quot;Master&quot;. Next the template allows editors to specify the root item that sitemap processing will start from. This allows configuring multiple sitemaps for different site roots, or for subsections of a website. The last two fields allow the editor to select a set of language versions that will be included in the output, and a set of templates that will be included. In both cases, selecting nothing here will be treated as &quot;include all&quot;.</p>
-<p>So, with these templates we can set up basic configuration for a couple of sitemap files:</p>
-<a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapTree.png">
-<img alt="Sitemap tree" src="/img/2014/SitemapTree.png">
-</a>
-<p>Here &quot;CustomSitemap&quot; is a sitemap file on its own, where &quot;TestIndexFile&quot; is a sitemap index that contains one sitemap file.</p>
-<p>The other thing that we need to create for configuration is a template to extend your web page items. We need to be able to specify the bits of configuration needed for individual pages:</p>
-<a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapItemExtensionsTemplate.png">
-<img alt="Sitemap Item Extensions template" src="/img/2014/SitemapItemExtensionsTemplate.png">
-</a>
-<p>A checkbox field SitemapInclude lets editors specify whether this item should be considered for sitemap processing or not. The SitemapPriority field lets them specify a relative value of how important this page is on your site, <a href="http://www.sitemaps.org/protocol.html#prioritydef" target="_blank" rel="noopener noreferrer">as per the sitemap schema</a>. Finally, editors can choose a Droplist value for the expected change frequency of this page, <a href="http://www.sitemaps.org/protocol.html#changefreqdef" target="_blank" rel="noopener noreferrer">as per the schema</a>. Note the use of the &quot;Shared&quot; flag for these fields – the requirements I was thinking about needed these settings to be shared between all language versions of each page – but that might not be true for other sites and you might want to think about whether that's applicable in any work you do based on this approach.</p>
-<p>This template can then be added to the template for the pages on your site:</p>
-<a target="_blank" rel="noopener noreferrer" href="/img/2014/HomeItemSettings.png">
-<img alt="Sitemap settings on Home" src="/img/2014/HomeItemSettings.png">
-</a>
-<h2>Algorithm ideas</h2>
-<p>Once all that config is defined, the basic behaviour for the code is as follows:</p>
-<ul>
-<li>Fetch the configuration items stored as children of <code>/sitecore/System/Modules/Sitemap</code> from the Master database.</li>
-<li>Iterate each configuration item
-<ul>
-<li>If it's config for a Sitemap Index file
-<ul>
-<li>Load the configuration for the output filename.</li>
-<li>Iiterate each of its child Sitemap items. For each one, generate the metadata for the index file and then process the Sitemap file itself.</li>
-<li>Save the data for the index file to XML.</li>
-</ul>
-</li>
-<li>If it's config for a Sitemap file, process it.</li>
-</ul>
-</li>
-</ul>
-<p>For each of the Sitemap files we need to process:</p>
-<ul>
-<li>Load the configuration for the filename, database, root, etc.</li>
-<li>Find the root item in the correct database.</li>
-<li>For the root and its descendants, process each one in turn.
-<ul>
-<li>Check if it's marked for export into the sitemap. If not, skip it.</li>
-<li>Check it has the right template. If not, skip it.</li>
-<li>For each language defined in the configuration
-<ul>
-<li>Check if this item has a version in that language. If not, skip it.</li>
-<li>Extract all the required metadata that will go into the sitemap file from this language version.</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>Then save all the metadata into the sitemap file in the correct XML schema.</li>
-</ul>
-<p>Nothing particularly difficult there – but it's quite a few things to do.</p>
-<p>One area that can be done in a variety of ways is how to write the data for the sitemap files out to disk in the right schema. My first attempt at this code made use of the XML Serialisation infrastructure in the .Net framework. It worked, but it was quite fiddly and required quite a lot of mucking about to get the namespaces correct. It was also quite complicated to deal with &quot;empty&quot; attributes of an item in a sitemap file, so I ended up reverting to some custom code to write the file using the <code>XDocument</code> classes from Linq as this works more simply.</p>
-<p>However for large sites this approach is not particularly scalable (It can generate a lot of in-memory objects). It would be better to write the data out directly via an <code>XmlTextWriter</code>. If you need to generate sitemaps for big files it would be sensible to consider this approach as an alternative.</p>
-<h2>Code</h2>
-<p>So with all those configuration options available we can start on some code. Usual rules apply – I'm ignoring error handling and patterns like Glass for simplicity. Production code would include those things.</p>
-<p>First of all, getting something to happen at publish time is simple – it just requires adding a handler to the <code>publish:end</code> event. To do that you must first define a class that will perform the action for this event. That class must have a method with the following signature:</p>
-<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace Testing.Sitemaps
-{
-    public class Publisher
-    {
-        public void Publish(object sender, EventArgs args)
-        {
-            // Your code here...
-        }
-    }
-}
-</pre>
-<p>And that can be configured with a simple config patch:</p>
-<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
-&lt;configuration xmlns:patch=&quot;http://www.sitecore.net/xmlconfig/&quot;&gt;
-  &lt;sitecore&gt;
-    &lt;events&gt;
-      &lt;event name=&quot;publish:end&quot;&gt;
-        &lt;handler method=&quot;Publish&quot; type=&quot;Testing.Sitemaps.Publisher&quot; /&gt;
-      &lt;/event&gt;
-    &lt;/events&gt;
-  &lt;/sitecore&gt;
-&lt;/configuration&gt;
-</pre>
-<p>This will cause the <code>Publish()</code> method to be called every time someone triggers a publish on this server. But if your website has multiple web servers, you will need to enable the &quot;Scalability Settings&quot; configuration that ships disabled with Sitecore by default, and then trigger your <code>Publish()</code> method on the <code>publish:end:remote</code> event as well. This event is fired on all the other servers in your cluster at publish time.</p>
-<p>So now our code will get triggered, we need to be able to configure a sitemap.</p>
-<p>And we'll look at the code for that in part two...</p>
-
-
-            </div>
-            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (194)</a>
-                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
-                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (13)</a>
-                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
-                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2021-12">2021 - December</a></div>
-                <div><a class="text-lg" href="/posts/2021-11">2021 - November</a></div>
-                <div><a class="text-lg" href="/posts/2021-10">2021 - October</a></div>
-                <div><a class="text-lg" href="/posts/2021-09">2021 - September</a></div>
-                <div><a class="text-lg" href="/posts/2021-08">2021 - August</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/custom-sitemap-filespart-one">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+		
+		<!-- 14/01/2022 14:22:02 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="-mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="-mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<h1 class="text-5xl mb-4 pb-1">
+					Custom Sitemap files – Part One
+				</h1>
+				<div class="meta">Published 12 May 2014</div>
+				<div class="meta">Updated 25 August 2016</div>
+				<div class="flex py-1">
+					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
+						C#</a>
+					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>Sitemap files are a requirement for most websites these days. They help SEO by ensuring that search engines index the files and images they might not otherwise find, and that you think are most important. Whilst there are assorted pre-built add-ons for Sitecore that can help with this, that's no fun. It's much more fun to build your own...</p>
+					<p>Real work is getting in the way of blogging time at the moment, so I'm going to break up my investigations into this into three posts. This week I'll look some requirements, core configuration and overall algorithm. The next part will look at the core code. And the final one will look at adding image data to the sitemap files.
+						<!--more-->
+					</p>
+					<p>When I started looking at this, I had the following requirements to consider:</p>
+					<ul>
+						<li>Build the core sitemap file at publish time.</li>
+						<li>Support optional "Sitemap Index Files" – where multiple sitemap files are grouped together in an "index file".</li>
+						<li>Be able to specify the output filenames.</li>
+						<li>Be able to choose the root Sitecore Item for each sitemap file.</li>
+						<li>Be able to choose which Templates and Languages an Item must be based on in order to be included in the Sitemap.</li>
+						<li>Allow individual pages to specify their sitemap properties, such as priority, inclusion, and change frequency.</li>
+						<li>Allow individual sitemaps to have rules for what images to include.</li>
+						<li>Allow images to be included from either fields on the Item, or from the Data Sources of components rendered by the Item.</li>
+						<li>Avoid using configuration files, but let editors control the sitemap through Item data.</li>
+					</ul>
+					<h2>Configuration settings</h2>
+					<p>A common place to put configuration for extension modules like this is under
+						<code>/sitecore/System/Modules</code>
+						– so we'll create a "Sitemap" folder under here and make a note of its ID for later. Within that we're going to want to create an items for Sitemap Index files or Sitemap files that don't have an index. And they'll need templates.</p>
+					<p>The
+						<a href="https://support.google.com/webmasters/answer/71453?hl=en" target="_blank" rel="noopener noreferrer">Sitemap Index File</a>
+						only needs configuration for its file name and the set of Sitemap files it's going to refer to. Filename is easy – that's just a single line text field. So we can create a simple template for
+						<code>SitemapIndexFile</code>:</p>
+					<a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapIndexFileTemplate.png">
+						<img alt="Sitemap index file template" src="/img/2014/SitemapIndexFileTemplate.png">
+					</a>
+					<p>The
+						<a href="http://www.sitemaps.org/protocol.html" target="_blank" rel="noopener noreferrer">Sitemap Files</a>
+						it's going to contain can be its children – so its insert options need to allow creating an instance of the
+						<code>SitemapFile</code>
+						template:</p>
+					<a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapFileItem.png">
+						<img alt="Sitemap file item" src="/img/2014/SitemapFileItem.png">
+					</a>
+					<p>This one is a bit more complex. First of all it also needs a file name, but it requires some other settings too. When the publish operation runs you don't know what the "context" database is, so we'll need to record a reference to the database that you want the Sitemap file to be generated from. In this case I've made that a Droplist field that points to a set of database names. Most of the time you'd set this to "Web" (since that's the database which holds all the published data) however for testing purposes you might want to change this to "Master". Next the template allows editors to specify the root item that sitemap processing will start from. This allows configuring multiple sitemaps for different site roots, or for subsections of a website. The last two fields allow the editor to select a set of language versions that will be included in the output, and a set of templates that will be included. In both cases, selecting nothing here will be treated as "include all".</p>
+					<p>So, with these templates we can set up basic configuration for a couple of sitemap files:</p>
+					<a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapTree.png">
+						<img alt="Sitemap tree" src="/img/2014/SitemapTree.png">
+					</a>
+					<p>Here "CustomSitemap" is a sitemap file on its own, where "TestIndexFile" is a sitemap index that contains one sitemap file.</p>
+					<p>The other thing that we need to create for configuration is a template to extend your web page items. We need to be able to specify the bits of configuration needed for individual pages:</p>
+					<a target="_blank" rel="noopener noreferrer" href="/img/2014/SitemapItemExtensionsTemplate.png">
+						<img alt="Sitemap Item Extensions template" src="/img/2014/SitemapItemExtensionsTemplate.png">
+					</a>
+					<p>A checkbox field SitemapInclude lets editors specify whether this item should be considered for sitemap processing or not. The SitemapPriority field lets them specify a relative value of how important this page is on your site,
+						<a href="http://www.sitemaps.org/protocol.html#prioritydef" target="_blank" rel="noopener noreferrer">as per the sitemap schema</a>. Finally, editors can choose a Droplist value for the expected change frequency of this page,
+						<a href="http://www.sitemaps.org/protocol.html#changefreqdef" target="_blank" rel="noopener noreferrer">as per the schema</a>. Note the use of the "Shared" flag for these fields – the requirements I was thinking about needed these settings to be shared between all language versions of each page – but that might not be true for other sites and you might want to think about whether that's applicable in any work you do based on this approach.</p>
+					<p>This template can then be added to the template for the pages on your site:</p>
+					<a target="_blank" rel="noopener noreferrer" href="/img/2014/HomeItemSettings.png">
+						<img alt="Sitemap settings on Home" src="/img/2014/HomeItemSettings.png">
+					</a>
+					<h2>Algorithm ideas</h2>
+					<p>Once all that config is defined, the basic behaviour for the code is as follows:</p>
+					<ul>
+						<li>Fetch the configuration items stored as children of
+							<code>/sitecore/System/Modules/Sitemap</code>
+							from the Master database.</li>
+						<li>Iterate each configuration item
+							<ul>
+								<li>If it's config for a Sitemap Index file
+									<ul>
+										<li>Load the configuration for the output filename.</li>
+										<li>Iiterate each of its child Sitemap items. For each one, generate the metadata for the index file and then process the Sitemap file itself.</li>
+										<li>Save the data for the index file to XML.</li>
+									</ul>
+								</li>
+								<li>If it's config for a Sitemap file, process it.</li>
+							</ul>
+						</li>
+					</ul>
+					<p>For each of the Sitemap files we need to process:</p>
+					<ul>
+						<li>Load the configuration for the filename, database, root, etc.</li>
+						<li>Find the root item in the correct database.</li>
+						<li>For the root and its descendants, process each one in turn.
+							<ul>
+								<li>Check if it's marked for export into the sitemap. If not, skip it.</li>
+								<li>Check it has the right template. If not, skip it.</li>
+								<li>For each language defined in the configuration
+									<ul>
+										<li>Check if this item has a version in that language. If not, skip it.</li>
+										<li>Extract all the required metadata that will go into the sitemap file from this language version.</li>
+									</ul>
+								</li>
+							</ul>
+						</li>
+						<li>Then save all the metadata into the sitemap file in the correct XML schema.</li>
+					</ul>
+					<p>Nothing particularly difficult there – but it's quite a few things to do.</p>
+					<p>One area that can be done in a variety of ways is how to write the data for the sitemap files out to disk in the right schema. My first attempt at this code made use of the XML Serialisation infrastructure in the .Net framework. It worked, but it was quite fiddly and required quite a lot of mucking about to get the namespaces correct. It was also quite complicated to deal with "empty" attributes of an item in a sitemap file, so I ended up reverting to some custom code to write the file using the
+						<code>XDocument</code>
+						classes from Linq as this works more simply.</p>
+					<p>However for large sites this approach is not particularly scalable (It can generate a lot of in-memory objects). It would be better to write the data out directly via an
+						<code>XmlTextWriter</code>. If you need to generate sitemaps for big files it would be sensible to consider this approach as an alternative.</p>
+					<h2>Code</h2>
+					<p>So with all those configuration options available we can start on some code. Usual rules apply – I'm ignoring error handling and patterns like Glass for simplicity. Production code would include those things.</p>
+					<p>First of all, getting something to happen at publish time is simple – it just requires adding a handler to the
+						<code>publish:end</code>
+						event. To do that you must first define a class that will perform the action for this event. That class must have a method with the following signature:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace Testing.Sitemaps {     public class Publisher     {         public void Publish(object sender, EventArgs args)         {             // Your code here...         }     } }
+					</pre>
+					<p>And that can be configured with a simple config patch:</p>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8" ?&gt; &lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;   &lt;sitecore&gt;     &lt;events&gt;       &lt;event name="publish:end"&gt;         &lt;handler method="Publish" type="Testing.Sitemaps.Publisher" /&gt;       &lt;/event&gt;     &lt;/events&gt;   &lt;/sitecore&gt; &lt;/configuration&gt;
+					</pre>
+					<p>This will cause the
+						<code>Publish()</code>
+						method to be called every time someone triggers a publish on this server. But if your website has multiple web servers, you will need to enable the "Scalability Settings" configuration that ships disabled with Sitecore by default, and then trigger your
+						<code>Publish()</code>
+						method on the
+						<code>publish:end:remote</code>
+						event as well. This event is fired on all the other servers in your cluster at publish time.</p>
+					<p>So now our code will get triggered, we need to be able to configure a sitemap.</p>
+					<p>And we'll look at the code for that in part two...</p>
+				</div>
+				<div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (194)</a>
+							<a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (45)</a>
+							<a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (13)</a>
+							<a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Visual Studio (11)</a>
+							<a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (10)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2021-12">2021 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-11">2021 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-10">2021 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-09">2021 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-08">2021 - August</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -353,21 +374,16 @@
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

@@ -1,30 +1,25 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <meta name="description" content="As I slowly get to move from v6.6 era versions of Sitecore onto the more modern releases, one of the topics I&amp;#x27;ve been re-visiting is install automation. In the past &amp;lt;a href=&amp;quot;/posts/2015/msi-parameters&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;I&amp;#x27;d looked at PowerShell scripts for installing Sitecore&amp;lt;/a&amp;gt; itself, and configuring development sites, but one of the new things to deal with once you move past v7.5 is the need for MongoDB. Turns out, that&amp;#x27;s pretty easy to automate if you need to:">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Automating a development MongoDB&#xA0;Install</title>
-
-    <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/automating-a-development-mongodb-install">
-    <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.json">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Automating a development MongoDB&amp;#xA0;Install">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/automating-a-development-mongodb-install-social.png">
-    <meta property="og:description" content="">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="As I slowly get to move from v6.6 era versions of Sitecore onto the more modern releases, one of the topics I've been re-visiting is install automation. In the past <a href=&quot;/posts/2015/msi-parameters&quot; target=&quot;_blank&quot;>I'd looked at PowerShell scripts for installing Sitecore</a> itself, and configuring development sites, but one of the new things to deal with once you move past v7.5 is the need for MongoDB. Turns out, that's pretty easy to automate if you need to:">
+		<meta property="og:description" content="As I slowly get to move from v6.6 era versions of Sitecore onto the more modern releases, one of the topics I've been re-visiting is install automation. In the past <a href=&quot;/posts/2015/msi-parameters&quot; target=&quot;_blank&quot;>I'd looked at PowerShell scripts for installing Sitecore</a> itself, and configuring development sites, but one of the new things to deal with once you move past v7.5 is the need for MongoDB. Turns out, that's pretty easy to automate if you need to:">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Automating a development MongoDB&nbsp;Install</title>
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/automating-a-development-mongodb-install">
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.json">
+		<meta property="og:title" content="Jeremy Davis - Automating a development MongoDB&amp;#xA0;Install">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/automating-a-development-mongodb-install-social.png">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -40,312 +35,312 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/automating-a-development-mongodb-install">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defers=""></script>
-
     
-
-    
-    <!-- 13/01/2022 20:21:53 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="-mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="-mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <h1 class="text-5xl mb-4 pb-1">
-        Automating a development MongoDB Install
-        </h1>
-            <div class="meta">Published 07 September 2015</div>
-                <div class="meta">Updated 25 August 2016</div>
-            <div class="flex py-1">
-                    <a href="/tags/mongodb" class="p-1 mr-1 bg-gray-100 rounded-md"> MongoDB</a>
-                    <a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
-                    <a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md"> Installation</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>As I slowly get to move from v6.6 era versions of Sitecore onto the more modern releases, one of the topics I've been re-visiting is install automation. In the past <a href="/posts/2015/msi-parameters" target="_blank">I'd looked at PowerShell scripts for installing Sitecore</a> itself, and configuring development sites, but one of the new things to deal with once you move past v7.5 is the need for MongoDB. Turns out, that's pretty easy to automate if you need to:<!--more--></p>
-<h2>MongoDB</h2>
-<p>When you <a href="http://docs.mongodb.org/manual/tutorial/install-mongodb-on-windows/" target="_blank" rel="noopener noreferrer">look at the documentation for Windows installs on the Mongodb.org site</a>, it's clear that they've thought about this scenario. Their installer is packaged as an <code>MSI</code>, and they document the parameters you can pass to configure it. So to perform a simple unattended install for a development machine, you can run:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi ADDLOCAL=&quot;ALL&quot;
-</pre>
-<p>(Though obviously the name of the <code>MSI</code> varies depending on the version you want to use)</p>
-<p>To make that work in PowerShell, you need to fiddle with the text a little though:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi &quot;ADDLOCAL=ALL&quot; | Out-Null
-</pre>
-<p>Note the change in the way the double quotes are used around the <code>ADDLOCAL</code> parameter, and the addition of the pipe to <code>Out-Null</code> as a simple way to make sure the rest of the script waits for the <code>MSI</code> to finish installing.</p>
-<p>That gets all the files onto your machine into the default install directory (under Program Files), but it doesn't start anything going. To do that, you need three more things:</p>
-<ul>
-<li>Create a folder for your data files</li>
-<li>Create a config file for your service</li>
-<li>Install MongoDB as a service</li>
-</ul>
-<p>The first of these is trivial. You need a two folders – One for logs and one for data. If your data is going to live in <code>c:\MongoData</code> you might use a quick snippet of PowerShell:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$mongoDataFolder = &quot;c:\MongoData&quot;
-
-md &quot;$mongoDataFolder\data&quot;
-md &quot;$mongoDataFolder\logs&quot;
-</pre>
-<p>Note that depending on where you choose to put the MongoDB data files, and whether you choose to install the service to run under a different user account from the default, you may need to change the disk permissions for your folder. MSDN <a href="http://blogs.msdn.com/b/johan/archive/2008/10/01/powershell-editing-permissions-on-a-file-or-folder.aspx" target="_blank" rel="noopener noreferrer">documents how to add extra ACLs to a folder using PowerShell</a>. However since I've put the folder in the root of <code>C:</code> and am using the default &quot;local system&quot; account for the service, the permissions here are ok by default.</p>
-<p>Next is the basic config file – which is also pretty trivial. At its simplest, according to the documentation, all you need is:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:
-    destination: file
-    path: c:\MongoData\log\mongod.log
-storage:
-    dbPath: c:\MongoData\data
-</pre>
-<p>Interestingly, MongoDB's default settings create quite large disk files for your databases – the journal file defaults to 1GB of disk space for each database. This can be a lot of space to use up on a development machine, so there is an option called <code>SmallFiles</code> which can be enabled if you want to reduce this size down to 128MB for each journal. Adding it to the example config above would give:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:
-    destination: file
-    path: c:\MongoData\log\mongod.log
-storage:
-    dbPath: c:\MongoData\data
-    mmapv1:
-        smallFiles: true
-</pre>
-<p>At this point, I don't know enough about how MongoDB works to understand whether this setting is a good idea for us Sitecore developers though.</p>
-<p>You can write out the basic config to disk using the path variable above with:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$cfg = &#64;&quot;
-systemLog:
-    destination: file
-    path: $mongoDataFolder\logs\mongod.log
-storage:
-    dbPath: $mongoDataFolder\data
-&quot;&#64;
-
-$cfg | Out-File &quot;$mongoDataFolder\mongod.cfg&quot;
-</pre>
-<p>The <code>&#64;&quot;...&quot;&#64;</code> is PowerShell's way of expressing a multi-line string. The closing &quot;tag&quot; here must be on a new line. If not, it will not work.</p>
-<p>Then, according to the documentation, you can tell MongoDB to configure itself as a service:</p>
-<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">&quot;C:\Program Files\MongoDB\v3.0\bin\mongod.exe&quot; --config &quot;C:\MongoData\mongod.cfg&quot; --install
-</pre>
-<p>Again, we can edit this a bit to make it more PowerShell-friendly:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">&amp;&quot;$Env:ProgramFiles\MongoDB\Server\3.0\bin\mongod.exe&quot; --config &quot;$mongoDataFolder\mongod.cfg&quot; --install | Out-Null
-</pre>
-<p>The ampersand says &quot;treat the following string as if it was a command to execute&quot;. The <code>$Env:ProgramFiles</code> variable makes sure we get the right folder for the 64bit Program Files directory, and we make use of the variable from before to locate the config file.</p>
-<p>Note that this will create the service, but won't set it to start automatically. You can change the start settings and ensure it's started up via:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Set-Service -Name MongoDB -StartupType Automatic
-Start-Service -Name MongoDB
-</pre>
-<p>So, to pull it all together:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host &quot;Installing MongoDB...&quot;
-msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi &quot;ADDLOCAL=ALL&quot; | Out-Null
-
-Write-Host &quot;Create data folder&quot;
-$mongoDataFolder = &quot;c:\MongoData&quot;
-md &quot;$mongoDataFolder\data&quot;
-md &quot;$mongoDataFolder\logs&quot;
-
-Write-Host &quot;Create config file&quot;
-$cfg = &#64;&quot;
-systemLog:
-    destination: file
-    path: $mongoDataFolder\logs\mongod.log
-storage:
-    dbPath: $mongoDataFolder\data
-&quot;&#64;
-$cfg | Out-File &quot;$mongoDataFolder\mongod.cfg&quot;
-
-Write-Host &quot;Install Service&quot;
-&amp;&quot;$Env:ProgramFiles\MongoDB\Server\3.0\bin\mongod.exe&quot; --config &quot;$mongoDataFolder\mongod.cfg&quot; --install | Out-Null
-
-Write-Host &quot;Configure Service&quot;
-Set-Service -Name MongoDB -StartupType Automatic
-Start-Service -Name MongoDB
-</pre>
-<p><b>NB:</b> Remember that this install is suitable only for development use inside your firewall. It has not enabled any of MongoDB's security features, so exposing it to the internet would be a bad move.</p>
-<h2>RoboMongo</h2>
-<p>So, once you've run this script, how do you test that it's all working? Well <a href="http://robomongo.org/" target="_blank" rel="noopener noreferrer">RoboMongo is a useful tool for investigating what's going on inside the MongoDB server</a>. Their default installer is less automation-friendly – but they do provide the application in a zip file. You can download that to the folder with your script, and use a bit more PowerShell to unzip it:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Add-Type -AssemblyName System.IO.Compression.FileSystem
-[System.IO.Compression.ZipFile]::ExtractToDirectory(&quot;$Pwd\Robomongo-0.8.5-i386.zip&quot;, &quot;$Env:ProgramFiles\&quot;)
-</pre>
-<p>That uses the .Net Framework's built in ability with archives to extract the files.</p>
-<p>You can just run the program from there, but it's easier to add an icon to your desktop (or some other location). You can achieve that via PowerShell too:</p>
-<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$WshShell = New-Object -comObject WScript.Shell
-$Shortcut = $WshShell.CreateShortcut(&quot;$Env:UserProfile\Desktop\Robomongo.lnk&quot;)
-$Shortcut.TargetPath = &quot;$Env:ProgramFiles\Robomongo-0.8.5-i386\Robomongo.exe&quot;
-$Shortcut.Save()
-</pre>
-<p>This uses the COM objects that wrap up the Windows Shell to create a new shortcut on the current user's desktop, and point it at the program we've unzipped.</p>
-<p>And with that, you can run it up and do some work:</p>
-<p><a href="/img/2015/2015-09-robomongo.png" target="_blank"><img alt="Robo Mongo" src="/img/2015/2015-09-robomongo.png"></a></p>
-<p>Or at least look at all this stuff in MongoDB and wonder what it's all for...</p>
-
-
-            </div>
-            <div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (194)</a>
-                    <a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (45)</a>
-                    <a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (13)</a>
-                    <a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (11)</a>
-                    <a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (10)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2021-12">2021 - December</a></div>
-                <div><a class="text-lg" href="/posts/2021-11">2021 - November</a></div>
-                <div><a class="text-lg" href="/posts/2021-10">2021 - October</a></div>
-                <div><a class="text-lg" href="/posts/2021-09">2021 - September</a></div>
-                <div><a class="text-lg" href="/posts/2021-08">2021 - August</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/automating-a-development-mongodb-install">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
+		
+		<!-- 14/01/2022 14:21:52 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="-mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="-mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<h1 class="text-5xl mb-4 pb-1">
+					Automating a development MongoDB&nbsp;Install
+				</h1>
+				<div class="meta">Published 07 September 2015</div>
+				<div class="meta">Updated 25 August 2016</div>
+				<div class="flex py-1">
+					<a href="/tags/mongodb" class="p-1 mr-1 bg-gray-100 rounded-md">
+						MongoDB</a>
+					<a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md">
+						PowerShell</a>
+					<a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Installation</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>As I slowly get to move from v6.6 era versions of Sitecore onto the more modern releases, one of the topics I've been re-visiting is install automation. In the past
+						<a href="/posts/2015/msi-parameters" target="_blank">I'd looked at PowerShell scripts for installing Sitecore</a>
+						itself, and configuring development sites, but one of the new things to deal with once you move past v7.5 is the need for MongoDB. Turns out, that's pretty easy to automate if you need to:
+						<!--more-->
+					</p>
+					<h2>MongoDB</h2>
+					<p>When you
+						<a href="http://docs.mongodb.org/manual/tutorial/install-mongodb-on-windows/" target="_blank" rel="noopener noreferrer">look at the documentation for Windows installs on the Mongodb.org site</a>, it's clear that they've thought about this scenario. Their installer is packaged as an
+						<code>MSI</code>, and they document the parameters you can pass to configure it. So to perform a simple unattended install for a development machine, you can run:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi ADDLOCAL="ALL"
+					</pre>
+					<p>(Though obviously the name of the
+						<code>MSI</code>
+						varies depending on the version you want to use)</p>
+					<p>To make that work in PowerShell, you need to fiddle with the text a little though:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi "ADDLOCAL=ALL" | Out-Null
+					</pre>
+					<p>Note the change in the way the double quotes are used around the
+						<code>ADDLOCAL</code>
+						parameter, and the addition of the pipe to
+						<code>Out-Null</code>
+						as a simple way to make sure the rest of the script waits for the
+						<code>MSI</code>
+						to finish installing.</p>
+					<p>That gets all the files onto your machine into the default install directory (under Program Files), but it doesn't start anything going. To do that, you need three more things:</p>
+					<ul>
+						<li>Create a folder for your data files</li>
+						<li>Create a config file for your service</li>
+						<li>Install MongoDB as a service</li>
+					</ul>
+					<p>The first of these is trivial. You need a two folders – One for logs and one for data. If your data is going to live in
+						<code>c:\MongoData</code>
+						you might use a quick snippet of PowerShell:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$mongoDataFolder = "c:\MongoData"  md "$mongoDataFolder\data" md "$mongoDataFolder\logs"
+					</pre>
+					<p>Note that depending on where you choose to put the MongoDB data files, and whether you choose to install the service to run under a different user account from the default, you may need to change the disk permissions for your folder. MSDN
+						<a href="http://blogs.msdn.com/b/johan/archive/2008/10/01/powershell-editing-permissions-on-a-file-or-folder.aspx" target="_blank" rel="noopener noreferrer">documents how to add extra ACLs to a folder using PowerShell</a>. However since I've put the folder in the root of
+						<code>C:</code>
+						and am using the default "local system" account for the service, the permissions here are ok by default.</p>
+					<p>Next is the basic config file – which is also pretty trivial. At its simplest, according to the documentation, all you need is:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:     destination: file     path: c:\MongoData\log\mongod.log storage:     dbPath: c:\MongoData\data
+					</pre>
+					<p>Interestingly, MongoDB's default settings create quite large disk files for your databases – the journal file defaults to 1GB of disk space for each database. This can be a lot of space to use up on a development machine, so there is an option called
+						<code>SmallFiles</code>
+						which can be enabled if you want to reduce this size down to 128MB for each journal. Adding it to the example config above would give:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:     destination: file     path: c:\MongoData\log\mongod.log storage:     dbPath: c:\MongoData\data     mmapv1:         smallFiles: true
+					</pre>
+					<p>At this point, I don't know enough about how MongoDB works to understand whether this setting is a good idea for us Sitecore developers though.</p>
+					<p>You can write out the basic config to disk using the path variable above with:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$cfg = @" systemLog:     destination: file     path: $mongoDataFolder\logs\mongod.log storage:     dbPath: $mongoDataFolder\data "@  $cfg | Out-File "$mongoDataFolder\mongod.cfg"
+					</pre>
+					<p>The
+						<code>@"..."@</code>
+						is PowerShell's way of expressing a multi-line string. The closing "tag" here must be on a new line. If not, it will not work.</p>
+					<p>Then, according to the documentation, you can tell MongoDB to configure itself as a service:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">"C:\Program Files\MongoDB\v3.0\bin\mongod.exe" --config "C:\MongoData\mongod.cfg" --install
+					</pre>
+					<p>Again, we can edit this a bit to make it more PowerShell-friendly:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">&amp;"$Env:ProgramFiles\MongoDB\Server\3.0\bin\mongod.exe" --config "$mongoDataFolder\mongod.cfg" --install | Out-Null
+					</pre>
+					<p>The ampersand says "treat the following string as if it was a command to execute". The
+						<code>$Env:ProgramFiles</code>
+						variable makes sure we get the right folder for the 64bit Program Files directory, and we make use of the variable from before to locate the config file.</p>
+					<p>Note that this will create the service, but won't set it to start automatically. You can change the start settings and ensure it's started up via:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Set-Service -Name MongoDB -StartupType Automatic Start-Service -Name MongoDB
+					</pre>
+					<p>So, to pull it all together:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "Installing MongoDB..." msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi "ADDLOCAL=ALL" | Out-Null  Write-Host "Create data folder" $mongoDataFolder = "c:\MongoData" md "$mongoDataFolder\data" md "$mongoDataFolder\logs"  Write-Host "Create config file" $cfg = @" systemLog:     destination: file     path: $mongoDataFolder\logs\mongod.log storage:     dbPath: $mongoDataFolder\data "@ $cfg | Out-File "$mongoDataFolder\mongod.cfg"  Write-Host "Install Service" &amp;"$Env:ProgramFiles\MongoDB\Server\3.0\bin\mongod.exe" --config "$mongoDataFolder\mongod.cfg" --install | Out-Null  Write-Host "Configure Service" Set-Service -Name MongoDB -StartupType Automatic Start-Service -Name MongoDB
+					</pre>
+					<p>
+						<b>NB:</b>
+						Remember that this install is suitable only for development use inside your firewall. It has not enabled any of MongoDB's security features, so exposing it to the internet would be a bad move.</p>
+					<h2>RoboMongo</h2>
+					<p>So, once you've run this script, how do you test that it's all working? Well
+						<a href="http://robomongo.org/" target="_blank" rel="noopener noreferrer">RoboMongo is a useful tool for investigating what's going on inside the MongoDB server</a>. Their default installer is less automation-friendly – but they do provide the application in a zip file. You can download that to the folder with your script, and use a bit more PowerShell to unzip it:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Add-Type -AssemblyName System.IO.Compression.FileSystem [System.IO.Compression.ZipFile]::ExtractToDirectory("$Pwd\Robomongo-0.8.5-i386.zip", "$Env:ProgramFiles\")
+					</pre>
+					<p>That uses the .Net Framework's built in ability with archives to extract the files.</p>
+					<p>You can just run the program from there, but it's easier to add an icon to your desktop (or some other location). You can achieve that via PowerShell too:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$WshShell = New-Object -comObject WScript.Shell $Shortcut = $WshShell.CreateShortcut("$Env:UserProfile\Desktop\Robomongo.lnk") $Shortcut.TargetPath = "$Env:ProgramFiles\Robomongo-0.8.5-i386\Robomongo.exe" $Shortcut.Save()
+					</pre>
+					<p>This uses the COM objects that wrap up the Windows Shell to create a new shortcut on the current user's desktop, and point it at the program we've unzipped.</p>
+					<p>And with that, you can run it up and do some work:</p>
+					<p>
+						<a href="/img/2015/2015-09-robomongo.png" target="_blank">
+							<img alt="Robo Mongo" src="/img/2015/2015-09-robomongo.png">
+						</a>
+					</p>
+					<p>Or at least look at all this stuff in MongoDB and wonder what it's all for...</p>
+				</div>
+				<div class="lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2021</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2021.jpg" width="219" height="219" alt="2021 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (194)</a>
+							<a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (45)</a>
+							<a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (13)</a>
+							<a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Visual Studio (11)</a>
+							<a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (10)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2021-12">2021 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-11">2021 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-10">2021 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-09">2021 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2021-08">2021 - August</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, (7*24*60*60));" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -354,21 +349,16 @@ $Shortcut.Save()
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>
