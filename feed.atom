@@ -7,7 +7,59 @@
 	</author>
 	<link rel="self" href="https://blog.jermdavis.dev/" />
 	<rights>2014-2022</rights>
-	<updated>2022-01-14T14:21:35Z</updated>
+	<updated>2022-01-17T08:10:04Z</updated>
+	<entry>
+		<id>https://blog.jermdavis.dev/posts/2022/docker-difficulties</id>
+		<title>A brief guide to Docker difficulties</title>
+		<author>
+			<name>Jeremy Davis</name>
+		</author>
+		<link href="https://blog.jermdavis.dev/posts/2022/docker-difficulties" />
+		<updated>0001-01-01T00:00:00Z</updated>
+		<content>&lt;p&gt;I spent some time working with a colleague who couldn't get his docker instance to start up happily this week. And it's reminded me that for all its positives, there are still some challenges with understanding the underlying issues when a developer container instance breaks. I realised I need a "go read this" post for the start of future discussions like this, so here are some problems you might see, and some diagnostic suggestions I wanted a convenient way to share: &lt;!--more--&gt;&lt;/p&gt;
+&lt;p&gt;Trying to start your development instance and seeing something like this can be frustrating:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-FailedDockerStart.png"&gt;&lt;img alt="A console window showing docker-compose has failed to start a traefik container" src="https://blog.jermdavis.dev/img/2022/01-FailedDockerStart.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;When something goes wrong at start-up, it's often not at all clear why. &lt;code&gt;docker-compose&lt;/code&gt; says nothing helpful. So what are some of the common issues, and how can they be mitigated?&lt;/p&gt;
+&lt;h2 id="do-you-have-a-ysod"&gt;Do you have a &lt;a href="https://en.wikipedia.org/wiki/Screen_of_death#:~:text=A%20Yellow%20Screen%20of%20Death%20occurs%20when%20an%20ASP.NET%20web%20app%20encounters%20a%20problem%20and%20crashes.%5B8%5D%5Bself%2Dpublished%20source%3F%5D" target="_blank" rel="noopener"&gt;YSOD&lt;/a&gt;?&lt;/h2&gt;
+&lt;p&gt;This is the problem my colleague was having. You can do &lt;code&gt;down&lt;/code&gt; and &lt;code&gt;up&lt;/code&gt; as many times as you like, but if something in your Sitecore website is throwing an unhandled exception which breaks ASP.Net, you're never going to get the site to start up in its default state.&lt;/p&gt;
+&lt;p&gt;The way &lt;a href="https://traefik.io/traefik/" target="_blank" rel="noopener"&gt;Traefik&lt;/a&gt; is configured means that it relies on a health monitor endpoint in your CM container. If that does not return HTTP 200 when it is called, Traefik will not start. That leads to a really annoying situation. You're working away, and you do something that causes a YSOD. Before you fix that issue, you get distracted and end up shutting docker down. And when you come back to work, you are unable to make Sitecore start up. That makes it way harder to fix your problem you had to start with...&lt;/p&gt;
+&lt;p&gt;So when you see the dreaded Traefik errors, your first response should be to work out &lt;i&gt;why&lt;/i&gt; it's failed. Some good diagnostic tactics are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;b&gt;Is the CM container up?&lt;/b&gt;&lt;br&gt;
+The first thing to check is the state of your containers. That can give you a clue about which way your investigations should go. Traefik can fail if the CM container starts, but then goes down again. Or it can fail if it's up but returning errors serious enough to break the health endpoint. So make use of your favourite monitoring tool to check if the CM is actually running:
+&lt;a href="https://blog.jermdavis.dev/img/2022/01-ContainerState.png" target="_blank"&gt;&lt;img alt="The running containers dialog from Docker Desktop - showing the state of a set of Sitecore containers" src="https://blog.jermdavis.dev/img/2022/01-ContainerState.png"&gt;&lt;/a&gt;
+If the CM is down, you should look into the Service Monitor issue below, lack of memory / disk space, or similar technical issues that would prevent it from starting or from staying started. But if the CM is up you think about code and config bugs in your deployment and networking issues.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;b&gt;Check the container log&lt;/b&gt;&lt;br&gt;
+If it's up, it's worth checking what the logs say. Both the streamed Docker logs (which cover assorted outputs of your containers, and the Sitecore logs if they've been written) Log data might point you at the Service Monitor error below, or it might point you towards the health endpoint failing. So pick a tool to look at the streamed log data initially:
+&lt;a href="https://blog.jermdavis.dev/img/2022/01-CMLogsWith500.png" target="_blank" rel="noopener"&gt;&lt;img src="https://blog.jermdavis.dev/img/2022/01-CMLogsWith500.png" alt="The Visual Studio containers window, showing health monitor log errors for a Sitecore CM container"&gt;&lt;/a&gt;
+The image above is an example of the &lt;code&gt;/healthz/ready&lt;/code&gt; endpoint returning 500 - which Traefik will see as a reason not to start.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;b&gt;Skip past Traefik&lt;/b&gt;&lt;br&gt;
+Since Traefik is the reverse proxy for your containers, if it's down it can be difficult to see what (if any) messages are being returned if a web request fails. One trick for bypassing this issue is to make use of the fact that Docker containers are actually proper VMs - so you can connect directly to them and run other commands. That means we can fire up PowerShell inside our misbehaving CM container:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;docker exec -it &amp;lt;your-cm-container-name&amp;gt; powershell.exe
+&lt;/pre&gt;
+&lt;p&gt;When you type that, you should get a new powershell session inside your container. So you can use that to directly make an HTTP request to Sitecore, and see what (if any) error comes back:&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;Invoke-WebRequest http://localhost/ -UseBasicParsing
+&lt;/pre&gt;
+&lt;p&gt;Note that you need to use "localhost" and "http://" here - Traefik does SSL termination for you, so inside the container doesn't use HTTPS. And it also handles the DNS naming of your site - so inside the container the site is just localhost. The parameter &lt;code&gt;-UseBasicParsing&lt;/code&gt; there is required whenever you use &lt;code&gt;Invoke-WebRequest&lt;/code&gt; on a machine which doesn't have IE installed. Console-only instances of Windows Server like this don't have IE - so you'll get an error if you forget this parameter. If you're seeing 500s in the docker log stream above, chances are you're going to get a pile of red text here, indicating the real ASP.Net error. You'll likely need to scroll up a bit to see the start of the message:
+&lt;a href="https://blog.jermdavis.dev/img/2022/01-WebRequestError.png" target="_blank"&gt;&lt;img src="https://blog.jermdavis.dev/img/2022/01-WebRequestError.png" alt="A powershell session showing an error message returned by Invoke-Webrequest"&gt;&lt;/a&gt;
+Quite often, this is going to tell you what's wrong. (Though in some circumstances you may get more info from requesting the health endpoint url that's throwing 500s in the logs in the previous bullet) The example here (A DLL binding issue that prevented ASP.Net from starting up the Sitecore App) is pretty much what my colleague was suffering from.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Once you've found your issue and corrected it, remember that you probably don't have to go through the whole up/down rigmarole. Often you can stop/delete any containers which are causing an issue, fix your problem and run &lt;code&gt;docker-compose up&lt;/code&gt; again to start up your CM or Traefik containers. They'll happily make use of the Identity Server / Solr / SQL Server ones that were (probably) already running.&lt;/p&gt;
+&lt;h2 id="youve-got-a-networking-issue"&gt;You've got a networking issue?&lt;/h2&gt;
+&lt;p&gt;If you find that your CM tries to spin up, but keeps throwing "can't find my databases!" type SQL errors in the Sitecore log, then a common cause is any VPN software you might be running:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2022/01-DockerSqlError.png"&gt;&lt;img alt="Log errors from SQL connections" src="https://blog.jermdavis.dev/img/2022/01-DockerSqlError.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;I've had this issue - if I start my office VPN client it aggressively routes all network traffic over to my corporate network. And annoyingly that includes it grabbing the "between container" network traffic that Docker is trying to use to allow  your containers to talk to each other... A good test for whether this is your issue is to disconnect the VPN, down your containers, restart Docker Desktop and then try bringing your containers back up without the VPN connected. If it works, chances are your VPN is at fault.&lt;/p&gt;
+&lt;p&gt;This can be a bit of a tricky one to solve. In my case, I had to persuade my IT Ops team to create a "&lt;a href="https://en.wikipedia.org/wiki/Split_tunneling" target="_blank" rel="noopener"&gt;split tunnel&lt;/a&gt;" configuration where only traffic for my clients and my office went over the VPN, and other (local) traffic was ignored. That allowed me to run Docker and have code in the containers access my client's networks. Great for me getting dev work done - but potentially less secure than the default VPN setup.&lt;/p&gt;
+&lt;p&gt;I've also found that it's better to start the VPN before Docker Desktop, as docker is not always happy with networking changes happening after it's started up...&lt;/p&gt;
+&lt;h2 id="service-monitor-on-older-containers"&gt;Service Monitor on older containers?&lt;/h2&gt;
+&lt;p&gt;I'm working on a v10.0 project right now, and probably the most common failure is that the CM container's Service Monitor process fails to start. &lt;a target="_blank" href="https://sitecore.stackexchange.com/a/28676"&gt;Sitecore have addressed this one in newer releases&lt;/a&gt; if you're lucky enough to be able to upgrade your project.&lt;/p&gt;
+&lt;p&gt;But if not, I've found it seems to be made worse by your custom project code and config. This error is transient, so often stopping and starting your containers can resolve it. I've also found the error seems less likely to happen if I remove my project files from the &lt;code&gt;docker\deploy\website&lt;/code&gt; folder, start up my containers, and then publish my code after vanilla Sitecore is running. Not sure if that's specific to my project or not though - but may be of help to others?&lt;/p&gt;
+</content>
+		<summary>&lt;p&gt;I spent some time working with a colleague who couldn't get his docker instance to start up happily this week. And it's reminded me that for all its positives, there are still some challenges with understanding the underlying issues when a developer container instance breaks. I realised I need a &amp;amp;quot;go read this&amp;amp;quot; post for the start of future discussions like this, so here are some problems you might see, and some diagnostic suggestions I wanted a convenient way to share: &lt;/p&gt;</summary>
+	</entry>
 	<entry>
 		<id>https://blog.jermdavis.dev/posts/2022/thanks-windows-installer</id>
 		<title>Thanks Windows Installer - you could have just asked...</title>
@@ -704,154 +756,5 @@ Source: Sitecore.Buckets
 &lt;p&gt;In my case, that was all that needed doing to resolve the issue – well, that and a bit of user education to ensure everyone understood what had gone wrong...&lt;/p&gt;
 </content>
 		<summary>&lt;p&gt;A while back I got a support issue where a client's Content Editor was suddenly very broken. No UI – just a giant YSOD. It's turned out to be the sort of mistake which I could see happening to others, so here's some info on what happened and ways the problem can be resolved.&lt;/p&gt;</summary>
-	</entry>
-	<entry>
-		<id>https://blog.jermdavis.dev/posts/2021/the-power-of-implicit-conversions</id>
-		<title>The power of implicit conversions</title>
-		<author>
-			<name>Jeremy Davis</name>
-		</author>
-		<link href="https://blog.jermdavis.dev/posts/2021/the-power-of-implicit-conversions" />
-		<link rel="enclosure" type="image" href="https://blog.jermdavis.dev/" />
-		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;There are bits of the C# language that we don't think about too much when writing websites – and implicit conversions are one of those things. But while I've been messing about with some ray-tracing code in evenings recently, I found a couple of examples they patterns they can be a help with...&lt;!--more--&gt;&lt;/p&gt;
-&lt;h2&gt;The challenge&lt;/h2&gt;
-&lt;p&gt;There are various places in a raytracer where you need to deal with angles. The orientation of geometry, working out the directions the rays travel in and how the light reflects and refracts. And wherever your expressing angles you need to choose your units. While a lot of maths is defined in terms of &lt;a href="https://en.wikipedia.org/wiki/Radian" rel="noopener" target="_blank"&gt;radians&lt;/a&gt;, I find that with my &amp;quot;not very good&amp;quot; maths skills, I think in terms of &lt;a href="https://en.wikipedia.org/wiki/Degree_(angle)" rel="noopener" target="_blank"&gt;degrees&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;So how can I write the code so that it the internals work in the &amp;quot;right&amp;quot; angle units for their work, but I have the option to define things as degrees or as radians to suit my thinking?&lt;/p&gt;
-&lt;h2&gt;The traditional approach&lt;/h2&gt;
-&lt;p&gt;A lot of code which does units conversions provides helper methods to convert from one set of units to another. Something like:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public void CalculateSomeAngles(double radians)
-{
-    ...
-}
-
-var radians = Math.ToRadians(45);
-CalculateSomeAngles(radians);
-&lt;/pre&gt;
-&lt;p&gt;That's fine – but it's not really very type safe. Because the method takes a double, you can supply anything. And there's not really anything stopping you accidentally supplying degrees instead of radians.&lt;/p&gt;
-&lt;p&gt;So what else could you do?&lt;/p&gt;
-&lt;h2&gt;Types to the rescue&lt;/h2&gt;
-&lt;p&gt;So what if our CalculateSomeAngles() method was explicit about the units it expected by expressing a type?&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;
-public struct Radians
-{
-    public double Value { get; private set; }
-	
-    public Radians(double value)
-    {
-        Value = value;
-    }
-}
-
-public void CalculateSomeAngles(Radians radians)
-{
-    ...
-}
-
-CalculateSomeAngles(new Radians(1.1));
-&lt;/pre&gt;
-&lt;p&gt;With a wrapper type to be explicit about the units, it's harder to make a mistake. And we can also use this pattern to allow you to pass whatever units you prefer. We can define a struct for degrees too:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public struct Degrees
-{
-    public double Value { get; private set; }
-	
-    public Degrees(double value)
-    {
-        Value = value;
-    }
-}
-&lt;/pre&gt;
-&lt;p&gt;But the magic here is adding some operators to allow the compiler to automatically do some conversions for us. If we add a &amp;quot;to degrees&amp;quot; conversion to the radians struct and the equivalent degrees struct:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public struct Degrees
-{
-    public static implicit operator Radians(Degrees d)
-    {
-        return new Radians(d.Value * Math.PI / 180);
-    }
-}
-
-public struct Radians
-{
-    public static implicit operator Degrees(Radians r)
-    {
-        return new Degrees(r.Value * 180 / Math.PI);
-    }
-}
-&lt;/pre&gt;
-&lt;p&gt;Then the compiler no longer cares which you pass – it will just convert to the one it needs in any situation...&lt;/p&gt;
-&lt;p&gt;So you can write:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;CalculateSomeAngles(new Radians(1.1));
-CalculateSomeAngles(new Degrees(72));
-&lt;/pre&gt;
-&lt;p&gt;And now I don't have to worry about my units.&lt;/p&gt;
-&lt;h2&gt;And there's more...&lt;/h2&gt;
-&lt;p&gt;Using this for unit conversion is one very simple usage for this approach. (And in fact, one you could argue can be solved in other ways) The other place I found this sort of pattern helpful was in implementation animations. I wanted to enable a situation where most (if not all) of the properties of objects in a scene could be animated. Broadly that means &amp;quot;animate the values of a double&amp;quot; or &amp;quot;animate a matrix&amp;quot;. And in both cases the implicit conversions idea can help.&lt;/p&gt;
-&lt;p&gt;The pattern I ended up with for animation was that it needed a mechanism to set which frame is being rendered, and a mechanism to get the value for this point. Something like:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public interface IAnimateable&amp;lt;T&amp;gt;
-{
-    T Value { get; }
-    void SetFrame(int thisFrame, int frameCount);
-}
-&lt;/pre&gt;
-&lt;p&gt;So if we have a material with &amp;quot;shinyness&amp;quot; that can be amimated, we can replace the normal &lt;code&gt;double&lt;/code&gt;-typed property with something which exposes this interface, and when the material gets initialised for a specific frame we just pass that data down to the animateable properties:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class PhongMaterial
-{
-    ....
-    public IAnimateable&amp;lt;double&amp;gt; Shinyness { get; init ; }
-
-    public void SetFrame(int thisFrame, int frameCount)
-    {
-        ....
-        Shinyness.SetFrame(thisFrame, frameCount);
-        ....
-    }
-
-    ....
-}
-&lt;/pre&gt;
-&lt;p&gt;And we can have a whatever implementations of this animatable double we like. So to move between 1 and 100, we might declare something like:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;var someShape = new Sphere() {
-    Material = new PhongMaterial() {
-        Shinyness = new AnimatedRange(1, 100)
-    }
-};
-&lt;/pre&gt;
-&lt;p&gt;But the side effect of doing this is that when we don't need an animated value we still have to pass an object for that value:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;var someShape = new Sphere() {
-    Material = new PhongMaterial() {
-        Shinyness = new StaticValue(25)
-    }
-};
-&lt;/pre&gt;
-&lt;p&gt;But the trick above with implicit conversions can save us some typing here. The definition for the static value can help:&lt;/p&gt;
-&lt;pre data-enlighter-highlight="14,15,16,17" data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class StaticValue : IAnimateable&amp;lt;double&amp;gt;
-{
-    public double Value { get; private set; }
-
-    public StaticValue(double value)
-    {
-        Value = value;
-    }
-
-    public void SetFrame(int thisFrame, int frameCount)
-    {
-    }
-
-    public static implicit operator StaticValue(double value)
-    {
-        return new StaticValue(value);
-    }
-}
-&lt;/pre&gt;
-&lt;p&gt;And now a value which doesn't animate can be declared as:&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;var someShape = new Sphere() {
-    Material = new PhongMaterial() {
-        Shinyness = 25
-    }
-};
-&lt;/pre&gt;
-&lt;p&gt;This pattern has ended up very useful for both simple scene properties like above, and for more complex Matrix properties for transformations.&lt;/p&gt;
-</content>
-		<summary>&lt;p&gt;There are bits of the C# language that we don't think about too much when writing websites – and implicit conversions are one of those things. But while I've been messing about with some ray-tracing code in evenings recently, I found a couple of examples they patterns they can be a help with...&lt;/p&gt;</summary>
 	</entry>
 </feed>
