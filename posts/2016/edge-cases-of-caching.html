@@ -47,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:13 -->
+		<!-- 23/01/2022 11:04:08 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -146,21 +146,21 @@
 					<p>Recently I was doing some performance tuning for a site, and noticed that there were some fairly high-effort calls required in layout code that couldn't be moved out to a component. For example, how can you optimise code to calculate attributes that go into the
 						<code>&lt;html&gt;</code>
 						element? I was looking at code where extension methods were injecting this data:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><!DOCTYPE html>
-<html lang="@Html.CurrentLanguage()" @Html.TextDirection()>
-  <head>
-    <!-- metadata components etc. go here -->
-  </head>
-  <body>
-    <!-- placeholders and body markup -->
-  </body>
-</html> 
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;!DOCTYPE html&gt;
+&lt;html lang="@Html.CurrentLanguage()" @Html.TextDirection()&gt;
+  &lt;head&gt;
+    &lt;!-- metadata components etc. go here --&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;!-- placeholders and body markup --&gt;
+  &lt;/body&gt;
+&lt;/html&gt; 
 
 					</pre>
 					<p>Now layouts are never cached by Sitecore, so these extension method calls will always run. What can be done to speed them up?</p>
 					<p>The pattern I decided to experiment with was to add these bits of data into the HTML cache with some custom code. That means the expensive bit of these calls only gets made once, but the cached values will still get cleared out by publishing operations - ensuring that pages will be updated to match any content changes.</p>
 					<p>There were a number of these extension methods in the code which could benefit from being cached, so to try and write one bit of code which could be reused for each of these methods I added helper function which each of the extensions could use:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private static string htmlCacheable(string key, Func<string> dataFn)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private static string htmlCacheable(string key, Func&lt;string&gt; dataFn)
 {
     string value = Sitecore.Context.Site.SiteInfo.HtmlCache.GetHtml(key);
 
@@ -188,7 +188,7 @@
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CurrentLanguage(this HtmlHelper html)
 {
     string key = "layout::language";
-    Func<string> dataFn = () =>
+    Func&lt;string&gt; dataFn = () =&gt;
     {
         // code to calculate the right value
         return value;
@@ -202,7 +202,7 @@
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CalculateCorrectSiteLogoMarkup(this HtmlHelper html, int width, int height)
 {
     string key = string.Format("layout::logo|width={0}|height={1}", width, height);
-    Func<string> dataFn = () =>
+    Func&lt;string&gt; dataFn = () =&gt;
     {
         // code to calculate the right value
         return value;

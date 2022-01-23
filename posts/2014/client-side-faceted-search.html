@@ -49,7 +49,7 @@ Having finally had a chance to work out a basic pattern for <a href=&quot;/posts
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:10 -->
+		<!-- 23/01/2022 11:04:06 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -164,18 +164,18 @@ Having finally had a chance to work out a basic pattern for <a href=&quot;/posts
 					</p>
 					<p>We need a block of UI that contains the set of filters, and a list of the results that were generated.</p>
 					<p>Because the HTML won't include any actual data when it is downloaded from the server, we also need to have some "loading" placeholders as well:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><body>
-    <h1>Search TShirts</h1>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;body&gt;
+    &lt;h1&gt;Search TShirts&lt;/h1&gt;
 
-    <form id="filters">
-        <input type="hidden" id="configID" value="{027184E8-8007-49A2-B14C-1D02B766FE55}" />
-        <div class="loading">-- Loading --</div>
-    </form>
+    &lt;form id="filters"&gt;
+        &lt;input type="hidden" id="configID" value="{027184E8-8007-49A2-B14C-1D02B766FE55}" /&gt;
+        &lt;div class="loading"&gt;-- Loading --&lt;/div&gt;
+    &lt;/form&gt;
 
-    <ul id="results">
-        <li class="loading">-- Loading --</li>
-    </ul>
-</body>
+    &lt;ul id="results"&gt;
+        &lt;li class="loading"&gt;-- Loading --&lt;/li&gt;
+    &lt;/ul&gt;
+&lt;/body&gt;
 
 					</pre>
 					<p>The
@@ -216,10 +216,10 @@ public SearchConfiguration GetConfig(string configID)
         if (!string.IsNullOrEmpty(facets))
         {
             result.Filters = facets.Split('|')
-                .Select(id => Sitecore.Context.Database.GetItem(id))
-                .Select(itm => new FilterConfig() { DisplayName = itm.DisplayName, FieldName = itm.Fields["SearchIndexField"].Value })
-                .Where(fc => !string.IsNullOrWhiteSpace(fc.FieldName) && !string.IsNullOrWhiteSpace(fc.DisplayName))
-                .Select(fc => { fc.FieldName = fc.FieldName.ToLower(); return fc; })
+                .Select(id =&gt; Sitecore.Context.Database.GetItem(id))
+                .Select(itm =&gt; new FilterConfig() { DisplayName = itm.DisplayName, FieldName = itm.Fields["SearchIndexField"].Value })
+                .Where(fc =&gt; !string.IsNullOrWhiteSpace(fc.FieldName) &amp;&amp; !string.IsNullOrWhiteSpace(fc.DisplayName))
+                .Select(fc =&gt; { fc.FieldName = fc.FieldName.ToLower(); return fc; })
                 .ToArray();
         }
     }
@@ -261,9 +261,9 @@ function getConfig() {
     for (i in config) {
         var filter = config[i];
 
-        var block = $('<div>');
-        var span = $('<span class="fieldName">' + filter.DisplayName + '</span>');
-        var select = $('<select>').attr({ id: filter.FieldName });
+        var block = $('&lt;div&gt;');
+        var span = $('&lt;span class="fieldName"&gt;' + filter.DisplayName + '&lt;/span&gt;');
+        var select = $('&lt;select&gt;').attr({ id: filter.FieldName });
 
         span.appendTo(block);
         select.appendTo(block);
@@ -350,8 +350,8 @@ function collateFilterData(fn) {
 					<p>On the server side, again we need some simple classes for the return data, and similar code to the old version of the code to run the search. The server receives the facet filter values from the client request, transforms them into a Lucene query, runs it and then constructs the result set:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SearchResults
 {
-    public IEnumerable<FilterData> Filters { get; set; }
-    public IEnumerable<Result> Results { get; set; }
+    public IEnumerable&lt;FilterData&gt; Filters { get; set; }
+    public IEnumerable&lt;Result&gt; Results { get; set; }
     public bool Error { get; set; }
 }
 
@@ -363,7 +363,7 @@ public class Result
 
 [WebMethod]
 [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-public SearchResults Search(Dictionary<string,object> filterValues)
+public SearchResults Search(Dictionary&lt;string,object&gt; filterValues)
 {
     SearchResults retVal = new SearchResults();
 
@@ -376,7 +376,7 @@ public SearchResults Search(Dictionary<string,object> filterValues)
     return retVal;
 }
 
-private BooleanQuery buildQuery(Dictionary<string, object> filterValues)
+private BooleanQuery buildQuery(Dictionary&lt;string, object&gt; filterValues)
 {
     BooleanQuery query = new BooleanQuery();
 
@@ -405,20 +405,20 @@ private SearchResultCollection runQuery(BooleanQuery query)
     }
 }
 
-private IEnumerable<FilterData> buildFilterData(Dictionary<string, object> filterValues, SearchResultCollection results)
+private IEnumerable&lt;FilterData&gt; buildFilterData(Dictionary&lt;string, object&gt; filterValues, SearchResultCollection results)
 {
-    var filters = new List<FilterData>();
+    var filters = new List&lt;FilterData&gt;();
 
     foreach (var kvp in filterValues)
     {
-        var options = results.Select(r => r.Document.GetValues(kvp.Key))
-                    .Where(v => v != null && v.Length > 0)
-                    .SelectMany(v => v)
+        var options = results.Select(r =&gt; r.Document.GetValues(kvp.Key))
+                    .Where(v =&gt; v != null &amp;&amp; v.Length &gt; 0)
+                    .SelectMany(v =&gt; v)
                     .Distinct()
-                    .Select(v => Sitecore.Context.Database.GetItem(ShortID.Parse(v).ToID()))
-                    .Select(v => new ListItem(v.DisplayName, v.ID.ToShortID().ToString().ToLower()))
-                    .Select(li => { li.Selected = li.Value == kvp.Value.ToString(); return li;})
-                    .OrderBy(i => i.Text);
+                    .Select(v =&gt; Sitecore.Context.Database.GetItem(ShortID.Parse(v).ToID()))
+                    .Select(v =&gt; new ListItem(v.DisplayName, v.ID.ToShortID().ToString().ToLower()))
+                    .Select(li =&gt; { li.Selected = li.Value == kvp.Value.ToString(); return li;})
+                    .OrderBy(i =&gt; i.Text);
 
         FilterData fd = new FilterData();
         fd.FieldName = kvp.Key;
@@ -430,11 +430,11 @@ private IEnumerable<FilterData> buildFilterData(Dictionary<string, object> filte
     return filters;
 }
 
-private IEnumerable<Result> buildResults(SearchResultCollection results)
+private IEnumerable&lt;Result&gt; buildResults(SearchResultCollection results)
 {
     return results
-        .Select(r => r.GetObject<Item>())
-        .Select(i => new Result() { DisplayName = i.DisplayName })
+        .Select(r =&gt; r.GetObject&lt;Item&gt;())
+        .Select(i =&gt; new Result() { DisplayName = i.DisplayName })
         .ToList();
 }
 
@@ -451,11 +451,11 @@ private IEnumerable<Result> buildResults(SearchResultCollection results)
 
         var ddl = $('#' + dropdownValue.FieldName);
         ddl.find('option').remove();
-        ddl.append('<option value="">All ' + dropdownValue.FieldName + '</option>');
+        ddl.append('&lt;option value=""&gt;All ' + dropdownValue.FieldName + '&lt;/option&gt;');
 
         for (v in dropdownValue.Values) {
             var li = dropdownValue.Values[v];
-            ddl.append($("<option></option>")
+            ddl.append($("&lt;option&gt;&lt;/option&gt;")
                 .attr("value", li.Value)
                 .attr("selected", li.Selected)
                 .text(li.Text));
@@ -472,7 +472,7 @@ function bindResults(resultValues) {
     for (i in resultValues) {
         var resultValue = resultValues[i];
         resultDiv
-            .append($("<li></li>")
+            .append($("&lt;li&gt;&lt;/li&gt;")
             .text(resultValue.DisplayName));
     }
 

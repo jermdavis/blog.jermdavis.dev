@@ -50,7 +50,7 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:04 -->
+		<!-- 23/01/2022 11:04:00 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -151,15 +151,15 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 					<p>Changing how Sitecore's internal configuration framework processes config files is a bit of a tall order, so I decided to try an experiment by making this part of my deployment process. Since picking and choosing config at runtime wasn't practical, I thought I'd try to have a single configuration file where you could mark which sections were not relevant to particular server role. The release process could then examine these as it dealt with the deployment and remove configuration that was not needed...</p>
 					<h2>Markingup the config</h2>
 					<p>Since the configurtaion data for a site is XML, the most obvious way to address the need to remove bits of config that aren't relevant to a particular server is to declare a new namespace and add a "RemoveOn" attribute to any element that's not needed in certain places. So a very simple patch file might look like this:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration xmlns:role="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/">
-  <sitecore>
-    <settings>
-      <setting name="CD-Only-Setting" role:RemoveOn="CM">
-        <patch:attribute name="value">some value</patch:attribute>
-      </setting>
-    </settings
-  </sitecore>
-</configuration>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:role="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+  &lt;sitecore&gt;
+    &lt;settings&gt;
+      &lt;setting name="CD-Only-Setting" role:RemoveOn="CM"&gt;
+        &lt;patch:attribute name="value"&gt;some value&lt;/patch:attribute&gt;
+      &lt;/setting&gt;
+    &lt;/settings
+  &lt;/sitecore&gt;
+&lt;/configuration&gt;
 
 					</pre>
 					<p>Using a namespace ensures our changes to the XML won't clash with anything else that's in the file – though it does make processing it a bit trickier, as I'll get to later.</p>
@@ -219,25 +219,25 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 						attribute, across the whole document. For each element found, it checks if that value is contained in the set of roles passed in. If there's a match, the entire element can be removed. However if there isn't a match then all that needs removing is the custom attribute.</p>
 					<p>And finally, once all the changes have been made, the file can be saved.</p>
 					<p>So running this code against the sample above on a "CM" sever gets:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration xmlns:role="RemoveOn" xmlns:patch="http://www.sitecore.net/xmlconfig/">
-  <sitecore>
-    <settings>
-    </settings>
-  </sitecore>
-</configuration>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:role="RemoveOn" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+  &lt;sitecore&gt;
+    &lt;settings&gt;
+    &lt;/settings&gt;
+  &lt;/sitecore&gt;
+&lt;/configuration&gt;
 
 					</pre>
 					<h2>Tidying up</h2>
 					<p>In theory that should be enough to sort out the config, but in the real world life is actually a bit trickier. If you're generating the config files you deploy using XDT in your Visual Studio project than you can end up with your custom namespace messed up. You may see something like this after your XDT transform completes:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration xmlns:d3p1="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/">
-  <sitecore>
-    <settings>
-      <setting name="CD-Only-Setting" d3p1:RemoveOn="CM">
-        <patch:attribute name="value">some value</patch:attribute>
-      </setting>
-    </settings
-  </sitecore>
-</configuration>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:d3p1="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+  &lt;sitecore&gt;
+    &lt;settings&gt;
+      &lt;setting name="CD-Only-Setting" d3p1:RemoveOn="CM"&gt;
+        &lt;patch:attribute name="value"&gt;some value&lt;/patch:attribute&gt;
+      &lt;/setting&gt;
+    &lt;/settings
+  &lt;/sitecore&gt;
+&lt;/configuration&gt;
 
 					</pre>
 					<p>That's still perfectly valid XML, but Sitecore doesn't like having any of this left in the config files. So any left-over custom namespace stuff needs to be tidied up. Normally XML processing would be the right way to go about this, but because the custom namespace ends up with an unpredictable name if you run XDT, plain old text processing ends up easier:</p>

@@ -47,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:16 -->
+		<!-- 23/01/2022 11:04:09 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -168,12 +168,12 @@
 
         if(!string.IsNullOrWhiteSpace(nextLink))
         {
-            markup.AppendFormat("<link rel=\"next\" href=\"{0}\"/>", nextLink);
+            markup.AppendFormat("&lt;link rel=\"next\" href=\"{0}\"/&gt;", nextLink);
         }
 
         if(!string.IsNullOrWhiteSpace(prevLink))
         {
-            markup.AppendFormat("<link rel=\"prev\" href=\"{0}\"/>", prevLink);
+            markup.AppendFormat("&lt;link rel=\"prev\" href=\"{0}\"/&gt;", prevLink);
         }
 
         HtmlString html = new HtmlString(markup.ToString());
@@ -219,7 +219,7 @@
 @{
     Layout = null;
 }
-<!-- other metadata fields -->
+&lt;!-- other metadata fields --&gt;
 @CommunicationConduit.ReceiveMetadata()
 
 					</pre>
@@ -243,7 +243,7 @@
     {
         XElement device = args.Result
             .Elements("d")
-            .Where(e => e.Attribute("id").Value == DeviceID)
+            .Where(e =&gt; e.Attribute("id").Value == DeviceID)
             .FirstOrDefault();
 
         if (device != null)
@@ -261,17 +261,17 @@
 
 					</pre>
 					<p>This just manually adds a rendering to the end of the Layout XML when it's run. It can be injected into the end of the pipeline with a config patch. Note that you need to make sure this patch runs after any of the MVC-related patches get included:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><?xml version="1.0" encoding="utf-8" ?>
-<configuration xmlns:patch="http://www.sitecore.net/xmlconfig/">
-  <sitecore>
-    <pipelines>
-      <mvc.getXmlBasedLayoutDefinition>
-        <processor patch:after="processor[@type='Sitecore.Mvc.ExperienceEditor.Pipelines.Response.GetXmlBasedLayoutDefinition.SetLayoutContext, Sitecore.Mvc.ExperienceEditor']"
-                   type="ExampleCode.MetadataInjector, ExampleCode.CrossComponentComms"/>
-      </mvc.getXmlBasedLayoutDefinition>
-    </pipelines>
-  </sitecore>
-</configuration>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+  &lt;sitecore&gt;
+    &lt;pipelines&gt;
+      &lt;mvc.getXmlBasedLayoutDefinition&gt;
+        &lt;processor patch:after="processor[@type='Sitecore.Mvc.ExperienceEditor.Pipelines.Response.GetXmlBasedLayoutDefinition.SetLayoutContext, Sitecore.Mvc.ExperienceEditor']"
+                   type="ExampleCode.MetadataInjector, ExampleCode.CrossComponentComms"/&gt;
+      &lt;/mvc.getXmlBasedLayoutDefinition&gt;
+    &lt;/pipelines&gt;
+  &lt;/sitecore&gt;
+&lt;/configuration&gt;
 
 					</pre>
 					<p>But what do you do if your components are in different placeholders?</p>
@@ -297,23 +297,23 @@
     HtmlString main = Html.Sitecore().Placeholder("MAIN");
     HtmlString head = Html.Sitecore().Placeholder("HEAD");
 }
-<!DOCTYPE html>
-<html>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
 
-<head>
-    <title>@Html.Sitecore().Field("title", new { DisableWebEdit = true })</title>
+&lt;head&gt;
+    &lt;title&gt;@Html.Sitecore().Field("title", new { DisableWebEdit = true })&lt;/title&gt;
     @head
-</head>
+&lt;/head&gt;
 
-<body>
-    <h1>@Html.Sitecore().Field("title")</h1>
-    <h2>Cross component comms layout</h2>
-    <div>
+&lt;body&gt;
+    &lt;h1&gt;@Html.Sitecore().Field("title")&lt;/h1&gt;
+    &lt;h2&gt;Cross component comms layout&lt;/h2&gt;
+    &lt;div&gt;
         @main
-    </div>
-</body>
+    &lt;/div&gt;
+&lt;/body&gt;
 
-</html>
+&lt;/html&gt;
 
 					</pre>
 					<p>Now Razor will run the "MAIN" placeholder's component before "HEAD" placeholder's – but it will still render the results in the right order. And that means our components can exchange data correctly.</p>

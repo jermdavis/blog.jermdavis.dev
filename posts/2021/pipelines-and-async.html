@@ -46,7 +46,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:26 -->
+		<!-- 23/01/2022 11:04:17 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -143,7 +143,7 @@
 					</p>
 					<h2>Async gets everywhere...</h2>
 					<p>In my original code I had a basic pipeline step pattern that could map an input to an output:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep<INPUT, OUTPUT>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep&lt;INPUT, OUTPUT&gt;
 {
 	OUTPUT Process(INPUT input);
 }
@@ -152,9 +152,9 @@
 					<p>If you want to make the
 						<code>Process()</code>
 						method be awaitable, then you have to declare that method slightly differently:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep<INPUT, OUTPUT>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;INPUT, OUTPUT&gt;
 {
-	Task<OUTPUT> Process(INPUT input);
+	Task&lt;OUTPUT&gt; Process(INPUT input);
 }
 
 					</pre>
@@ -176,18 +176,18 @@
 						<code>Task&lt;INPUT&gt;</code>
 						too? That solves our order-of-steps issue because every step can have the same signature:</p>
 					<p>So the basic definition becomes:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep<INPUT, OUTPUT>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;INPUT, OUTPUT&gt;
 {
-	Task<OUTPUT> Process(Task<INPUT> input);
+	Task&lt;OUTPUT&gt; Process(Task&lt;INPUT&gt; input);
 }
 
 					</pre>
 					<p>Based on that, we need to tweak the definitions of the abstract pipeline based on these steps, to follow the same pattern:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline<TIn, TOut> : IAsyncPipelineStep<TIn, TOut>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
 {
-	public Func<Task<TIn>, Task<TOut>> _pipelineSteps { get; protected set; }
+	public Func&lt;Task&lt;TIn&gt;, Task&lt;TOut&gt;&gt; _pipelineSteps { get; protected set; }
 
-	public Task<TOut> ProcessAsync(Task<TIn> Input)
+	public Task&lt;TOut&gt; ProcessAsync(Task&lt;TIn&gt; Input)
 	{
 		return _pipelineSteps(Input);
 	}
@@ -197,7 +197,7 @@
 					<p>And similarly adjust the helper method which allows us to compose the steps together:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class AsyncPipelineStepExtensions
 {
-	public static Task<TOut> Step<TIn, TOut>(this Task<TIn> Input, IAsyncPipelineStep<TIn, TOut> Step)
+	public static Task&lt;TOut&gt; Step&lt;TIn, TOut&gt;(this Task&lt;TIn&gt; Input, IAsyncPipelineStep&lt;TIn, TOut&gt; Step)
 	{
 		return Step.ProcessAsync(Input);
 	}
@@ -205,11 +205,11 @@
 
 					</pre>
 					<p>That gives us a basis to try defining some steps... How about an async fetch for some HTML from a website?</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep<Uri, string>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt;
 {
 	private static readonly HttpClient _client = new HttpClient();
 	
-	public async Task<string> ProcessAsync(Task<Uri> Input)
+	public async Task&lt;string&gt; ProcessAsync(Task&lt;Uri&gt; Input)
 	{
 		var uri = await Input;
 		return await _client.GetStringAsync(uri);
@@ -230,9 +230,9 @@
 						</b>
 					</p>
 					<p>And writing to disk can be async too:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep<string, string>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
-	public async Task<string> ProcessAsync(Task<string> Input)
+	public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input)
 	{
 		var data = await Input;
 		var fileName = System.IO.Path.GetTempFileName();
@@ -246,11 +246,11 @@
 					</pre>
 					<p>This is slightly different, because we're awaiting something which doesn't return data – but it's broadly the same pattern.</p>
 					<p>And we can compose those together into a pipeline:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline<Uri, string>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt;
 {
 	public ExampleAsyncPipeline()
 	{
-		_pipelineSteps = input => input
+		_pipelineSteps = input =&gt; input
 			.Step(new HttpFetchAsyncStep())
 			.Step(new DiskWriteAsyncStep());
 		
@@ -283,16 +283,16 @@
 						call for us. We can amend the abstract
 						<code>AsyncPipeline</code>
 						to do this easily:</p>
-					<pre data-enlighter-highlight="10,11,12,13,14" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline<TIn, TOut> : IAsyncPipelineStep<TIn, TOut>
+					<pre data-enlighter-highlight="10,11,12,13,14" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
 {
-	public Func<Task<TIn>, Task<TOut>> _pipelineSteps { get; protected set; }
+	public Func&lt;Task&lt;TIn&gt;, Task&lt;TOut&gt;&gt; _pipelineSteps { get; protected set; }
 
-	public Task<TOut> ProcessAsync(Task<TIn> Input)
+	public Task&lt;TOut&gt; ProcessAsync(Task&lt;TIn&gt; Input)
 	{
 		return _pipelineSteps(Input);
 	}
 
-	public Task<TOut> ProcessAsync(TIn Input)
+	public Task&lt;TOut&gt; ProcessAsync(TIn Input)
 	{
 		var inputTask = Task.FromResult(Input);
 		return _pipelineSteps(inputTask);

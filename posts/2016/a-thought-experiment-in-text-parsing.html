@@ -51,7 +51,7 @@ So I thought I'd invent an idea for an experimental project to test this out..."
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:05 -->
+		<!-- 23/01/2022 11:04:00 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -218,7 +218,7 @@ public void ItemIDParsesValidID()
 					<p>So what code do we need to make these tests pass? Well, Sprache tends to have its parsing methods defined as statics to allow composing them easily. So we'll need a static class to hold our parsing code, and it's going to need our "ItemPath" parser from the test above:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class CommandTextParser
 {
-    public static Parser<ItemIdenitfier> PathOrID = ??
+    public static Parser&lt;ItemIdenitfier&gt; PathOrID = ??
 }
 
 					</pre>
@@ -233,7 +233,7 @@ public void ItemIDParsesValidID()
 					<p>So with the boilerplate out of the way, what do we actually want to do with the parsing? In English, we want to parse "A path, or a GUID, and maybe any surrounding whitespace". Sprache makes that pretty easy to express, because you can build more complex expressions out of simpler ones:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class CommandTextParser
 {
-    public static Parser<ItemIdenitfier> PathOrID =
+    public static Parser&lt;ItemIdenitfier&gt; PathOrID =
         ItemPath
         .XOr(ItemId)
         .Token();
@@ -244,7 +244,7 @@ public void ItemIDParsesValidID()
 						<code>Token()</code>
 						method is shorthand for telling Sprache "ignore any surrounding whitespace".</p>
 					<p>The Item ID parser is the simpler of the two, so lets start with that. A simplestic definition of a GUID is "an opening curly brace, followed by a string of letters, numbers or hyphens, and ending with a closing curly brace". That's not a particularly rigerous definition – but we can live with that for the moment. A parser for that can be written as:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser<ItemIdenitfier> ItemId =
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ItemIdenitfier&gt; ItemId =
     from openBrace in Parse.Char('{')
     from id in Parse.LetterOrDigit.Or(Parse.Char('-')).Repeat(36).Text()
     from closeBrase in Parse.Char('}')
@@ -263,22 +263,22 @@ public void ItemIDParsesValidID()
 					<p>You could write a more rigerous version of this that makes sure that the right pattern of characters and dashes is presented - but I'll leave that as an exercise to the reader...</p>
 					<p>It's way more readable than the equivalent regular expression, eh?</p>
 					<p>Parsing a path could be done by saying "A path is any string made up of slashes and valid item name characters" but that probably allows paths with double slashes, which don't seem relevant to a Sitecore solution. Instead, the definition is probably that a path is "One or more sets of ‘A slash followed by some valid item name characters'". Following the pattern of building up complex behaviour from simpler parsers, we can define an item name as:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IEnumerable<char> InvalidNameCharacters = new List<char> { '\\', '/', ':', '?', '"', '<', '>', '|', '[', ']', ' ', '!', '(', ')', '%', '#', '@', '!', '£', '$', '^', '&', ';', '~' };
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IEnumerable&lt;char&gt; InvalidNameCharacters = new List&lt;char&gt; { '\\', '/', ':', '?', '"', '&lt;', '&gt;', '|', '[', ']', ' ', '!', '(', ')', '%', '#', '@', '!', '£', '$', '^', '&amp;', ';', '~' };
 
-public static Parser<string> ItemName =
+public static Parser&lt;string&gt; ItemName =
     Parse.CharExcept(InvalidNameCharacters).AtLeastOnce().Text().Token();
 
 					</pre>
 					<p>We declare a set of characters that aren't valid in names (your ideal set may vary – that's just an example) and we say that a name is "a string containing anything but these characters".</p>
 					<p>From there, we can say that one segment of a path is a slash followed by a name:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser<string> PathSegment =
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;string&gt; PathSegment =
     from slash in Parse.Chars(new char[] { '\\', '/' })
     from name in ItemName
     select name;
 
 					</pre>
 					<p>And then we can define an entire path in the following form:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser<ItemIdenitfier> ItemPath =
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ItemIdenitfier&gt; ItemPath =
     from parts in (
         from firstSegment in PathSegment
         from otherSegments in PathSegment.Many()
@@ -316,7 +316,7 @@ public static Parser<string> ItemName =
 
 					</pre>
 					<p>Parsing the data for that is now pretty easy:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser<ICommand> DeleteCommand =
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; DeleteCommand =
     from cmd in Parse.IgnoreCase("delete").Token()
     from item in PathOrID
     select new DeleteCommand() { Item = item };
@@ -412,7 +412,7 @@ public void ValidDeleteWorks()
 					<p>Easy, huh?</p>
 					<h2>Moving items</h2>
 					<p>Creating the move command is pretty similar - it just needs to parse out two item identifiers because you need the item and the target folder:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser<ICommand> MoveCommand =
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; MoveCommand =
     from cmd in Parse.IgnoreCase("move").Token()
     from item in PathOrID
     from to in Parse.IgnoreCase("to").Token()
@@ -452,7 +452,7 @@ public void ValidDeleteWorks()
 					<p>Again we can write tests to validate both of these. (More of that later)</p>
 					<h2>Creating items</h2>
 					<p>The create command is a bit more complex. It needs to parse out a template identifer, a location and a name. Then it has to optionally parse any other field values that need setting. The parsing code for that is a bit more complex:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser<ICommand> CreateCommand =
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; CreateCommand =
     from cmd in Parse.IgnoreCase("create").Token()
     from template in PathOrID
     from named in Parse.IgnoreCase("named").Token()
@@ -463,11 +463,11 @@ public void ValidDeleteWorks()
         from with in Parse.IgnoreCase("with").Token()
         from fields in (
             from first in Field
-            from rest in Parse.Char(',').Token().Then(_ => Field).Many()
+            from rest in Parse.Char(',').Token().Then(_ =&gt; Field).Many()
             select first.Concatenate(rest))
         select fields
         ).Optional()
-    select new CreateCommand() { Template = template, Name = itemName, Location = location, Fields = fieldValues.GetOrElse(new List<Field>()) };
+    select new CreateCommand() { Template = template, Name = itemName, Location = location, Fields = fieldValues.GetOrElse(new List&lt;Field&gt;()) };
 
 					</pre>
 					<p>The first few bits, which parse out the type of command, the template, the name and path are all much as before. The more complex bit comes from parsing the optional set of field values.</p>
@@ -494,17 +494,17 @@ public void ValidDeleteWorks()
 						string where there are no spaces in the name of the field. But some fields do have spaces, hence it needs to be able to parse a quoted field name in the format
 						<code>Field Name"="value</code>
 						too. As above, we can do that by building up smaller parsers:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser<string> QuotedFieldName =
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;string&gt; QuotedFieldName =
     from openQuote in Parse.Char('"')
     from value in Parse.CharExcept('"').Many().Text()
     from closeQuote in Parse.Char('"')
     select value;
 
-public static Parser<string> UnquotedFieldName =
+public static Parser&lt;string&gt; UnquotedFieldName =
     from name in Parse.CharExcept(new char[] { '=', ' ' }).Many().Text()
     select name;
 
-public static Parser<Field> Field =
+public static Parser&lt;Field&gt; Field =
     from name in QuotedFieldName.XOr(UnquotedFieldName)
     from equalSign in Parse.Char('=').Token()
     from openQuote in Parse.Char('"')
@@ -531,7 +531,7 @@ public static Parser<Field> Field =
     public ItemIdenitfier Template { get; set; }
     public string Name { get; set; }
     public ItemIdenitfier Location { get; set; }
-    public IEnumerable<Field> Fields { get; set; }
+    public IEnumerable&lt;Field&gt; Fields { get; set; }
 
     public string Execute()
     {
@@ -572,7 +572,7 @@ public static Parser<Field> Field =
 					<p>And as before, tests can run against all these bits of code to verify they work correctly...</p>
 					<h2>Finally, parse any command</h2>
 					<p>Now we've got parsers for each of the individual commands, it's trivial to parse "any command":</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser<ICommand> Any =
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; Any =
     CreateCommand
     .XOr(MoveCommand)
     .XOr(DeleteCommand);

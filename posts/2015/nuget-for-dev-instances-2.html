@@ -47,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:23 -->
+		<!-- 23/01/2022 11:04:15 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -151,14 +151,14 @@
 					<p>The next step is to take the
 						<code>web.config</code>
 						file that we didn't move last week, and move it into the "Content" folder of the package project. Then you can add XDT files to update the web.config when the target project gets run. The key settings you need to update are the various folders that are configured:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><?xml version="1.0" encoding="utf-8"?>
-<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
-  <sitecore>
-    <sc.variable xdt:Transform="SetAttributes" xdt:Locator="Match(name)"  name="dataFolder" value="./data"/>
-    <sc.variable xdt:Transform="SetAttributes" xdt:Locator="Match(name)" name="mediaFolder" value="./upload"/>
-    <sc.variable xdt:Transform="SetAttributes" xdt:Locator="Match(name)" name="tempFolder" value="./temp"/>
-  </sitecore>  
-</configuration>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform"&gt;
+  &lt;sitecore&gt;
+    &lt;sc.variable xdt:Transform="SetAttributes" xdt:Locator="Match(name)"  name="dataFolder" value="./data"/&gt;
+    &lt;sc.variable xdt:Transform="SetAttributes" xdt:Locator="Match(name)" name="mediaFolder" value="./upload"/&gt;
+    &lt;sc.variable xdt:Transform="SetAttributes" xdt:Locator="Match(name)" name="tempFolder" value="./temp"/&gt;
+  &lt;/sitecore&gt;  
+&lt;/configuration&gt;
 
 					</pre>
 					<p>These paths need to be made relative, as these folders are are going to live under our website folder.</p>
@@ -167,12 +167,12 @@
 					<p>To do this, you need to rename the standard connection strings file to be
 						<code>ConnectionStrings.config.pp</code>
 						and then update its content a bit:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><?xml version="1.0" encoding="utf-8"?>
-<connectionStrings>
-  <add name="core" connectionString="Data Source=(LocalDB)\v11.0;Integrated Security=true;AttachDbFilename=|DataDirectory|\Sitecore.Core.mdf;Database=$rootnamespace$_Core" />
-  <add name="master" connectionString="Data Source=(LocalDB)\v11.0;Integrated Security=true;AttachDbFilename=|DataDirectory|\Sitecore.Master.mdf;Database=$rootnamespace$_Master" />
-  <add name="web" connectionString="Data Source=(LocalDB)\v11.0;Integrated Security=true;AttachDbFilename=|DataDirectory|\Sitecore.Web.mdf;Database=$rootnamespace$_Web" />
-</connectionStrings>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;connectionStrings&gt;
+  &lt;add name="core" connectionString="Data Source=(LocalDB)\v11.0;Integrated Security=true;AttachDbFilename=|DataDirectory|\Sitecore.Core.mdf;Database=$rootnamespace$_Core" /&gt;
+  &lt;add name="master" connectionString="Data Source=(LocalDB)\v11.0;Integrated Security=true;AttachDbFilename=|DataDirectory|\Sitecore.Master.mdf;Database=$rootnamespace$_Master" /&gt;
+  &lt;add name="web" connectionString="Data Source=(LocalDB)\v11.0;Integrated Security=true;AttachDbFilename=|DataDirectory|\Sitecore.Web.mdf;Database=$rootnamespace$_Web" /&gt;
+&lt;/connectionStrings&gt;
 
 					</pre>
 					<p>For each connection string the file needs to set the data source as LocalDB so that we can attach it automatically at runtime. It sets the path for the file to the
@@ -269,7 +269,7 @@
   Write-host "-- Source path for package: $source"
   Write-host "-- Dest path web project: $dest"
 
-  Write-Host "--> Performing copy of non-project files"
+  Write-Host "--&gt; Performing copy of non-project files"
   Copy-PackageFiles-Recursive $project $source $source $dest "-"
 }
 
@@ -293,18 +293,18 @@ $projectFolder = Split-Path -parent $project.FullName
 $source = Join-Path -path $installPath -childPath "SitecoreFiles"
 $dest = $projectFolder
 
-Write-Host "--> Performing copy of non-project files"
+Write-Host "--&gt; Performing copy of non-project files"
 Copy-PackageFiles-Recursive $project $source $source $dest "-"
 
-Write-Host "--> Making web.debug.config dependent on web.config"
+Write-Host "--&gt; Making web.debug.config dependent on web.config"
 $dbg = Join-Path -path $projectFolder -childPath "Web.Debug.config"
 $project.ProjectItems.Item("Web.config").ProjectItems.AddFromFile($dbg)
 
-Write-Host "--> Making web.release.config dependent on web.config"
+Write-Host "--&gt; Making web.release.config dependent on web.config"
 $rel = Join-Path -path $projectFolder -childPath "Web.Release.config"
 $project.ProjectItems.Item("Web.config").ProjectItems.AddFromFile($rel)
 
-Write-Host "--> Creating missing folders"
+Write-Host "--&gt; Creating missing folders"
 
 $ovr = Join-Path -path $projectFolder -childPath "sitecore\shell\override"
 if(-Not( Test-Path $ovr ))

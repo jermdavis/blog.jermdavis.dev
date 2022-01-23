@@ -47,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:07 -->
+		<!-- 23/01/2022 11:04:03 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -170,7 +170,7 @@
         return false;
     }
 
-    if (mapping.ViewAssembly.UsePhysicalViewsIfNewer && mapping.ViewAssembly.IsPhysicalFileNewer(virtualPath))
+    if (mapping.ViewAssembly.UsePhysicalViewsIfNewer &amp;&amp; mapping.ViewAssembly.IsPhysicalFileNewer(virtualPath))
     {
         // If the physical file on disk is newer and the user's opted in this behavior, serve it instead.
         return false;
@@ -182,7 +182,7 @@
 					<p>If the setting for
 						<code>UsePhysicalViewsIfNewer</code>
 						is true and the view file is newer then the logic will make use of the cshtml file instead of the data in the assembly when the view file is newer. The test for the age of the cshtml file takes place in this method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">internal static bool IsPhysicalFileNewer(string virtualPath, string baseVirtualPath, Lazy<DateTime> assemblyLastWriteTime)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">internal static bool IsPhysicalFileNewer(string virtualPath, string baseVirtualPath, Lazy&lt;DateTime&gt; assemblyLastWriteTime)
 {
     if (virtualPath.StartsWith(baseVirtualPath ?? String.Empty, StringComparison.OrdinalIgnoreCase))
     {
@@ -193,7 +193,7 @@
         }
 
         string path = HostingEnvironment.MapPath(virtualPath);
-        return File.Exists(path) && File.GetLastWriteTimeUtc(path) > assemblyLastWriteTime.Value;
+        return File.Exists(path) &amp;&amp; File.GetLastWriteTimeUtc(path) &gt; assemblyLastWriteTime.Value;
     }
     return false;
 }
@@ -208,25 +208,25 @@
 					<p>The simplest model I could come up with was to have a View Rendering which called
 						<code>HTML.Partial()</code>
 						in a loop, to simulate a complex set of nested partial views. With this as a parent view:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"><h2>Using Partials</h2>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">&lt;h2&gt;Using Partials&lt;/h2&gt;
 
-@for (int i = 0; i < 100; i++)
+@for (int i = 0; i &lt; 100; i++)
 {
     @Html.Partial("~/views/ViewPerformanceTest/SimpleSubView.cshtml")
 }
 
 					</pre>
 					<p>and this as the child partial view:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"><div>View: @DateTime.Now.Ticks</div>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">&lt;div&gt;View: @DateTime.Now.Ticks&lt;/div&gt;
 
 					</pre>
 					<p>In order to verify that the issue was not specific to binding the child views as partials, I also tried a variation of the parent view that bound the children with Sitecore's
 						<code>ViewRendering()</code>
 						method:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@using Sitecore.Mvc
-<h2>Using ViewRenderings</h2>
+&lt;h2&gt;Using ViewRenderings&lt;/h2&gt;
 
-@for (int i = 0; i < 100; i++)
+@for (int i = 0; i &lt; 100; i++)
 {
 	@Html.Sitecore().ViewRendering("/views/ViewPerformanceTest/SimpleSubView.cshtml")
 }

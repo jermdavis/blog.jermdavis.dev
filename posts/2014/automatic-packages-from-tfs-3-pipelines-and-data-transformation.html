@@ -47,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:07 -->
+		<!-- 23/01/2022 11:04:03 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -159,7 +159,7 @@
         _config = config;
     }
 
-    public PackageProject Run(IDictionary<string, SourceControlActions> input)
+    public PackageProject Run(IDictionary&lt;string, SourceControlActions&gt; input)
     {
         PipelineData pd = new PipelineData();
         pd.Configuration = _config;
@@ -186,7 +186,7 @@
 						- and it's this object that's handed to the individual pipeline components in turn. It's pretty trivial:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PipelineData
 {
-    public IDictionary<string, SourceControlActions> Input { get; set; }
+    public IDictionary&lt;string, SourceControlActions&gt; Input { get; set; }
     public PackageProject Output { get; set; }
     public ProjectConfiguration Configuration { get; set; }
 }
@@ -205,29 +205,29 @@
 					<h2>Revisiting configuration</h2>
 					<p>Since I made the first post in this series, I've revised the configuration approach for the code a bit. And one side effect of that is that have now moved most of the Sitecore-project-specific configuration into an external XML file which is read at runtime. That allows specifying assorted settings, but the key part for today is the pipeline components and their config.</p>
 					<p>An example of the XML for the config file might be:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration>
-  <input type="Sitecore.TFS.PackageGenerator.Inputs.TFSCommandLine,Sitecore.TFS.PackageGenerator"/>
-  <workingFolder>C:\ClientName</workingFolder>
-  <pipelineComponents>
-    <component type="Sitecore.TFS.PackageGenerator.PipelineComponents.SetPackageMetadata,Sitecore.TFS.PackageGenerator"/>
-    <component type="Sitecore.TFS.PackageGenerator.PipelineComponents.RemoveUnwantedItems,Sitecore.TFS.PackageGenerator"/>
-    <component type="Sitecore.TFS.PackageGenerator.PipelineComponents.RenameFiles,Sitecore.TFS.PackageGenerator"/>
-    <component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractFilesToDeploy,Sitecore.TFS.PackageGenerator"/>
-    <component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractItemsToDeploy,Sitecore.TFS.PackageGenerator"/>
-    <component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractBinariesToDeploy,Sitecore.TFS.PackageGenerator"/>
-    <component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractDeletionsToDeploy,Sitecore.TFS.PackageGenerator"/>
-  </pipelineComponents>
-  <settings>
-    <setting name="TFSCommandLine.ToolPath" value="C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE\TF.exe"/>
-    <setting name="SetPackageMetadata.PackageName" value="GeneratedPackage" />
-    <setting name="RemoveUnwantedItems.ExtensionsToIgnore" value=".scproj,.csproj,.sln,.vspscc,.tds,.sql,web.config,web.debug.config,web.release.config,packages.config"/>
-    <setting name="RemoveUnwantedItems.FoldersToIgnore" value="/deployments/,.TDS_Debug.,/css/includes/,/externalpackages/,/buildconfig/"/>
-    <setting name="RenameFiles.Extensions" value=".less|.css"/>
-    <setting name="ExtractFilesToDeploy.WebProjectFolder" value="/ClientName/ProjectName/Main/Source/Client.Project.Website"/>
-    <setting name="ExtractBinariesToDeploy.ProjectPathMap" value="Client.Project.Website|/bin/Client.Project.Website.dll|/bin/Client.Project.Website.pdb" />
-  </settings>
-  <output type="Sitecore.TFS.PackageGenerator.Outputs.SaveXmlToDisk,Sitecore.TFS.PackageGenerator"/>
-</configuration>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration&gt;
+  &lt;input type="Sitecore.TFS.PackageGenerator.Inputs.TFSCommandLine,Sitecore.TFS.PackageGenerator"/&gt;
+  &lt;workingFolder&gt;C:\ClientName&lt;/workingFolder&gt;
+  &lt;pipelineComponents&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.SetPackageMetadata,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.RemoveUnwantedItems,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.RenameFiles,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractFilesToDeploy,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractItemsToDeploy,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractBinariesToDeploy,Sitecore.TFS.PackageGenerator"/&gt;
+    &lt;component type="Sitecore.TFS.PackageGenerator.PipelineComponents.ExtractDeletionsToDeploy,Sitecore.TFS.PackageGenerator"/&gt;
+  &lt;/pipelineComponents&gt;
+  &lt;settings&gt;
+    &lt;setting name="TFSCommandLine.ToolPath" value="C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE\TF.exe"/&gt;
+    &lt;setting name="SetPackageMetadata.PackageName" value="GeneratedPackage" /&gt;
+    &lt;setting name="RemoveUnwantedItems.ExtensionsToIgnore" value=".scproj,.csproj,.sln,.vspscc,.tds,.sql,web.config,web.debug.config,web.release.config,packages.config"/&gt;
+    &lt;setting name="RemoveUnwantedItems.FoldersToIgnore" value="/deployments/,.TDS_Debug.,/css/includes/,/externalpackages/,/buildconfig/"/&gt;
+    &lt;setting name="RenameFiles.Extensions" value=".less|.css"/&gt;
+    &lt;setting name="ExtractFilesToDeploy.WebProjectFolder" value="/ClientName/ProjectName/Main/Source/Client.Project.Website"/&gt;
+    &lt;setting name="ExtractBinariesToDeploy.ProjectPathMap" value="Client.Project.Website|/bin/Client.Project.Website.dll|/bin/Client.Project.Website.pdb" /&gt;
+  &lt;/settings&gt;
+  &lt;output type="Sitecore.TFS.PackageGenerator.Outputs.SaveXmlToDisk,Sitecore.TFS.PackageGenerator"/&gt;
+&lt;/configuration&gt;
 
 					</pre>
 					<p>The two bits of this we're interested in for the moment is the
@@ -241,16 +241,16 @@
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ProjectConfiguration
 {
     public string WorkingFolder { get; private set; }
-    public IList<IPipelineComponent> PipelineComponents { get; private set; }
-    public IDictionary<string, string> Settings { get; private set; }
+    public IList&lt;IPipelineComponent&gt; PipelineComponents { get; private set; }
+    public IDictionary&lt;string, string&gt; Settings { get; private set; }
     public IInput Input { get; private set; }
     public IOutput Output { get; private set; }
     public ConsoleLog Log { get; private set; }
 
     private ProjectConfiguration()
     {
-        PipelineComponents = new List<IPipelineComponent>();
-        Settings = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+        PipelineComponents = new List&lt;IPipelineComponent&gt;();
+        Settings = new Dictionary&lt;string, string&gt;(StringComparer.CurrentCultureIgnoreCase);
         Log = new ConsoleLog();
     }
 
@@ -275,10 +275,10 @@
         XElement root = xml.Element("configuration");
 
         string inputType = root.Element("input").Attribute("type").Value;
-        Input = createInstance<IInput>(inputType);
+        Input = createInstance&lt;IInput&gt;(inputType);
 
         string outputType = root.Element("output").Attribute("type").Value;
-        Output = createInstance<IOutput>(outputType);
+        Output = createInstance&lt;IOutput&gt;(outputType);
 
         WorkingFolder = root.Element("workingFolder").Value;
 
@@ -303,7 +303,7 @@
 					<p>This uses the Linq-to-XML APIs to extract the appropriate elements, and process their values. (The non-prototype version of this code will need better error handling here, of course) In this version of the code, the input (getting changes from TFS) and the output (saving the package XML to disk) have been abstracted out to plugin types – with a view to perhaps supporting multiple input and output options in the future. the XML for both of these elements contains a .Net type descriptor – and the
 						<code>createInstance()</code>
 						method attempts to convert that from the string description into a valid object:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private T createInstance<T>(string type)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private T createInstance&lt;T&gt;(string type)
 {
     Type t = Type.GetType(type);
     System.Reflection.ConstructorInfo ci = t.GetConstructor(System.Type.EmptyTypes);

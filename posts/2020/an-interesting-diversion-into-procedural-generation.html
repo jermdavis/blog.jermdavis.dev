@@ -46,7 +46,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:06 -->
+		<!-- 23/01/2022 11:04:01 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -168,8 +168,8 @@
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class WaveFunction
 {
     public Tile[] Choices { get; set; }
-    public int Entropy => Choices.Where(t => t != null).Count();
-    public bool IsResolved => Entropy == 1;
+    public int Entropy =&gt; Choices.Where(t =&gt; t != null).Count();
+    public bool IsResolved =&gt; Entropy == 1;
 }
 
 					</pre>
@@ -203,9 +203,9 @@
     {
         get
         {
-            for (int x = 0; x < Width; x++)
+            for (int x = 0; x &lt; Width; x++)
             {
-                for (int y = 0; y < Height; y++)
+                for (int y = 0; y &lt; Height; y++)
                 {
                     var cell = Cells[x, y];
                     if (!cell.IsResolved)
@@ -229,9 +229,9 @@
         Cells = new WaveFunction[Width, Height];
         Tileset = tileset;
 
-        for (int x = 0; x < Width; x++)
+        for (int x = 0; x &lt; Width; x++)
         {
-            for (int y = 0; y < Height; y++)
+            for (int y = 0; y &lt; Height; y++)
             {
                 var waveFunction = new WaveFunction();
                 waveFunction.Choices = tileset.Fetch();
@@ -248,10 +248,10 @@
 					<p>So each update cycle starts with finding the lowest entropy wavefunction to process, and picks randomly if there are multiple choices:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public Point FindLowEntropyWaveFunction()
 {
-    var currentTiles = new List<TileOption>();
-    for (int x = 0; x < _map.Width; x++)
+    var currentTiles = new List&lt;TileOption&gt;();
+    for (int x = 0; x &lt; _map.Width; x++)
     {
-        for (int y = 0; y < _map.Height; y++)
+        for (int y = 0; y &lt; _map.Height; y++)
         {
             var cell = _map.Cells[x, y];
             if (!cell.IsResolved)
@@ -263,14 +263,14 @@
 
     // order tiles by Entropy
     var options = currentTiles
-        .GroupBy(t => t.Tile.Entropy)
-        .OrderBy(g => g.Key)
+        .GroupBy(t =&gt; t.Tile.Entropy)
+        .OrderBy(g =&gt; g.Key)
         .First();
 
     TileOption choice;
 
     // If more than one lowest entropy, pick randomly from them
-    if (options.Count() > 1)
+    if (options.Count() &gt; 1)
     {
         var pick = _rnd.Next(options.Count());
         choice = options.ElementAt(pick);
@@ -291,11 +291,11 @@
 
     // find indexes of non-zero items
     options.Clear();
-    for (int i = 0; i < cell.Choices.Length; i++)
+    for (int i = 0; i &lt; cell.Choices.Length; i++)
     {
         if (cell.Choices[i] != null)
         {
-            for (int c = 0; c < cell.Choices[i].Weight; c++)
+            for (int c = 0; c &lt; cell.Choices[i].Weight; c++)
             {
                 options.Add(i);
             }
@@ -306,7 +306,7 @@
     var index = options.ElementAt(pick);
 
     // null out the ones not picked
-    for (int i = 0; i < cell.Choices.Length; i++)
+    for (int i = 0; i &lt; cell.Choices.Length; i++)
     {
         if (i != index)
         {
@@ -321,7 +321,7 @@
 {
     stack.Push(tile);
 
-    while (stack.Count > 0)
+    while (stack.Count &gt; 0)
     {
         var point = stack.Pop();
         var cellWaveFunction = _map.Cells[point.X, point.Y];
@@ -334,7 +334,7 @@
             var adjWaveFunction = _map.Cells[d.X, d.Y];
 
             bool changed = false;
-            for (int i = 0; i < adjWaveFunction.Choices.Length; i++)
+            for (int i = 0; i &lt; adjWaveFunction.Choices.Length; i++)
             {
                 if (adjWaveFunction.Choices[i] != null)
                 {
@@ -351,7 +351,7 @@
                 stack.Push(d);
             }
 
-            if (adjWaveFunction.Choices.Where(t => t != null).Count() == 0)
+            if (adjWaveFunction.Choices.Where(t =&gt; t != null).Count() == 0)
             {
                 throw new Exception("Map cannot be solved.");
             }

@@ -51,7 +51,7 @@ Talking about this with a colleague a while back, I wondered if there was a way 
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:20 -->
+		<!-- 23/01/2022 11:04:13 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -165,8 +165,8 @@ Talking about this with a colleague a while back, I wondered if there was a way 
 					<p>And when you look up these two buttons' commands in the
 						<code>commands.config</code>
 						file you will find:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"><command name="item:setlayoutdetails" type="Sitecore.Shell.Framework.Commands.SetLayoutDetails,Sitecore.Kernel" />
-<command name="pagedesigner:reset" type="Sitecore.Shell.Applications.Layouts.PageDesigner.Commands.Reset,Sitecore.Client"/>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">&lt;command name="item:setlayoutdetails" type="Sitecore.Shell.Framework.Commands.SetLayoutDetails,Sitecore.Kernel" /&gt;
+&lt;command name="pagedesigner:reset" type="Sitecore.Shell.Applications.Layouts.PageDesigner.Commands.Reset,Sitecore.Client"/&gt;
 
 					</pre>
 					<p>These bits of config map the UI commands to implementation classes which inherit from the base type
@@ -177,11 +177,11 @@ Talking about this with a colleague a while back, I wondered if there was a way 
 					<p>Hence one way we can try and solve our problem is to inherit from the standard Sitecore command classes for these menu options and add in some extra logic. Since both commands need the same logic, we can factor that out into a separate class to avoid writing it twice. For the sake of blog-post simplicity, lets stick it in a static helper method. Something like this:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class SimplerLayoutHelper
 {
-    public static CommandState QueryState(CommandContext context, Func<CommandContext, CommandState> baseMethod)
+    public static CommandState QueryState(CommandContext context, Func&lt;CommandContext, CommandState&gt; baseMethod)
     {
         Assert.ArgumentNotNull(context, "context");
 
-        if (context.Items != null && context.Items.Length == 1)
+        if (context.Items != null &amp;&amp; context.Items.Length == 1)
         {
             Item itm = context.Items[0];
 
@@ -192,7 +192,7 @@ Talking about this with a colleague a while back, I wondered if there was a way 
                 {
                     return CommandState.Disabled;
                 }
-                if (ancestor.Name == "templates" && itm.Name != "__Standard Values")
+                if (ancestor.Name == "templates" &amp;&amp; itm.Name != "__Standard Values")
                 {
                     return CommandState.Disabled;
                 }
@@ -228,21 +228,21 @@ public class SimplerLayoutReset : Sitecore.Shell.Applications.Layouts.PageDesign
 					</pre>
 					<p>All we need to do is call our helper method and pass in the context and the base method from the original class.</p>
 					<p>These new command classes can be configured with a simple config patch:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration xmlns:patch="http://www.sitecore.net/xmlconfig/">
-  <sitecore>
-    <commands>
-      <command 
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+  &lt;sitecore&gt;
+    &lt;commands&gt;
+      &lt;command 
         patch:instead="*[@name='item:setlayoutdetails']"
         name="item:setlayoutdetails" 
-        type="Testing.SimplerLayoutDetails,Testing" />
+        type="Testing.SimplerLayoutDetails,Testing" /&gt;
 
-      <command 
+      &lt;command 
         patch:instead="*[@name='pagedesigner:reset']"
         name="pagedesigner:reset" 
-        type="Testing.SimplerLayoutReset,Testing"/>
-    </commands>    
-  </sitecore>
-</configuration>
+        type="Testing.SimplerLayoutReset,Testing"/&gt;
+    &lt;/commands&gt;    
+  &lt;/sitecore&gt;
+&lt;/configuration&gt;
 
 					</pre>
 					<p>This just replaces the out-of-the-box Command implementations with the new classes above. With that in place, trying to set the Layout Details on the wrong bit of a template doesn't work any more:</p>

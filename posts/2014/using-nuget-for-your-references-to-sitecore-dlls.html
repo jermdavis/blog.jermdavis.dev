@@ -47,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:34 -->
+		<!-- 23/01/2022 11:04:25 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -182,31 +182,31 @@
 					<p>I have created a
 						<code>.nuspec</code>
 						file for each release of Sitecore I need to support. (So 6.4, 6.5, 6.6 etc - the update releases to each of those versions are handled by the package version) As an example, here is a possible package definition for a specific release of Sitecore 6.6:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
-  <metadata>
-    <id>Sitecore-6.6</id>
-    <version>0.130404.4</version>
-    <title>Sitecore developer references for v6.6</title>
-    <authors>Jeremy Davis</authors>
-    <owners>Sitecore</owners>
-    <iconUrl>file:\\myInternalServer.com\common\NuGetRepository\sitecore.png</iconUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Contains the core references for Sitecore, Json and Lucene</description>
-    <references>
-      <reference file="Sitecore.Kernel.dll" />
-      <reference file="Sitecore.Analytics.dll" />
-      <reference file="Lucene.Net.dll" />
-      <reference file="NewtonSoft.Json.dll"/>
-    </references>
-  </metadata>
-  <files>
-    <file src="lib-6.6\Sitecore.Kernel.dll" target="lib\" />
-    <file src="lib-6.6\Sitecore.Analytics.dll" target="lib\" />
-    <file src="lib-6.6\Lucene.Net.dll" target="lib\" />
-    <file src="lib-6.6\NewtonSoft.Json.dll" target="lib\" />
-  </files>
-</package>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"&gt;
+  &lt;metadata&gt;
+    &lt;id&gt;Sitecore-6.6&lt;/id&gt;
+    &lt;version&gt;0.130404.4&lt;/version&gt;
+    &lt;title&gt;Sitecore developer references for v6.6&lt;/title&gt;
+    &lt;authors&gt;Jeremy Davis&lt;/authors&gt;
+    &lt;owners&gt;Sitecore&lt;/owners&gt;
+    &lt;iconUrl&gt;file:\\myInternalServer.com\common\NuGetRepository\sitecore.png&lt;/iconUrl&gt;
+    &lt;requireLicenseAcceptance&gt;false&lt;/requireLicenseAcceptance&gt;
+    &lt;description&gt;Contains the core references for Sitecore, Json and Lucene&lt;/description&gt;
+    &lt;references&gt;
+      &lt;reference file="Sitecore.Kernel.dll" /&gt;
+      &lt;reference file="Sitecore.Analytics.dll" /&gt;
+      &lt;reference file="Lucene.Net.dll" /&gt;
+      &lt;reference file="NewtonSoft.Json.dll"/&gt;
+    &lt;/references&gt;
+  &lt;/metadata&gt;
+  &lt;files&gt;
+    &lt;file src="lib-6.6\Sitecore.Kernel.dll" target="lib\" /&gt;
+    &lt;file src="lib-6.6\Sitecore.Analytics.dll" target="lib\" /&gt;
+    &lt;file src="lib-6.6\Lucene.Net.dll" target="lib\" /&gt;
+    &lt;file src="lib-6.6\NewtonSoft.Json.dll" target="lib\" /&gt;
+  &lt;/files&gt;
+&lt;/package&gt;
 
 					</pre>
 					<p>It consists of two sections – one for metadata and one for the things to deploy.</p>
@@ -293,30 +293,30 @@
 						folder contains text files holding the paths to the
 						<code>nuget.exe</code>
 						file and the shared folder being used as the NuGet repository. These are used by the build events added to the project file. The build is managed by the following MSBuild xml:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><Target Name="AfterBuild">
-  <ReadLinesFromFile File=".\BuildConfig\NugetCommandLine.txt">
-    <Output PropertyName="NuGetPath" TaskParameter="Lines" />
-  </ReadLinesFromFile>
-  <CreateItem Include="*.nuspec" Exclude="">
-    <Output ItemName="NuSpecFiles" TaskParameter="Include" />
-  </CreateItem>
-  <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;%(NuSpecFiles.Identity)&quot; -OutputDirectory .\$(OutputPath) -NoPackageAnalysis" />
-  <Message Text="Nuget for $(TargetName) finished." />
-</Target>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;Target Name="AfterBuild"&gt;
+  &lt;ReadLinesFromFile File=".\BuildConfig\NugetCommandLine.txt"&gt;
+    &lt;Output PropertyName="NuGetPath" TaskParameter="Lines" /&gt;
+  &lt;/ReadLinesFromFile&gt;
+  &lt;CreateItem Include="*.nuspec" Exclude=""&gt;
+    &lt;Output ItemName="NuSpecFiles" TaskParameter="Include" /&gt;
+  &lt;/CreateItem&gt;
+  &lt;Exec Command="&amp;quot;$(NuGetPath)&amp;quot; pack &amp;quot;%(NuSpecFiles.Identity)&amp;quot; -OutputDirectory .\$(OutputPath) -NoPackageAnalysis" /&gt;
+  &lt;Message Text="Nuget for $(TargetName) finished." /&gt;
+&lt;/Target&gt;
 
 					</pre>
 					<p>First it reads the contents of the "NugetCommandLine.txt" file into an MSBuild variable called "NuGetPath". Then it generates a list of files in the project folder matching the "*.nuspec" pattern. Then finally it calls the NuGet command line tool (using the NuGetPath variable) passing the "pack" command described above and the file names found from the pattern. It tells NuGet to send the packages to the project's output directory.</p>
 					<p>Hence each time you build, it will generate the correct set of package files.</p>
 					<p>To follow that up, I have a second event:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><Target Name="DeployNuGet" AfterTargets="AfterBuild" Condition=" '$(Configuration)' == 'Release' ">
-  <ReadLinesFromFile File=".\BuildConfig\NuGetLocalRepository.txt">
-    <Output PropertyName="DeployPath" TaskParameter="Lines" />
-  </ReadLinesFromFile>
-  <CreateItem Include="$(OutputPath)\*.nupkg" Exclude="">
-    <Output ItemName="DeployFiles" TaskParameter="Include" />
-  </CreateItem>
-  <Copy SourceFiles="@(DeployFiles)" DestinationFiles="@(DeployFiles->'$(DeployPath)\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
-</Target>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;Target Name="DeployNuGet" AfterTargets="AfterBuild" Condition=" '$(Configuration)' == 'Release' "&gt;
+  &lt;ReadLinesFromFile File=".\BuildConfig\NuGetLocalRepository.txt"&gt;
+    &lt;Output PropertyName="DeployPath" TaskParameter="Lines" /&gt;
+  &lt;/ReadLinesFromFile&gt;
+  &lt;CreateItem Include="$(OutputPath)\*.nupkg" Exclude=""&gt;
+    &lt;Output ItemName="DeployFiles" TaskParameter="Include" /&gt;
+  &lt;/CreateItem&gt;
+  &lt;Copy SourceFiles="@(DeployFiles)" DestinationFiles="@(DeployFiles-&gt;'$(DeployPath)\%(Filename)%(Extension)')" SkipUnchangedFiles="true" /&gt;
+&lt;/Target&gt;
 
 					</pre>
 					<p>This reads the content of the "NuGetLocalRepository.txt" file into a variable, creates a list of all the package files in your project's output folder, and then copies the packages into the repository folder. This only runs after a release build, and it ensures all the packages being built are correctly deployed to the package share.</p>

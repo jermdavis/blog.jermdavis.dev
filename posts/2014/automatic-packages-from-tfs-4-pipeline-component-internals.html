@@ -47,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:08 -->
+		<!-- 23/01/2022 11:04:03 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -276,7 +276,7 @@ private bool noExtension(string key)
         {
             data.Configuration.ThrowMissingConfigurationException(ExtensionsKey, "A list of renames to perform. Separate entries with commas Separate source and target names with a pipe.");
         }
-        Dictionary<string, string> renames = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+        Dictionary&lt;string, string&gt; renames = new Dictionary&lt;string, string&gt;(StringComparer.CurrentCultureIgnoreCase);
         var extensions = data.Configuration.Settings[ExtensionsKey].Split(',');
         foreach (string extension in extensions)
         {
@@ -329,7 +329,7 @@ private bool noExtension(string key)
 
         foreach (var item in data.Input)
         {
-            if (!item.Key.EndsWith(".item", StringComparison.CurrentCultureIgnoreCase) && !item.Key.EndsWith(".cs", StringComparison.CurrentCultureIgnoreCase)  && item.Value.IsNotDelete())
+            if (!item.Key.EndsWith(".item", StringComparison.CurrentCultureIgnoreCase) &amp;&amp; !item.Key.EndsWith(".cs", StringComparison.CurrentCultureIgnoreCase)  &amp;&amp; item.Value.IsNotDelete())
             {
                 fs.Add(item.Key.Replace(webProjectFolder, ""));
             }
@@ -360,7 +360,7 @@ private bool noExtension(string key)
 
         foreach (var item in data.Input)
         {
-            if (item.Key.EndsWith(".item", StringComparison.CurrentCultureIgnoreCase) && item.Value.IsNotDelete())
+            if (item.Key.EndsWith(".item", StringComparison.CurrentCultureIgnoreCase) &amp;&amp; item.Value.IsNotDelete())
             {
                 try
                 {
@@ -383,14 +383,14 @@ private bool noExtension(string key)
 						<code>PackageSourceItems</code>
 						is constructed and added to the overall package. So far so simple.</p>
 					<p>But if you look at the XML in a set of Sitecore items you'll note that the definition of each item to package looks a bit odd compared to what we get from Source Control:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><xitems>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;xitems&gt;
   ...
-  <Entries>
-    <x-item>/master/sitecore/system/Dictionary/ProjectName/Forms/Login/ce_Password_Strength/{DD5E504F-5FF9-477F-A2FB-B3905B76368C}/invariant/0</x-item>
-    <x-item>/master/sitecore/system/Dictionary/ProjectName/Forms/Payment/ce_Payment_ChequeNext/{D6F0CC98-7FB2-4930-A42B-AABA89766AEB}/invariant/0</x-item>
-  </Entries>
+  &lt;Entries&gt;
+    &lt;x-item&gt;/master/sitecore/system/Dictionary/ProjectName/Forms/Login/ce_Password_Strength/{DD5E504F-5FF9-477F-A2FB-B3905B76368C}/invariant/0&lt;/x-item&gt;
+    &lt;x-item&gt;/master/sitecore/system/Dictionary/ProjectName/Forms/Payment/ce_Payment_ChequeNext/{D6F0CC98-7FB2-4930-A42B-AABA89766AEB}/invariant/0&lt;/x-item&gt;
+  &lt;/Entries&gt;
   ...
-</xitems>
+&lt;/xitems&gt;
 
 					</pre>
 					<p>For each entry in the file, there's a path – but it looks a bit odd. It seems to start with the Sitecore database name, followed by the content tree path, and then followed by a GUID, an indication of the language code and finishing off with the version number.</p>
@@ -432,9 +432,9 @@ At least 7 characters, where one or more is a punctuation character.
 					</pre>
 					<p>You can see that all the data we need is stored in the "item" section that begins the file. It includes the GUID, the path. For the purposes of the prototype here I'm not bothered by specific item versions or languages, so we can fix those bits of the data to "invariant" for the language and "0" for the version in order to tell Sitecore to ignore those options when building the package.</p>
 					<p>Hence we can write a very simple parser to turn the data into a dictionary. It ignores any blank lines, and looks for lines marked with four hyphens – processing data until it reaches one of these regions marked with a title other than "item". And finally it breaks the remaining strings into name / value pairs:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IDictionary<string, string> parseFile(StreamReader sr)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IDictionary&lt;string, string&gt; parseFile(StreamReader sr)
 {
-    Dictionary<string, string> data = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+    Dictionary&lt;string, string&gt; data = new Dictionary&lt;string, string&gt;(StringComparer.CurrentCultureIgnoreCase);
     bool done = false;
 
     string text = sr.ReadToEnd();
@@ -499,16 +499,16 @@ At least 7 characters, where one or more is a punctuation character.
 					<p>The last thing which needs to be added to the package is the binaries generated from the code in the web package. The
 						<code>ExtractBinariesToDeploy</code>
 						component does this. The configuration for this is a bit more complex, as it needs to be a set of project names, with their accompanying set of binaries. Currently that's a comma separated list, where each item is a pipe-separated list of one project followed by a number of binary files. The following bit of code parses the data out of the config setting into a Dictionary containing a list of strings:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private Dictionary<string, List<string>> extractProjectPathMap(PipelineData data)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private Dictionary&lt;string, List&lt;string&gt;&gt; extractProjectPathMap(PipelineData data)
 {
-	Dictionary<string, List<string>> projectPathMap = new Dictionary<string, List<string>>(StringComparer.CurrentCultureIgnoreCase);
+	Dictionary&lt;string, List&lt;string&gt;&gt; projectPathMap = new Dictionary&lt;string, List&lt;string&gt;&gt;(StringComparer.CurrentCultureIgnoreCase);
 	var projectsCfg = data.Configuration.Settings[ProjectPathMapKey].Split(',');
 	foreach (string project in projectsCfg)
 	{
 		string[] parts = project.Split('|');
 
-		List<string> files = new List<string>();
-		for (int i = 1; i < parts.Length; i++)
+		List&lt;string&gt; files = new List&lt;string&gt;();
+		for (int i = 1; i &lt; parts.Length; i++)
 		{
 			files.Add(parts[i]);
 		}
@@ -583,7 +583,7 @@ At least 7 characters, where one or more is a punctuation character.
 
         foreach (var item in data.Input)
         {
-            if ( (item.Value & SourceControlActions.Delete) == SourceControlActions.Delete)
+            if ( (item.Value &amp; SourceControlActions.Delete) == SourceControlActions.Delete)
             {
                 deletionsFound = true;
                 sb.Append(item.Key);

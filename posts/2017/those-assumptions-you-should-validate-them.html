@@ -48,7 +48,7 @@ I was reminded of this while sitting in the pub with some developers recently, t
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:33 -->
+		<!-- 23/01/2022 11:04:24 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -210,9 +210,9 @@ private int singleItemQuery(string indexName)
     var id = new Sitecore.Data.ID("{90D7F1B9-78A3-47DE-9A42-F2E3593E5557}");
     var index = ContentSearchManager.GetIndex(indexName);
 
-    var predicate = PredicateBuilder.True<SearchResultItem>();
-    predicate = predicate.And(f => f.ItemId == id);
-    predicate = predicate.And(f => f.Language == "en");
+    var predicate = PredicateBuilder.True&lt;SearchResultItem&gt;();
+    predicate = predicate.And(f =&gt; f.ItemId == id);
+    predicate = predicate.And(f =&gt; f.Language == "en");
 
     return runQuery(index, predicate);
 }
@@ -222,18 +222,18 @@ private int searchQuery(string rootPath, string indexName)
     var root = Sitecore.Context.Database.GetItem(rootPath);
     var index = ContentSearchManager.GetIndex(indexName);
 
-    var predicate = PredicateBuilder.True<SearchResultItem>();
-    predicate = predicate.And(f => f.Language == "en");
+    var predicate = PredicateBuilder.True&lt;SearchResultItem&gt;();
+    predicate = predicate.And(f =&gt; f.Language == "en");
 
     return runQuery(index, predicate);
 }
 
-private int runQuery(ISearchIndex index, System.Linq.Expressions.Expression<Func<SearchResultItem, bool>> predicate)
+private int runQuery(ISearchIndex index, System.Linq.Expressions.Expression&lt;Func&lt;SearchResultItem, bool&gt;&gt; predicate)
 {
     using (IProviderSearchContext context = index.CreateSearchContext())
     {
         var query = context
-            .GetQueryable<SearchResultItem>()
+            .GetQueryable&lt;SearchResultItem&gt;()
             .Filter(predicate);
 
         var total = query.GetResults();
@@ -244,12 +244,12 @@ private int runQuery(ISearchIndex index, System.Linq.Expressions.Expression<Func
 
 					</pre>
 					<p>To get some measurements of the time they required the calls above can be wrapped up in a method that measures execution time for a certain number of iterations and returns an average time as well as the number of items returned by the query. Something like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private Tuple<TimeSpan,int> Average(Func<int> action, int iterations)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private Tuple&lt;TimeSpan,int&gt; Average(Func&lt;int&gt; action, int iterations)
 {
     int count = 0;
     long ticksSum = 0;
     Stopwatch sw = new Stopwatch();
-    for (int i = 0; i < iterations; i++)
+    for (int i = 0; i &lt; iterations; i++)
     {
         sw.Reset();
         sw.Start();
@@ -259,7 +259,7 @@ private int runQuery(ISearchIndex index, System.Linq.Expressions.Expression<Func
         ticksSum += sw.ElapsedTicks;
     }
 
-    return new Tuple<TimeSpan, int>(new TimeSpan(ticksSum / iterations), count);
+    return new Tuple&lt;TimeSpan, int&gt;(new TimeSpan(ticksSum / iterations), count);
 }
 
 					</pre>

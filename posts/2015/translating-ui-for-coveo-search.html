@@ -47,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:34 -->
+		<!-- 23/01/2022 11:04:25 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -163,33 +163,33 @@
 					<p>The three changes I made were:</p>
 					<ul>
 						<li>As
-							<a href="/posts/2015/coveo-facets-based-on-id-fields" target="_blank">discussed in a previous post</a>, you must configure computed index fields that contain the appropriate display text for any metadata that is stored as GUIDs if you want to be able to create facets from them. Using the same tricks that I discussed previously, I created computed fields storing the display names of the referenced items using a variation on the out-of-the-box components:<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><fields hint="raw:AddComputedIndexField">
-  <!-- other computed fields -->
-  <field fieldName="AnimalSizeFacet" sourceField="Size" referencedFieldName="DisplayName">CoveoDemo.ReferencedFieldComputedField, CoveoDemo</field>
-  <field fieldName="AnimalCategoryFacet" sourceField="Category" referencedFieldName="DisplayName">CoveoDemo.ReferencedFieldComputedField, CoveoDemo</field>
-</fields>
+							<a href="/posts/2015/coveo-facets-based-on-id-fields" target="_blank">discussed in a previous post</a>, you must configure computed index fields that contain the appropriate display text for any metadata that is stored as GUIDs if you want to be able to create facets from them. Using the same tricks that I discussed previously, I created computed fields storing the display names of the referenced items using a variation on the out-of-the-box components:<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;fields hint="raw:AddComputedIndexField"&gt;
+  &lt;!-- other computed fields --&gt;
+  &lt;field fieldName="AnimalSizeFacet" sourceField="Size" referencedFieldName="DisplayName"&gt;CoveoDemo.ReferencedFieldComputedField, CoveoDemo&lt;/field&gt;
+  &lt;field fieldName="AnimalCategoryFacet" sourceField="Category" referencedFieldName="DisplayName"&gt;CoveoDemo.ReferencedFieldComputedField, CoveoDemo&lt;/field&gt;
+&lt;/fields&gt;
 
 							</pre>
 						</li>
 						<li>I wanted my descriptive text to be free-text searchable. To allow this, you have to set a specific indexing setting for that field. This is configured in the
 							<code>fieldMap</code>
-							section of the configuration:<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><fieldMap type="Coveo.SearchProvider.CoveoFieldMap, Coveo.SearchProvider">
-  <param desc="coveoReflectionFactory" type="Coveo.Framework.Utils.CoveoReflectionFactory, Coveo.Framework" />
-  <fieldNames hint="raw:AddFieldByFieldName">
-    <!-- other field mappings -->
-    <fieldType fieldName="Description" includeForFreeTextSearch="true" settingType="Coveo.Framework.Configuration.FieldConfiguration, Coveo.Framework" />
-  </fieldNames>
-</fieldMap>
+							section of the configuration:<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;fieldMap type="Coveo.SearchProvider.CoveoFieldMap, Coveo.SearchProvider"&gt;
+  &lt;param desc="coveoReflectionFactory" type="Coveo.Framework.Utils.CoveoReflectionFactory, Coveo.Framework" /&gt;
+  &lt;fieldNames hint="raw:AddFieldByFieldName"&gt;
+    &lt;!-- other field mappings --&gt;
+    &lt;fieldType fieldName="Description" includeForFreeTextSearch="true" settingType="Coveo.Framework.Configuration.FieldConfiguration, Coveo.Framework" /&gt;
+  &lt;/fieldNames&gt;
+&lt;/fieldMap&gt;
 
 							</pre>
 						</li>
-						<li>Finally, I wanted my "animal category" facet to be multi-valued as it used a UI control which allows multiple selections. Again this requires a setting in the Field Map data:<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><fieldMap type="Coveo.SearchProvider.CoveoFieldMap, Coveo.SearchProvider">
-  <param desc="coveoReflectionFactory" type="Coveo.Framework.Utils.CoveoReflectionFactory, Coveo.Framework" />
-  <fieldNames hint="raw:AddFieldByFieldName">
-    <!-- other field mappings -->
-    <fieldType fieldName="AnimalCategoryFacet" isMultiValue="true" settingType="Coveo.Framework.Configuration.FieldConfiguration, Coveo.Framework" />
-  </fieldNames>
-</fieldMap>
+						<li>Finally, I wanted my "animal category" facet to be multi-valued as it used a UI control which allows multiple selections. Again this requires a setting in the Field Map data:<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;fieldMap type="Coveo.SearchProvider.CoveoFieldMap, Coveo.SearchProvider"&gt;
+  &lt;param desc="coveoReflectionFactory" type="Coveo.Framework.Utils.CoveoReflectionFactory, Coveo.Framework" /&gt;
+  &lt;fieldNames hint="raw:AddFieldByFieldName"&gt;
+    &lt;!-- other field mappings --&gt;
+    &lt;fieldType fieldName="AnimalCategoryFacet" isMultiValue="true" settingType="Coveo.Framework.Configuration.FieldConfiguration, Coveo.Framework" /&gt;
+  &lt;/fieldNames&gt;
+&lt;/fieldMap&gt;
 
 							</pre>
 						</li>
@@ -247,13 +247,13 @@
 						<code>Model.Title</code>
 						if so. This allows you to have facets with and without a data source on the same page. (I'm not sure if that's a real-world requirement or not – but for the purposes of my demo, I needed the UI to work in both scenarios)</p>
 					<p>So the code might end up looking something like:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><div class="CoveoFacet"
-    data-title='<%= string.IsNullOrWhiteSpace(Model.BoundRendering.Item.GetFieldValue("FacetTitle")) ? Model.Title : Model.BoundRendering.Item.GetFieldValue("FacetTitle") %>'
-    data-field='<%= Model.Field %>'
-    data-number-of-values='<%= Model.NumberOfValues %>'
-    data-id='<%= Model.UniqueId %>'
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;div class="CoveoFacet"
+    data-title='&lt;%= string.IsNullOrWhiteSpace(Model.BoundRendering.Item.GetFieldValue("FacetTitle")) ? Model.Title : Model.BoundRendering.Item.GetFieldValue("FacetTitle") %&gt;'
+    data-field='&lt;%= Model.Field %&gt;'
+    data-number-of-values='&lt;%= Model.NumberOfValues %&gt;'
+    data-id='&lt;%= Model.UniqueId %&gt;'
  -- other attributes removed for clarity --
-    data-available-sorts='<%= String.Join(",", Model.AvailableSorts) %>'></div>
+    data-available-sorts='&lt;%= String.Join(",", Model.AvailableSorts) %&gt;'&gt;&lt;/div&gt;
 
 					</pre>
 					<p>With this in place, you can now have translated facet titles:</p>
@@ -277,10 +277,10 @@
 						file. Inside the
 						<code>div</code>
 						with the ID "search" you can add something like:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><span class="CoveoTopFieldSuggestions"
-    data-field="<%= Coveo.UI.SitecoreUtilities.ToCoveoFieldName("_displayname") %>"
-    data-header-title="<%= Model.Labels["SuggestedQueries"] %>"
-    data-query-override='<%= Coveo.UI.SitecoreUtilities.ToCoveoFieldName("templatename") %>="Animal"'></span>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;span class="CoveoTopFieldSuggestions"
+    data-field="&lt;%= Coveo.UI.SitecoreUtilities.ToCoveoFieldName("_displayname") %&gt;"
+    data-header-title="&lt;%= Model.Labels["SuggestedQueries"] %&gt;"
+    data-query-override='&lt;%= Coveo.UI.SitecoreUtilities.ToCoveoFieldName("templatename") %&gt;="Animal"'&gt;&lt;/span&gt;
 
 					</pre>
 					<p>The

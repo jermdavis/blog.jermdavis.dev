@@ -49,7 +49,7 @@ Getting images into the sitemap requires two things: First specifying some rules
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:12 -->
+		<!-- 23/01/2022 11:04:06 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -234,20 +234,20 @@ Getting images into the sitemap requires two things: First specifying some rules
         SitemapRootItem = rootItem;
 
         SitemapIncludeLanguages = siteItem.Fields[Identifiers.SitemapIncludeLanguagesFieldID].Value.Split('|')
-            .Where(s => !string.IsNullOrWhiteSpace(s))
-            .Select(s => ID.Parse(s))
-            .Select(i => SitemapSourceDatabase.GetItem(i))
-            .Select(l => l.Name);
+            .Where(s =&gt; !string.IsNullOrWhiteSpace(s))
+            .Select(s =&gt; ID.Parse(s))
+            .Select(i =&gt; SitemapSourceDatabase.GetItem(i))
+            .Select(l =&gt; l.Name);
 
         SitemapIncludeTemplates = siteItem.Fields[Identifiers.SitemapIncludeTemplatesFieldID].Value.Split('|')
-            .Where(s => !string.IsNullOrWhiteSpace(s))
-            .Select(s => ID.Parse(s));
+            .Where(s =&gt; !string.IsNullOrWhiteSpace(s))
+            .Select(s =&gt; ID.Parse(s));
 
         var imageExtraction = siteItem.Axes.SelectItems(string.Format("./*[@@templateid='{0}' or @@templateid='{1}']", Identifiers.SitemapFieldImageTemplateID, Identifiers.SitemapComponentImageTemplateID));
-        if (imageExtraction != null && imageExtraction.Length > 0)
+        if (imageExtraction != null &amp;&amp; imageExtraction.Length &gt; 0)
         {
             ImageExtraction = imageExtraction
-                .Select(i => new ImageConfiguration(this, i));
+                .Select(i =&gt; new ImageConfiguration(this, i));
         }
         else
         {
@@ -401,9 +401,9 @@ public class SitemapImage
 
 					</pre>
 					<p>The new method needs to process all the config we've set up for images, and generate the relevant data:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable<SitemapImage> processImages(SiteConfiguration sc, Item item, Language l)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable&lt;SitemapImage&gt; processImages(SiteConfiguration sc, Item item, Language l)
 {
-    List<SitemapImage> imgs = new List<SitemapImage>();
+    List&lt;SitemapImage&gt; imgs = new List&lt;SitemapImage&gt;();
 
     foreach (ImageConfiguration icfg in sc.ImageExtraction)
     {
@@ -459,7 +459,7 @@ public class SitemapImage
     };
 
     ImageField img = (ImageField)item.Fields[icfg.ImageFieldName];
-    if (img != null && !string.IsNullOrWhiteSpace(img.Value))
+    if (img != null &amp;&amp; !string.IsNullOrWhiteSpace(img.Value))
     {
         var si = new SitemapImage();
         si.Location = Sitecore.Resources.Media.MediaManager.GetMediaUrl(img.MediaItem, mo);
@@ -485,42 +485,42 @@ public class SitemapImage
 					</pre>
 					<p>That uses the MediaManager to generate the URL for the image, extracts a few properties and returns our data item for serialising.</p>
 					<p>So when we wire all that up, and re-generate our sitemap XML we get:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <url>
-    <loc>http://test/en/sitecore/content/Home</loc>
-    <image:image>
-      <image:loc>http://test/~/media/System/Simulator Backgrounds/Android Phone.ashx</image:loc>
-    </image:image>
-    <image:image>
-      <image:loc>http://test/~/media/System/Simulator Backgrounds/Blackberry.ashx</image:loc>
-    </image:image>
-    <lastmod>2014-10-05</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>http://test/ja-JP/sitecore/content/Home</loc>
-    <image:image>
-      <image:loc>http://test/~/media/System/Simulator Backgrounds/Blackberry.ashx</image:loc>
-    </image:image>
-    <lastmod>2013-09-11</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>http://test/en/sitecore/content/Home/Global shared content/Sample</loc>
-    <lastmod>2014-29-21</lastmod>
-  </url>
-  <url>
-    <loc>http://test/en/sitecore/content/Home/Sample Page</loc>
-    <image:image>
-      <image:loc>http://test/~/media/Images/HTC_000004.ashx</image:loc>
-      <image:caption>A quick snapshot</image:caption>
-      <image:title>A view across some countryside</image:title>
-    </image:image>
-    <lastmod>2014-12-03</lastmod>
-  </url>
-</urlset>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"&gt;
+  &lt;url&gt;
+    &lt;loc&gt;http://test/en/sitecore/content/Home&lt;/loc&gt;
+    &lt;image:image&gt;
+      &lt;image:loc&gt;http://test/~/media/System/Simulator Backgrounds/Android Phone.ashx&lt;/image:loc&gt;
+    &lt;/image:image&gt;
+    &lt;image:image&gt;
+      &lt;image:loc&gt;http://test/~/media/System/Simulator Backgrounds/Blackberry.ashx&lt;/image:loc&gt;
+    &lt;/image:image&gt;
+    &lt;lastmod&gt;2014-10-05&lt;/lastmod&gt;
+    &lt;changefreq&gt;daily&lt;/changefreq&gt;
+    &lt;priority&gt;0.7&lt;/priority&gt;
+  &lt;/url&gt;
+  &lt;url&gt;
+    &lt;loc&gt;http://test/ja-JP/sitecore/content/Home&lt;/loc&gt;
+    &lt;image:image&gt;
+      &lt;image:loc&gt;http://test/~/media/System/Simulator Backgrounds/Blackberry.ashx&lt;/image:loc&gt;
+    &lt;/image:image&gt;
+    &lt;lastmod&gt;2013-09-11&lt;/lastmod&gt;
+    &lt;changefreq&gt;daily&lt;/changefreq&gt;
+    &lt;priority&gt;0.7&lt;/priority&gt;
+  &lt;/url&gt;
+  &lt;url&gt;
+    &lt;loc&gt;http://test/en/sitecore/content/Home/Global shared content/Sample&lt;/loc&gt;
+    &lt;lastmod&gt;2014-29-21&lt;/lastmod&gt;
+  &lt;/url&gt;
+  &lt;url&gt;
+    &lt;loc&gt;http://test/en/sitecore/content/Home/Sample Page&lt;/loc&gt;
+    &lt;image:image&gt;
+      &lt;image:loc&gt;http://test/~/media/Images/HTC_000004.ashx&lt;/image:loc&gt;
+      &lt;image:caption&gt;A quick snapshot&lt;/image:caption&gt;
+      &lt;image:title&gt;A view across some countryside&lt;/image:title&gt;
+    &lt;/image:image&gt;
+    &lt;lastmod&gt;2014-12-03&lt;/lastmod&gt;
+  &lt;/url&gt;
+&lt;/urlset&gt;
 
 					</pre>
 					<p>And there we have it. Configurable sitemaps that can include image data as well as the more usual stuff.</p>

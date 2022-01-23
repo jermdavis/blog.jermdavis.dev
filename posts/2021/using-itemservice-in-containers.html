@@ -46,7 +46,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:34 -->
+		<!-- 23/01/2022 11:04:25 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -149,16 +149,16 @@
 						endpoints aren't available to external requests. The project I was working on needed this to be available to other apps from the CM role, to allow for some other work that was going on. So
 						<a href="https://doc.sitecore.com/en/developers/90/sitecore-experience-manager/sitecore-services-client-security.html#security-policies_body" rel="noopener" target="_blank">based on the existing documentation</a>
 						for this, I added a config patch to the solution:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><?xml version="1.0"?>
-<configuration xmlns:patch="http://www.sitecore.net/xmlconfig/" xmlns:role="http://www.sitecore.net/xmlconfig/role/">
-    <sitecore>
-        <settings>
-            <setting name="Sitecore.Services.SecurityPolicy" role:require="ContentManagement">
-                <patch:attribute name="value">Sitecore.Services.Infrastructure.Web.Http.Security.ServicesOnPolicy, Sitecore.Services.Infrastructure</patch:attribute>
-            </setting>
-        </settings>
-    </sitecore>
-</configuration>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0"?&gt;
+&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/" xmlns:role="http://www.sitecore.net/xmlconfig/role/"&gt;
+    &lt;sitecore&gt;
+        &lt;settings&gt;
+            &lt;setting name="Sitecore.Services.SecurityPolicy" role:require="ContentManagement"&gt;
+                &lt;patch:attribute name="value"&gt;Sitecore.Services.Infrastructure.Web.Http.Security.ServicesOnPolicy, Sitecore.Services.Infrastructure&lt;/patch:attribute&gt;
+            &lt;/setting&gt;
+        &lt;/settings&gt;
+    &lt;/sitecore&gt;
+&lt;/configuration&gt;
 
 					</pre>
 					<p>For most IaaS or PaaS deployments, that should be enough. But when you do that in a containerised deployment it doesn't work. If you make a call to the ItemService endpoint you'll get an error back when you try to authenicate. The key part of the response is the body:</p>
@@ -181,7 +181,7 @@
 	{
 		Assert.ArgumentNotNull(actionContext, "actionContext");
 		HttpRequestMessage request = actionContext.get_Request();
-		if (!(request.get_RequestUri().Scheme == Uri.UriSchemeHttps) && !_configurationSettings.get_AllowToLoginWithHttp())
+		if (!(request.get_RequestUri().Scheme == Uri.UriSchemeHttps) &amp;&amp; !_configurationSettings.get_AllowToLoginWithHttp())
 		{
 			if (request.get_Method().get_Method() == "GET")
 			{
@@ -208,16 +208,16 @@
 					<p>Doing a bit of a search, it turns out that setting has its default set in the
 						<code>Sitecore.Services.Client.config</code>
 						file. So a second bit of config patching will make all this work happily in the containers:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><?xml version="1.0"?>
-<configuration xmlns:patch="http://www.sitecore.net/xmlconfig/" xmlns:role="http://www.sitecore.net/xmlconfig/role/">
-    <sitecore>
-        <settings>
-            <setting name="Sitecore.Services.AllowToLoginWithHttp" role:require="ContentManagement">
-                <patch:attribute name="value">true</patch:attribute>
-            </setting>
-        </settings>
-    </sitecore>
-</configuration>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0"?&gt;
+&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/" xmlns:role="http://www.sitecore.net/xmlconfig/role/"&gt;
+    &lt;sitecore&gt;
+        &lt;settings&gt;
+            &lt;setting name="Sitecore.Services.AllowToLoginWithHttp" role:require="ContentManagement"&gt;
+                &lt;patch:attribute name="value"&gt;true&lt;/patch:attribute&gt;
+            &lt;/setting&gt;
+        &lt;/settings&gt;
+    &lt;/sitecore&gt;
+&lt;/configuration&gt;
 
 					</pre>
 					<p>Problem solved.</p>

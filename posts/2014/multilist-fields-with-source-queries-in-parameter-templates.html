@@ -49,7 +49,7 @@ Logically, you'd assume that if a relative query works for a Multilist field in 
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:22 -->
+		<!-- 23/01/2022 11:04:13 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -171,18 +171,18 @@ Logically, you'd assume that if a relative query works for a Multilist field in 
 					<p>Poking around with Reflector, you can discover that the
 						<code>getLookupSourceItems</code>
 						pipeline contains two steps by default. And one of them already deals with translating a query into the correct set of items. All that's wrong is that in this case it's using the wrong context item. So lets insert a new pipeline processor to resolve this. The config is as follows:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration xmlns:patch="http://www.sitecore.net/xmlconfig/">
-  <sitecore>
-    <pipelines>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+  &lt;sitecore&gt;
+    &lt;pipelines&gt;
 
-      <getLookupSourceItems>
-        <processor patch:before="*[@type='Sitecore.Pipelines.GetLookupSourceItems.ProcessQuerySource, Sitecore.Kernel']"
-            type="Testing.ParameterTemplateSourceQueries, Testing" />
-      </getLookupSourceItems>
+      &lt;getLookupSourceItems&gt;
+        &lt;processor patch:before="*[@type='Sitecore.Pipelines.GetLookupSourceItems.ProcessQuerySource, Sitecore.Kernel']"
+            type="Testing.ParameterTemplateSourceQueries, Testing" /&gt;
+      &lt;/getLookupSourceItems&gt;
       
-    </pipelines>
-  </sitecore>
-</configuration>
+    &lt;/pipelines&gt;
+  &lt;/sitecore&gt;
+&lt;/configuration&gt;
 
 					</pre>
 					<p>The code for a quick fix is also pretty simple:</p>
@@ -197,7 +197,7 @@ Logically, you'd assume that if a relative query works for a Multilist field in 
             return;
         }
 
-        if (!args.Item.Template.BaseTemplates.Where(bt => bt.ID == BaseParameterTemplate).Any())
+        if (!args.Item.Template.BaseTemplates.Where(bt =&gt; bt.ID == BaseParameterTemplate).Any())
         {
             return;
         }

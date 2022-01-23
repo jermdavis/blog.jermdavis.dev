@@ -46,7 +46,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:05 -->
+		<!-- 23/01/2022 11:04:01 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -144,11 +144,11 @@
 					<p>Writing code that uses the
 						<code>async</code>/<code>await</code>
 						patterns from the previous post can have some interesting effects on the order of execution for some of the code. An example to demonstrate that is fairly simple to construct. Expanding on the example code I started last time, consider a pipeline with three steps:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline<Uri, string>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt;
 {
 	public ExampleAsyncPipeline()
 	{
-		_pipelineSteps = input => input
+		_pipelineSteps = input =&gt; input
 			.Step(new HttpFetchAsyncStep())
 			.Step(new ModifyTextAsyncStep())
 			.Step(new DiskWriteAsyncStep());
@@ -160,11 +160,11 @@
 					<p>As the steps say: Grab some data, modify the data, and write it to disk somewhere. And we'll add in some debug output. The first step does the fetch. It outputs some debug data on entry, after the
 						<code>await</code>
 						returns for the input data, and then just before returning.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep<Uri, string>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt;
 {
 	private static readonly HttpClient _client = new HttpClient();
 
-	public async Task<string> ProcessAsync(Task<Uri> Input)
+	public async Task&lt;string&gt; ProcessAsync(Task&lt;Uri&gt; Input)
 	{
 		Console.WriteLine("Entering HttpFetchAsyncStep #1");
 		
@@ -179,9 +179,9 @@
 
 					</pre>
 					<p>The second step just does a simple text replacement to show it did something. And it also outputs debug data at the same points in its execution.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ModifyTextAsyncStep : IAsyncPipelineStep<string, string>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ModifyTextAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
-	public async Task<string> ProcessAsync(Task<string> Input)
+	public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input)
 	{
 		Console.WriteLine("Entering ModifyTextAsyncStep #2");
 
@@ -198,9 +198,9 @@
 
 					</pre>
 					<p>And finally, with the same debug output pattern, the third step works out where the desktop folder is and writes the data it receives to that folder.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep<string, string>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
-	public async Task<string> ProcessAsync(Task<string> Input)
+	public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input)
 	{
 		Console.WriteLine("Entering DiskWriteAsyncStep #3");
 		
@@ -247,9 +247,9 @@ Leaving DiskWriteAsyncStep #3
 						<code>await</code>
 						in a pipeline step might happen some undefined amount of time before the remainder of the code.</p>
 					<p>Imagine if the code took a lock on a database table, awaited the input of a really long-running network operation, and then carried on to write something to the database. That code would almost certainly run ok on a developer's computer. But under load in the real world, you could end up with some horrible performance issues where nobody else can do anything to the database table while this bit of code sits and waits for async operations to complete. In broad strokes:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CauseAnIssueAsyncStep : IAsyncPipelineStep<string, string>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CauseAnIssueAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
-    public async Task<string> ProcessAsync(Task<string> Input)
+    public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input)
     {
         TakeOutSomeLocks();
 
@@ -278,9 +278,9 @@ Leaving DiskWriteAsyncStep #3
 						and a
 						<code>Task&lt;T&gt;</code>
 						result:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep<TIn, TOut>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;TIn, TOut&gt;
 {
-	Task<TOut> ProcessAsync(TIn Input);
+	Task&lt;TOut&gt; ProcessAsync(TIn Input);
 }
 
 					</pre>
@@ -289,11 +289,11 @@ Leaving DiskWriteAsyncStep #3
 						for the steps, and exposes the
 						<code>Task ProcessAsync(TIn Input)</code>
 						method for executing the complete pipeline:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline<TIn, TOut> : IAsyncPipelineStep<TIn, TOut>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
 {
-	public Func<TIn, Task<TOut>> _pipelineSteps { get; protected set; }
+	public Func&lt;TIn, Task&lt;TOut&gt;&gt; _pipelineSteps { get; protected set; }
 
-	public Task<TOut> ProcessAsync(TIn Input)
+	public Task&lt;TOut&gt; ProcessAsync(TIn Input)
 	{
 		return _pipelineSteps(Input);
 	}
@@ -307,13 +307,13 @@ Leaving DiskWriteAsyncStep #3
 						and awaits the result before running the step over this value:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class AsyncPipelineStepExtensions
 {
-	public async static Task<TOut> Step<TIn, TOut>(this Task<TIn> Input, IAsyncPipelineStep<TIn, TOut> Step)
+	public async static Task&lt;TOut&gt; Step&lt;TIn, TOut&gt;(this Task&lt;TIn&gt; Input, IAsyncPipelineStep&lt;TIn, TOut&gt; Step)
 	{
 		var input = await Input;
 		return await Step.ProcessAsync(input);
 	}
 
-	public async static Task<TOut> Step<TIn, TOut>(this TIn Input, IAsyncPipelineStep<TIn, TOut> Step)
+	public async static Task&lt;TOut&gt; Step&lt;TIn, TOut&gt;(this TIn Input, IAsyncPipelineStep&lt;TIn, TOut&gt; Step)
 	{
 		return await Step.ProcessAsync(Input);
 	}
@@ -323,11 +323,11 @@ Leaving DiskWriteAsyncStep #3
 					<p>With all those changes, the three example steps look largely the same. But now theydon't need to
 						<code>await</code>
 						their input now, because that bit of boilerplate has been abstracted away:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep<Uri, string>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt;
 {
 	private static readonly HttpClient _client = new HttpClient();
 
-	public async Task<string> ProcessAsync(Uri Input)
+	public async Task&lt;string&gt; ProcessAsync(Uri Input)
 	{
 		Console.WriteLine("Entering HttpFetchAsyncStep #1");
 		
@@ -337,9 +337,9 @@ Leaving DiskWriteAsyncStep #3
 	}
 }
 
-public class ModifyTextAsyncStep : IAsyncPipelineStep<string, string>
+public class ModifyTextAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
-	public async Task<string> ProcessAsync(string Input)
+	public async Task&lt;string&gt; ProcessAsync(string Input)
 	{
 		Console.WriteLine("Entering ModifyTextAsyncStep #2");
 
@@ -351,9 +351,9 @@ public class ModifyTextAsyncStep : IAsyncPipelineStep<string, string>
 	}
 }
 
-public class DiskWriteAsyncStep : IAsyncPipelineStep<string, string>
+public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
-	public async Task<string> ProcessAsync(string Input)
+	public async Task&lt;string&gt; ProcessAsync(string Input)
 	{
 		Console.WriteLine("Entering DiskWriteAsyncStep #3");
 		
@@ -370,11 +370,11 @@ public class DiskWriteAsyncStep : IAsyncPipelineStep<string, string>
 
 					</pre>
 					<p>The definition of the overall pipeline doesn't change, despite the changes to the underlying types:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline<Uri, string>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt;
 {
 	public ExampleAsyncPipeline()
 	{
-		_pipelineSteps = input => input
+		_pipelineSteps = input =&gt; input
 			.Step(new HttpFetchAsyncStep())
 			.Step(new ModifyTextAsyncStep())
 			.Step(new DiskWriteAsyncStep());

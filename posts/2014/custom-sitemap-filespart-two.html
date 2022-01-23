@@ -47,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:12 -->
+		<!-- 23/01/2022 11:04:06 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -209,20 +209,20 @@
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SiteIndexConfiguration
 {
     public string SitemapIndexFilename { get; private set; }
-    public IEnumerable<item> SiteConfigurations { get; private set; }
+    public IEnumerable&lt;item&gt; SiteConfigurations { get; private set; }
 
     public SiteIndexConfiguration(Item cfg)
     {
         SitemapIndexFilename = cfg.Fields[Identifiers.SitemapIndexFilenameFieldID].Value;
 
         var siteConfigs = cfg.Axes.SelectItems(string.Format("./*[@@templateid='{0}']", Identifiers.SitemapFileTemplateID));
-        if (siteConfigs != null && siteConfigs.Length > 0)
+        if (siteConfigs != null &amp;&amp; siteConfigs.Length &gt; 0)
         {
             SiteConfigurations = siteConfigs;
         }
         else
         {
-            SiteConfigurations = new List<item>();
+            SiteConfigurations = new List&lt;item&gt;();
         }
     }
 }
@@ -253,9 +253,9 @@
 						instead initially, I came to the conclusion that the code required to get the namespaces and null-element handling correct wasn't worth the extra effort. Manually serialising the data to exactly the required format turned out simpler. The code for these data classes is as follows:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SitemapIndex
 {
-    private List<sitemapindexitem> _items = new List<sitemapindexitem>();
+    private List&lt;sitemapindexitem&gt; _items = new List&lt;sitemapindexitem&gt;();
 
-    public IEnumerable<sitemapindexitem> IndexItems { get { return _items; } }
+    public IEnumerable&lt;sitemapindexitem&gt; IndexItems { get { return _items; } }
 
     public static readonly XNamespace Namespace = "http://www.sitemaps.org/schemas/sitemap/0.9";
 
@@ -324,8 +324,8 @@ public class SitemapIndexItem
     public string SitemapSourceDatabaseName { get; private set; }
     public Database SitemapSourceDatabase { get; private set; }
     public ID SitemapRootItem { get; private set; }
-    public IEnumerable<string> SitemapIncludeLanguages { get; private set; }
-    public IEnumerable<id> SitemapIncludeTemplates { get; private set; }
+    public IEnumerable&lt;string&gt; SitemapIncludeLanguages { get; private set; }
+    public IEnumerable&lt;id&gt; SitemapIncludeTemplates { get; private set; }
 
     private Language getLanguage(string name)
     {
@@ -352,14 +352,14 @@ public class SitemapIndexItem
         SitemapRootItem = rootItem;
 
         SitemapIncludeLanguages = siteItem.Fields[Identifiers.SitemapIncludeLanguagesFieldID].Value.Split('|')
-            .Where(s => !string.IsNullOrWhiteSpace(s))
-            .Select(s => ID.Parse(s))
-            .Select(i => SitemapSourceDatabase.GetItem(i))
-            .Select(l => l.Name);
+            .Where(s =&gt; !string.IsNullOrWhiteSpace(s))
+            .Select(s =&gt; ID.Parse(s))
+            .Select(i =&gt; SitemapSourceDatabase.GetItem(i))
+            .Select(l =&gt; l.Name);
 
         SitemapIncludeTemplates = siteItem.Fields[Identifiers.SitemapIncludeTemplatesFieldID].Value.Split('|')
-            .Where(s => !string.IsNullOrWhiteSpace(s))
-            .Select(s => ID.Parse(s));
+            .Where(s =&gt; !string.IsNullOrWhiteSpace(s))
+            .Select(s =&gt; ID.Parse(s));
     }
 }
 
@@ -386,8 +386,8 @@ public class SitemapIndexItem
 						on the root item to start generating data. This code is factored out into a recursive method, as we need to transform the tree of Sitecore content into a list of entries for the sitemap file. That process is broken up into two parts – first we generate the set of URLs for the current item (it can be more than one URL due to language versions). Second we process any children this item has:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void process(SiteConfiguration sc, SitemapUrlSet urls, Item item)
 {
-    IEnumerable<sitemapurl> u = buildSitemapUrl(sc, item);
-    if (u != null && u.Count() > 0)
+    IEnumerable&lt;sitemapurl&gt; u = buildSitemapUrl(sc, item);
+    if (u != null &amp;&amp; u.Count() &gt; 0)
     {
         urls.AddRange(u);
     }
@@ -400,9 +400,9 @@ public class SitemapIndexItem
 
 					</pre>
 					<p>And then we can generate the list of URLs for an individual item:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable<sitemapurl> buildSitemapUrl(SiteConfiguration sc, Item item)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable&lt;sitemapurl&gt; buildSitemapUrl(SiteConfiguration sc, Item item)
 {
-    if(sc.SitemapIncludeTemplates.Count() > 0 && !sc.SitemapIncludeTemplates.Contains(item.TemplateID))
+    if(sc.SitemapIncludeTemplates.Count() &gt; 0 &amp;&amp; !sc.SitemapIncludeTemplates.Contains(item.TemplateID))
     {
         return null;
     }
@@ -416,13 +416,13 @@ public class SitemapIndexItem
         }
     }
 
-    List<sitemapurl> urls = new List<sitemapurl>();
+    List&lt;sitemapurl&gt; urls = new List&lt;sitemapurl&gt;();
     foreach (Language l in item.Languages)
     {
         if (sc.SitemapIncludeLanguages.Contains(l.Name))
         {
             Item i = sc.SitemapSourceDatabase.GetItem(item.ID, l);
-            if (i.Versions.Count > 0)
+            if (i.Versions.Count &gt; 0)
             {
                 SitemapUrl u = processLanguage(sc, i, l);
                 if (u != null)
@@ -467,7 +467,7 @@ public class SitemapIndexItem
     if (item.Fields.Contains(Identifiers.SitemapChangeFrequencyFieldID))
     {
         ChangeFrequency cf;
-        if (Enum.TryParse<changefrequency>(item.Fields[Identifiers.SitemapChangeFrequencyFieldID].Value, true, out cf))
+        if (Enum.TryParse&lt;changefrequency&gt;(item.Fields[Identifiers.SitemapChangeFrequencyFieldID].Value, true, out cf))
         {
             url.ChangeFrequency = cf;
         }
@@ -491,16 +491,16 @@ public class SitemapIndexItem
 						classes that we need to serialise into our sitemap xml data:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SitemapUrlSet
 {
-    private List<sitemapurl> _urls = new List<sitemapurl>();
+    private List&lt;sitemapurl&gt; _urls = new List&lt;sitemapurl&gt;();
 
-    public IEnumerable<sitemapurl> SitemapUrls { get { return _urls; } }
+    public IEnumerable&lt;sitemapurl&gt; SitemapUrls { get { return _urls; } }
 
     public void Add(SitemapUrl url)
     {
         _urls.Add(url);
     }
 
-    public void AddRange(IEnumerable<sitemapurl> urls)
+    public void AddRange(IEnumerable&lt;sitemapurl&gt; urls)
     {
         _urls.AddRange(urls);
     }
@@ -575,37 +575,37 @@ public class SitemapUrl
 						<img alt="Default sitemap settings" src="/img/2014/DefaultSitemapSettings.png">
 					</a>
 					<p>Then we can set up a bit of test content and hit publish. What we find on disk afterwards is two XML files. First, in the index file we find:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap>
-    <loc>http://test/default-sitemap.xml</loc>
-    <lastmod>2014-59-12</lastmod>
-  </sitemap>
-</sitemapindex>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"&gt;
+  &lt;sitemap&gt;
+    &lt;loc&gt;http://test/default-sitemap.xml&lt;/loc&gt;
+    &lt;lastmod&gt;2014-59-12&lt;/lastmod&gt;
+  &lt;/sitemap&gt;
+&lt;/sitemapindex&gt;
 
 					</pre>
 					<p>And then in the sitemap itself we find:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <url>
-    <loc>http://test/en/sitecore/content/Home</loc>
-    <lastmod>2014-10-05</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>http://test/ja-JP/sitecore/content/Home</loc>
-    <lastmod>2013-09-11</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>http://test/en/sitecore/content/Home/Global shared content/Sample</loc>
-    <lastmod>2014-29-21</lastmod>
-  </url>
-  <url>
-    <loc>http://test/en/sitecore/content/Home/Sample Page</loc>
-    <lastmod>2014-12-03</lastmod>
-  </url>
-</urlset>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"&gt;
+  &lt;url&gt;
+    &lt;loc&gt;http://test/en/sitecore/content/Home&lt;/loc&gt;
+    &lt;lastmod&gt;2014-10-05&lt;/lastmod&gt;
+    &lt;changefreq&gt;daily&lt;/changefreq&gt;
+    &lt;priority&gt;0.7&lt;/priority&gt;
+  &lt;/url&gt;
+  &lt;url&gt;
+    &lt;loc&gt;http://test/ja-JP/sitecore/content/Home&lt;/loc&gt;
+    &lt;lastmod&gt;2013-09-11&lt;/lastmod&gt;
+    &lt;changefreq&gt;daily&lt;/changefreq&gt;
+    &lt;priority&gt;0.7&lt;/priority&gt;
+  &lt;/url&gt;
+  &lt;url&gt;
+    &lt;loc&gt;http://test/en/sitecore/content/Home/Global shared content/Sample&lt;/loc&gt;
+    &lt;lastmod&gt;2014-29-21&lt;/lastmod&gt;
+  &lt;/url&gt;
+  &lt;url&gt;
+    &lt;loc&gt;http://test/en/sitecore/content/Home/Sample Page&lt;/loc&gt;
+    &lt;lastmod&gt;2014-12-03&lt;/lastmod&gt;
+  &lt;/url&gt;
+&lt;/urlset&gt;
 
 					</pre>
 					<p>Bingo. There's our sitemap data! It shows the appropriate data, as defined by our test items.</p>

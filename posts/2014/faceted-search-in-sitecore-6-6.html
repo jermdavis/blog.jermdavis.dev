@@ -47,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:14 -->
+		<!-- 23/01/2022 11:04:08 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -211,9 +211,9 @@
     if (!string.IsNullOrEmpty(facets))
     {
         config = facets.Split('|')
-            .Select(id => Sitecore.Context.Database.GetItem(id))
-            .Select(itm => itm.Fields["SearchIndexField"].Value)
-            .Select(f => f.ToLowerInvariant())
+            .Select(id =&gt; Sitecore.Context.Database.GetItem(id))
+            .Select(itm =&gt; itm.Fields["SearchIndexField"].Value)
+            .Select(f =&gt; f.ToLowerInvariant())
             .ToArray();
     }
 
@@ -236,7 +236,7 @@ private BooleanQuery buildQuery(string[] facets)
 
     foreach (string facet in facets)
     {
-        string key = Request.Form.AllKeys.Where(k => k.EndsWith("$" + facet)).FirstOrDefault();
+        string key = Request.Form.AllKeys.Where(k =&gt; k.EndsWith("$" + facet)).FirstOrDefault();
         if (!string.IsNullOrWhiteSpace(key))
         {
             string value = Request.Form[key];
@@ -280,9 +280,9 @@ private BooleanQuery buildQuery(string[] facets)
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FacetData
 {
     public string Name { get; private set; }
-    public IEnumerable<ListItem> Values { get; private set; }
+    public IEnumerable&lt;ListItem&gt; Values { get; private set; }
 
-    public FacetData(string name, IEnumerable<ListItem> values)
+    public FacetData(string name, IEnumerable&lt;ListItem&gt; values)
     {
         Name = name;
         Values = values;
@@ -294,20 +294,20 @@ private BooleanQuery buildQuery(string[] facets)
 						<code>ListItem</code>
 						class to represent each facet value as we'll bind these to a Dropdown list later.</p>
 					<p>So, to build our fact data we need to process the search results with:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable<FacetData> buildFilterData(string[] facets, SearchResultCollection results)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable&lt;FacetData&gt; buildFilterData(string[] facets, SearchResultCollection results)
 {
-    List<FacetData> filters = new List<FacetData>();
+    List&lt;FacetData&gt; filters = new List&lt;FacetData&gt;();
 
     foreach (string facet in facets)
     {
         var data = results
-                    .Select(r => r.Document.GetValues(facet))
-                    .Where(v => v != null && v.Length > 0)
-                    .SelectMany(v => v)
+                    .Select(r =&gt; r.Document.GetValues(facet))
+                    .Where(v =&gt; v != null &amp;&amp; v.Length &gt; 0)
+                    .SelectMany(v =&gt; v)
                     .Distinct()
-                    .Select(v => Sitecore.Context.Database.GetItem(ShortID.Parse(v).ToID()))
-                    .Select(v => new ListItem(v.DisplayName, ShortID.Encode(v.ID).ToLowerInvariant()))
-                    .OrderBy(i => i.Text);
+                    .Select(v =&gt; Sitecore.Context.Database.GetItem(ShortID.Parse(v).ToID()))
+                    .Select(v =&gt; new ListItem(v.DisplayName, ShortID.Encode(v.ID).ToLowerInvariant()))
+                    .OrderBy(i =&gt; i.Text);
 
         FacetData t = new FacetData(facet, data);
 
@@ -336,14 +336,14 @@ private BooleanQuery buildQuery(string[] facets)
 						<code>IEnumerable&lt;FacetData&gt;</code>
 						that we can bind to our UI.</p>
 					<p>To display the facets we need some UI to bind the data to:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><h2>Filters</h2>
-<asp:Repeater runat="server" ID="filterRepeater">
-    <ItemTemplate>
-        <div>
-            <asp:DropDownList runat="server" ID="filter" AutoPostBack="true" />
-        </div>
-    </ItemTemplate>
-</asp:Repeater>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;h2&gt;Filters&lt;/h2&gt;
+&lt;asp:Repeater runat="server" ID="filterRepeater"&gt;
+    &lt;ItemTemplate&gt;
+        &lt;div&gt;
+            &lt;asp:DropDownList runat="server" ID="filter" AutoPostBack="true" /&gt;
+        &lt;/div&gt;
+    &lt;/ItemTemplate&gt;
+&lt;/asp:Repeater&gt;
 
 					</pre>
 					<p>Here we have a simple repeater to create a set of dropdown lists with auto-postback set to true. We set up a standard data binding for them, and for each item we run the following code to do the bind:</p>
@@ -356,7 +356,7 @@ private BooleanQuery buildQuery(string[] facets)
         DropDownList ddl = e.Item.FindControl("filter") as DropDownList;
         ddl.ID = data.Name;
 
-        var vals = new List<ListItem>();
+        var vals = new List&lt;ListItem&gt;();
         vals.Add(new ListItem("-- All " + data.Name + " --", string.Empty));
         vals.AddRange(data.Values);
 
@@ -379,21 +379,21 @@ private BooleanQuery buildQuery(string[] facets)
 						<code>FetchResults()</code>
 						method on your search hits again instead.</p>
 					<p>And with your page of results sorted out, you can bind that to your UI. I created the following HTML in order display the items:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><h2>Results</h2>
-<asp:Repeater runat="server" ID="resultRepeater">
-    <HeaderTemplate><ul></HeaderTemplate>
-    <ItemTemplate>
-        <li>
-            <sc:Image runat="server" id="image" MaxWidth="50" Field="Image" style="display:inline-block;" />
-            <div style="display:inline-block">
-                <sc:Text runat="server" id="title" Field="Title" />
-                <br />
-                <sc:Text runat="server" id="description" Field="Description" />
-            </div>
-        </li>
-    </ItemTemplate>
-    <FooterTemplate></ul></FooterTemplate>
-</asp:Repeater>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;h2&gt;Results&lt;/h2&gt;
+&lt;asp:Repeater runat="server" ID="resultRepeater"&gt;
+    &lt;HeaderTemplate&gt;&lt;ul&gt;&lt;/HeaderTemplate&gt;
+    &lt;ItemTemplate&gt;
+        &lt;li&gt;
+            &lt;sc:Image runat="server" id="image" MaxWidth="50" Field="Image" style="display:inline-block;" /&gt;
+            &lt;div style="display:inline-block"&gt;
+                &lt;sc:Text runat="server" id="title" Field="Title" /&gt;
+                &lt;br /&gt;
+                &lt;sc:Text runat="server" id="description" Field="Description" /&gt;
+            &lt;/div&gt;
+        &lt;/li&gt;
+    &lt;/ItemTemplate&gt;
+    &lt;FooterTemplate&gt;&lt;/ul&gt;&lt;/FooterTemplate&gt;
+&lt;/asp:Repeater&gt;
 
 					</pre>
 					<p>And the code to do the binding is fairly simple:</p>
@@ -403,7 +403,7 @@ private BooleanQuery buildQuery(string[] facets)
     {
         SearchResult sr = e.Item.DataItem as SearchResult;
 
-        Item itm = sr.GetObject<Item>();
+        Item itm = sr.GetObject&lt;Item&gt;();
 
         var image = e.Item.FindControl("image") as Sitecore.Web.UI.WebControls.Image;
         var title = e.Item.FindControl("title") as Sitecore.Web.UI.WebControls.Text;
@@ -428,7 +428,7 @@ private BooleanQuery buildQuery(string[] facets)
 
     SearchResultCollection results = runQuery(query);
 
-    IEnumerable<FacetData> facetData = buildFilterData(facets, results);
+    IEnumerable&lt;FacetData&gt; facetData = buildFilterData(facets, results);
 
     filterRepeater.DataSource = facetData;
     filterRepeater.ItemDataBound += filterRepeater_ItemDataBound;

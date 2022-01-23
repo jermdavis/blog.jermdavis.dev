@@ -46,7 +46,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:10 -->
+		<!-- 23/01/2022 11:04:05 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -154,7 +154,7 @@
 						<a href="https://msdn.microsoft.com/en-us/library/system.web.configuration.httpcapabilitiesbase.screenpixelswidth(v=vs.110).aspx" target="_blank" rel="noopener noreferrer">device's screen pixel-width</a>.</p>
 					<p>QA reported that for mobile browsers this was all fine, and the new code worked as expected, but for desktop browsers the following exception was occurring when the browser property was accessed for the first time:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">System.FormatException: Input string was not in a correct format.
-   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer&amp; number, NumberFormatInfo info, Boolean parseDecimal)
    at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
    at System.Web.Configuration.HttpCapabilitiesBase.get_ScreenPixelsWidth()
 
@@ -174,7 +174,7 @@
 			{
 				int num = 80;
 				int num2 = 8;
-				if (this["screenCharactersWidth"] != null && this["characterWidth"] != null)
+				if (this["screenCharactersWidth"] != null &amp;&amp; this["characterWidth"] != null)
 				{
 					num = Convert.ToInt32(this["screenCharactersWidth"], CultureInfo.InvariantCulture);
 					num2 = Convert.ToInt32(this["characterWidth"], CultureInfo.InvariantCulture);
@@ -257,8 +257,8 @@
 						<code>ISitecoreSettingsWrapper</code>, which is used to read some settings from Sitecore's config files, via the
 						<code>GetSetting()</code>
 						method. So initially we can mock that to return nothing. If we need to add any specific behaviour to it we can do so later:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var setting = new Mock<ISitecoreSettingsWrapper>();
-setting.Setup(i => i.GetSetting(It.IsAny<string>())).Returns(string.Empty);
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var setting = new Mock&lt;ISitecoreSettingsWrapper&gt;();
+setting.Setup(i =&gt; i.GetSetting(It.IsAny&lt;string&gt;())).Returns(string.Empty);
 
 					</pre>
 					<p>Next up is an instance of 51Degrees'
@@ -269,7 +269,7 @@ HttpContext.Current = new HttpContext(request, new HttpResponse(new StringWriter
 
 					</pre>
 					<p>A check with the debugger shows that when you create a request like this, the Browser Capabilities data is all null – so we need to initialise that:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var capsdictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var capsdictionary = new Dictionary&lt;string, object&gt;(StringComparer.OrdinalIgnoreCase);
 HttpContext.Current.Request.Browser = new HttpBrowserCapabilities() { Capabilities = capsdictionary };
 
 					</pre>
@@ -280,7 +280,7 @@ HttpContext.Current.Request.Browser = new HttpBrowserCapabilities() { Capabiliti
 					</pre>
 					<p>Next up, the 51Degrees class needs an
 						<code>IHttpRuntimeCacheWrapper</code>. Caching isn't important to the test, so lets just provide a mock for that:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpruntimeCache = new Mock<IHttpRuntimeCacheWrapper>();
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpruntimeCache = new Mock&lt;IHttpRuntimeCacheWrapper&gt;();
 
 					</pre>
 					<p>So finally we need an
@@ -288,10 +288,10 @@ HttpContext.Current.Request.Browser = new HttpBrowserCapabilities() { Capabiliti
 						object. Digging through the code, this is used to issue the web service request to the 51Degrees service. We don't really want to issue that request and deal with processing and deserialising the response. There's only one method, so let's just make a fake:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FakeWebRequestWrapper : IWebRequestWrapper
 {
-    public T GetJson<T>(string requestUrl)
+    public T GetJson&lt;T&gt;(string requestUrl)
     {
         var serialiser = new JsonSerializer();
-        var device = serialiser.Deserialize<T>("{\"MatchMethod\":\"Exact\",\"Difference\":0,\"DetectionTime\":0.0,\"Values\":{\"BrowserName\":[\"Chrome\"],\"BrowserVersion\":[\"57\"],\"DeviceType\":[\"Desktop\"],\"IsConsole\":[\"False\"],\"IsEReader\":[\"False\"],\"IsMediaHub\":[\"False\"],\"IsMobile\":[\"False\"],\"IsSmallScreen\":[\"False\"],\"IsSmartPhone\":[\"False\"],\"IsTablet\":[\"False\"],\"IsTv\":[\"False\"],\"PlatformName\":[\"Windows\"],\"PlatformVersion\":[\"8.1\"],\"ScreenPixelsHeight\":[\"Unknown\"],\"ScreenPixelsWidth\":[\"Unknown\"]},\"DataSetName\":\"PremiumV3\",\"Published\":\"2017-04-19T00:00:00Z\",\"SignaturesCompared\":0,\"ProfileIds\":{\"1\":15364,\"2\":21460,\"3\":69850,\"4\":18092},\"Useragent\":\"Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko  Chrome/57            Safari/537\",\"TargetUseragent\":\"Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36\"}");
+        var device = serialiser.Deserialize&lt;T&gt;("{\"MatchMethod\":\"Exact\",\"Difference\":0,\"DetectionTime\":0.0,\"Values\":{\"BrowserName\":[\"Chrome\"],\"BrowserVersion\":[\"57\"],\"DeviceType\":[\"Desktop\"],\"IsConsole\":[\"False\"],\"IsEReader\":[\"False\"],\"IsMediaHub\":[\"False\"],\"IsMobile\":[\"False\"],\"IsSmallScreen\":[\"False\"],\"IsSmartPhone\":[\"False\"],\"IsTablet\":[\"False\"],\"IsTv\":[\"False\"],\"PlatformName\":[\"Windows\"],\"PlatformVersion\":[\"8.1\"],\"ScreenPixelsHeight\":[\"Unknown\"],\"ScreenPixelsWidth\":[\"Unknown\"]},\"DataSetName\":\"PremiumV3\",\"Published\":\"2017-04-19T00:00:00Z\",\"SignaturesCompared\":0,\"ProfileIds\":{\"1\":15364,\"2\":21460,\"3\":69850,\"4\":18092},\"Useragent\":\"Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko  Chrome/57            Safari/537\",\"TargetUseragent\":\"Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36\"}");
         return device;
     }
 }
@@ -344,8 +344,8 @@ Assert.AreEqual(0, request.Browser.ScreenPixelsWidth);
 						after it's been initialised the normal way. A bit of decompilation tells us that the
 						<code>HttpWorkerRequest</code>
 						object is stored in a field called "_wr". So:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var workerrequest = new Mock<HttpWorkerRequest>();
-workerrequest.Setup(w => w.GetKnownRequestHeader(39)).Returns("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36");
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var workerrequest = new Mock&lt;HttpWorkerRequest&gt;();
+workerrequest.Setup(w =&gt; w.GetKnownRequestHeader(39)).Returns("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36");
 
 var type = request.GetType();
 var field = type.GetField("_wr", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);

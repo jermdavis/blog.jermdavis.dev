@@ -48,7 +48,7 @@ So here's one way it could work:">
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:16 -->
+		<!-- 23/01/2022 11:04:10 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -145,11 +145,11 @@ So here's one way it could work:">
 					</p>
 					<h2>First step is having some configuration...</h2>
 					<p>A very simple structure to store a pipeline might look like this:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><pipeline name="example">
-  <step type="StronglyTypedPipelines.DoubleStep, StronglyTypedPipelines" />
-  <step type="StronglyTypedPipelines.ToStringStep, StronglyTypedPipelines" />
-  <step type="StronglyTypedPipelines.DuplicateStep, StronglyTypedPipelines" />
-</pipeline>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;pipeline name="example"&gt;
+  &lt;step type="StronglyTypedPipelines.DoubleStep, StronglyTypedPipelines" /&gt;
+  &lt;step type="StronglyTypedPipelines.ToStringStep, StronglyTypedPipelines" /&gt;
+  &lt;step type="StronglyTypedPipelines.DuplicateStep, StronglyTypedPipelines" /&gt;
+&lt;/pipeline&gt;
 
 					</pre>
 					<p>It's just a root element for the pipeline, containing steps. And each
@@ -159,7 +159,7 @@ So here's one way it could work:">
 					<p>So the next task is to load the XML and get it ready for processing:</p>
 					<h2>Loading the XML</h2>
 					<p>Ideally there shouldn't be any significant differences between a "loaded from config" pipeline and a "created by code" one. So the code can start from a new abstract class that inherits from our original pipeline type:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ConfigBasedPipeline<INPUT, OUTPUT> : Pipeline<INPUT, OUTPUT>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ConfigBasedPipeline&lt;INPUT, OUTPUT&gt; : Pipeline&lt;INPUT, OUTPUT&gt;
 {
 }
 
@@ -176,7 +176,7 @@ So here's one way it could work:">
     var pipelineSteps = parsePipelineSteps(pipelineXml);
     validatePipelineSteps(pipelineSteps);
 
-    PipelineSteps = input => processPipelineSteps(pipelineSteps, input);
+    PipelineSteps = input =&gt; processPipelineSteps(pipelineSteps, input);
 }
 
 					</pre>
@@ -185,9 +185,9 @@ So here's one way it could work:">
 						which actually runs the pipeline process that we saw described in the code-first constructor from the previous post.</p>
 					<h2>Parsing and validating</h2>
 					<p>Parsing the XML into objects is fairly simple:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IList<IPipelineStep> parsePipelineSteps(XElement pipelineXml)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IList&lt;IPipelineStep&gt; parsePipelineSteps(XElement pipelineXml)
 {
-    var pipeline = new List<IPipelineStep>();
+    var pipeline = new List&lt;IPipelineStep&gt;();
 
     foreach (var xStep in pipelineXml.Elements("step"))
     {
@@ -209,7 +209,7 @@ So here's one way it could work:">
 {
 }
 
-public interface IPipelineStep<INPUT, OUTPUT> : IPipelineStep
+public interface IPipelineStep&lt;INPUT, OUTPUT&gt; : IPipelineStep
 {
     OUTPUT Process(INPUT input);
 }
@@ -227,7 +227,7 @@ public interface IPipelineStep<INPUT, OUTPUT> : IPipelineStep
 					<p>That's handled by the
 						<code>validatePipelineSteps()</code>
 						method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void validatePipelineSteps(IList<IPipelineStep> pipelineSteps)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void validatePipelineSteps(IList&lt;IPipelineStep&gt; pipelineSteps)
 {
     int stepNumber = 0;
 
@@ -264,7 +264,7 @@ public interface IPipelineStep<INPUT, OUTPUT> : IPipelineStep
 					<p>If the steps validate, all that remains is to provide the code which can execute them. We can't easily express the
 						<code>Func&lt;INPUT,OUTPUT&gt;</code>
 						from the previous post because we don't know the actual step objects involve this time around. But we can iterate them and make use of reflection to get them to do their job anyway:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private OUTPUT processPipelineSteps(IList<IPipelineStep> pipelineSteps, INPUT input)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private OUTPUT processPipelineSteps(IList&lt;IPipelineStep&gt; pipelineSteps, INPUT input)
 {
     object output = input;
 
@@ -288,7 +288,7 @@ public interface IPipelineStep<INPUT, OUTPUT> : IPipelineStep
 						<code>OUTPUT</code>
 						(since we validated the steps earlier) so we know we're safe to cast to that to return the "right" data.</p>
 					<p>Finally, we need to wrap up out abstract config-based pipeline class in a concrete type that specifies what the input and output are:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleConfigBasedPipeline : ConfigBasedPipeline<int, string>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleConfigBasedPipeline : ConfigBasedPipeline&lt;int, string&gt;
 {
     public ExampleConfigBasedPipeline(XElement pipelineXml) : base(pipelineXml)
     {

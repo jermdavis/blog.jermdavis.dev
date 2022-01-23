@@ -49,7 +49,7 @@ I didn't really like this model when it was taught at the original Sitecore trai
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:33 -->
+		<!-- 23/01/2022 11:04:24 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -169,39 +169,39 @@ I didn't really like this model when it was taught at the original Sitecore trai
 						<a href="http://msdn.microsoft.com/en-us/library/dd576348.aspx" target="_blank" rel="noopener noreferrer">MSBuild scripts that are your project files</a>. These are extensible in a variety of ways, but the easiest extension point for this purpose is the
 						<code>AfterBuild</code>
 						event. Unsurprisingly, that's what gets run after the build has succeeded. By default you'll find an empty instance of this in any new project you create:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">  &lt;!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  &lt;Target Name="BeforeBuild"&gt;
+  &lt;/Target&gt;
+  &lt;Target Name="AfterBuild"&gt;
+  &lt;/Target&gt;
+  --&gt;
 
 					</pre>
 					<p>To deploy our files via MSBuild we need the build script to know two things: Firstly where to send the files, and secondly what files to send. It's not an uncommon scenario to want the results of your builds to go to different locations over the lifetime of a project, so it makes sense to have this configurable. A simple approach to allowing this is to have a text file in your solution that contains the target path. We can configure the AfterBuild event to run our deployment tasks if this destination file exists:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">  <target name="AfterBuild">
-    <calltarget targets="DeployToWeb" condition="Exists('.\BuildConfig\WebRootPath.txt')" />
-  </target>
-  <target name="DeployToWeb">
-  </target>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">  &lt;target name="AfterBuild"&gt;
+    &lt;calltarget targets="DeployToWeb" condition="Exists('.\BuildConfig\WebRootPath.txt')" /&gt;
+  &lt;/target&gt;
+  &lt;target name="DeployToWeb"&gt;
+  &lt;/target&gt;
 
 					</pre>
 					<p>To perfom the deployment we need to work our the set of files to include or exclude, get the target location from the config file and the perform the copy:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">  <target name="DeployToWeb">
-    <itemgroup>
-      <itemstodeploy include="bin\*.dll" />
-      <itemstodeploy include="bin\*.pdb" />
-      <itemstodeploy include="App_Config\**\*.config" />
-      <itemstodeploy include="Client.Project\**\*.*" />
-    </itemgroup>
-    <readlinesfromfile file=".\BuildConfig\WebRootPath.txt">
-      <output propertyname="DeployPath" taskparameter="Lines" />
-    </readlinesfromfile>
-    <createitem include="@(ItemsToDeploy)" exclude="**\*.cs">
-      <output taskparameter="Include" itemname="DeployFiles" />
-    </createitem>
-    <copy sourcefiles="@(DeployFiles)" destinationfiles="@(DeployFiles->'$(DeployPath)\%(RelativeDir)%(Filename)%(Extension)')" skipunchangedfiles="true" />
-  </target>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">  &lt;target name="DeployToWeb"&gt;
+    &lt;itemgroup&gt;
+      &lt;itemstodeploy include="bin\*.dll" /&gt;
+      &lt;itemstodeploy include="bin\*.pdb" /&gt;
+      &lt;itemstodeploy include="App_Config\**\*.config" /&gt;
+      &lt;itemstodeploy include="Client.Project\**\*.*" /&gt;
+    &lt;/itemgroup&gt;
+    &lt;readlinesfromfile file=".\BuildConfig\WebRootPath.txt"&gt;
+      &lt;output propertyname="DeployPath" taskparameter="Lines" /&gt;
+    &lt;/readlinesfromfile&gt;
+    &lt;createitem include="@(ItemsToDeploy)" exclude="**\*.cs"&gt;
+      &lt;output taskparameter="Include" itemname="DeployFiles" /&gt;
+    &lt;/createitem&gt;
+    &lt;copy sourcefiles="@(DeployFiles)" destinationfiles="@(DeployFiles-&gt;'$(DeployPath)\%(RelativeDir)%(Filename)%(Extension)')" skipunchangedfiles="true" /&gt;
+  &lt;/target&gt;
 
 					</pre>
 					<p>The

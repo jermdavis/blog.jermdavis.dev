@@ -49,7 +49,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:08 -->
+		<!-- 23/01/2022 11:04:03 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -151,35 +151,35 @@ So this week I'll address the issue of how you can save XML for a package defini
 						<!--more-->
 					</p>
 					<p>If you open the XML for a package definition, you'll find a document a bit like this:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><project>
-	<Metadata>
-		<metadata>
-			<PackageName>Your-Package-Name</PackageName>
-			<Author>Jeremy Davis</Author>
-			<Version>1.0</Version>
-			<Revision/>
-			<License/>
-			<Comment/>
-			<Attributes/>
-			<Readme/>
-			<Publisher/>
-			<PostStep/>
-			<PackageID/>
-		</metadata>
-	</Metadata>
-	<SaveProject>True</SaveProject>
-	<Sources>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;project&gt;
+	&lt;Metadata&gt;
+		&lt;metadata&gt;
+			&lt;PackageName&gt;Your-Package-Name&lt;/PackageName&gt;
+			&lt;Author&gt;Jeremy Davis&lt;/Author&gt;
+			&lt;Version&gt;1.0&lt;/Version&gt;
+			&lt;Revision/&gt;
+			&lt;License/&gt;
+			&lt;Comment/&gt;
+			&lt;Attributes/&gt;
+			&lt;Readme/&gt;
+			&lt;Publisher/&gt;
+			&lt;PostStep/&gt;
+			&lt;PackageID/&gt;
+		&lt;/metadata&gt;
+	&lt;/Metadata&gt;
+	&lt;SaveProject&gt;True&lt;/SaveProject&gt;
+	&lt;Sources&gt;
 		...
-	</Sources>
-	<Converter>
-		<TrivialConverter>
-			<Transforms/>
-		</TrivialConverter>
-	</Converter>
-	<Include/>
-	<Exclude/>
-	<Name/>
-</project>
+	&lt;/Sources&gt;
+	&lt;Converter&gt;
+		&lt;TrivialConverter&gt;
+			&lt;Transforms/&gt;
+		&lt;/TrivialConverter&gt;
+	&lt;/Converter&gt;
+	&lt;Include/&gt;
+	&lt;Exclude/&gt;
+	&lt;Name/&gt;
+&lt;/project&gt;
 
 					</pre>
 					<p>These elements can be split up into three groups:</p>
@@ -315,7 +315,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 						property. This is a bit different, as it represents a collection. We need to be able to add a number of different source definitions to this. It needs to store the collection and be able to serialise it:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageSources : IToXml
 {
-    private List<IPackageSource> _sources = new List<IPackageSource>();
+    private List&lt;IPackageSource&gt; _sources = new List&lt;IPackageSource&gt;();
 
     public void AddSource(IPackageSource source)
     {
@@ -350,7 +350,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 					<p>Both concrete types for sources are similar (and to be honest I'm looking at these and thinking that there's a refactoring job for me to do here) except that they need to generate slightly different XML. The Sitecore Item source looks like:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageSourceItems : IPackageSource
 {
-    private List<string> _entries = new List<string>();
+    private List&lt;string&gt; _entries = new List&lt;string&gt;();
 
     public string Name { get; set; }
     public PackageItemToEntryConverter Converter { get; private set; }
@@ -412,7 +412,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 					<p>Similarly the disk files source looks like:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageSourceFiles : IPackageSource
 {
-    private List<string> _entries = new List<string>();
+    private List&lt;string&gt; _entries = new List&lt;string&gt;();
 
     public string Name { get; set; }
     public PackageFileToEntryConverter Converter { get; private set; }
@@ -484,68 +484,68 @@ var xml = prj.ToXml();
 
 					</pre>
 					<p>And the XML generated comes out as:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><project>
-  <Metadata>
-    <metadata>
-      <PackageName>TestPackage</PackageName>
-      <Author />
-      <Version>1.0</Version>
-      <Revision />
-      <License />
-      <Comment />
-      <Attributes />
-      <ReadMe />
-      <Publisher />
-      <PostStep />
-      <PackageID />
-    </metadata>
-  </Metadata>
-  <SaveProject>true</SaveProject>
-  <Sources>
-    <xfiles>
-      <Entries>
-        <x-item>/somefolder/file1.css</x-item>
-        <x-item>/bin/thebinary.dll</x-item>
-      </Entries>
-      <Converter>
-        <FileToEntryConverter>
-          <Root>/</Root>
-          <Transforms />
-        </FileToEntryConverter>
-      </Converter>
-      <Include />
-      <Exclude />
-      <Name>Files to deploy</Name>
-    </xfiles>
-    <xitems>
-      <Entries>
-        <x-item>/sitecore/content/something/{DD5E504F-5FF9-477F-A2FB-B3905B76368C}/invariant/0</x-item>
-      </Entries>
-      <SkipVersions>false</SkipVersions>
-      <Converter>
-        <ItemToEntryConverter>
-          <Options>
-            <BehaviourOptions>
-              <ItemMode>Undefined</ItemMode>
-              <ItemMergeMode>Undefined</ItemMergeMode>
-            </BehaviourOptions>
-          </Options>
-        </ItemToEntryConverter>
-      </Converter>
-      <Include />
-      <Exclude />
-      <Name>Items to deploy</Name>
-    </xitems>
-  </Sources>
-  <Converter>
-    <TrivialConverter>
-      <Transforms />
-    </TrivialConverter>
-  </Converter>
-  <Include />
-  <Exclude />
-  <Name />
-</project>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;project&gt;
+  &lt;Metadata&gt;
+    &lt;metadata&gt;
+      &lt;PackageName&gt;TestPackage&lt;/PackageName&gt;
+      &lt;Author /&gt;
+      &lt;Version&gt;1.0&lt;/Version&gt;
+      &lt;Revision /&gt;
+      &lt;License /&gt;
+      &lt;Comment /&gt;
+      &lt;Attributes /&gt;
+      &lt;ReadMe /&gt;
+      &lt;Publisher /&gt;
+      &lt;PostStep /&gt;
+      &lt;PackageID /&gt;
+    &lt;/metadata&gt;
+  &lt;/Metadata&gt;
+  &lt;SaveProject&gt;true&lt;/SaveProject&gt;
+  &lt;Sources&gt;
+    &lt;xfiles&gt;
+      &lt;Entries&gt;
+        &lt;x-item&gt;/somefolder/file1.css&lt;/x-item&gt;
+        &lt;x-item&gt;/bin/thebinary.dll&lt;/x-item&gt;
+      &lt;/Entries&gt;
+      &lt;Converter&gt;
+        &lt;FileToEntryConverter&gt;
+          &lt;Root&gt;/&lt;/Root&gt;
+          &lt;Transforms /&gt;
+        &lt;/FileToEntryConverter&gt;
+      &lt;/Converter&gt;
+      &lt;Include /&gt;
+      &lt;Exclude /&gt;
+      &lt;Name&gt;Files to deploy&lt;/Name&gt;
+    &lt;/xfiles&gt;
+    &lt;xitems&gt;
+      &lt;Entries&gt;
+        &lt;x-item&gt;/sitecore/content/something/{DD5E504F-5FF9-477F-A2FB-B3905B76368C}/invariant/0&lt;/x-item&gt;
+      &lt;/Entries&gt;
+      &lt;SkipVersions&gt;false&lt;/SkipVersions&gt;
+      &lt;Converter&gt;
+        &lt;ItemToEntryConverter&gt;
+          &lt;Options&gt;
+            &lt;BehaviourOptions&gt;
+              &lt;ItemMode&gt;Undefined&lt;/ItemMode&gt;
+              &lt;ItemMergeMode&gt;Undefined&lt;/ItemMergeMode&gt;
+            &lt;/BehaviourOptions&gt;
+          &lt;/Options&gt;
+        &lt;/ItemToEntryConverter&gt;
+      &lt;/Converter&gt;
+      &lt;Include /&gt;
+      &lt;Exclude /&gt;
+      &lt;Name&gt;Items to deploy&lt;/Name&gt;
+    &lt;/xitems&gt;
+  &lt;/Sources&gt;
+  &lt;Converter&gt;
+    &lt;TrivialConverter&gt;
+      &lt;Transforms /&gt;
+    &lt;/TrivialConverter&gt;
+  &lt;/Converter&gt;
+  &lt;Include /&gt;
+  &lt;Exclude /&gt;
+  &lt;Name /&gt;
+&lt;/project&gt;
 
 					</pre>
 					<p>Which (other than the fact that those are not real files or items) is a valid package definition.</p>

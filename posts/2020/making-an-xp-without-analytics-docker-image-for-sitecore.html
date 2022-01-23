@@ -46,7 +46,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:20 -->
+		<!-- 23/01/2022 11:04:13 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -144,7 +144,7 @@
 					<p>The starting point for my hackery was having an XP v9.2 CM image. You can build one using
 						<a href="https://github.com/Sitecore/docker-images" rel="noopener" target="_blank">the standard docker repo scripts</a>
 						using:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">.\Build.ps1 -SitecoreUsername <your user> -SitecorePassword <your password>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">.\Build.ps1 -SitecoreUsername &lt;your user&gt; -SitecorePassword &lt;your password&gt;
             -SitecoreVersion '9.2.0' -Topology XP
             -IncludeSpe -WindowsVersion 1903
 
@@ -154,14 +154,14 @@
 						– the community moves quickly to fix these issues...)</p>
 					<p>This generates all the relevant images. And you can use the "standalone" CM one as the basis for a new image. Docker works on the basis of "layers" – when you build a new image you can describe it in terms of the difference between an existing one, and what you want it to be. You describe the changes in your own "<a href="https://docs.docker.com/engine/reference/builder/" rel="noopener" target="_blank">Dockerfile</a>" – text instructions to tell the Docker engine what it should do to make your new image.</p>
 					<p>Configuring an instance of Sitecore to ignore analytics can be done with a config patch:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration xmlns:patch="http://www.sitecore.net/xmlconfig/" xmlns:set="http://www.sitecore.net/xmlconfig/set/"  xmlns:role="http://www.sitecore.net/xmlconfig/role/">
-    <sitecore>
-        <settings>
-            <setting name="Xdb.Enabled" set:value="false" />
-            <setting name="Xdb.Tracking.Enabled" set:value="false" />
-        </settings>
-    </sitecore>
-</configuration>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/" xmlns:set="http://www.sitecore.net/xmlconfig/set/"  xmlns:role="http://www.sitecore.net/xmlconfig/role/"&gt;
+    &lt;sitecore&gt;
+        &lt;settings&gt;
+            &lt;setting name="Xdb.Enabled" set:value="false" /&gt;
+            &lt;setting name="Xdb.Tracking.Enabled" set:value="false" /&gt;
+        &lt;/settings&gt;
+    &lt;/sitecore&gt;
+&lt;/configuration&gt;
 
 					</pre>
 					<p>A trivial change, yes – but it was all I needed to get started and prove I could make this work. So the difference between our base image and our new one is the presence of that file in the
@@ -232,7 +232,7 @@ services:
 
   cm:
     image: ${REGISTRY}sitecore-xpxm-standalone:9.2.0-windowsservercore-${WINDOWSSERVERCORE_VERSION}
-    entrypoint: powershell.exe -Command "& C:\\tools\\entrypoints\\iis\\Development.ps1 -WatchDirectoryParameters @{ Path = 'C:\\src'; Destination = 'C:\\inetpub\\wwwroot'; ExcludeFiles = @(); }"
+    entrypoint: powershell.exe -Command "&amp; C:\\tools\\entrypoints\\iis\\Development.ps1 -WatchDirectoryParameters @{ Path = 'C:\\src'; Destination = 'C:\\inetpub\\wwwroot'; ExcludeFiles = @(); }"
     volumes:
       - ${LICENSE_PATH}:C:\license
       - .\data\cm:C:\inetpub\wwwroot\App_Data\logs

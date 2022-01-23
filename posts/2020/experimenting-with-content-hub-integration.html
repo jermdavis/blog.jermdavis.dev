@@ -47,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 23/01/2022 10:48:15 -->
+		<!-- 23/01/2022 11:04:08 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -221,22 +221,22 @@
 						<code>https://your-instance.stylelabsdemo.com</code>
 						but it will vary depending on how your instance is set up.</p>
 					<p>Then you need to create the new Asset. There are a few steps to that</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task<long> ImportAsset(IWebMClient client, Uri imageUrl, string clientsCustomId)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task&lt;long&gt; ImportAsset(IWebMClient client, Uri imageUrl, string clientsCustomId)
 {
     // First, create an asset record
     var asset = await client.EntityFactory.CreateAsync(Constants.Asset.DefinitionName, CultureLoadOption.Default);
 
     // Specify that it should go in the "standard" content repo - which is the DAM
     var contentRepo = await client.Entities.GetAsync("M.Content.Repository.Standard");
-    var contentRepoRelation = asset.GetRelation<IChildToManyParentsRelation>("ContentRepositoryToAsset");
+    var contentRepoRelation = asset.GetRelation&lt;IChildToManyParentsRelation&gt;("ContentRepositoryToAsset");
     contentRepoRelation.Parents.Add(contentRepo.Id.Value);
 
     // Set its lifecycle status - I'm going for "Approved" here because the approval process will happen in the 3rd-party system for my process
     var finalLifeCycle = await client.Entities.GetAsync("M.Final.LifeCycle.Status.Approved");
-    var finalLifeCycleRelation = asset.GetRelation<IChildToOneParentRelation>("FinalLifeCycleStatusToAsset");
+    var finalLifeCycleRelation = asset.GetRelation&lt;IChildToOneParentRelation&gt;("FinalLifeCycleStatusToAsset");
     finalLifeCycleRelation.Parent = finalLifeCycle.Id.Value;
 
-    // Then set the standard & custom properties required
+    // Then set the standard &amp; custom properties required
     asset.SetPropertyValue("Title", $"Image for ID {clientsCustomId}");
     asset.SetPropertyValue("Custom ID", clientsCustomId);
 
@@ -259,7 +259,7 @@
 					</pre>
 					<p>That will cause Content Hub to download the image, set up the Asset record and generate the correct renditions. So then the code needs to generate the Public Link the integration system needs to store in Sitecore.</p>
 					<p>Generating the public link can be done as shown:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task<long> CreatePublicLink(IWebMClient client, long assetId, string renditionName)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task&lt;long&gt; CreatePublicLink(IWebMClient client, long assetId, string renditionName)
 {
     // Create new Public Link record
     var publicLink = await client.EntityFactory.CreateAsync(Constants.PublicLink.DefinitionName);
@@ -282,14 +282,14 @@
 					</pre>
 					<p>When you look at the schema of a "Public Link" entity in the system, it doesn't have a URL property though. So how do you know what the address to request for the link is? Well a bit of googling
 						<a href="https://www.alpha-solutions.com/no/innsikt/sitecore-content-hub---public-link-for-an-asset" rel="noopener" target="_blank">lead me to an answer for this</a>: You work out the address based on the instance's base url, the "RelativeUrl" property and the "VersionHash" property:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task<string> FetchPublicLink(IWebMClient client, string baseUrl, long publicLinkId)
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task&lt;string&gt; FetchPublicLink(IWebMClient client, string baseUrl, long publicLinkId)
 {
     Console.Write($"Fetching public link {publicLinkId}");
 
     IEntity result = await client.Entities.GetAsync(publicLinkId, EntityLoadConfiguration.Full);
 
-    var relativeUrl = await result.GetPropertyValueAsync<string>("RelativeUrl");
-    var versionHash = await result.GetPropertyValueAsync<string>("VersionHash");
+    var relativeUrl = await result.GetPropertyValueAsync&lt;string&gt;("RelativeUrl");
+    var versionHash = await result.GetPropertyValueAsync&lt;string&gt;("VersionHash");
 
     return $"{baseUrl}/api/public/content/{relativeUrl}?v={versionHash}";
 }
