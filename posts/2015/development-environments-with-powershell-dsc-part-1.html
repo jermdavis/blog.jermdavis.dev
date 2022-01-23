@@ -4,10 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I've written before about approaches to <a href=&quot;/posts/2015/revisiting-install-scripting-for-newer-versions-of-sitecore&quot; target=&quot;_blank&quot;>automating the install of Sitecore instances via PowerShell</a>, but recently I've been working upgrading this process to set up entire servers. As part of this research I've been working on how to move the scripting over to <a href=&quot;https://technet.microsoft.com/en-us/library/dn249912.aspx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>PowerShell Desired State Configuration</a> – Microsoft's framework for automating the configuration of servers. Having got to a position where the scripts are working and I can turn a plain copy of Windows Server into a functioning Sitecore box, I thought I'd shared an explanation of the tools and how it can be used for Sitecore development environments.
-I'm going to break this up into a series of posts, as it's quite a big topic. This week is a bit of an introduction to DSC and my goals for it:">
-		<meta property="og:description" content="I've written before about approaches to <a href=&quot;/posts/2015/revisiting-install-scripting-for-newer-versions-of-sitecore&quot; target=&quot;_blank&quot;>automating the install of Sitecore instances via PowerShell</a>, but recently I've been working upgrading this process to set up entire servers. As part of this research I've been working on how to move the scripting over to <a href=&quot;https://technet.microsoft.com/en-us/library/dn249912.aspx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>PowerShell Desired State Configuration</a> – Microsoft's framework for automating the configuration of servers. Having got to a position where the scripts are working and I can turn a plain copy of Windows Server into a functioning Sitecore box, I thought I'd shared an explanation of the tools and how it can be used for Sitecore development environments.
-I'm going to break this up into a series of posts, as it's quite a big topic. This week is a bit of an introduction to DSC and my goals for it:">
+		<meta name="description" content="Development environments with PowerShell DSC – Part&nbsp;1">
+		<meta property="og:description" content="Development environments with PowerShell DSC – Part&nbsp;1">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;1</title>
@@ -20,25 +18,8 @@ I'm going to break this up into a series of posts, as it's quite a big topic. Th
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC &amp;#x2013; Part&amp;#xA0;1">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-1-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Development environments with PowerShell DSC &#x2013; Part&#xA0;1",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-1-social.png"
-        ],
-        "datePublished": "2015-10-12T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-1">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -49,7 +30,7 @@ I'm going to break this up into a series of posts, as it's quite a big topic. Th
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:49 -->
+		<!-- 23/01/2022 10:19:00 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -125,25 +106,15 @@ I'm going to break this up into a series of posts, as it's quite a big topic. Th
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Development environments with PowerShell DSC – Part&nbsp;1
 				</h1>
-				<div class="meta">Published 12 October 2015</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell</a>
-					<a href="/tags/powershell-dsc" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell DSC</a>
-					<a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Installation</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I've written before about approaches to
 						<a href="/posts/2015/revisiting-install-scripting-for-newer-versions-of-sitecore" target="_blank">automating the install of Sitecore instances via PowerShell</a>, but recently I've been working upgrading this process to set up entire servers. As part of this research I've been working on how to move the scripting over to
 						<a href="https://technet.microsoft.com/en-us/library/dn249912.aspx" target="_blank" rel="noopener noreferrer">PowerShell Desired State Configuration</a>
@@ -179,7 +150,19 @@ I'm going to break this up into a series of posts, as it's quite a big topic. Th
 					<p>DSC is designed to support the DevOps concepts of automating infrastructure tasks and having executable code for describing server state which can also be seen as documentation of the state you require. It allows you to move towards the idea of having servers being disposable – since the process of building them is automated, creating and destroying them is easy. You can get to a state where you click a button in the management tools for Hyper-V (or your preferred Virtualisation framework) to spin up a new virtual machine and it automatically pulls the right configuration from a central location and configures itself to meet your requirements.</p>
 					<h2>What does a basic script look like?</h2>
 					<p>Here's a very basic script, which can be used to install IIS onto a machine:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIIS {     Node “WebSvr001"     {         WindowsFeature WebServer         {             Name = "Web-Server"             Ensure = "Present"         }     } } EnableIIS
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIIS
+{
+    Node “WebSvr001"
+    {
+        WindowsFeature WebServer
+        {
+            Name = "Web-Server"
+            Ensure = "Present"
+        }
+    }
+}
+EnableIIS 
+
 					</pre>
 					<p>The outer block declares a
 						<code>Configuration</code>. That's basically naming the DSC script. Any valid PowerShell identifier can be used here. The name is important because (under the surface) what you're declaring here is kind of like a special CommandLet – hence we need the name so we can execute it later.</p>
@@ -217,7 +200,8 @@ I'm going to break this up into a series of posts, as it's quite a big topic. Th
 						which is used to pass the
 						<code>.MOF</code>
 						files to the underlying management infrastructure and run them. In a test environment, you run something like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Start-DSCConfiguration -Path .\EnableIIS -Verbose -Wait -Force
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Start-DSCConfiguration -Path .\EnableIIS -Verbose -Wait -Force 
+
 					</pre>
 					<p>The
 						<code>Path</code>
@@ -240,7 +224,21 @@ I'm going to break this up into a series of posts, as it's quite a big topic. Th
 					<h2>Making scripts more generic</h2>
 					<p>So far, however, our script has been specific to a single server. That's nice for an example, but it's not very practical for the real world. You'd end up maintaining a separate script for each of the servers you manage and that would be a pain to keep everything up to date. Ideally we'd like to be able to write scripts which describe the state needed for a particular class of server (e.g. "Sitecore Content Deployment Webserver" or "SQL Server") and then just map those configurations to the appropriate server names for any given environment. How can we express our installation requirements in a more generic way to make them reusable?</p>
 					<p>It's actually pretty simple – we can pass configuration data into our DSC Scripts, and generalise the script to process the data. DSC expects you to pass in a dictionary object containing a tree of name-value pairs that describe your config data. For example, expanding on the IIS example above, we might pass in the following configuration data:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{     AllNodes = @(         @{             NodeName = "WebSvr001"             Role = "IIS, SQL"             TempFolder = "c:\dsc"             InstallPath = "C:\Program Files\My Application"             SQL = @{                 InstallConfig = "SqlConfigurationFile.ini"                 SQLPassword = "p@55w0rd"             }          }     ); }
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
+    AllNodes = @(
+        @{
+            NodeName = "WebSvr001"
+            Role = "IIS, SQL"
+            TempFolder = "c:\dsc"
+            InstallPath = "C:\Program Files\My Application"
+            SQL = @{
+                InstallConfig = "SqlConfigurationFile.ini"
+                SQLPassword = "p@55w0rd"
+            }
+         }
+    );
+}
+
 					</pre>
 					<p>It looks a bit cryptic, but it's just PowerShell's way of describing a tree of dictionary/array objects containing some data. (So it's basically PowerShell's equivalent of writing your config as
 						<a href="https://en.wikipedia.org/wiki/JSON" target="_blank" rel="noopener noreferrer">JSON</a>
@@ -260,7 +258,19 @@ I'm going to break this up into a series of posts, as it's quite a big topic. Th
 						<a href="/posts/2015/config-variables-in-powershell-dsc-can-confuse" target="_blank">accessing these nested config variables</a>
 						in a previous post)</p>
 					<p>You then need to modify your DSC Scripts to process the relevant bits of this data. The script for adding IIS doesn't actually need much of this information, but you might it to look like this:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3,12" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIIS {     Node $AllNodes.where{ $_.Role.Contains(“IIS") }.NodeName      {         WindowsFeature WebServer         {             Name = "Web-Server"             Ensure = "Present"         }     } } EnableIIS -ConfigurationData ".\configData.psd1"
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3,12" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIIS
+{
+    Node $AllNodes.where{ $_.Role.Contains(“IIS") }.NodeName 
+    {
+        WindowsFeature WebServer
+        {
+            Name = "Web-Server"
+            Ensure = "Present"
+        }
+    }
+}
+EnableIIS -ConfigurationData ".\configData.psd1"
+
 					</pre>
 					<p>There are two key changes here. The first is the declaration of the
 						<code>Node</code>

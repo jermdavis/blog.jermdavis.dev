@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="After you've finished installing an instance of Sitecore for development or test (as I've been discussing in my previous few posts – <a href=&quot;/posts/2015/msi-parameters&quot; target=&quot;_blank&quot;>Installing</a>, <a href=&quot;/posts/2015/scripted-dms-installs&quot; target=&quot;_blank&quot;>Adding DMS</a>, <a href=&quot;/posts/2015/automating-host-names-and-ssl-certificates-for-sitecore-instances&quot; target=&quot;_blank&quot;>Hosts &amp; SSL</a>), chances are you'll need to deploy some modules or packages onto it. Things like <a href=&quot;https://sdn.sitecore.net/Products/Web%20Forms%20for%20Marketers.aspx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Web Forms for Marketers</a> are regularly needed as a basis for development work. So what can you do if you'd like to automate this with PowerShell as well? ">
-		<meta property="og:description" content="After you've finished installing an instance of Sitecore for development or test (as I've been discussing in my previous few posts – <a href=&quot;/posts/2015/msi-parameters&quot; target=&quot;_blank&quot;>Installing</a>, <a href=&quot;/posts/2015/scripted-dms-installs&quot; target=&quot;_blank&quot;>Adding DMS</a>, <a href=&quot;/posts/2015/automating-host-names-and-ssl-certificates-for-sitecore-instances&quot; target=&quot;_blank&quot;>Hosts &amp; SSL</a>), chances are you'll need to deploy some modules or packages onto it. Things like <a href=&quot;https://sdn.sitecore.net/Products/Web%20Forms%20for%20Marketers.aspx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Web Forms for Marketers</a> are regularly needed as a basis for development work. So what can you do if you'd like to automate this with PowerShell as well? ">
+		<meta name="description" content="Automated package installs">
+		<meta property="og:description" content="Automated package installs">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Automated package installs</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Automated package installs">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/automated-package-installs-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Automated package installs",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/automated-package-installs-social.png"
-        ],
-        "datePublished": "2015-06-29T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/automated-package-installs">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:34 -->
+		<!-- 23/01/2022 10:18:55 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,25 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Automated package installs
 				</h1>
-				<div class="meta">Published 29 June 2015</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/packages" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Packages</a>
-					<a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>After you've finished installing an instance of Sitecore for development or test (as I've been discussing in my previous few posts –
 						<a href="/posts/2015/msi-parameters" target="_blank">Installing</a>,
 						<a href="/posts/2015/scripted-dms-installs" target="_blank">Adding DMS</a>,
@@ -171,10 +144,41 @@
 						<code>.aspx</code>
 						file is, and where the packages to be installed are. Based on the
 						<a href="/posts/2015/scripted-dms-installs" target="_blank">configuration storage I talked about previously</a>, we can update our config xml with some extra data. We need to know the path to the file containing the package install tool, and we need to know what packages to install. For the purposes of testing, I tried adding quite a few:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;config&gt;   &lt;params&gt;     &lt;param name="InstanceName"&gt;TestInstance&lt;/param&gt;      &lt;!-- rest of the original properties go here --&gt;      &lt;param name="PackageUploadTool"&gt;.\files\PackageDeploy.aspx&lt;/param&gt;   &lt;/params&gt;   &lt;hostnames&gt;     &lt;!-- whatever hosts are being configured --&gt;   &lt;/hostnames&gt;   &lt;modules&gt;     &lt;module&gt;.\files\GeoLiteResolver-1.0.zip&lt;/module&gt;     &lt;module&gt;.\files\Web Forms for Marketers 2.3 rev. 140617.zip&lt;/module&gt;     &lt;module&gt;.\files\SPEAK 1.0.0 rev. 130123.zip&lt;/module&gt;     &lt;module&gt;.\files\E-mail Campaign Manager 2.0.0 rev. 130123.zip&lt;/module&gt;     &lt;module&gt;.\files\ECM 2 Save Actions 1.0.0 rev. 130128.zip&lt;/module&gt;     &lt;module&gt;.\files\301RedirectModule10.zip&lt;/module&gt;     &lt;module&gt;.\files\SSLRedirector101.zip&lt;/module&gt;     &lt;module&gt;.\files\MultiLingual Sitemap-1.0.zip&lt;/module&gt;   &lt;/modules&gt; &lt;/config&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><config>
+  <params>
+    <param name="InstanceName">TestInstance</param>
+
+    <!-- rest of the original properties go here -->
+
+    <param name="PackageUploadTool">.\files\PackageDeploy.aspx</param>
+  </params>
+  <hostnames>
+    <!-- whatever hosts are being configured -->
+  </hostnames>
+  <modules>
+    <module>.\files\GeoLiteResolver-1.0.zip</module>
+    <module>.\files\Web Forms for Marketers 2.3 rev. 140617.zip</module>
+    <module>.\files\SPEAK 1.0.0 rev. 130123.zip</module>
+    <module>.\files\E-mail Campaign Manager 2.0.0 rev. 130123.zip</module>
+    <module>.\files\ECM 2 Save Actions 1.0.0 rev. 130128.zip</module>
+    <module>.\files\301RedirectModule10.zip</module>
+    <module>.\files\SSLRedirector101.zip</module>
+    <module>.\files\MultiLingual Sitemap-1.0.zip</module>
+  </modules>
+</config>
+
 					</pre>
 					<p>Based on that, we can write a simple function to install the package deployment tool into our fresh Sitecore instance:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-PackageUpload() {     $siteName = Get-ConfigParam "InstanceName"     $sitecoreFolder = "C:\Inetpub\wwwroot\$($siteName)\Website"          $uploadTool = Get-ConfigParam "PackageUploadTool"          Write-Host "Adding package upload tool to Sitecore..."     Copy-Item $uploadTool $sitecoreFolder -force }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-PackageUpload() {
+    $siteName = Get-ConfigParam "InstanceName"
+    $sitecoreFolder = "C:\Inetpub\wwwroot\$($siteName)\Website"
+    
+    $uploadTool = Get-ConfigParam "PackageUploadTool"
+    
+    Write-Host "Adding package upload tool to Sitecore..."
+    Copy-Item $uploadTool $sitecoreFolder -force
+}
+
 					</pre>
 					<p>It just works out the correct path and copies the
 						<code>.aspx</code>
@@ -184,7 +188,37 @@
 						that I'm using these scripts only for development and test instances. If you wanted to adopt this sort of scripting for publicly exposed instances you should apply proper security to the package deploy process.</p>
 					<h2>Installing packages</h2>
 					<p>Once the package upload tool has been added, we need some script to install the packages. This might look like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-Packages() {     $siteName = Get-ConfigParam "InstanceName"     $sitecoreFolder = "C:\Inetpub\wwwroot\$($siteName)\Data\packages"             foreach($module in Get-ConfigModules) {         # make querystring         $query = (Split-Path -Path $module -Leaf)                  # Copy the package         Write-Host "Copying package $query to Sitecore package folder..."         Copy-Item $module $sitecoreFolder -force                  Write-Host "Calling package upload tool for $query"              # call tool         $url = "http://$siteName/PackageDeploy.aspx?modules=$query"         $result = Invoke-WebRequest -Uri $url -TimeoutSec 600 -OutFile ".\$siteName-PackageResponse-$query.log" -PassThru                  if($result.StatusCode -ne 200) {             Write-Host "StatusCode: $($result.StatusCode)"             throw "Package install failed for $($query)"         }                  # Removing installed package file         $file = Join-Path $sitecoreFolder $query         Remove-Item $file -Force     }      write-host "Package tool done..." }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-Packages() {
+    $siteName = Get-ConfigParam "InstanceName"
+    $sitecoreFolder = "C:\Inetpub\wwwroot\$($siteName)\Data\packages"   
+    
+    foreach($module in Get-ConfigModules) {
+        # make querystring
+        $query = (Split-Path -Path $module -Leaf)
+        
+        # Copy the package
+        Write-Host "Copying package $query to Sitecore package folder..."
+        Copy-Item $module $sitecoreFolder -force
+        
+        Write-Host "Calling package upload tool for $query"
+    
+        # call tool
+        $url = "http://$siteName/PackageDeploy.aspx?modules=$query"
+        $result = Invoke-WebRequest -Uri $url -TimeoutSec 600 -OutFile ".\$siteName-PackageResponse-$query.log" -PassThru
+        
+        if($result.StatusCode -ne 200) {
+            Write-Host "StatusCode: $($result.StatusCode)"
+            throw "Package install failed for $($query)"
+        }
+        
+        # Removing installed package file
+        $file = Join-Path $sitecoreFolder $query
+        Remove-Item $file -Force
+    }
+
+    write-host "Package tool done..."
+}
+
 					</pre>
 					<p>This code goes through the set of module package files that the
 						<code>Get-ConfigModules</code>

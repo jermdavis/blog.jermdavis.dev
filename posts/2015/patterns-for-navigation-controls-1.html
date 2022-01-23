@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Most websites need some sort of navigation UI. If you have a site with more than a handful of pages then you're likely to need to create some components for rendering sets of links that show the structure of your site. So continuing my theme of simple patterns for Sitecore code, here is the first of a few posts on some approaches to navigation. ">
-		<meta property="og:description" content="Most websites need some sort of navigation UI. If you have a site with more than a handful of pages then you're likely to need to create some components for rendering sets of links that show the structure of your site. So continuing my theme of simple patterns for Sitecore code, here is the first of a few posts on some approaches to navigation. ">
+		<meta name="description" content="Patterns for navigation controls - Part&nbsp;1">
+		<meta property="og:description" content="Patterns for navigation controls - Part&nbsp;1">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Patterns for navigation controls - Part&nbsp;1</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Patterns for navigation controls - Part&amp;#xA0;1">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/patterns-for-navigation-controls-1-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Patterns for navigation controls - Part&#xA0;1",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/patterns-for-navigation-controls-1-social.png"
-        ],
-        "datePublished": "2015-01-05T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/patterns-for-navigation-controls-1">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:09 -->
+		<!-- 23/01/2022 10:19:09 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,34 +106,50 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Patterns for navigation controls - Part&nbsp;1
 				</h1>
-				<div class="meta">Published 05 January 2015</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-					<a href="/tags/navigation" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Navigation</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Most websites need some sort of navigation UI. If you have a site with more than a handful of pages then you're likely to need to create some components for rendering sets of links that show the structure of your site. So continuing my theme of simple patterns for Sitecore code, here is the first of a few posts on some approaches to navigation. 
 						<!--more-->
 					</p>
 					<h2>Basic top-level navigation</h2>
 					<p>The primary navigation on many sites is a fixed set of links showing the top level pages of the site. A very simple control for displaying this can start from the following markup in a user control:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;asp:Repeater runat="server" ID="navRepeater"&gt;     &lt;HeaderTemplate&gt;&lt;ul&gt;&lt;/HeaderTemplate&gt;     &lt;ItemTemplate&gt;         &lt;li&gt;&lt;asp:HyperLink runat="server" ID="navLink" /&gt;&lt;/li&gt;     &lt;/ItemTemplate&gt;     &lt;FooterTemplate&gt;&lt;/ul&gt;&lt;/FooterTemplate&gt; &lt;/asp:Repeater&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><asp:Repeater runat="server" ID="navRepeater">
+    <HeaderTemplate><ul></HeaderTemplate>
+    <ItemTemplate>
+        <li><asp:HyperLink runat="server" ID="navLink" /></li>
+    </ItemTemplate>
+    <FooterTemplate></ul></FooterTemplate>
+</asp:Repeater>
+
 					</pre>
 					<p>With some simple code to fill in the data:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Page_Load(object sender, EventArgs e) {     var rootItem = Sitecore.Context.Database.GetItem(Sitecore.Context.Site.ContentStartPath);     navRepeater.DataSource = rootItem.Children;     navRepeater.ItemDataBound += navRepeater_ItemDataBound;     navRepeater.DataBind(); }  void navRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e) {     if(e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)     {         var item = e.Item.DataItem as Item;         var navLink = e.Item.FindControl("navLink") as HyperLink;          navLink.Text = item.DisplayName;         navLink.NavigateUrl = Sitecore.Links.LinkManager.GetItemUrl(item);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Page_Load(object sender, EventArgs e)
+{
+    var rootItem = Sitecore.Context.Database.GetItem(Sitecore.Context.Site.ContentStartPath);
+    navRepeater.DataSource = rootItem.Children;
+    navRepeater.ItemDataBound += navRepeater_ItemDataBound;
+    navRepeater.DataBind();
+}
+
+void navRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
+{
+    if(e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+    {
+        var item = e.Item.DataItem as Item;
+        var navLink = e.Item.FindControl("navLink") as HyperLink;
+
+        navLink.Text = item.DisplayName;
+        navLink.NavigateUrl = Sitecore.Links.LinkManager.GetItemUrl(item);
+    }
+}
+
 					</pre>
 					<p>The root item of the current site is specified in the
 						<code>&lt;sites&gt;</code>
@@ -159,10 +158,64 @@
 						property. (Generally this is the right starting place for primary navigation - but if your site's IA doesn't follow that pattern you can employ alternative rules, or just use the component's Data Source here if you want to give editors the power to change this) Loading that item and binding its children to a repeater lets us display a list of links which can be formatted with some CSS.</p>
 					<h2>Adding a second level</h2>
 					<p>Commonly, however, you want your primary nav to be able to show a bit more of the site's structure. Commonly that means being able to show the immediate children of each of your top level items. This can be achieved by nesting the same behaviour above, to find the children of each of the top level items as it goes through them. The mark-up can be adjusted to add the second level:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;asp:Repeater runat="server" ID="navRepeater"&gt;     &lt;HeaderTemplate&gt;&lt;ul&gt;&lt;/HeaderTemplate&gt;     &lt;ItemTemplate&gt;         &lt;li&gt;             &lt;asp:HyperLink runat="server" ID="navLink" /&gt;             &lt;asp:Repeater runat="server" ID="childRepeater"&gt;                 &lt;HeaderTemplate&gt;&lt;ul&gt;&lt;/HeaderTemplate&gt;                 &lt;ItemTemplate&gt;                     &lt;li&gt;&lt;asp:HyperLink runat="server" ID="childLink" /&gt;&lt;/li&gt;                 &lt;/ItemTemplate&gt;                 &lt;FooterTemplate&gt;&lt;/ul&gt;&lt;/FooterTemplate&gt;                 &lt;/asp:Repeater&gt;             &lt;/asp:Repeater&gt;         &lt;/li&gt;     &lt;/ItemTemplate&gt;     &lt;FooterTemplate&gt;&lt;/ul&gt;&lt;/FooterTemplate&gt; &lt;/asp:Repeater&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><asp:Repeater runat="server" ID="navRepeater">
+    <HeaderTemplate><ul></HeaderTemplate>
+    <ItemTemplate>
+        <li>
+            <asp:HyperLink runat="server" ID="navLink" />
+            <asp:Repeater runat="server" ID="childRepeater">
+                <HeaderTemplate><ul></HeaderTemplate>
+                <ItemTemplate>
+                    <li><asp:HyperLink runat="server" ID="childLink" /></li>
+                </ItemTemplate>
+                <FooterTemplate></ul></FooterTemplate>
+                </asp:Repeater>
+            </asp:Repeater>
+        </li>
+    </ItemTemplate>
+    <FooterTemplate></ul></FooterTemplate>
+</asp:Repeater>
+
 					</pre>
 					<p>And the code similarly:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Page_Load(object sender, EventArgs e) {     var rootItem = Sitecore.Context.Database.GetItem(Sitecore.Context.Site.ContentStartPath);     navRepeater.DataSource = rootItem.Children;     navRepeater.ItemDataBound += navRepeater_ItemDataBound;     navRepeater.DataBind(); }  void navRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e) {     if(e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)     {         var item = e.Item.DataItem as Item;          var navLink = e.Item.FindControl("navLink") as HyperLink;         var childRepeater = e.Item.FindControl("childRepeater") as Repeater;          navLink.Text = item.DisplayName;         navLink.NavigateUrl = Sitecore.Links.LinkManager.GetItemUrl(item);          childRepeater.DataSource = item.Children;         childRepeater.ItemDataBound += childRepeater_ItemDataBound;         childRepeater.DataBind();     } }  void childRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e) {     if (e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)     {         var item = e.Item.DataItem as Item;         var childLink = e.Item.FindControl("childLink") as HyperLink;          childLink.Text = item.DisplayName;         childLink.NavigateUrl = Sitecore.Links.LinkManager.GetItemUrl(item);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Page_Load(object sender, EventArgs e)
+{
+    var rootItem = Sitecore.Context.Database.GetItem(Sitecore.Context.Site.ContentStartPath);
+    navRepeater.DataSource = rootItem.Children;
+    navRepeater.ItemDataBound += navRepeater_ItemDataBound;
+    navRepeater.DataBind();
+}
+
+void navRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
+{
+    if(e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+    {
+        var item = e.Item.DataItem as Item;
+
+        var navLink = e.Item.FindControl("navLink") as HyperLink;
+        var childRepeater = e.Item.FindControl("childRepeater") as Repeater;
+
+        navLink.Text = item.DisplayName;
+        navLink.NavigateUrl = Sitecore.Links.LinkManager.GetItemUrl(item);
+
+        childRepeater.DataSource = item.Children;
+        childRepeater.ItemDataBound += childRepeater_ItemDataBound;
+        childRepeater.DataBind();
+    }
+}
+
+void childRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
+{
+    if (e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+    {
+        var item = e.Item.DataItem as Item;
+        var childLink = e.Item.FindControl("childLink") as HyperLink;
+
+        childLink.Text = item.DisplayName;
+        childLink.NavigateUrl = Sitecore.Links.LinkManager.GetItemUrl(item);
+    }
+}
+
 					</pre>
 					<p>It's fairly common to add a bit of CSS and/or jQuery behaviour to make the second level of this data appear and disappear as a hover or click effect. And that behaviour can be applied on top of this mark-up using whatever patterns and styles are appropriate to your site.</p>
 					<h2>Filtering out pages that shouldn't be shown</h2>
@@ -176,7 +229,34 @@
 					<p>The code can then be adapted to filter out any items which don't have the "show in nav" field checked with a simple query instead of processing the
 						<code>Children</code>
 						property of the items:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string ShowInNavigationQuery = "*[@ShowInNavigation='1']";  protected void Page_Load(object sender, EventArgs e) {     var rootItem = Sitecore.Context.Database.GetItem(Sitecore.Context.Site.ContentStartPath);     navRepeater.DataSource = rootItem.Axes.SelectItems(ShowInNavigationQuery);     navRepeater.ItemDataBound += navRepeater_ItemDataBound;     navRepeater.DataBind(); }  void navRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e) {     if(e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)     {         var item = e.Item.DataItem as Item;          var navLink = e.Item.FindControl("navLink") as HyperLink;         var childRepeater = e.Item.FindControl("childRepeater") as Repeater;          navLink.Text = item.DisplayName;         navLink.NavigateUrl = Sitecore.Links.LinkManager.GetItemUrl(item);          childRepeater.DataSource = item.Axes.SelectItems(ShowInNavigationQuery);         childRepeater.ItemDataBound += childRepeater_ItemDataBound;         childRepeater.DataBind();     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string ShowInNavigationQuery = "*[@ShowInNavigation='1']";
+
+protected void Page_Load(object sender, EventArgs e)
+{
+    var rootItem = Sitecore.Context.Database.GetItem(Sitecore.Context.Site.ContentStartPath);
+    navRepeater.DataSource = rootItem.Axes.SelectItems(ShowInNavigationQuery);
+    navRepeater.ItemDataBound += navRepeater_ItemDataBound;
+    navRepeater.DataBind();
+}
+
+void navRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
+{
+    if(e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+    {
+        var item = e.Item.DataItem as Item;
+
+        var navLink = e.Item.FindControl("navLink") as HyperLink;
+        var childRepeater = e.Item.FindControl("childRepeater") as Repeater;
+
+        navLink.Text = item.DisplayName;
+        navLink.NavigateUrl = Sitecore.Links.LinkManager.GetItemUrl(item);
+
+        childRepeater.DataSource = item.Axes.SelectItems(ShowInNavigationQuery);
+        childRepeater.ItemDataBound += childRepeater_ItemDataBound;
+        childRepeater.DataBind();
+    }
+}
+
 					</pre>
 					<p>The
 						<code>ShowInNavigationQuery</code>

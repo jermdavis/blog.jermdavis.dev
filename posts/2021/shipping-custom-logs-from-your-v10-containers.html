@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="My work on a container-based v10.0 project keeps raising interesting challenges – things that don’t work quite the same way in Docker or Kubernetes, compared to the old world of &quot;bare metal&quot; installs of Sitecore. Custom log files are an example here...">
-		<meta property="og:description" content="My work on a container-based v10.0 project keeps raising interesting challenges – things that don’t work quite the same way in Docker or Kubernetes, compared to the old world of &quot;bare metal&quot; installs of Sitecore. Custom log files are an example here...">
+		<meta name="description" content="Shipping custom logs from your v10&nbsp;containers">
+		<meta property="og:description" content="Shipping custom logs from your v10&nbsp;containers">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Shipping custom logs from your v10&nbsp;containers</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Shipping custom logs from your v10&amp;#xA0;containers">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/shipping-custom-logs-from-your-v10-containers-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Shipping custom logs from your v10&#xA0;containers",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/shipping-custom-logs-from-your-v10-containers-social.png"
-        ],
-        "datePublished": "2021-11-08T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/shipping-custom-logs-from-your-v10-containers">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:18 -->
+		<!-- 23/01/2022 10:19:13 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,24 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Shipping custom logs from your v10&nbsp;containers
 				</h1>
-				<div class="meta">Published 08 November 2021</div>
-				<div class="flex py-1">
-					<a href="/tags/containers" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Containers</a>
-					<a href="/tags/logging" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Logging</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>My work on a container-based v10.0 project keeps raising interesting challenges – things that don’t work quite the same way in Docker or Kubernetes, compared to the old world of "bare metal" installs of Sitecore. Custom log files are an example here...
 						<!--more-->
 					</p>
@@ -161,13 +136,49 @@
 						<code>json</code>
 						file sitting next to it.</p>
 					<p>It's default state is:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{     "LogConfig": {       "sources": [         {           "type": "EventLog",           "startAtOldestRecord": false,           "eventFormatMultiLine": false,           "channels": [             {               "name": "system",               "level": "Error"             }           ]         },         {           "type": "File",           "directory": "c:\\inetpub\\logs",           "filter": "*.log",           "includeSubdirectories": true         },         {           "type": "File",           "directory": "c:\\inetpub\\wwwroot\\App_data\\logs",           "filter": "log.*.txt",           "includeSubdirectories": false         }       ]     }   } }
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+    "LogConfig": {
+      "sources": [
+        {
+          "type": "EventLog",
+          "startAtOldestRecord": false,
+          "eventFormatMultiLine": false,
+          "channels": [
+            {
+              "name": "system",
+              "level": "Error"
+            }
+          ]
+        },
+        {
+          "type": "File",
+          "directory": "c:\\inetpub\\logs",
+          "filter": "*.log",
+          "includeSubdirectories": true
+        },
+        {
+          "type": "File",
+          "directory": "c:\\inetpub\\wwwroot\\App_data\\logs",
+          "filter": "log.*.txt",
+          "includeSubdirectories": false
+        }
+      ]
+    }
+  }
+}
+
 					</pre>
 					<p>So to add extra log files we can modify this. There’s some
 						<a href="https://github.com/microsoft/windows-container-tools/wiki/Authoring-a-Config-File" rel="noopener" target="_blank">documentation available on GitHub</a>
 						because it’s not just disk files you can process here. But I’m only interested in other Sitecore logs for the moment...</p>
 					<p>So we could change the existing pattern there to "<code>*.txt</code>" to bring in everything from the logs folder. But I wanted to be a bit more subtle. I tried adding an extra source which would cover just the files I care about:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{     "type": "File",     "directory": "c:\\inetpub\\wwwroot\\App_data\\logs",     "filter": "MyCustomFile.log.*.txt",     "includeSubdirectories": false }
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+    "type": "File",
+    "directory": "c:\\inetpub\\wwwroot\\App_data\\logs",
+    "filter": "MyCustomFile.log.*.txt",
+    "includeSubdirectories": false
+}
+
 					</pre>
 					<p>That block gets appended after the file source for the main Sitecore logs, as part of the array for "sources".</p>
 					<p>But to make this work, we need to get this into our container images. How do we manage that? Extending the base image build...</p>
@@ -181,7 +192,9 @@
 						</a>
 					</p>
 					<p>You can then add a simple "copy" operation into your Dockerfile:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"># Update Log Monitor config COPY CustomLogMonitorConfig.json C:\LogMonitor\LogMonitorConfig.json
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"># Update Log Monitor config
+COPY CustomLogMonitorConfig.json C:\LogMonitor\LogMonitorConfig.json
+
 					</pre>
 					<p>That will ensure your modified file will end up in the container, ready to run on startup. Note that you will need to rebuild your container images for that to take effect.</p>
 					<p>But once that’s done, the extra data should appear in your streamed logs:</p>

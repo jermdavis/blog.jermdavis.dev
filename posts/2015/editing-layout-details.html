@@ -4,10 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I came across a <a href=&quot;/posts/2014/custom-sitemap-filespart-three&quot; target=&quot;_blank&quot;>Sitemap generation</a> code), the idea interested me enough to do a bit more research into the topic, and try to work out the details.
-So here's some notes on the hows and whys of using code to change layout details. (I'm working on Sitecore 6.6 here, but this information is relevant to many versions of Sitecore) ">
-		<meta property="og:description" content="I came across a <a href=&quot;/posts/2014/custom-sitemap-filespart-three&quot; target=&quot;_blank&quot;>Sitemap generation</a> code), the idea interested me enough to do a bit more research into the topic, and try to work out the details.
-So here's some notes on the hows and whys of using code to change layout details. (I'm working on Sitecore 6.6 here, but this information is relevant to many versions of Sitecore) ">
+		<meta name="description" content="Editing layout details">
+		<meta property="og:description" content="Editing layout details">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Editing layout details</title>
@@ -20,25 +18,8 @@ So here's some notes on the hows and whys of using code to change layout details
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Editing layout details">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/editing-layout-details-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Editing layout details",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/editing-layout-details-social.png"
-        ],
-        "datePublished": "2015-07-20T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/editing-layout-details">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -49,7 +30,7 @@ So here's some notes on the hows and whys of using code to change layout details
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:47 -->
+		<!-- 23/01/2022 10:19:02 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -125,23 +106,15 @@ So here's some notes on the hows and whys of using code to change layout details
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Editing layout details
 				</h1>
-				<div class="meta">Published 20 July 2015</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/presentation" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Presentation</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I came across a
 						<a href="/posts/2014/custom-sitemap-filespart-three" target="_blank">Sitemap generation</a>
 						code), the idea interested me enough to do a bit more research into the topic, and try to work out the details.</p>
@@ -160,7 +133,10 @@ So here's some notes on the hows and whys of using code to change layout details
 					</p>
 					<h2>Loading the Layout Details</h2>
 					<p>To read meaningful data from the Renderings field, you have to take into account the Layout Delta behaviour. The XML in the Renderings field for a particular item is not necessarily all the data you need to process. Hence you need to make sure you use the correct Sitecore classes to read this data. To extract the full XML, you can use:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var page = Sitecore.Context.Database.GetItem("/sitecore/content/Home"); var field = page.Fields[Sitecore.FieldIDs.LayoutField]; string xml = LayoutField.GetFieldValue(field);
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var page = Sitecore.Context.Database.GetItem("/sitecore/content/Home");
+var field = page.Fields[Sitecore.FieldIDs.LayoutField];
+string xml = LayoutField.GetFieldValue(field);
+
 					</pre>
 					<p>First we load a page, and then extract the Renderings field from it. The constant
 						<code>Sitecore.FieldIDs.LayoutField</code>
@@ -178,6 +154,7 @@ So here's some notes on the hows and whys of using code to change layout details
 						<code>LayoutDefinitions</code>
 						manages this for us, and provides a method to parse the XML into objects:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var details = Sitecore.Layouts.LayoutDefinition.Parse(xml);
+
 					</pre>
 					<h2>Modifying the Layout Details</h2>
 					<p>To access and modify the data in your
@@ -190,29 +167,46 @@ So here's some notes on the hows and whys of using code to change layout details
 					</p>
 					<p>So in the same way this bit of UI shows, you start traversing these objects by finding the appropriate
 						<code>Device</code>. You can either iterate them:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach(DeviceDefinition device in details.Devices) {     // do something with device }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach(DeviceDefinition device in details.Devices)
+{
+    // do something with device
+}
+
 					</pre>
 					<p>or you can find a specific one by ID (The ID is the GUID of the Device item under
 						<code>/sitecore/layout/Devices</code>):</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var device = details.GetDevice("{FE5D7FDF-89C0-4D99-9AA3-B5FBD009C9F3}");
+
 					</pre>
 					<p>Each of these devices then includes a series of Rendering Definitions - the things which need to be displayed when this device is being used. Again you can either iterate these, or extract specific ones. To iterate through the things that will be rendered, you can:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach(RenderingDefinition rendering in device.Renderings) {     // do something with a rendering }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach(RenderingDefinition rendering in device.Renderings)
+{
+    // do something with a rendering
+}
+
 					</pre>
 					<p>Each of these renderings have properties for things like the Datasource, the cache settings etc. They also have a unique ID for each individual rendering, as well as the ID of the Rendering / Sublayout that is being used for presentation. You can fetch specific renderings with:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">RenderingDefinition r = device.GetRenderingByUniqueId("{43222D12-08C9-453B-AE96-D406EBB95126}");
+
 					</pre>
 					<p>(I don't believe these IDs are presented in the UI anywhere – so they make most sense in combination with iterating the collection)</p>
 					<p>Alternatively you can fetch by the UI component's ID. If you want to find exactly one rendering definition based on a specific control ID you can call:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">RenderingDefinition r = device.GetRendering("{FE5D7FDF-89C0-4D99-9AA3-B5FBD009C9F3}");
+
 					</pre>
 					<p>or if you expect to get back more than one rendering definition based on a specific component you could call:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach(RenderingDefinition r = device.GetRenderings("{43222D12-08C9-453B-AE96-D406EBB95126}")) {     // do something with a rendering }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach(RenderingDefinition r = device.GetRenderings("{43222D12-08C9-453B-AE96-D406EBB95126}"))
+{
+    // do something with a rendering
+}
+
 					</pre>
 					<p>In all of these cases, you can then update the
 						<code>RenderingDefinition</code>
 						object's properties in the usual way. For example, if you wanted to set a data source:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">RenderingDefinition r = device.GetRenderingByUniqueId("{43222D12-08C9-453B-AE96-D406EBB95126}"); r.Datasource = "/somewhere/thing/stuff";
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">RenderingDefinition r = device.GetRenderingByUniqueId("{43222D12-08C9-453B-AE96-D406EBB95126}");
+r.Datasource = "/somewhere/thing/stuff";
+
 					</pre>
 					<p>You can also create new Rendering Definitions and add them to the Device object, or remove Rendering Definitions from the device using the
 						<code>device.AddRendering()</code>
@@ -223,7 +217,14 @@ So here's some notes on the hows and whys of using code to change layout details
 					<p>After you've made your changes you need to save your data. As above, you need to ensure that you deal with the fact that you're saving a Layout Delta. And again this is done via the
 						<code>LayoutField</code>
 						class. For example:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">string newXml = details.ToXml(); var field = page.Fields[Sitecore.FieldIDs.LayoutField];  using (new Sitecore.Data.Items.EditContext(page)) {     LayoutField.SetFieldValue(field, newXml); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">string newXml = details.ToXml();
+var field = page.Fields[Sitecore.FieldIDs.LayoutField];
+
+using (new Sitecore.Data.Items.EditContext(page))
+{
+    LayoutField.SetFieldValue(field, newXml);
+}
+
 					</pre>
 					<p>The Layout Details object knows how to serialise itself to XML via the
 						<code>ToXml()</code>

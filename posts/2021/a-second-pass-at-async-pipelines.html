@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="<a href=&quot;/posts/2021/pipelines-and-async&quot; target=&quot;_blank&quot;>Last time out I was looking at applying async/await patterns to some pipeline patterns for C#</a>. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...">
-		<meta property="og:description" content="<a href=&quot;/posts/2021/pipelines-and-async&quot; target=&quot;_blank&quot;>Last time out I was looking at applying async/await patterns to some pipeline patterns for C#</a>. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...">
+		<meta name="description" content="A second pass at async&nbsp;pipelines">
+		<meta property="og:description" content="A second pass at async&nbsp;pipelines">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - A second pass at async&nbsp;pipelines</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - A second pass at async&amp;#xA0;pipelines">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-second-pass-at-async-pipelines-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "A second pass at async&#xA0;pipelines",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/a-second-pass-at-async-pipelines-social.png"
-        ],
-        "datePublished": "2021-06-21T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/a-second-pass-at-async-pipelines">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:26 -->
+		<!-- 23/01/2022 10:18:53 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,20 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					A second pass at async&nbsp;pipelines
 				</h1>
-				<div class="meta">Published 21 June 2021</div>
-				<div class="flex py-1">
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>
 						<a href="/posts/2021/pipelines-and-async" target="_blank">Last time out I was looking at applying async/await patterns to some pipeline patterns for C#</a>. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...
 						<!--more-->
@@ -144,21 +123,92 @@
 					<p>Writing code that uses the
 						<code>async</code>/<code>await</code>
 						patterns from the previous post can have some interesting effects on the order of execution for some of the code. An example to demonstrate that is fairly simple to construct. Expanding on the example code I started last time, consider a pipeline with three steps:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt; { 	public ExampleAsyncPipeline() 	{ 		_pipelineSteps = input =&gt; input 			.Step(new HttpFetchAsyncStep()) 			.Step(new ModifyTextAsyncStep()) 			.Step(new DiskWriteAsyncStep());  	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline<Uri, string>
+{
+	public ExampleAsyncPipeline()
+	{
+		_pipelineSteps = input => input
+			.Step(new HttpFetchAsyncStep())
+			.Step(new ModifyTextAsyncStep())
+			.Step(new DiskWriteAsyncStep());
+
+	}
+}
+
 					</pre>
 					<p>As the steps say: Grab some data, modify the data, and write it to disk somewhere. And we'll add in some debug output. The first step does the fetch. It outputs some debug data on entry, after the
 						<code>await</code>
 						returns for the input data, and then just before returning.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt; { 	private static readonly HttpClient _client = new HttpClient();  	public async Task&lt;string&gt; ProcessAsync(Task&lt;Uri&gt; Input) 	{ 		Console.WriteLine("Entering HttpFetchAsyncStep #1"); 		 		var uri = await Input; 		Console.WriteLine("Have Input HttpFetchAsyncStep #1"); 		 		Console.WriteLine("Leaving HttpFetchAsyncStep #1"); 		 		return await _client.GetStringAsync(uri); 	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep<Uri, string>
+{
+	private static readonly HttpClient _client = new HttpClient();
+
+	public async Task<string> ProcessAsync(Task<Uri> Input)
+	{
+		Console.WriteLine("Entering HttpFetchAsyncStep #1");
+		
+		var uri = await Input;
+		Console.WriteLine("Have Input HttpFetchAsyncStep #1");
+		
+		Console.WriteLine("Leaving HttpFetchAsyncStep #1");
+		
+		return await _client.GetStringAsync(uri);
+	}
+}
+
 					</pre>
 					<p>The second step just does a simple text replacement to show it did something. And it also outputs debug data at the same points in its execution.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ModifyTextAsyncStep : IAsyncPipelineStep&lt;string, string&gt; { 	public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input) 	{ 		Console.WriteLine("Entering ModifyTextAsyncStep #2");  		var txt = await Input; 		Console.WriteLine("Have Input ModifyTextAsyncStep #2");  		var output = txt.Replace("BBC", "Not the BBC");  		Console.WriteLine("Leaving ModifyTextAsyncStep #2");  		return output; 	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ModifyTextAsyncStep : IAsyncPipelineStep<string, string>
+{
+	public async Task<string> ProcessAsync(Task<string> Input)
+	{
+		Console.WriteLine("Entering ModifyTextAsyncStep #2");
+
+		var txt = await Input;
+		Console.WriteLine("Have Input ModifyTextAsyncStep #2");
+
+		var output = txt.Replace("BBC", "Not the BBC");
+
+		Console.WriteLine("Leaving ModifyTextAsyncStep #2");
+
+		return output;
+	}
+}
+
 					</pre>
 					<p>And finally, with the same debug output pattern, the third step works out where the desktop folder is and writes the data it receives to that folder.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt; { 	public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input) 	{ 		Console.WriteLine("Entering DiskWriteAsyncStep #3"); 		 		var data = await Input; 		Console.WriteLine("Have Input DiskWriteAsyncStep #3"); 		 		var desktopFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop); 		var fileName =  System.IO.Path.Combine(desktopFolder, "test.txt");  		await System.IO.File.WriteAllTextAsync(fileName, data);  		Console.WriteLine("Leaving DiskWriteAsyncStep #3");  		return fileName; 	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep<string, string>
+{
+	public async Task<string> ProcessAsync(Task<string> Input)
+	{
+		Console.WriteLine("Entering DiskWriteAsyncStep #3");
+		
+		var data = await Input;
+		Console.WriteLine("Have Input DiskWriteAsyncStep #3");
+		
+		var desktopFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+		var fileName =  System.IO.Path.Combine(desktopFolder, "test.txt");
+
+		await System.IO.File.WriteAllTextAsync(fileName, data);
+
+		Console.WriteLine("Leaving DiskWriteAsyncStep #3");
+
+		return fileName;
+	}
+}
+
 					</pre>
 					<p>So if we run that pipeline, passing in a valid url, then the debug output looks interesting:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="4,5,6,7" data-enlighter-language="text" style="width:100%; overflow:scroll;">Entering HttpFetchAsyncStep #1 Have Input HttpFetchAsyncStep #1 Leaving HttpFetchAsyncStep #1 Entering ModifyTextAsyncStep #2 Entering DiskWriteAsyncStep #3 Have Input ModifyTextAsyncStep #2 Leaving ModifyTextAsyncStep #2 Have Input DiskWriteAsyncStep #3 Leaving DiskWriteAsyncStep #3
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="4,5,6,7" data-enlighter-language="text" style="width:100%; overflow:scroll;">Entering HttpFetchAsyncStep #1
+Have Input HttpFetchAsyncStep #1
+Leaving HttpFetchAsyncStep #1
+Entering ModifyTextAsyncStep #2
+Entering DiskWriteAsyncStep #3
+Have Input ModifyTextAsyncStep #2
+Leaving ModifyTextAsyncStep #2
+Have Input DiskWriteAsyncStep #3
+Leaving DiskWriteAsyncStep #3
+
 					</pre>
 					<p>The first step proceeds as we'd expect – entering, getting data, and returning. But then the second step enters, and then immediately the third step enters. Then the second step gets its input and leaves before the third step does the same...</p>
 					<p>Initially that seems wrong – why would parts of step two and three appear to happen out of order? But I think this is actually a side-effect of how async code works. A statement which awaits a task is going to do one of two things. Either the task is complete and the value is returned immediately, or the task is not complete and the code tries to find something else to do in order to fill its time. In our case, the first step's
@@ -176,7 +226,22 @@
 						<code>await</code>
 						in a pipeline step might happen some undefined amount of time before the remainder of the code.</p>
 					<p>Imagine if the code took a lock on a database table, awaited the input of a really long-running network operation, and then carried on to write something to the database. That code would almost certainly run ok on a developer's computer. But under load in the real world, you could end up with some horrible performance issues where nobody else can do anything to the database table while this bit of code sits and waits for async operations to complete. In broad strokes:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CauseAnIssueAsyncStep : IAsyncPipelineStep&lt;string, string&gt; {     public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input)     {         TakeOutSomeLocks();          var data = FetchSomeSynchronousData(); 		         var slowThingThatTakesAges = await Input; 		         var result = FurtherWork(data, slowThingThatTakesAges);          return result;     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CauseAnIssueAsyncStep : IAsyncPipelineStep<string, string>
+{
+    public async Task<string> ProcessAsync(Task<string> Input)
+    {
+        TakeOutSomeLocks();
+
+        var data = FetchSomeSynchronousData();
+		
+        var slowThingThatTakesAges = await Input;
+		
+        var result = FurtherWork(data, slowThingThatTakesAges);
+
+        return result;
+    }
+}
+
 					</pre>
 					<p>And with just the right "wrong code" happening before that initial await I'm pretty sure it would be possible to cause deadlocks, and really mess up your day.</p>
 					<p>Clearly this code pattern is not great. So how can we resolve this issue?</p>
@@ -192,29 +257,110 @@
 						and a
 						<code>Task&lt;T&gt;</code>
 						result:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;TIn, TOut&gt; { 	Task&lt;TOut&gt; ProcessAsync(TIn Input); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep<TIn, TOut>
+{
+	Task<TOut> ProcessAsync(TIn Input);
+}
+
 					</pre>
 					<p>And the type for the overall pipeline keeps a
 						<code>Func&lt;TIn, Task&gt;</code>
 						for the steps, and exposes the
 						<code>Task ProcessAsync(TIn Input)</code>
 						method for executing the complete pipeline:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt; { 	public Func&lt;TIn, Task&lt;TOut&gt;&gt; _pipelineSteps { get; protected set; }  	public Task&lt;TOut&gt; ProcessAsync(TIn Input) 	{ 		return _pipelineSteps(Input); 	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline<TIn, TOut> : IAsyncPipelineStep<TIn, TOut>
+{
+	public Func<TIn, Task<TOut>> _pipelineSteps { get; protected set; }
+
+	public Task<TOut> ProcessAsync(TIn Input)
+	{
+		return _pipelineSteps(Input);
+	}
+}
+
 					</pre>
 					<p>The extension class for composing the steps needs two methods now. One takes a
 						<code>TIn</code>
 						input, and runs the step on it directly. And the other takes a
 						<code>Task</code>
 						and awaits the result before running the step over this value:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class AsyncPipelineStepExtensions { 	public async static Task&lt;TOut&gt; Step&lt;TIn, TOut&gt;(this Task&lt;TIn&gt; Input, IAsyncPipelineStep&lt;TIn, TOut&gt; Step) 	{ 		var input = await Input; 		return await Step.ProcessAsync(input); 	}  	public async static Task&lt;TOut&gt; Step&lt;TIn, TOut&gt;(this TIn Input, IAsyncPipelineStep&lt;TIn, TOut&gt; Step) 	{ 		return await Step.ProcessAsync(Input); 	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class AsyncPipelineStepExtensions
+{
+	public async static Task<TOut> Step<TIn, TOut>(this Task<TIn> Input, IAsyncPipelineStep<TIn, TOut> Step)
+	{
+		var input = await Input;
+		return await Step.ProcessAsync(input);
+	}
+
+	public async static Task<TOut> Step<TIn, TOut>(this TIn Input, IAsyncPipelineStep<TIn, TOut> Step)
+	{
+		return await Step.ProcessAsync(Input);
+	}
+}
+
 					</pre>
 					<p>With all those changes, the three example steps look largely the same. But now theydon't need to
 						<code>await</code>
 						their input now, because that bit of boilerplate has been abstracted away:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt; { 	private static readonly HttpClient _client = new HttpClient();  	public async Task&lt;string&gt; ProcessAsync(Uri Input) 	{ 		Console.WriteLine("Entering HttpFetchAsyncStep #1"); 		 		Console.WriteLine("Leaving HttpFetchAsyncStep #1"); 		 		return await _client.GetStringAsync(Input); 	} }  public class ModifyTextAsyncStep : IAsyncPipelineStep&lt;string, string&gt; { 	public async Task&lt;string&gt; ProcessAsync(string Input) 	{ 		Console.WriteLine("Entering ModifyTextAsyncStep #2");  		var output = Input.Replace("BBC", "Not the BBC");  		Console.WriteLine("Leaving ModifyTextAsyncStep #2");  		return output; 	} }  public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt; { 	public async Task&lt;string&gt; ProcessAsync(string Input) 	{ 		Console.WriteLine("Entering DiskWriteAsyncStep #3"); 		 		var desktopFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop); 		var fileName =  System.IO.Path.Combine(desktopFolder, "test.txt");  		await System.IO.File.WriteAllTextAsync(fileName, Input);  		Console.WriteLine("Leaving DiskWriteAsyncStep #3");  		return fileName; 	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep<Uri, string>
+{
+	private static readonly HttpClient _client = new HttpClient();
+
+	public async Task<string> ProcessAsync(Uri Input)
+	{
+		Console.WriteLine("Entering HttpFetchAsyncStep #1");
+		
+		Console.WriteLine("Leaving HttpFetchAsyncStep #1");
+		
+		return await _client.GetStringAsync(Input);
+	}
+}
+
+public class ModifyTextAsyncStep : IAsyncPipelineStep<string, string>
+{
+	public async Task<string> ProcessAsync(string Input)
+	{
+		Console.WriteLine("Entering ModifyTextAsyncStep #2");
+
+		var output = Input.Replace("BBC", "Not the BBC");
+
+		Console.WriteLine("Leaving ModifyTextAsyncStep #2");
+
+		return output;
+	}
+}
+
+public class DiskWriteAsyncStep : IAsyncPipelineStep<string, string>
+{
+	public async Task<string> ProcessAsync(string Input)
+	{
+		Console.WriteLine("Entering DiskWriteAsyncStep #3");
+		
+		var desktopFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+		var fileName =  System.IO.Path.Combine(desktopFolder, "test.txt");
+
+		await System.IO.File.WriteAllTextAsync(fileName, Input);
+
+		Console.WriteLine("Leaving DiskWriteAsyncStep #3");
+
+		return fileName;
+	}
+}
+
 					</pre>
 					<p>The definition of the overall pipeline doesn't change, despite the changes to the underlying types:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt; { 	public ExampleAsyncPipeline() 	{ 		_pipelineSteps = input =&gt; input 			.Step(new HttpFetchAsyncStep()) 			.Step(new ModifyTextAsyncStep()) 			.Step(new DiskWriteAsyncStep());  	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline<Uri, string>
+{
+	public ExampleAsyncPipeline()
+	{
+		_pipelineSteps = input => input
+			.Step(new HttpFetchAsyncStep())
+			.Step(new ModifyTextAsyncStep())
+			.Step(new DiskWriteAsyncStep());
+
+	}
+}
+
 					</pre>
 					<p>To my eye, that approach looks better. It's only a small change really, but it's taken away the ability to make a mistake, without changing the core of how it works.</p>
 					<p>And running it produces the output we'd expect:</p>

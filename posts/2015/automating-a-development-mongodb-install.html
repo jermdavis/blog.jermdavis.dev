@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="As I slowly get to move from v6.6 era versions of Sitecore onto the more modern releases, one of the topics I've been re-visiting is install automation. In the past <a href=&quot;/posts/2015/msi-parameters&quot; target=&quot;_blank&quot;>I'd looked at PowerShell scripts for installing Sitecore</a> itself, and configuring development sites, but one of the new things to deal with once you move past v7.5 is the need for MongoDB. Turns out, that's pretty easy to automate if you need to:">
-		<meta property="og:description" content="As I slowly get to move from v6.6 era versions of Sitecore onto the more modern releases, one of the topics I've been re-visiting is install automation. In the past <a href=&quot;/posts/2015/msi-parameters&quot; target=&quot;_blank&quot;>I'd looked at PowerShell scripts for installing Sitecore</a> itself, and configuring development sites, but one of the new things to deal with once you move past v7.5 is the need for MongoDB. Turns out, that's pretty easy to automate if you need to:">
+		<meta name="description" content="Automating a development MongoDB&nbsp;Install">
+		<meta property="og:description" content="Automating a development MongoDB&nbsp;Install">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Automating a development MongoDB&nbsp;Install</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Automating a development MongoDB&amp;#xA0;Install">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/automating-a-development-mongodb-install-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Automating a development MongoDB&#xA0;Install",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/automating-a-development-mongodb-install-social.png"
-        ],
-        "datePublished": "2015-09-07T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/automating-a-development-mongodb-install">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:38 -->
+		<!-- 23/01/2022 10:18:56 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,25 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Automating a development MongoDB&nbsp;Install
 				</h1>
-				<div class="meta">Published 07 September 2015</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/mongodb" class="p-1 mr-1 bg-gray-100 rounded-md">
-						MongoDB</a>
-					<a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell</a>
-					<a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Installation</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>As I slowly get to move from v6.6 era versions of Sitecore onto the more modern releases, one of the topics I've been re-visiting is install automation. In the past
 						<a href="/posts/2015/msi-parameters" target="_blank">I'd looked at PowerShell scripts for installing Sitecore</a>
 						itself, and configuring development sites, but one of the new things to deal with once you move past v7.5 is the need for MongoDB. Turns out, that's pretty easy to automate if you need to:
@@ -152,12 +125,14 @@
 						<a href="http://docs.mongodb.org/manual/tutorial/install-mongodb-on-windows/" target="_blank" rel="noopener noreferrer">look at the documentation for Windows installs on the Mongodb.org site</a>, it's clear that they've thought about this scenario. Their installer is packaged as an
 						<code>MSI</code>, and they document the parameters you can pass to configure it. So to perform a simple unattended install for a development machine, you can run:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi ADDLOCAL="ALL"
+
 					</pre>
 					<p>(Though obviously the name of the
 						<code>MSI</code>
 						varies depending on the version you want to use)</p>
 					<p>To make that work in PowerShell, you need to fiddle with the text a little though:</p>
 					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi "ADDLOCAL=ALL" | Out-Null
+
 					</pre>
 					<p>Note the change in the way the double quotes are used around the
 						<code>ADDLOCAL</code>
@@ -175,41 +150,94 @@
 					<p>The first of these is trivial. You need a two folders – One for logs and one for data. If your data is going to live in
 						<code>c:\MongoData</code>
 						you might use a quick snippet of PowerShell:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$mongoDataFolder = "c:\MongoData"  md "$mongoDataFolder\data" md "$mongoDataFolder\logs"
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$mongoDataFolder = "c:\MongoData"
+
+md "$mongoDataFolder\data"
+md "$mongoDataFolder\logs"
+
 					</pre>
 					<p>Note that depending on where you choose to put the MongoDB data files, and whether you choose to install the service to run under a different user account from the default, you may need to change the disk permissions for your folder. MSDN
 						<a href="http://blogs.msdn.com/b/johan/archive/2008/10/01/powershell-editing-permissions-on-a-file-or-folder.aspx" target="_blank" rel="noopener noreferrer">documents how to add extra ACLs to a folder using PowerShell</a>. However since I've put the folder in the root of
 						<code>C:</code>
 						and am using the default "local system" account for the service, the permissions here are ok by default.</p>
 					<p>Next is the basic config file – which is also pretty trivial. At its simplest, according to the documentation, all you need is:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:     destination: file     path: c:\MongoData\log\mongod.log storage:     dbPath: c:\MongoData\data
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:
+    destination: file
+    path: c:\MongoData\log\mongod.log
+storage:
+    dbPath: c:\MongoData\data
+
 					</pre>
 					<p>Interestingly, MongoDB's default settings create quite large disk files for your databases – the journal file defaults to 1GB of disk space for each database. This can be a lot of space to use up on a development machine, so there is an option called
 						<code>SmallFiles</code>
 						which can be enabled if you want to reduce this size down to 128MB for each journal. Adding it to the example config above would give:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:     destination: file     path: c:\MongoData\log\mongod.log storage:     dbPath: c:\MongoData\data     mmapv1:         smallFiles: true
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:
+    destination: file
+    path: c:\MongoData\log\mongod.log
+storage:
+    dbPath: c:\MongoData\data
+    mmapv1:
+        smallFiles: true
+
 					</pre>
 					<p>At this point, I don't know enough about how MongoDB works to understand whether this setting is a good idea for us Sitecore developers though.</p>
 					<p>You can write out the basic config to disk using the path variable above with:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$cfg = @" systemLog:     destination: file     path: $mongoDataFolder\logs\mongod.log storage:     dbPath: $mongoDataFolder\data "@  $cfg | Out-File "$mongoDataFolder\mongod.cfg"
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$cfg = @"
+systemLog:
+    destination: file
+    path: $mongoDataFolder\logs\mongod.log
+storage:
+    dbPath: $mongoDataFolder\data
+"@
+
+$cfg | Out-File "$mongoDataFolder\mongod.cfg"
+
 					</pre>
 					<p>The
 						<code>@"..."@</code>
 						is PowerShell's way of expressing a multi-line string. The closing "tag" here must be on a new line. If not, it will not work.</p>
 					<p>Then, according to the documentation, you can tell MongoDB to configure itself as a service:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">"C:\Program Files\MongoDB\v3.0\bin\mongod.exe" --config "C:\MongoData\mongod.cfg" --install
+
 					</pre>
 					<p>Again, we can edit this a bit to make it more PowerShell-friendly:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">&amp;"$Env:ProgramFiles\MongoDB\Server\3.0\bin\mongod.exe" --config "$mongoDataFolder\mongod.cfg" --install | Out-Null
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">&"$Env:ProgramFiles\MongoDB\Server\3.0\bin\mongod.exe" --config "$mongoDataFolder\mongod.cfg" --install | Out-Null
+
 					</pre>
 					<p>The ampersand says "treat the following string as if it was a command to execute". The
 						<code>$Env:ProgramFiles</code>
 						variable makes sure we get the right folder for the 64bit Program Files directory, and we make use of the variable from before to locate the config file.</p>
 					<p>Note that this will create the service, but won't set it to start automatically. You can change the start settings and ensure it's started up via:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Set-Service -Name MongoDB -StartupType Automatic Start-Service -Name MongoDB
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Set-Service -Name MongoDB -StartupType Automatic
+Start-Service -Name MongoDB
+
 					</pre>
 					<p>So, to pull it all together:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "Installing MongoDB..." msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi "ADDLOCAL=ALL" | Out-Null  Write-Host "Create data folder" $mongoDataFolder = "c:\MongoData" md "$mongoDataFolder\data" md "$mongoDataFolder\logs"  Write-Host "Create config file" $cfg = @" systemLog:     destination: file     path: $mongoDataFolder\logs\mongod.log storage:     dbPath: $mongoDataFolder\data "@ $cfg | Out-File "$mongoDataFolder\mongod.cfg"  Write-Host "Install Service" &amp;"$Env:ProgramFiles\MongoDB\Server\3.0\bin\mongod.exe" --config "$mongoDataFolder\mongod.cfg" --install | Out-Null  Write-Host "Configure Service" Set-Service -Name MongoDB -StartupType Automatic Start-Service -Name MongoDB
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "Installing MongoDB..."
+msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi "ADDLOCAL=ALL" | Out-Null
+
+Write-Host "Create data folder"
+$mongoDataFolder = "c:\MongoData"
+md "$mongoDataFolder\data"
+md "$mongoDataFolder\logs"
+
+Write-Host "Create config file"
+$cfg = @"
+systemLog:
+    destination: file
+    path: $mongoDataFolder\logs\mongod.log
+storage:
+    dbPath: $mongoDataFolder\data
+"@
+$cfg | Out-File "$mongoDataFolder\mongod.cfg"
+
+Write-Host "Install Service"
+&"$Env:ProgramFiles\MongoDB\Server\3.0\bin\mongod.exe" --config "$mongoDataFolder\mongod.cfg" --install | Out-Null
+
+Write-Host "Configure Service"
+Set-Service -Name MongoDB -StartupType Automatic
+Start-Service -Name MongoDB
+
 					</pre>
 					<p>
 						<b>NB:</b>
@@ -217,11 +245,17 @@
 					<h2>RoboMongo</h2>
 					<p>So, once you've run this script, how do you test that it's all working? Well
 						<a href="http://robomongo.org/" target="_blank" rel="noopener noreferrer">RoboMongo is a useful tool for investigating what's going on inside the MongoDB server</a>. Their default installer is less automation-friendly – but they do provide the application in a zip file. You can download that to the folder with your script, and use a bit more PowerShell to unzip it:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Add-Type -AssemblyName System.IO.Compression.FileSystem [System.IO.Compression.ZipFile]::ExtractToDirectory("$Pwd\Robomongo-0.8.5-i386.zip", "$Env:ProgramFiles\")
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::ExtractToDirectory("$Pwd\Robomongo-0.8.5-i386.zip", "$Env:ProgramFiles\")
+
 					</pre>
 					<p>That uses the .Net Framework's built in ability with archives to extract the files.</p>
 					<p>You can just run the program from there, but it's easier to add an icon to your desktop (or some other location). You can achieve that via PowerShell too:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$WshShell = New-Object -comObject WScript.Shell $Shortcut = $WshShell.CreateShortcut("$Env:UserProfile\Desktop\Robomongo.lnk") $Shortcut.TargetPath = "$Env:ProgramFiles\Robomongo-0.8.5-i386\Robomongo.exe" $Shortcut.Save()
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$WshShell = New-Object -comObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut("$Env:UserProfile\Desktop\Robomongo.lnk")
+$Shortcut.TargetPath = "$Env:ProgramFiles\Robomongo-0.8.5-i386\Robomongo.exe"
+$Shortcut.Save()
+
 					</pre>
 					<p>This uses the COM objects that wrap up the Windows Shell to create a new shortcut on the current user's desktop, and point it at the program we've unzipped.</p>
 					<p>And with that, you can run it up and do some work:</p>

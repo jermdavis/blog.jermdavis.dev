@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I am no DBA. In fact I'm happy to admit that I know just enough SQL to be dangerous. So when database problems come up, they can be tricky. I recently helped a client work through an issue with analytics databases, which wasn't easy to google – so it's time to help future developers find it...">
-		<meta property="og:description" content="I am no DBA. In fact I'm happy to admit that I know just enough SQL to be dangerous. So when database problems come up, they can be tricky. I recently helped a client work through an issue with analytics databases, which wasn't easy to google – so it's time to help future developers find it...">
+		<meta name="description" content="Bitten by AlwaysOn&nbsp;replication">
+		<meta property="og:description" content="Bitten by AlwaysOn&nbsp;replication">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Bitten by AlwaysOn&nbsp;replication</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Bitten by AlwaysOn&amp;#xA0;replication">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/bitten-by-alwayson-replication-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Bitten by AlwaysOn&#xA0;replication",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/bitten-by-alwayson-replication-social.png"
-        ],
-        "datePublished": "2019-12-23T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/bitten-by-alwayson-replication">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:38 -->
+		<!-- 23/01/2022 10:18:57 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,28 +106,26 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Bitten by AlwaysOn&nbsp;replication
 				</h1>
-				<div class="meta">Published 23 December 2019</div>
-				<div class="flex py-1">
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/sql-server" class="p-1 mr-1 bg-gray-100 rounded-md">
-						SQL Server</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I am no DBA. In fact I'm happy to admit that I know just enough SQL to be dangerous. So when database problems come up, they can be tricky. I recently helped a client work through an issue with analytics databases, which wasn't easy to google – so it's time to help future developers find it...
 						<!--more-->
 					</p>
 					<h2>The issue</h2>
 					<p>A while back I'd been invoved in rolling out some infrastructure for a Sitecore v9.1 instance. At the point the deployment was done the AlwaysOn configuration for SQL Server wasn't in place – but it was going to be fitted in afterwards. Initially, everything was working ok – but after the client did work to get the AlwaysOn configuration enabled, issues started to occur. Lots of stuff to do with Analytics stopped working. Working through the issues, the key one was that analytics data stopped being recorded, because the xConnect collection role started recording errors:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2019-11-25 03:07:05.630 +01:00 [Error] ["XdbContextLoggingPlugin"] XdbContext Batch Execution Exception Sitecore.XConnect.Operations.DependencyFailedException: One or more dependencies failed ---&gt; Sitecore.Xdb.Collection.Failures.DataProviderException: Store Error: Cannot open database "ClientSite_Xdb.Collection.ShardMapManager" requested by the login. The login failed.
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2019-11-25 03:07:05.630 +01:00 [Error] ["XdbContextLoggingPlugin"] XdbContext Batch Execution Exception
+Sitecore.XConnect.Operations.DependencyFailedException: One or more dependencies failed --->
+Sitecore.Xdb.Collection.Failures.DataProviderException: Store Error:
+Cannot open database "ClientSite_Xdb.Collection.ShardMapManager" requested by the login.
+The login failed.
+
 					</pre>
 					<p>The connectionstrings for this user appeared correct. You could log on to the servers via SQL Management Studio with the account, despite the error. But, oddly, on one of the two servers you could not browse the three databases for analytics that
 						<code>collectionuser</code>
@@ -180,10 +162,13 @@
 					<h2>The resolution</h2>
 					<p>The trick to making this work is that you need to have both of your machines have a user with the same SID. A pile of googling lead to a blog post
 						<a href="https://blog.sqlauthority.com/2015/04/18/sql-server-create-login-with-sid-way-to-synchronize-logins-on-secondary-server/" rel="noopener" target="_blank">which describes how you should approach to that</a>: You can create a user with a known SID, using:</p>
-					<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">CREATE LOGIN collectionuser WITH password = 'password@123', SID = 0x59B662112A43D24585BFE2BF80D9BE19
+					<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">CREATE LOGIN collectionuser WITH
+password = 'password@123', SID = 0x59B662112A43D24585BFE2BF80D9BE19
+
 					</pre>
 					<p>So you can either make up your own SID and create the user on both machines using it, or you can create it normally on one machine, and then read the SID it used back via:</p>
 					<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">SELECT name, sid FROM sys.sysusers WHERE name = 'collectionuser'
+
 					</pre>
 					<p>and use that value.</p>
 					<p>And once both machines have the same SID for the user, the "can't log in" error will stop happening.</p>

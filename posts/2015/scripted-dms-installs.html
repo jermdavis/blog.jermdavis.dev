@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Continuing my current theme of installation automation via PowerShell, the next task I found myself looking at was how to enable Sitecore's analytics for a newly installed Sitecore instance. This is a task that the standard .exe installer doesn't do for the v6.6 sites I'm working with, but is relatively simple to automate. ">
-		<meta property="og:description" content="Continuing my current theme of installation automation via PowerShell, the next task I found myself looking at was how to enable Sitecore's analytics for a newly installed Sitecore instance. This is a task that the standard .exe installer doesn't do for the v6.6 sites I'm working with, but is relatively simple to automate. ">
+		<meta name="description" content="Scripted DMS Installs">
+		<meta property="og:description" content="Scripted DMS Installs">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Scripted DMS Installs</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Scripted DMS Installs">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/scripted-dms-installs-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Scripted DMS Installs",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/scripted-dms-installs-social.png"
-        ],
-        "datePublished": "2015-06-22T00:00:00+00:00",
-        "dateModified": "2018-06-26T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/scripted-dms-installs">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:19 -->
+		<!-- 23/01/2022 10:19:12 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,27 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Scripted DMS Installs
 				</h1>
-				<div class="meta">Published 22 June 2015</div>
-				<div class="meta">Updated 26 June 2018</div>
-				<div class="flex py-1">
-					<a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Installation</a>
-					<a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/dms" class="p-1 mr-1 bg-gray-100 rounded-md">
-						DMS</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Continuing my current theme of installation automation via PowerShell, the next task I found myself looking at was how to enable Sitecore's analytics for a newly installed Sitecore instance. This is a task that the standard .exe installer doesn't do for the v6.6 sites I'm working with, but is relatively simple to automate. 
 						<!--more-->
 					</p>
@@ -165,12 +136,41 @@
 						<li>The set of modules and content packages to install</li>
 					</ul>
 					<p>Some simple-to-read XML to describe that data might look like this:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">
-						&lt;config&gt;   &lt;params&gt;     &lt;param name="InstanceName"&gt;Test&lt;/param&gt;     &lt;param name="LicenseFile"&gt;.\files\License-2014.xml&lt;/param&gt;     &lt;param name="SitecoreInstaller"&gt;.\files\Sitecore 6.6.0 rev. 140410.exe&lt;/param&gt;     &lt;param name="DMSFiles"&gt;.\files\DMS 6.6.0 rev. 140410.zip&lt;/param&gt;   &lt;/params&gt;   &lt;hostnames&gt;     &lt;hostname&gt;www.test.dev&lt;/hostname&gt;   &lt;/hostnames&gt;   &lt;modules&gt;     &lt;module&gt;.\files\MyPackage-1.0.zip&lt;/module&gt;   &lt;/modules&gt; &lt;/config&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"> <config>
+  <params>
+    <param name="InstanceName">Test</param>
+    <param name="LicenseFile">.\files\License-2014.xml</param>
+    <param name="SitecoreInstaller">.\files\Sitecore 6.6.0 rev. 140410.exe</param>
+    <param name="DMSFiles">.\files\DMS 6.6.0 rev. 140410.zip</param>
+  </params>
+  <hostnames>
+    <hostname>www.test.dev</hostname>
+  </hostnames>
+  <modules>
+    <module>.\files\MyPackage-1.0.zip</module>
+  </modules>
+</config>
+
 					</pre>
 					<p>PowerShell is pretty good at dealing with data in XML, so we can easily make the location of one of these config documents a required parameter of our "install an instance" script, and parse the file into an XML document. The individual config functions can then query this document.</p>
 					<p>Loading the data might look like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param([Parameter(Mandatory=$true)][string]$configFile)  if( -not (Test-Path $configFile) ) {     throw "Config file must exist" }  [xml]$xml = Get-Content $configFile  # # Validate the XML here #  # # Rest of script can use the XML data now #
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param([Parameter(Mandatory=$true)][string]$configFile)
+
+if( -not (Test-Path $configFile) ) {
+    throw "Config file must exist"
+}
+
+[xml]$xml = Get-Content $configFile
+
+#
+# Validate the XML here
+#
+
+#
+# Rest of script can use the XML data now
+# 
+
+
 					</pre>
 					<p>By declaring a
 						<code>param()</code>
@@ -179,7 +179,24 @@
 						<code>Get-Content</code>
 						commandlet to return an XML document which we can query later. At this point I've not added any code to validate that the XML loaded has the correct schema – but that would be a useful thing to add in later.</p>
 					<p>And then the data can be read with some simple helper functions:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Get-ConfigParam([string] $name) {     $val = Select-Xml "/config/params/param[@name='$name']/text()" $xml          if([string]::IsNullOrEmpty($val)) {         throw "Parameter $name is missing from config"     }          return [string]$val }  function Get-ConfigHostnames() {     return Select-Xml "/config/hostnames/hostname/text()" $xml }  function Get-ConfigModules() {     return Select-Xml "/config/modules/module/text()" $xml }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Get-ConfigParam([string] $name) {
+    $val = Select-Xml "/config/params/param[@name='$name']/text()" $xml
+    
+    if([string]::IsNullOrEmpty($val)) {
+        throw "Parameter $name is missing from config"
+    }
+    
+    return [string]$val
+}
+
+function Get-ConfigHostnames() {
+    return Select-Xml "/config/hostnames/hostname/text()" $xml
+}
+
+function Get-ConfigModules() {
+    return Select-Xml "/config/modules/module/text()" $xml
+}
+
 					</pre>
 					<p>The
 						<code>Get-ConfigParam</code>
@@ -192,14 +209,84 @@
 						<a href="/posts/2015/msi-parameters" target="_blank">call the "install instance" script from last week's post</a>, fetching the parameters to pass to the MSI installer from a config file.</p>
 					<h2>Adding DMS to your instance</h2>
 					<p>So with this in hand, the code for adding DMS might look like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-DMS() {     # fetch the zip     $dmsZip = Get-ConfigParam "DMSFiles"          # decompress it     Write-Host "Decompressing DMS files..."     Expand-ZipFile $dmsZip '.\dms'          $siteName = Get-ConfigParam "InstanceName"     $sitecoreFolder = "C:\Inetpub\wwwroot\$($siteName)"          # copy config files to right place     Write-Host "Copying DMS config"     Copy-Item ".\dms\*.config" "$($sitecoreFolder)\Website\App_Config\Include" -force          # copy db files to right place     Write-Host "Copying DMS DB Files"     Copy-Item ".\dms\*.mdf" "$($sitecoreFolder)\Database\MDF" -force      Copy-Item ".\dms\*.ldf" "$($sitecoreFolder)\Database\LDF" -force          # Attach databases     Write-Host "Attaching DMS database"          $osql = "OSQL.EXE"     $dbFile = Get-Item ".\dms\*.mdf" | % { Join-Path "$($sitecoreFolder)\Database\MDF" $_.Name }     $lgFile = Get-Item ".\dms\*.ldf" | % { Join-Path "$($sitecoreFolder)\Database\LDF" $_.Name }     $dbName = "$($siteName)_Sitecore_Analytics"      $query = "CREATE DATABASE [$dbName] ON ( FILENAME = N'$($dbFile)' ),( FILENAME = N'$($lgFile)' ) FOR ATTACH"      &amp;$osql -S localhost -E -Q "$($query)"          # can't ignore connection string - it's needed for WFfM install     Write-Host "Adding DMS connection string"     $conStrFile = "$($sitecoreFolder)\Website\App_Config\ConnectionStrings.config"     Add-DMSConnectionString $conStrFile $dbName        # tidy mess     Write-Host "Removing DMS temp folder"     rmdir ".\dms" -Recurse -Force }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-DMS() {
+    # fetch the zip
+    $dmsZip = Get-ConfigParam "DMSFiles"
+    
+    # decompress it
+    Write-Host "Decompressing DMS files..."
+    Expand-ZipFile $dmsZip '.\dms'
+    
+    $siteName = Get-ConfigParam "InstanceName"
+    $sitecoreFolder = "C:\Inetpub\wwwroot\$($siteName)"
+    
+    # copy config files to right place
+    Write-Host "Copying DMS config"
+    Copy-Item ".\dms\*.config" "$($sitecoreFolder)\Website\App_Config\Include" -force
+    
+    # copy db files to right place
+    Write-Host "Copying DMS DB Files"
+    Copy-Item ".\dms\*.mdf" "$($sitecoreFolder)\Database\MDF" -force 
+    Copy-Item ".\dms\*.ldf" "$($sitecoreFolder)\Database\LDF" -force
+    
+    # Attach databases
+    Write-Host "Attaching DMS database"
+    
+    $osql = "OSQL.EXE"
+    $dbFile = Get-Item ".\dms\*.mdf" | % { Join-Path "$($sitecoreFolder)\Database\MDF" $_.Name }
+    $lgFile = Get-Item ".\dms\*.ldf" | % { Join-Path "$($sitecoreFolder)\Database\LDF" $_.Name }
+    $dbName = "$($siteName)_Sitecore_Analytics"
+
+    $query = "CREATE DATABASE [$dbName] ON ( FILENAME = N'$($dbFile)' ),( FILENAME = N'$($lgFile)' ) FOR ATTACH"
+
+    &$osql -S localhost -E -Q "$($query)"
+    
+    # can't ignore connection string - it's needed for WFfM install
+    Write-Host "Adding DMS connection string"
+    $conStrFile = "$($sitecoreFolder)\Website\App_Config\ConnectionStrings.config"
+    Add-DMSConnectionString $conStrFile $dbName  
+
+    # tidy mess
+    Write-Host "Removing DMS temp folder"
+    rmdir ".\dms" -Recurse -Force
+}
+
 					</pre>
 					<p>The code gets the location of the DMS zip file downloaded from SDN from the config code above, and then decompresses it to a temporary folder. It can then get the instance name of your Sitecore install, and work out the correct disk folder that our previous Sitecore install script used.</p>
 					<p>The DMS config include files can then be copied to the instance's config include folder, and the DMS database files can be copied to the Sitecore database folders.</p>
 					<p>Next the code works out the absolute path to the DMS database files that were just copied, and works out the correct database name. Then it uses the SQL Server command line tool to run a T-SQL command to attach the database correctly.</p>
 					<p>The code then calls another function to add the connection string, before tidying up the temporary folder.</p>
 					<p>The function to add the connection string might look like this:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-DMSConnectionString([string] $conStrFile, [string] $dbName) {     $sqlUser = Get-ConfigParam "sqlUser"     $sqlPassword = Get-ConfigParam "sqlPassword"     $sqlServer = Get-ConfigParam "sqlServer"      # work out correct connection string     $constr = "user id=$sqlUser;password=$sqlPassword;Data Source=$sqlServer;Database=$dbName"          # Get connection file as XML Document     [xml] $conStrXml = Get-Content $conStrFile          # build the new entry     $entry = $conStrXml.CreateElement("add")          $nameAttr = $conStrXml.CreateAttribute("name")     $nameAttr.Value = "analytics"     $entry.Attributes.Append($nameAttr) | out-null      $conAttr = $conStrXml.CreateAttribute("connectionString")     $conAttr.Value = $constr     $entry.Attributes.Append($conAttr) | out-null      # Add the entry to the file     $connections = $conStrXml.SelectSingleNode("/connectionStrings")     $connections.AppendChild($entry) | Out-Null      # Save the file     $conStrXml.Save($conStrFile) }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-DMSConnectionString([string] $conStrFile, [string] $dbName) {
+    $sqlUser = Get-ConfigParam "sqlUser"
+    $sqlPassword = Get-ConfigParam "sqlPassword"
+    $sqlServer = Get-ConfigParam "sqlServer"
+
+    # work out correct connection string
+    $constr = "user id=$sqlUser;password=$sqlPassword;Data Source=$sqlServer;Database=$dbName"
+    
+    # Get connection file as XML Document
+    [xml] $conStrXml = Get-Content $conStrFile
+    
+    # build the new entry
+    $entry = $conStrXml.CreateElement("add")
+    
+    $nameAttr = $conStrXml.CreateAttribute("name")
+    $nameAttr.Value = "analytics"
+    $entry.Attributes.Append($nameAttr) | out-null
+
+    $conAttr = $conStrXml.CreateAttribute("connectionString")
+    $conAttr.Value = $constr
+    $entry.Attributes.Append($conAttr) | out-null
+
+    # Add the entry to the file
+    $connections = $conStrXml.SelectSingleNode("/connectionStrings")
+    $connections.AppendChild($entry) | Out-Null
+
+    # Save the file
+    $conStrXml.Save($conStrFile)
+}
+
 					</pre>
 					<p>This bit of code takes the location of the connection string file and the name of the database to attach. It then uses the config functions to get the SQL server, user and password.</p>
 					<p>Then it can calculate the correct connection string, before adding the extra XML element and its attributes and then saving the changes.</p>

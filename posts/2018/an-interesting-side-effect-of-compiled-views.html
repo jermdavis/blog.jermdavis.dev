@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I read a blog post earlier this week that talked about the benefits of compiling your View files to increase performance in Sitecore applications. Reading that post (which <strike>I stupidly failed to keep track of the link to, so can't reference it now</strike> <a href=&quot;#f1&quot;>the comments pointed me back to</a>) reminded me of an interesting issue that came up on a project I was looking at recently. If you're interested in the raw performance of your Sitecore sites, you might want to consider this as well when you're planning your views: ">
-		<meta property="og:description" content="I read a blog post earlier this week that talked about the benefits of compiling your View files to increase performance in Sitecore applications. Reading that post (which <strike>I stupidly failed to keep track of the link to, so can't reference it now</strike> <a href=&quot;#f1&quot;>the comments pointed me back to</a>) reminded me of an interesting issue that came up on a project I was looking at recently. If you're interested in the raw performance of your Sitecore sites, you might want to consider this as well when you're planning your views: ">
+		<meta name="description" content="An interesting side effect of compiled&nbsp;views">
+		<meta property="og:description" content="An interesting side effect of compiled&nbsp;views">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - An interesting side effect of compiled&nbsp;views</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - An interesting side effect of compiled&amp;#xA0;views">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/an-interesting-side-effect-of-compiled-views-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "An interesting side effect of compiled&#xA0;views",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/an-interesting-side-effect-of-compiled-views-social.png"
-        ],
-        "datePublished": "2018-04-02T00:00:00+00:00",
-        "dateModified": "2019-08-30T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/an-interesting-side-effect-of-compiled-views">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:35 -->
+		<!-- 23/01/2022 10:18:55 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,23 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					An interesting side effect of compiled&nbsp;views
 				</h1>
-				<div class="meta">Published 02 April 2018</div>
-				<div class="meta">Updated 30 August 2019</div>
-				<div class="flex py-1">
-					<a href="/tags/mvc" class="p-1 mr-1 bg-gray-100 rounded-md">
-						MVC</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I read a blog post earlier this week that talked about the benefits of compiling your View files to increase performance in Sitecore applications. Reading that post (which
 						<strike>I stupidly failed to keep track of the link to, so can't reference it now</strike>
 						<a href="#f1">the comments pointed me back to</a>) reminded me of an interesting issue that came up on a project I was looking at recently. If you're interested in the raw performance of your Sitecore sites, you might want to consider this as well when you're planning your views: 
@@ -160,12 +135,44 @@
 					<p>The first thing I looked into was what that method was. A bit of time with Google brought up the source for the RazorGenerator project. Sitecore have added this to the product in order to allow views to be pre-compiled at build time, to reduce site startup time. The
 						<code>FileExists</code>
 						method is checking to see if a view exists, but it can also make a test to see if a cshtml file is newer than the pre-compiled view in an assembly:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected override bool FileExists(ControllerContext controllerContext, string virtualPath) {     virtualPath = PrecompiledMvcEngine.EnsureVirtualPathPrefix(virtualPath);      ViewMapping mapping;     if (!_mappings.TryGetValue(virtualPath, out mapping))     {         return false;     }      if (mapping.ViewAssembly.UsePhysicalViewsIfNewer &amp;&amp; mapping.ViewAssembly.IsPhysicalFileNewer(virtualPath))     {         // If the physical file on disk is newer and the user's opted in this behavior, serve it instead.         return false;     }     return Exists(virtualPath); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected override bool FileExists(ControllerContext controllerContext, string virtualPath)
+{
+    virtualPath = PrecompiledMvcEngine.EnsureVirtualPathPrefix(virtualPath);
+
+    ViewMapping mapping;
+    if (!_mappings.TryGetValue(virtualPath, out mapping))
+    {
+        return false;
+    }
+
+    if (mapping.ViewAssembly.UsePhysicalViewsIfNewer && mapping.ViewAssembly.IsPhysicalFileNewer(virtualPath))
+    {
+        // If the physical file on disk is newer and the user's opted in this behavior, serve it instead.
+        return false;
+    }
+    return Exists(virtualPath);
+}
+
 					</pre>
 					<p>If the setting for
 						<code>UsePhysicalViewsIfNewer</code>
 						is true and the view file is newer then the logic will make use of the cshtml file instead of the data in the assembly when the view file is newer. The test for the age of the cshtml file takes place in this method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">internal static bool IsPhysicalFileNewer(string virtualPath, string baseVirtualPath, Lazy&lt;DateTime&gt; assemblyLastWriteTime) {     if (virtualPath.StartsWith(baseVirtualPath ?? String.Empty, StringComparison.OrdinalIgnoreCase))     {         // If a base virtual path is specified, we should remove it as a prefix. Everything that follows should map to a view file on disk.         if (!String.IsNullOrEmpty(baseVirtualPath))         {             virtualPath = "~/" + virtualPath.Substring(baseVirtualPath.Length);         }          string path = HostingEnvironment.MapPath(virtualPath);         return File.Exists(path) &amp;&amp; File.GetLastWriteTimeUtc(path) &gt; assemblyLastWriteTime.Value;     }     return false; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">internal static bool IsPhysicalFileNewer(string virtualPath, string baseVirtualPath, Lazy<DateTime> assemblyLastWriteTime)
+{
+    if (virtualPath.StartsWith(baseVirtualPath ?? String.Empty, StringComparison.OrdinalIgnoreCase))
+    {
+        // If a base virtual path is specified, we should remove it as a prefix. Everything that follows should map to a view file on disk.
+        if (!String.IsNullOrEmpty(baseVirtualPath))
+        {
+            virtualPath = "~/" + virtualPath.Substring(baseVirtualPath.Length);
+        }
+
+        string path = HostingEnvironment.MapPath(virtualPath);
+        return File.Exists(path) && File.GetLastWriteTimeUtc(path) > assemblyLastWriteTime.Value;
+    }
+    return false;
+}
+
 					</pre>
 					<p>And when looking at the detailed trace data the client had captured, the server in question was spending a considerable amount of time in the
 						<code>File.Exists</code>
@@ -176,15 +183,29 @@
 					<p>The simplest model I could come up with was to have a View Rendering which called
 						<code>HTML.Partial()</code>
 						in a loop, to simulate a complex set of nested partial views. With this as a parent view:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">&lt;h2&gt;Using Partials&lt;/h2&gt;  @for (int i = 0; i &lt; 100; i++) {     @Html.Partial("~/views/ViewPerformanceTest/SimpleSubView.cshtml") }
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"><h2>Using Partials</h2>
+
+@for (int i = 0; i < 100; i++)
+{
+    @Html.Partial("~/views/ViewPerformanceTest/SimpleSubView.cshtml")
+}
+
 					</pre>
 					<p>and this as the child partial view:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">&lt;div&gt;View: @DateTime.Now.Ticks&lt;/div&gt;
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"><div>View: @DateTime.Now.Ticks</div>
+
 					</pre>
 					<p>In order to verify that the issue was not specific to binding the child views as partials, I also tried a variation of the parent view that bound the children with Sitecore's
 						<code>ViewRendering()</code>
 						method:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@using Sitecore.Mvc &lt;h2&gt;Using ViewRenderings&lt;/h2&gt;  @for (int i = 0; i &lt; 100; i++) { 	@Html.Sitecore().ViewRendering("/views/ViewPerformanceTest/SimpleSubView.cshtml") }
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@using Sitecore.Mvc
+<h2>Using ViewRenderings</h2>
+
+@for (int i = 0; i < 100; i++)
+{
+	@Html.Sitecore().ViewRendering("/views/ViewPerformanceTest/SimpleSubView.cshtml")
+}
+
 					</pre>
 					<p>And with these deployed to a copy of the appropriate version of Sitecore, I tried to see if I could replicate the client's results. Which I could:</p>
 					<p>

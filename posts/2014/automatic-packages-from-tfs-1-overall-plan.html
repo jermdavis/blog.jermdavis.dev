@@ -4,12 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Recently I posted <a href=&quot;/posts/2014/what-did-i-need-to-deploy-again&quot; target=&quot;_blank&quot;>an idea for a PowerShell script to extract the set of changed items in TFS needing deployment</a> for a Sitecore project. I left the script at the stage where it gave a list of the files to package, but didn't actually give you a package definition.
-Having done a bit more thinking about how that might be achieved, I've decided that it's probably worth a series of posts as creating a sensible solution to the problem seems a bit too complex for a script and a single post.
-So for this first post, I'll sketch out the problem I want to solve and look at some of the basic code if will require. I'll flesh out the code an implementation over the rest of the posts – but I'm not sure how many there will be at this point... ">
-		<meta property="og:description" content="Recently I posted <a href=&quot;/posts/2014/what-did-i-need-to-deploy-again&quot; target=&quot;_blank&quot;>an idea for a PowerShell script to extract the set of changed items in TFS needing deployment</a> for a Sitecore project. I left the script at the stage where it gave a list of the files to package, but didn't actually give you a package definition.
-Having done a bit more thinking about how that might be achieved, I've decided that it's probably worth a series of posts as creating a sensible solution to the problem seems a bit too complex for a script and a single post.
-So for this first post, I'll sketch out the problem I want to solve and look at some of the basic code if will require. I'll flesh out the code an implementation over the rest of the posts – but I'm not sure how many there will be at this point... ">
+		<meta name="description" content="Automatic packages from TFS: #1 - Overall&nbsp;plan">
+		<meta property="og:description" content="Automatic packages from TFS: #1 - Overall&nbsp;plan">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Automatic packages from TFS: #1 - Overall&nbsp;plan</title>
@@ -22,25 +18,8 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Automatic packages from TFS: #1 - Overall&amp;#xA0;plan">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/automatic-packages-from-tfs-1-overall-plan-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Automatic packages from TFS: #1 - Overall&#xA0;plan",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/automatic-packages-from-tfs-1-overall-plan-social.png"
-        ],
-        "datePublished": "2014-08-04T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-1-overall-plan">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -51,7 +30,7 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:34 -->
+		<!-- 23/01/2022 10:18:56 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -127,25 +106,15 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Automatic packages from TFS: #1 - Overall&nbsp;plan
 				</h1>
-				<div class="meta">Published 04 August 2014</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/team-foundation-server" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Team Foundation Server</a>
-					<a href="/tags/packages" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Packages</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Recently I posted
 						<a href="/posts/2014/what-did-i-need-to-deploy-again" target="_blank">an idea for a PowerShell script to extract the set of changed items in TFS needing deployment</a>
 						for a Sitecore project. I left the script at the stage where it gave a list of the files to package, but didn't actually give you a package definition.</p>
@@ -170,12 +139,37 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 					<h2>Parsing the command line</h2>
 					<p>If a tool is going to read command line parameters, it makes sense to re-use some pre-existing code for dealing with parsing them. A useful tool I've used for this before is
 						<a href="http://commandlinearguments.codeplex.com/SourceControl/latest#CommandLineArguments.cs" title="Command Line Arguments parser" target="_blank" rel="noopener noreferrer">this argument parser class from Peter Hallam @ Microsoft</a>. Adding this class into the project allows us to define the arguments we want to parse in terms of a C# class that will represent the resultant data. We need to be able to specify the following options:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CommandLineParameters {     [Argument(ArgumentType.Required | ArgumentType.AtMostOnce, HelpText = "Starting changeset number", ShortName = "s", LongName = "start")]     public int StartChangeSet;      [Argument(ArgumentType.Required | ArgumentType.AtMostOnce, HelpText="The TFS working folder to process", ShortName="w", LongName="workingfolder")]     public string WorkingFolder;      [Argument(ArgumentType.AtMostOnce, HelpText = "Ending changeset number", ShortName = "e", LongName = "end", DefaultValue = -1)]     public int EndChangeSet;      [Argument(ArgumentType.AtMostOnce, HelpText = "The file name for the generated package", ShortName = "p", LongName = "package", DefaultValue = "GeneratedPackage.xml")]     public string PackageFileName;      [Argument(ArgumentType.AtMostOnce, HelpText = "The name for the package", ShortName = "n", LongName = "name", DefaultValue = "GeneratedPackage")]     public string PackageName; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CommandLineParameters
+{
+    [Argument(ArgumentType.Required | ArgumentType.AtMostOnce, HelpText = "Starting changeset number", ShortName = "s", LongName = "start")]
+    public int StartChangeSet;
+
+    [Argument(ArgumentType.Required | ArgumentType.AtMostOnce, HelpText="The TFS working folder to process", ShortName="w", LongName="workingfolder")]
+    public string WorkingFolder;
+
+    [Argument(ArgumentType.AtMostOnce, HelpText = "Ending changeset number", ShortName = "e", LongName = "end", DefaultValue = -1)]
+    public int EndChangeSet;
+
+    [Argument(ArgumentType.AtMostOnce, HelpText = "The file name for the generated package", ShortName = "p", LongName = "package", DefaultValue = "GeneratedPackage.xml")]
+    public string PackageFileName;
+
+    [Argument(ArgumentType.AtMostOnce, HelpText = "The name for the package", ShortName = "n", LongName = "name", DefaultValue = "GeneratedPackage")]
+    public string PackageName;
+}
+
 					</pre>
 					<p>The
 						<code>Argument</code>
 						attribute marks these fields as being parameters which can be parsed from the command line. You can do the parsing using the following code:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">static void Main(string[] args) {     CommandLineParameters cp = new CommandLineParameters();     if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))     {         // parse succeeded - process your parameters     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">static void Main(string[] args)
+{
+    CommandLineParameters cp = new CommandLineParameters();
+    if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
+    {
+        // parse succeeded - process your parameters
+    }
+}
+
 					</pre>
 					<p>The parser will compare the arguments passed to the program against the attributes defined on the
 						<code>CommandLineParameters</code>
@@ -189,7 +183,93 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 					</p>
 					<h2>Getting the TFS changes</h2>
 					<p>With the parameters parsed, the next thing to do is fetch the TFS changes. This can be done using a similar pattern to the approach from the PowerShell script – but using a more C# friendly way of executing the external tool. Plus, in this version we'll allow for both the first and last changeset to process (as per the configuration above) The class to manage the TFS interaction is as follows:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TFSCommandLine {     private string _toolPath = @"c:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\TF.exe";     private string _argumentTemplate = @"history .\ /recursive /format:detailed /noprompt /version:{0}";      public IDictionary&lt;string, TFSActions&gt; ProcessWorkItems(string workingFolder, int firstChange, int lastChange)     {         var output = runTool(workingFolder, firstChange, lastChange);         var filteredOutput = filterOutput(output);          return parse(filteredOutput);     }      private string runTool(string workingFolder, int firstChange, int lastChange)     {         string output;          using (Process p = new Process())         {             p.StartInfo.UseShellExecute = false;             p.StartInfo.RedirectStandardOutput = true;             p.StartInfo.FileName = _toolPath;             p.StartInfo.Arguments = string.Format(_argumentTemplate, formatVersionString(firstChange, lastChange));             p.StartInfo.WorkingDirectory = workingFolder;             p.StartInfo.CreateNoWindow = false;              p.Start();             output = p.StandardOutput.ReadToEnd();             p.WaitForExit();         }          return output;     }      private string formatVersionString(int firstChange, int lastChange)     {         string first = "C" + firstChange.ToString();          string last = string.Empty;         if (lastChange != -1)         {             last = "C" + lastChange.ToString();         }          return first + "~" + last;     }      private IEnumerable&lt;string&gt; filterOutput(string output)     {         var items = output             .Split('\n')             .Select(i =&gt; i.Trim())             .Where(i =&gt;                 i.StartsWith("edit", StringComparison.InvariantCultureIgnoreCase) ||                 i.StartsWith("add", StringComparison.InvariantCultureIgnoreCase) ||                 i.StartsWith("delete", StringComparison.InvariantCultureIgnoreCase));          return items;     }      private IDictionary&lt;string, TFSActions&gt; parse(IEnumerable&lt;string&gt; input)     {         char[] splitter = {'$'};          Dictionary&lt;string, TFSActions&gt; results = new Dictionary&lt;string, TFSActions&gt;();          var items = input.Select(i =&gt; i.Split(splitter, StringSplitOptions.RemoveEmptyEntries));          foreach (var item in items)         {             string path = item[1];             TFSActions action = (TFSActions)Enum.Parse(typeof(TFSActions), item[0].Trim(), true);              if (results.ContainsKey(path))             {                 results[path] = results[path] | action;             }             else             {                 results.Add(path, action);             }         }          return results;     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TFSCommandLine
+{
+    private string _toolPath = @"c:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\TF.exe";
+    private string _argumentTemplate = @"history .\ /recursive /format:detailed /noprompt /version:{0}";
+
+    public IDictionary<string, TFSActions> ProcessWorkItems(string workingFolder, int firstChange, int lastChange)
+    {
+        var output = runTool(workingFolder, firstChange, lastChange);
+        var filteredOutput = filterOutput(output);
+
+        return parse(filteredOutput);
+    }
+
+    private string runTool(string workingFolder, int firstChange, int lastChange)
+    {
+        string output;
+
+        using (Process p = new Process())
+        {
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.FileName = _toolPath;
+            p.StartInfo.Arguments = string.Format(_argumentTemplate, formatVersionString(firstChange, lastChange));
+            p.StartInfo.WorkingDirectory = workingFolder;
+            p.StartInfo.CreateNoWindow = false;
+
+            p.Start();
+            output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+        }
+
+        return output;
+    }
+
+    private string formatVersionString(int firstChange, int lastChange)
+    {
+        string first = "C" + firstChange.ToString();
+
+        string last = string.Empty;
+        if (lastChange != -1)
+        {
+            last = "C" + lastChange.ToString();
+        }
+
+        return first + "~" + last;
+    }
+
+    private IEnumerable<string> filterOutput(string output)
+    {
+        var items = output
+            .Split('\n')
+            .Select(i => i.Trim())
+            .Where(i =>
+                i.StartsWith("edit", StringComparison.InvariantCultureIgnoreCase) ||
+                i.StartsWith("add", StringComparison.InvariantCultureIgnoreCase) ||
+                i.StartsWith("delete", StringComparison.InvariantCultureIgnoreCase));
+
+        return items;
+    }
+
+    private IDictionary<string, TFSActions> parse(IEnumerable<string> input)
+    {
+        char[] splitter = {'$'};
+
+        Dictionary<string, TFSActions> results = new Dictionary<string, TFSActions>();
+
+        var items = input.Select(i => i.Split(splitter, StringSplitOptions.RemoveEmptyEntries));
+
+        foreach (var item in items)
+        {
+            string path = item[1];
+            TFSActions action = (TFSActions)Enum.Parse(typeof(TFSActions), item[0].Trim(), true);
+
+            if (results.ContainsKey(path))
+            {
+                results[path] = results[path] | action;
+            }
+            else
+            {
+                results.Add(path, action);
+            }
+        }
+
+        return results;
+    }
+}
+
 					</pre>
 					<p>The entry point here is the
 						<code>ProcessWorkItems()</code>. This calls the three private methods to extract the data from TFS, catch just the lines of that output which represent changes, and then parse these lines into the data that gets returned.</p>
@@ -212,13 +292,42 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 					<p>Finally we call
 						<code>parse()</code>
 						to process those strings. Again, this works in much the same way that the PowerShell script did - but instead of storing the individual actions as strings the code is using an enumeration:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[Flags] public enum TFSActions {     None = 0,     Add = 1,     Edit = 2,     Delete = 4 }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[Flags]
+public enum TFSActions
+{
+    None = 0,
+    Add = 1,
+    Edit = 2,
+    Delete = 4
+}
+
 					</pre>
 					<p>So the code splits each of the lines received to get a path and an action, and it builds a dictionary keyed on the paths, and storing the set of actions associated with that path.</p>
 					<p>I'm thinking that as this code evolves, it may be useful to make the implementation of this class (specifically how it fetches the data) replaceable. I know it's possible to talk to TFS via an API rather than the command line. It may also be useful to be able to read test data to process without having a connection to TFS available – for automated tests perhaps. But that's a topic for a future post, perhaps.</p>
 					<h2>Processing the data</h2>
 					<p>The pattern I want to use for processing the data from TFS is a pipeline model. I'll talk about the implementation of this in a future post in this series, I think. But the overall process will be that the Pipeline will take the TFS data object as its input, it will pass this to each of the configured pipeline components and the result will be an object that represents a Package Definition. The code for running it will end up looking something like this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">CommandLineParameters cp = new CommandLineParameters(); if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp)) {     TFSCommandLine cmd = new TFSCommandLine();     var data = cmd.ProcessWorkItems(cp.WorkingFolder, cp.StartChangeSet, cp.EndChangeSet);      ProcessingPipeline pp = new ProcessingPipeline(cp.PackageName);     pp.LoadPipelineComponentsFromConfiguration();     var packageData = pp.Run(data);      var xml = packageData.Serialise();      var xws = new System.Xml.XmlWriterSettings();     xws.OmitXmlDeclaration = true;     xws.Indent = true;      using (var xw = System.Xml.XmlWriter.Create(cp.PackageFileName, xws))     {         xml.Save(xw);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">CommandLineParameters cp = new CommandLineParameters();
+if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
+{
+    TFSCommandLine cmd = new TFSCommandLine();
+    var data = cmd.ProcessWorkItems(cp.WorkingFolder, cp.StartChangeSet, cp.EndChangeSet);
+
+    ProcessingPipeline pp = new ProcessingPipeline(cp.PackageName);
+    pp.LoadPipelineComponentsFromConfiguration();
+    var packageData = pp.Run(data);
+
+    var xml = packageData.Serialise();
+
+    var xws = new System.Xml.XmlWriterSettings();
+    xws.OmitXmlDeclaration = true;
+    xws.Indent = true;
+
+    using (var xw = System.Xml.XmlWriter.Create(cp.PackageFileName, xws))
+    {
+        xml.Save(xw);
+    }
+}
+
 					</pre>
 					<p>The command line parameters get parsed, and on success they're passed in to the code to fetch data from TFS. A
 						<code>ProcessingPipeline</code>

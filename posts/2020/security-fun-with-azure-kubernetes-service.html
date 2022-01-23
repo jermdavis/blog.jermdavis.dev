@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I've been working on a deployment of Sitecore using containers recently, and hit a scenario which isn't discussed much in the Microsoft documentation: How do you go about setting it all up if you can't use Active Directory accounts across your DevOps and Azure instances? Having done some digging, here's what I've learned so far: ">
-		<meta property="og:description" content="I've been working on a deployment of Sitecore using containers recently, and hit a scenario which isn't discussed much in the Microsoft documentation: How do you go about setting it all up if you can't use Active Directory accounts across your DevOps and Azure instances? Having done some digging, here's what I've learned so far: ">
+		<meta name="description" content="Security fun with Azure Kubernetes&nbsp;Service">
+		<meta property="og:description" content="Security fun with Azure Kubernetes&nbsp;Service">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Security fun with Azure Kubernetes&nbsp;Service</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Security fun with Azure Kubernetes&amp;#xA0;Service">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/security-fun-with-azure-kubernetes-service-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Security fun with Azure Kubernetes&#xA0;Service",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/security-fun-with-azure-kubernetes-service-social.png"
-        ],
-        "datePublished": "2020-12-21T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2020/security-fun-with-azure-kubernetes-service">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:18 -->
+		<!-- 23/01/2022 10:19:12 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,24 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Security fun with Azure Kubernetes&nbsp;Service
 				</h1>
-				<div class="meta">Published 21 December 2020</div>
-				<div class="flex py-1">
-					<a href="/tags/azure" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Azure</a>
-					<a href="/tags/devops" class="p-1 mr-1 bg-gray-100 rounded-md">
-						DevOps</a>
-					<a href="/tags/kubernetes" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Kubernetes</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I've been working on a deployment of Sitecore using containers recently, and hit a scenario which isn't discussed much in the Microsoft documentation: How do you go about setting it all up if you can't use Active Directory accounts across your DevOps and Azure instances? Having done some digging, here's what I've learned so far: 
 						<!--more-->
 					</p>
@@ -166,11 +141,13 @@
 						<code>kubectl</code>. So I started by creating one in my Sitecore deployment's namespace. However despite a variety of experiments here, I was unable to make that work correctly – it was easy to create the account, but AKS would always refuse to perform any actions under these credentials. After a lot of research, I found one article that described putting your service account into the "kube-system" namespace. And this worked for me.</p>
 					<p>So the command I created the user with ended up as:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl -n kube-system create serviceaccount azure-pipeline
+
 					</pre>
 					<p>Once you have an account, you need to "bind" it to a role, telling AKS which rights the account should have. Kubernetes calls this a "role binding". And Kubernetes roles can be scoped to either your application or to the entire cluster. Given the issue above, a cluster scoped role and binding seems more appropriate.</p>
 					<p>Again, I tried creating my own role, with what I thought was the right set of permissions, but was unable to make it work. So I fell back to one of the built-in admin roles. While this isn't best security practice, it's good enough to make the whole thing work while I learn more.</p>
 					<p>So the role binding to a cluster role can be set up:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl create clusterrolebinding azure-pipeline-binding --clusterrole=cluster-admin --serviceaccount=kube-system:azure-pipeline
+
 					</pre>
 					<p>Note how the namespace here is specified by prefixing the user
 						<code>&lt;namespace&gt;:&lt;user&gt;</code>
@@ -200,14 +177,38 @@
 					<p>The server URL is highlighted here – and you can copy that into the DevOps field.</p>
 					<p>You then need the authentication data. Again, DevOps gives you some commands to run, and again these break for me. So cue some more research... What I found I could do was get all the service accounts by running</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl get serviceaccounts azure-pipeline -o custom-columns=":secrets[0].name" -n kube-system
+
 					</pre>
 					<p>to get the name of the token inside AKS – something like
 						<code>azure-pipeline-token-ajdsa</code>
 						And then you can pass the token name you get to a second command:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl get secret azure-pipeline-token-ajdsa -o json -n kube-system
+
 					</pre>
 					<p>to get a blob of json:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">{     "apiVersion": "v1",     "data": {         "ca.crt": "... redacted ...",         "namespace": "a3ViZS1zeXN0ZW0=",         "token": "... redacted ..."     },     "kind": "Secret",     "metadata": {         "annotations": {             "kubernetes.io/service-account.name": "azure-pipeline",             "kubernetes.io/service-account.uid": "37d737b1-2e91-42c9-8e29-0104956ade8d"         },         "creationTimestamp": "2020-12-04T09:56:03Z",         "name": "azure-pipeline-token-ajdsa",         "namespace": "kube-system",         "resourceVersion": "11194",         "selfLink": "/api/v1/namespaces/kube-system/secrets/azure-pipeline-token-ajdsa",         "uid": "80ea29fc-26b4-46a5-bdaf-509aac101fba"     },     "type": "kubernetes.io/service-account-token" }
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">{
+    "apiVersion": "v1",
+    "data": {
+        "ca.crt": "... redacted ...",
+        "namespace": "a3ViZS1zeXN0ZW0=",
+        "token": "... redacted ..."
+    },
+    "kind": "Secret",
+    "metadata": {
+        "annotations": {
+            "kubernetes.io/service-account.name": "azure-pipeline",
+            "kubernetes.io/service-account.uid": "37d737b1-2e91-42c9-8e29-0104956ade8d"
+        },
+        "creationTimestamp": "2020-12-04T09:56:03Z",
+        "name": "azure-pipeline-token-ajdsa",
+        "namespace": "kube-system",
+        "resourceVersion": "11194",
+        "selfLink": "/api/v1/namespaces/kube-system/secrets/azure-pipeline-token-ajdsa",
+        "uid": "80ea29fc-26b4-46a5-bdaf-509aac101fba"
+    },
+    "type": "kubernetes.io/service-account-token"
+}
+
 					</pre>
 					<p>And this is what you need to paste into the DevOps form. Once that's done and saved in your Service Connection, the DevOps kubectl step can use it to connect to your AKS instance.</p>
 					<h2>Another thing that tripped me up...</h2>
@@ -215,6 +216,7 @@
 						<code>can-i</code>
 						command for checking if a user can do an operation. In theory, you can use a command like:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl auth can-i create deployment -n my-deployment --as azure-pipeline
+
 					</pre>
 					<p>and the response comes back as "yes" or "no" depending on whether that user has the appropriate rights or not.</p>
 					<p>But I cannot make this work. Following the pattern above I was able to create an accound that worked correctly with DevOps. But no matter what query I make via the command line to test those rights, it always says "no".</p>
@@ -226,11 +228,53 @@
 					<p>Stepping back and thinking about it, that did make some sense. My AKS instance is sitting with my ACR instance in my DevOps. That means when I ran command line deploys as "me" they were running with the correct security tokens to access both AKS and ACR. But once DevOps takes over using its special token above, that doesn't have access to my ACR...</p>
 					<p>Another pass through the documentation teaches me another new thing. You can add the auth details for your ACR as a secret in your AKS instance:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl create secret docker-registry my-company-acr --docker-server=myacr.azurecr.io --docker-username=myacr --docker-password=1234343+sdasdsdaKJKweq --docker-email=my-email@somewhere.com
+
 					</pre>
 					<p>(You need to enable the "admin account" option under "Access Keys" in your ACR to get a standard username / password to use here)</p>
 					<p>And then you can tweak the yaml files for the pods you're deploying, by telling them the name of the secret you created above. It took me a couple of goes to get this in the right place in my files. I am developing a profound hatred of significant whitespace in config files 😉</p>
 					<p>Anyway, the right thing to set is:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="19,20" data-enlighter-language="text" style="width:100%; overflow:scroll;">apiVersion: apps/v1 kind: Deployment metadata:   name: xdbrefdata   labels:     app: xdbrefdata spec:   replicas: 1   selector:     matchLabels:       app: xdbrefdata   template:     metadata:       labels:         app: xdbrefdata     spec:       nodeSelector:         kubernetes.io/os: windows       imagePullSecrets:       - name: my-company-acr       containers:       - name: sitecore-xp1-xdbrefdata         image: myacr.azurecr.io/mysite-xp1-xdbrefdata:latest         ports:         - containerPort: 80         env:         - name: Database_Server           valueFrom:             secretKeyRef:               name: sitecore-database               key: sitecore-databaseservername.txt         livenessProbe:           httpGet:             path: /healthz/live             port: 80             httpHeaders:             - name: X-Kubernetes-Probe               value: Liveness           timeoutSeconds: 300           periodSeconds: 30           failureThreshold: 3
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="19,20" data-enlighter-language="text" style="width:100%; overflow:scroll;">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xdbrefdata
+  labels:
+    app: xdbrefdata
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xdbrefdata
+  template:
+    metadata:
+      labels:
+        app: xdbrefdata
+    spec:
+      nodeSelector:
+        kubernetes.io/os: windows
+      imagePullSecrets:
+      - name: my-company-acr
+      containers:
+      - name: sitecore-xp1-xdbrefdata
+        image: myacr.azurecr.io/mysite-xp1-xdbrefdata:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: Database_Server
+          valueFrom:
+            secretKeyRef:
+              name: sitecore-database
+              key: sitecore-databaseservername.txt
+        livenessProbe:
+          httpGet:
+            path: /healthz/live
+            port: 80
+            httpHeaders:
+            - name: X-Kubernetes-Probe
+              value: Liveness
+          timeoutSeconds: 300
+          periodSeconds: 30
+          failureThreshold: 3
+
 					</pre>
 					<p>And with that in place, my deployments work from both the command line and from DevOps.</p>
 					<p>I need to work out how to reduce the rights given to the DevOps deploy process, but at least it works now...</p>

@@ -4,10 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Recently I looked at <a href=&quot;/posts/2014/delete-aliases-along-with-their-items&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>removing aliases when their owning items were deleted</a>. I noted at the end of the post that the code ended up with some duplication in it. Duplication is generally a bad thing in code – copy/pastes of code tends to diverge over time and introduce bugs. So ideally we'd work out a way to get rid of the duplication, and reduce the set of methods our class needs.
-Having been reading a bit on functional languages and F# in particular, I was thinking about how it can be done by passing code as parameters to more generic methods.">
-		<meta property="og:description" content="Recently I looked at <a href=&quot;/posts/2014/delete-aliases-along-with-their-items&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>removing aliases when their owning items were deleted</a>. I noted at the end of the post that the code ended up with some duplication in it. Duplication is generally a bad thing in code – copy/pastes of code tends to diverge over time and introduce bugs. So ideally we'd work out a way to get rid of the duplication, and reduce the set of methods our class needs.
-Having been reading a bit on functional languages and F# in particular, I was thinking about how it can be done by passing code as parameters to more generic methods.">
+		<meta name="description" content="Avoiding duplicated code with&nbsp;delegates...">
+		<meta property="og:description" content="Avoiding duplicated code with&nbsp;delegates...">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Avoiding duplicated code with&nbsp;delegates...</title>
@@ -20,25 +18,8 @@ Having been reading a bit on functional languages and F# in particular, I was th
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Avoiding duplicated code with&amp;#xA0;delegates...">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/avoiding-duplication-by-passing-code-as-parameters-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Avoiding duplicated code with&#xA0;delegates...",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/avoiding-duplication-by-passing-code-as-parameters-social.png"
-        ],
-        "datePublished": "2014-04-14T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/avoiding-duplication-by-passing-code-as-parameters">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -49,7 +30,7 @@ Having been reading a bit on functional languages and F# in particular, I was th
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:37 -->
+		<!-- 23/01/2022 10:18:56 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -125,32 +106,34 @@ Having been reading a bit on functional languages and F# in particular, I was th
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Avoiding duplicated code with&nbsp;delegates...
 				</h1>
-				<div class="meta">Published 14 April 2014</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/general" class="p-1 mr-1 bg-gray-100 rounded-md">
-						General</a>
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Recently I looked at
 						<a href="/posts/2014/delete-aliases-along-with-their-items" target="_blank" rel="noopener noreferrer">removing aliases when their owning items were deleted</a>. I noted at the end of the post that the code ended up with some duplication in it. Duplication is generally a bad thing in code – copy/pastes of code tends to diverge over time and introduce bugs. So ideally we'd work out a way to get rid of the duplication, and reduce the set of methods our class needs.</p>
 					<p>Having been reading a bit on functional languages and F# in particular, I was thinking about how it can be done by passing code as parameters to more generic methods.</p>
 					
 					<!--more-->
 					<p>So looking back at the code from the other week, the pipeline class had the following methods:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteItems : ItemOperation {     public void CheckAndDeleteAliases(ClientPipelineArgs args);      private Database getDatabase(ClientPipelineArgs args);      private void removeAliases(ListString items, Database db);     private void removeAliases(Item item);      private int countAliases(ListString items, Database db);     private int countAliases(Item item); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteItems : ItemOperation
+{
+    public void CheckAndDeleteAliases(ClientPipelineArgs args);
+
+    private Database getDatabase(ClientPipelineArgs args);
+
+    private void removeAliases(ListString items, Database db);
+    private void removeAliases(Item item);
+
+    private int countAliases(ListString items, Database db);
+    private int countAliases(Item item);
+}
+
 					</pre>
 					<p>The key thing to note here is the similarity between the two
 						<code>removeAliases()</code>
@@ -186,7 +169,46 @@ Having been reading a bit on functional languages and F# in particular, I was th
 					<p>Based on that and a bit of thinking, we can replace the two
 						<code>xxAliases(ListString, Database)</code>
 						methods with one new method that looks like this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private int processItems(ListString items, Database db, string taskContext, Func&lt;Item, int&gt; process) {     int count = 0;      try     {         using (new TaskContext(taskContext))         {             using (new SecurityDisabler())             {                 foreach (string item in items)                 {                     Item itm = db.GetItem(item);                     if (itm != null)                     {                         // Count this one                         count += process(itm);                          // And process any descendent items too                         foreach(var descendantItm in itm.Axes.GetDescendants())                         {                             count += process(descendantItm);                         }                     }                 }             }         }     }     catch (Exception ex)     {         Log.Error("Error during: " + taskContext, ex, this);         HttpUnhandledException ex2 = new HttpUnhandledException(ex.Message, ex);         string htmlErrorMessage = ex2.GetHtmlErrorMessage();         UrlString urlString = new UrlString("/sitecore/shell/controls/error.htm");         Context.ClientPage.ClientResponse.ShowModalDialog(urlString.ToString(), htmlErrorMessage);     }      return count; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private int processItems(ListString items, Database db, string taskContext, Func<Item, int> process)
+{
+    int count = 0;
+
+    try
+    {
+        using (new TaskContext(taskContext))
+        {
+            using (new SecurityDisabler())
+            {
+                foreach (string item in items)
+                {
+                    Item itm = db.GetItem(item);
+                    if (itm != null)
+                    {
+                        // Count this one
+                        count += process(itm);
+
+                        // And process any descendent items too
+                        foreach(var descendantItm in itm.Axes.GetDescendants())
+                        {
+                            count += process(descendantItm);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Log.Error("Error during: " + taskContext, ex, this);
+        HttpUnhandledException ex2 = new HttpUnhandledException(ex.Message, ex);
+        string htmlErrorMessage = ex2.GetHtmlErrorMessage();
+        UrlString urlString = new UrlString("/sitecore/shell/controls/error.htm");
+        Context.ClientPage.ClientResponse.ShowModalDialog(urlString.ToString(), htmlErrorMessage);
+    }
+
+    return count;
+}
+
 					</pre>
 					<p>It does exactly the same thing, except that it takes the processing function for each Item as a parameter, and it also takes the name of the task for logging / error purposes as a parameter. And with that we can remove the two methods with the
 						<code>xxAliases(ListString, Database)</code>
@@ -194,7 +216,9 @@ Having been reading a bit on functional languages and F# in particular, I was th
 					<p>Making use of this is easy, since C# will implicitly type cast the name of a function into the appropriate
 						<code>Func&lt;&gt;</code>
 						type at compile time, so for counting aliases we can just write:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// Count the aliases for any items we have as parameters int aliases = processItems(items, db, "DeleteItems pipeline - count aliases", countAliases);
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// Count the aliases for any items we have as parameters
+int aliases = processItems(items, db, "DeleteItems pipeline - count aliases", countAliases);
+
 					</pre>
 					<p>and that will cause our
 						<code>countAliases(Item)</code>
@@ -211,13 +235,28 @@ Having been reading a bit on functional languages and F# in particular, I was th
 					<p>It's worth mentioning here that you don't actually need to declare a method to call our
 						<code>processItems()</code>
 						function. Another of the nice features you get with this approach is that you can write methods and functions inline using Lambda expressions. So you can write:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">processItems(listOfItems, database, "Example anonymous method", itm =&gt; {     // do something     return 0; });
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">processItems(listOfItems, database, "Example anonymous method", itm => {
+    // do something
+    return 0;
+});
+
 					</pre>
 					<p>And the compiler magic behind
 						<code>=&gt;</code>
 						works out that what you've declared and creates a method with a computer generated name and the correct signature without you having to type it all out.</p>
 					<p>So with those changes made, our class now contains the following methods:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteItems : ItemOperation {     public void CheckAndDeleteAliases(ClientPipelineArgs args);      private Database getDatabase(ClientPipelineArgs args);      private int processItems(ListString items, Database db, string taskContext, Func&lt;Item,int&gt; process);      private int removeAliases(Item item);     private int countAliases(Item item); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteItems : ItemOperation
+{
+    public void CheckAndDeleteAliases(ClientPipelineArgs args);
+
+    private Database getDatabase(ClientPipelineArgs args);
+
+    private int processItems(ListString items, Database db, string taskContext, Func<Item,int> process);
+
+    private int removeAliases(Item item);
+    private int countAliases(Item item);
+}
+
 					</pre>
 					<p>And we've successfully removed the duplication. Job's a good ‘un.</p>
 				</div>

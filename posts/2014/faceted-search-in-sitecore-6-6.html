@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Last week I spoke at the London Sitecore Technical User Group, and discussed my experiences working on a project that had to provide a Faceted Search UI in Sitecore 6.6. As part of my example, I talked about how you can build Facets using Lucene when you don't have access to the newer search APIs available in Sitecore 7.x, and about how you can make your search UI configurable by editors to improve their user experience. And I said I'd post my example code and explanation. So here goes:">
-		<meta property="og:description" content="Last week I spoke at the London Sitecore Technical User Group, and discussed my experiences working on a project that had to provide a Faceted Search UI in Sitecore 6.6. As part of my example, I talked about how you can build Facets using Lucene when you don't have access to the newer search APIs available in Sitecore 7.x, and about how you can make your search UI configurable by editors to improve their user experience. And I said I'd post my example code and explanation. So here goes:">
+		<meta name="description" content="Faceted Search in Sitecore&nbsp;6.6">
+		<meta property="og:description" content="Faceted Search in Sitecore&nbsp;6.6">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Faceted Search in Sitecore&nbsp;6.6</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Faceted Search in Sitecore&amp;#xA0;6.6">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/faceted-search-in-sitecore-6-6-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Faceted Search in Sitecore&#xA0;6.6",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/faceted-search-in-sitecore-6-6-social.png"
-        ],
-        "datePublished": "2014-06-09T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/faceted-search-in-sitecore-6-6">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:48 -->
+		<!-- 23/01/2022 10:19:02 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,27 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Faceted Search in Sitecore&nbsp;6.6
 				</h1>
-				<div class="meta">Published 09 June 2014</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-					<a href="/tags/lucene" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Lucene</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/ui" class="p-1 mr-1 bg-gray-100 rounded-md">
-						UI</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Last week I spoke at the London Sitecore Technical User Group, and discussed my experiences working on a project that had to provide a Faceted Search UI in Sitecore 6.6. As part of my example, I talked about how you can build Facets using Lucene when you don't have access to the newer search APIs available in Sitecore 7.x, and about how you can make your search UI configurable by editors to improve their user experience. And I said I'd post my example code and explanation. So here goes:
 						<!--more-->
 					</p>
@@ -199,14 +170,57 @@
 					<p>For the purposes of this simple example, the UI code is a normal ASP.Net User Control. (With the usual caveat of skipping over good patterns like error handling, Glass etc) However other approaches to building the UI are fine too – there's nothing stopping you from building an equivalent to this using MVC UI or your favourite patterns.</p>
 					<p>The code for the UI control needs to do a series of simple operations for this to work. It needs to load the configuration, build a search query, run it, generate the data for our facets, render the facets and then render the results. Lets walk through those in turn:</p>
 					<p>Earlier I said that the configuration was going to be passed to the control via its data source. Hence we can load the configuration item like so:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string[] loadConfig() {     string cfgItem = (this.Parent as Sublayout).DataSource;     Item cfg = Sitecore.Context.Database.GetItem(cfgItem);      string facets = cfg.Fields["Facets"].Value;      string[] config = null;      if (!string.IsNullOrEmpty(facets))     {         config = facets.Split('|')             .Select(id =&gt; Sitecore.Context.Database.GetItem(id))             .Select(itm =&gt; itm.Fields["SearchIndexField"].Value)             .Select(f =&gt; f.ToLowerInvariant())             .ToArray();     }      return config; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string[] loadConfig()
+{
+    string cfgItem = (this.Parent as Sublayout).DataSource;
+    Item cfg = Sitecore.Context.Database.GetItem(cfgItem);
+
+    string facets = cfg.Fields["Facets"].Value;
+
+    string[] config = null;
+
+    if (!string.IsNullOrEmpty(facets))
+    {
+        config = facets.Split('|')
+            .Select(id => Sitecore.Context.Database.GetItem(id))
+            .Select(itm => itm.Fields["SearchIndexField"].Value)
+            .Select(f => f.ToLowerInvariant())
+            .ToArray();
+    }
+
+    return config;
+}
+
 					</pre>
 					<p>The data source item contains one field, so we extract its value. It's a multilist, so the value is a string of GUIDs separated with pipe characters. So to transform this data into something more usable we can use a Linq expression to process it. (You don't have to use Linq in your code – you can use whatever way of writing this you prefer – and if you used an ORM like Glass you'd find a lot of this method was done for you) We break it using the pipe character, and then project each of those IDs into Sitecore items via the API. Each of those items will be one of our Facet definitions – so we can extract the one field that contains from the item, leaving us with a set of field names we can build facets from. Finally these field names get transformed into lowercase, since Lucene works in lowercase most of the time.</p>
 					<p>And at the end of that we have an array containing the names of the fields we want to make facets from.</p>
 					<p>Next is building a query. To do that we need to construct a Lucene expression tree to represent the search we're going to run. We start from a
 						<code>BooleanQuery</code>
 						object and we add a set of required terms to that:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private readonly Guid _template = new Guid("{C5537201-AF56-473B-A614-E5DA9FB5079E}");  private BooleanQuery buildQuery(string[] facets) {     BooleanQuery query = new BooleanQuery();      query.Add(new TermQuery(new Term("_template", ShortID.Encode(_template).ToLowerInvariant())), BooleanClause.Occur.MUST);      foreach (string facet in facets)     {         string key = Request.Form.AllKeys.Where(k =&gt; k.EndsWith("$" + facet)).FirstOrDefault();         if (!string.IsNullOrWhiteSpace(key))         {             string value = Request.Form[key];             if (!string.IsNullOrWhiteSpace(value))             {                 query.Add(new TermQuery(new Term(facet, value)), BooleanClause.Occur.MUST);             }         }     }      return query; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private readonly Guid _template = new Guid("{C5537201-AF56-473B-A614-E5DA9FB5079E}");
+
+private BooleanQuery buildQuery(string[] facets)
+{
+    BooleanQuery query = new BooleanQuery();
+
+    query.Add(new TermQuery(new Term("_template", ShortID.Encode(_template).ToLowerInvariant())), BooleanClause.Occur.MUST);
+
+    foreach (string facet in facets)
+    {
+        string key = Request.Form.AllKeys.Where(k => k.EndsWith("$" + facet)).FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(key))
+        {
+            string value = Request.Form[key];
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                query.Add(new TermQuery(new Term(facet, value)), BooleanClause.Occur.MUST);
+            }
+        }
+    }
+
+    return query;
+}
+
 					</pre>
 					<p>The first term(s) to add are those which will restrict the overall set of results we're working on. Here we've added a search term to make sure we only ever return items whose template is our T-shirt template. In real code you'd probably add things like language or path terms here as well.</p>
 					<p>The template's ID is defined in the code. Note how we encode the ID of the template as a
@@ -215,7 +229,17 @@
 					<p>The rest of this method iterates our configuration array and considers whether to add a term for each of the facets defined.</p>
 					<p>When we run this bit of code we have no UI controls defined to get selected values from. Hence we have to look in the HTML form's postback data directly. Later on we'll make sure the form elements have their IDs set to the names of our facets – so here we look to see if we can find an item whose name matches our current facet. If we find one, and if that ID has a value in the postback data then we add a term to our search. If we don't find the name or a value, we skip over it as the user is not restricting results by this facet.</p>
 					<p>And once we've been through all of the config we have a search query to run. That can be done with the following method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SearchResultCollection runQuery(BooleanQuery query) {     Index index = Sitecore.Search.SearchManager.GetIndex("demo");      using (IndexSearchContext isc = index.CreateSearchContext())     {         SearchHits hits = isc.Search(query, 10000);         return hits.FetchResults(0, 10000);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SearchResultCollection runQuery(BooleanQuery query)
+{
+    Index index = Sitecore.Search.SearchManager.GetIndex("demo");
+
+    using (IndexSearchContext isc = index.CreateSearchContext())
+    {
+        SearchHits hits = isc.Search(query, 10000);
+        return hits.FetchResults(0, 10000);
+    }
+}
+
 					</pre>
 					<p>First we ask Sitecore to give us the index named "demo" (remember the name from the config file earlier?) and from that we create a context for searching. We use that context to run our query and give us back a set of "hits". Note the second parameter to the
 						<code>Search()</code>
@@ -224,13 +248,46 @@
 						<code>FetchResults()</code>
 						are usually used for paginating your results. However here we need all the results - so these parameters must also be set to return everything.</p>
 					<p>From the results returned we can now build the data for the facets we'll display. To make the code a bit simpler we'll define a quick helper data type here to contain the data for each facet:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FacetData {     public string Name { get; private set; }     public IEnumerable&lt;ListItem&gt; Values { get; private set; }      public FacetData(string name, IEnumerable&lt;ListItem&gt; values)     {         Name = name;         Values = values;     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FacetData
+{
+    public string Name { get; private set; }
+    public IEnumerable<ListItem> Values { get; private set; }
+
+    public FacetData(string name, IEnumerable<ListItem> values)
+    {
+        Name = name;
+        Values = values;
+    }
+}
+
 					</pre>
 					<p>Each of our facets will have a name, and a list of items to display. We're using .Net's standard
 						<code>ListItem</code>
 						class to represent each facet value as we'll bind these to a Dropdown list later.</p>
 					<p>So, to build our fact data we need to process the search results with:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable&lt;FacetData&gt; buildFilterData(string[] facets, SearchResultCollection results) {     List&lt;FacetData&gt; filters = new List&lt;FacetData&gt;();      foreach (string facet in facets)     {         var data = results                     .Select(r =&gt; r.Document.GetValues(facet))                     .Where(v =&gt; v != null &amp;&amp; v.Length &gt; 0)                     .SelectMany(v =&gt; v)                     .Distinct()                     .Select(v =&gt; Sitecore.Context.Database.GetItem(ShortID.Parse(v).ToID()))                     .Select(v =&gt; new ListItem(v.DisplayName, ShortID.Encode(v.ID).ToLowerInvariant()))                     .OrderBy(i =&gt; i.Text);          FacetData t = new FacetData(facet, data);          filters.Add(t);     }      return filters; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable<FacetData> buildFilterData(string[] facets, SearchResultCollection results)
+{
+    List<FacetData> filters = new List<FacetData>();
+
+    foreach (string facet in facets)
+    {
+        var data = results
+                    .Select(r => r.Document.GetValues(facet))
+                    .Where(v => v != null && v.Length > 0)
+                    .SelectMany(v => v)
+                    .Distinct()
+                    .Select(v => Sitecore.Context.Database.GetItem(ShortID.Parse(v).ToID()))
+                    .Select(v => new ListItem(v.DisplayName, ShortID.Encode(v.ID).ToLowerInvariant()))
+                    .OrderBy(i => i.Text);
+
+        FacetData t = new FacetData(facet, data);
+
+        filters.Add(t);
+    }
+
+    return filters;
+}
+
 					</pre>
 					<p>We iterate the set of facets in our configuration. For each one we use a Linq expression to process the search results into a set of facet data. For each Sitecore field name in our configuration we ask Lucene to give us back all the values it found in the results for that column. This call to
 						<code>GetValues()</code>
@@ -250,10 +307,37 @@
 						<code>IEnumerable&lt;FacetData&gt;</code>
 						that we can bind to our UI.</p>
 					<p>To display the facets we need some UI to bind the data to:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;h2&gt;Filters&lt;/h2&gt; &lt;asp:Repeater runat="server" ID="filterRepeater"&gt;     &lt;ItemTemplate&gt;         &lt;div&gt;             &lt;asp:DropDownList runat="server" ID="filter" AutoPostBack="true" /&gt;         &lt;/div&gt;     &lt;/ItemTemplate&gt; &lt;/asp:Repeater&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><h2>Filters</h2>
+<asp:Repeater runat="server" ID="filterRepeater">
+    <ItemTemplate>
+        <div>
+            <asp:DropDownList runat="server" ID="filter" AutoPostBack="true" />
+        </div>
+    </ItemTemplate>
+</asp:Repeater>
+
 					</pre>
 					<p>Here we have a simple repeater to create a set of dropdown lists with auto-postback set to true. We set up a standard data binding for them, and for each item we run the following code to do the bind:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void filterRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e) {     if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)     {         FacetData data = e.Item.DataItem as FacetData;          DropDownList ddl = e.Item.FindControl("filter") as DropDownList;         ddl.ID = data.Name;          var vals = new List&lt;ListItem&gt;();         vals.Add(new ListItem("-- All " + data.Name + " --", string.Empty));         vals.AddRange(data.Values);          ddl.DataSource = vals;         ddl.DataTextField = "Text";         ddl.DataValueField = "Value";         ddl.DataBind();     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void filterRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
+{
+    if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+    {
+        FacetData data = e.Item.DataItem as FacetData;
+
+        DropDownList ddl = e.Item.FindControl("filter") as DropDownList;
+        ddl.ID = data.Name;
+
+        var vals = new List<ListItem>();
+        vals.Add(new ListItem("-- All " + data.Name + " --", string.Empty));
+        vals.AddRange(data.Values);
+
+        ddl.DataSource = vals;
+        ddl.DataTextField = "Text";
+        ddl.DataValueField = "Value";
+        ddl.DataBind();
+    }
+}
+
 					</pre>
 					<p>Two things of note here. First is that when we find the
 						<code>DropDownList</code>
@@ -266,14 +350,68 @@
 						<code>FetchResults()</code>
 						method on your search hits again instead.</p>
 					<p>And with your page of results sorted out, you can bind that to your UI. I created the following HTML in order display the items:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;h2&gt;Results&lt;/h2&gt; &lt;asp:Repeater runat="server" ID="resultRepeater"&gt;     &lt;HeaderTemplate&gt;&lt;ul&gt;&lt;/HeaderTemplate&gt;     &lt;ItemTemplate&gt;         &lt;li&gt;             &lt;sc:Image runat="server" id="image" MaxWidth="50" Field="Image" style="display:inline-block;" /&gt;             &lt;div style="display:inline-block"&gt;                 &lt;sc:Text runat="server" id="title" Field="Title" /&gt;                 &lt;br /&gt;                 &lt;sc:Text runat="server" id="description" Field="Description" /&gt;             &lt;/div&gt;         &lt;/li&gt;     &lt;/ItemTemplate&gt;     &lt;FooterTemplate&gt;&lt;/ul&gt;&lt;/FooterTemplate&gt; &lt;/asp:Repeater&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><h2>Results</h2>
+<asp:Repeater runat="server" ID="resultRepeater">
+    <HeaderTemplate><ul></HeaderTemplate>
+    <ItemTemplate>
+        <li>
+            <sc:Image runat="server" id="image" MaxWidth="50" Field="Image" style="display:inline-block;" />
+            <div style="display:inline-block">
+                <sc:Text runat="server" id="title" Field="Title" />
+                <br />
+                <sc:Text runat="server" id="description" Field="Description" />
+            </div>
+        </li>
+    </ItemTemplate>
+    <FooterTemplate></ul></FooterTemplate>
+</asp:Repeater>
+
 					</pre>
 					<p>And the code to do the binding is fairly simple:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void resultRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e) {     if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)     {         SearchResult sr = e.Item.DataItem as SearchResult;          Item itm = sr.GetObject&lt;Item&gt;();          var image = e.Item.FindControl("image") as Sitecore.Web.UI.WebControls.Image;         var title = e.Item.FindControl("title") as Sitecore.Web.UI.WebControls.Text;         var description = e.Item.FindControl("description") as Sitecore.Web.UI.WebControls.Text;          image.Item = itm;         title.Item = itm;         description.Item = itm;     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void resultRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
+{
+    if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+    {
+        SearchResult sr = e.Item.DataItem as SearchResult;
+
+        Item itm = sr.GetObject<Item>();
+
+        var image = e.Item.FindControl("image") as Sitecore.Web.UI.WebControls.Image;
+        var title = e.Item.FindControl("title") as Sitecore.Web.UI.WebControls.Text;
+        var description = e.Item.FindControl("description") as Sitecore.Web.UI.WebControls.Text;
+
+        image.Item = itm;
+        title.Item = itm;
+        description.Item = itm;
+    }
+}
+
 					</pre>
 					<p>Whilst earlier in the code we use the SortageType config to be able to get data back via Lucene rather than loading items, that approach doesn't work so well here. The data Lucene gives you back has been parsed and had some of the noise discarded. Hence can discard markup in your rich text - so it's better to load the items for the set of results you're going to show on the page.</p>
 					<p>So to wrap it up, the code that binds all these methods together is as follows:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Page_Load(object sender, EventArgs e) {     string[] facets = loadConfig();      BooleanQuery query = buildQuery(facets);      qry.Text = query.ToString();      SearchResultCollection results = runQuery(query);      IEnumerable&lt;FacetData&gt; facetData = buildFilterData(facets, results);      filterRepeater.DataSource = facetData;     filterRepeater.ItemDataBound += filterRepeater_ItemDataBound;     filterRepeater.DataBind();      // paginate      resultRepeater.DataSource = results;     resultRepeater.ItemDataBound += resultRepeater_ItemDataBound;     resultRepeater.DataBind(); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Page_Load(object sender, EventArgs e)
+{
+    string[] facets = loadConfig();
+
+    BooleanQuery query = buildQuery(facets);
+
+    qry.Text = query.ToString();
+
+    SearchResultCollection results = runQuery(query);
+
+    IEnumerable<FacetData> facetData = buildFilterData(facets, results);
+
+    filterRepeater.DataSource = facetData;
+    filterRepeater.ItemDataBound += filterRepeater_ItemDataBound;
+    filterRepeater.DataBind();
+
+    // paginate
+
+    resultRepeater.DataSource = results;
+    resultRepeater.ItemDataBound += resultRepeater_ItemDataBound;
+    resultRepeater.DataBind();
+}
+
 					</pre>
 					<p>And you can compile this code, and run it to get the configurable faceted UI:</p>
 					<p>

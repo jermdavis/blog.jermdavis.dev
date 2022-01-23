@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I got a fun support ticket recently, for a client on Sitecore v8.1 whose analytics processing had stopped working. Their outstanding queue of raw analytics data that needed to be aggregated was slowly growing, and some functionality which relied on the existence of recent analyics data had stopped working. Trying to fix this caused me to look at two issues which are related to how Web Forms for Marketers data is processed in analytics – and these seemed like issues that other people who do support work might need info on... ">
-		<meta property="og:description" content="I got a fun support ticket recently, for a client on Sitecore v8.1 whose analytics processing had stopped working. Their outstanding queue of raw analytics data that needed to be aggregated was slowly growing, and some functionality which relied on the existence of recent analyics data had stopped working. Trying to fix this caused me to look at two issues which are related to how Web Forms for Marketers data is processed in analytics – and these seemed like issues that other people who do support work might need info on... ">
+		<meta name="description" content="Ooops... Looks like WFfM broke analytics...">
+		<meta property="og:description" content="Ooops... Looks like WFfM broke analytics...">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Ooops... Looks like WFfM broke analytics...</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Ooops... Looks like WFfM broke analytics...">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/ooops-looks-like-wffm-broke-analytics-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Ooops... Looks like WFfM broke analytics...",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/ooops-looks-like-wffm-broke-analytics-social.png"
-        ],
-        "datePublished": "2019-03-18T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/ooops-looks-like-wffm-broke-analytics">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:07 -->
+		<!-- 23/01/2022 10:19:09 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,24 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Ooops... Looks like WFfM broke analytics...
 				</h1>
-				<div class="meta">Published 18 March 2019</div>
-				<div class="flex py-1">
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/wffm" class="p-1 mr-1 bg-gray-100 rounded-md">
-						WFfM</a>
-					<a href="/tags/bug" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Bug</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I got a fun support ticket recently, for a client on Sitecore v8.1 whose analytics processing had stopped working. Their outstanding queue of raw analytics data that needed to be aggregated was slowly growing, and some functionality which relied on the existence of recent analyics data had stopped working. Trying to fix this caused me to look at two issues which are related to how Web Forms for Marketers data is processed in analytics – and these seemed like issues that other people who do support work might need info on... 
 						<!--more-->
 					</p>
@@ -156,14 +131,46 @@
 					</p>
 					<p>You can watch this number over time, and see what's happening to your queue...</p>
 					<p>While I was doing this I realised being able to get this data in a more automated way would be helpful, so I worked out how to do the same query in PowerShell:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Add-Type -Path 'C:\inetpub\wwwroot\yourWebsiteFolder\Website\bin\MongoDB.Driver.dll'  $client = New-Object -TypeName MongoDB.Driver.MongoClient -ArgumentList "mongodb://yourMongoServer:yourPort" $server = $client.GetServer() $database = $server.GetDatabase("tracking_live") $val = $database.GetCollection('ProcessingPool').count()  write-host "----" write-host "At: $(Get-Date -Format 'dd/MM/yyyy HH:mm')" write-host "Count: $val"
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Add-Type -Path 'C:\inetpub\wwwroot\yourWebsiteFolder\Website\bin\MongoDB.Driver.dll'
+
+$client = New-Object -TypeName MongoDB.Driver.MongoClient -ArgumentList "mongodb://yourMongoServer:yourPort"
+$server = $client.GetServer()
+$database = $server.GetDatabase("tracking_live")
+$val = $database.GetCollection('ProcessingPool').count()
+
+write-host "----"
+write-host "At: $(Get-Date -Format 'dd/MM/yyyy HH:mm')"
+write-host "Count: $val"
+
 					</pre>
 					<p>Note that Sitecore does batch processing of this data, so you'll find that the number in this table will tend to climb a bit, until the processing engine kicks in and processes a batch of data. Hence needing to look at it over a few minutes to see what the trend is.</p>
 					<p>And on the server I was looking at, this queue was pretty huge 😉</p>
 					<p>So what problems was I seeing?</p>
 					<h2>Issue One:</h2>
 					<p>The first big pile of errors of I found in the logs looked like this:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3" data-enlighter-language="text" style="width:100%; overflow:scroll;">4544 13:07:23 ERROR Exception when storing an aggregation result into reporting database. Item will be postponed and retried later. Exception: System.Data.SqlClient.SqlException Message: Failed to insert or update rows in the [Fact_FormSummary] table. Failed to insert or update rows in the [Fact_FormSummary] table. Failed to insert or update rows in the [Fact_FormSummary] table. Failed to insert or update rows in the [Fact_FormSummary] table. Failed to insert or update rows in the [Fact_FormSummary] table. Failed to insert or update rows in the [Fact_FormSummary] table. Source: .Net SqlClient Data Provider    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)    at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)    at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean&amp; dataReady)    at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)    at System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task&amp; task, Boolean asyncWrite, SqlDataReader ds, Boolean describeParameterEncryptionRequest)    at System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task&amp; task, Boolean asyncWrite)    at System.Data.SqlClient.SqlCommand.InternalExecuteNonQuery(TaskCompletionSource`1 completion, String methodName, Boolean sendToPipe, Int32 timeout, Boolean asyncWrite)    at System.Data.SqlClient.SqlCommand.ExecuteNonQuery()    at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.Commit(SqlDataApi api, IReportingStorageItemBatch batch, Func`2 filter)    at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.&lt;&gt;c__DisplayClass6.&lt;StoreBatch&gt;b__1()    at Sitecore.Data.DataProviders.NullRetryer.ExecuteNoResult(Action action, Action recover)    at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.StoreBatch(IReportingStorageItemBatch batch)    at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.Store(IReportingStorageItemBatch batch)
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3" data-enlighter-language="text" style="width:100%; overflow:scroll;">4544 13:07:23 ERROR Exception when storing an aggregation result into reporting database. Item will be postponed and retried later.
+Exception: System.Data.SqlClient.SqlException
+Message: Failed to insert or update rows in the [Fact_FormSummary] table.
+Failed to insert or update rows in the [Fact_FormSummary] table.
+Failed to insert or update rows in the [Fact_FormSummary] table.
+Failed to insert or update rows in the [Fact_FormSummary] table.
+Failed to insert or update rows in the [Fact_FormSummary] table.
+Failed to insert or update rows in the [Fact_FormSummary] table.
+Source: .Net SqlClient Data Provider
+   at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean asyncWrite)
+   at System.Data.SqlClient.SqlCommand.InternalExecuteNonQuery(TaskCompletionSource`1 completion, String methodName, Boolean sendToPipe, Int32 timeout, Boolean asyncWrite)
+   at System.Data.SqlClient.SqlCommand.ExecuteNonQuery()
+   at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.Commit(SqlDataApi api, IReportingStorageItemBatch batch, Func`2 filter)
+   at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.<>c__DisplayClass6.<StoreBatch>b__1()
+   at Sitecore.Data.DataProviders.NullRetryer.ExecuteNoResult(Action action, Action recover)
+   at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.StoreBatch(IReportingStorageItemBatch batch)
+   at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.Store(IReportingStorageItemBatch batch)
+
 					</pre>
 					<p>Luckily for me, Google solved this one quickly, as
 						<a href="https://medium.com/&amp;#64;structuredcode/sitecore-wffm-unofficial-hotfix-form-data-fails-to-be-aggregated-5074af41f361" rel="noopener noreferrer" target="_blank">Dmytro Shevchenko has done a really helpful post</a>
@@ -171,7 +178,24 @@
 					<p>Applying his patch got rid of these log errors, and the processing queue started to go down again...</p>
 					<h2>Issue Two:</h2>
 					<p>...but after a day or so of happy processing, a new error appeared:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3" data-enlighter-language="text" style="width:100%; overflow:scroll;">6680 10:27:47 ERROR Exception when storing an aggregation result into reporting database. Item will be postponed and retried later. Exception: System.Data.SqlClient.SqlException Message: Column, parameter, or variable @p59. : Cannot find data type Fact_FormSummary_Type. Source: .Net SqlClient Data Provider    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)    at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)    at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean&amp; dataReady)    at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)    at System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task&amp; task, Boolean asyncWrite, SqlDataReader ds, Boolean describeParameterEncryptionRequest)    at System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task&amp; task, Boolean asyncWrite)    at System.Data.SqlClient.SqlCommand.InternalExecuteNonQuery(TaskCompletionSource`1 completion, String methodName, Boolean sendToPipe, Int32 timeout, Boolean asyncWrite)    at System.Data.SqlClient.SqlCommand.ExecuteNonQuery()    at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.Commit(SqlDataApi api, IReportingStorageItemBatch batch, Func`2 filter)    at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.&lt;&gt;c__DisplayClass6.&lt;StoreBatch&gt;b__1()    at Sitecore.Data.DataProviders.NullRetryer.ExecuteNoResult(Action action, Action recover)    at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.StoreBatch(IReportingStorageItemBatch batch)    at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.Store(IReportingStorageItemBatch batch)
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3" data-enlighter-language="text" style="width:100%; overflow:scroll;">6680 10:27:47 ERROR Exception when storing an aggregation result into reporting database. Item will be postponed and retried later.
+Exception: System.Data.SqlClient.SqlException
+Message: Column, parameter, or variable @p59. : Cannot find data type Fact_FormSummary_Type.
+Source: .Net SqlClient Data Provider
+   at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean asyncWrite)
+   at System.Data.SqlClient.SqlCommand.InternalExecuteNonQuery(TaskCompletionSource`1 completion, String methodName, Boolean sendToPipe, Int32 timeout, Boolean asyncWrite)
+   at System.Data.SqlClient.SqlCommand.ExecuteNonQuery()
+   at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.Commit(SqlDataApi api, IReportingStorageItemBatch batch, Func`2 filter)
+   at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.<>c__DisplayClass6.<StoreBatch>b__1()
+   at Sitecore.Data.DataProviders.NullRetryer.ExecuteNoResult(Action action, Action recover)
+   at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.StoreBatch(IReportingStorageItemBatch batch)
+   at Sitecore.Analytics.Aggregation.SqlReportingStorageProvider.Store(IReportingStorageItemBatch batch)
+
 					</pre>
 					<p>Looking at the database, I couldn't find anything called "Fact_FormSummary_Type" in the Sys.Objects table, so the error was probably accurate even if it wasn't very helpful.</p>
 					<p>Sadly Google didn't help me here, as the only reference I got back was

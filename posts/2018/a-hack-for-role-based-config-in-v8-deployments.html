@@ -4,12 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="It's a pretty common requirement that deploying instances of Sitecore will require slightly different configuration on different servers. Different roles, like content management and content deployment, will require different settings and features to work. So it's not surprising that there are a variety of approaches to how you manage this configuration in your projects.
-In the past I've often made use of separate config files, where you have a file for &quot;config changes needed on all servers&quot; and then further files for &quot;config changes needed for CM servers&quot;, and even down to the level of &quot;config changes needed on server CD01&quot; if necessary. This works fine if your deployment process understands which files should go on which servers.
-Recently, however, Sitecore have started to offer a &quot;role based configuration&quot; approach in the configuration of v9 – so you can deploy a single config file and the server can pick and choose sections of its configuration based on what role it is performing. But back in the real world, most of us are still supporting V8 (and older) sites, so is it possible for them to adopt something similar to this idea? Here's one approach that achieves something similar: ">
-		<meta property="og:description" content="It's a pretty common requirement that deploying instances of Sitecore will require slightly different configuration on different servers. Different roles, like content management and content deployment, will require different settings and features to work. So it's not surprising that there are a variety of approaches to how you manage this configuration in your projects.
-In the past I've often made use of separate config files, where you have a file for &quot;config changes needed on all servers&quot; and then further files for &quot;config changes needed for CM servers&quot;, and even down to the level of &quot;config changes needed on server CD01&quot; if necessary. This works fine if your deployment process understands which files should go on which servers.
-Recently, however, Sitecore have started to offer a &quot;role based configuration&quot; approach in the configuration of v9 – so you can deploy a single config file and the server can pick and choose sections of its configuration based on what role it is performing. But back in the real world, most of us are still supporting V8 (and older) sites, so is it possible for them to adopt something similar to this idea? Here's one approach that achieves something similar: ">
+		<meta name="description" content="A hack for role-based config in v8&nbsp;deployments">
+		<meta property="og:description" content="A hack for role-based config in v8&nbsp;deployments">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - A hack for role-based config in v8&nbsp;deployments</title>
@@ -22,24 +18,8 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - A hack for role-based config in v8&amp;#xA0;deployments">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-hack-for-role-based-config-in-v8-deployments-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "A hack for role-based config in v8&#xA0;deployments",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/a-hack-for-role-based-config-in-v8-deployments-social.png"
-        ],
-        "datePublished": "2018-01-22T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/a-hack-for-role-based-config-in-v8-deployments">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -50,7 +30,7 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:26 -->
+		<!-- 23/01/2022 10:18:51 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -126,22 +106,15 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					A hack for role-based config in v8&nbsp;deployments
 				</h1>
-				<div class="meta">Published 22 January 2018</div>
-				<div class="flex py-1">
-					<a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>It's a pretty common requirement that deploying instances of Sitecore will require slightly different configuration on different servers. Different roles, like content management and content deployment, will require different settings and features to work. So it's not surprising that there are a variety of approaches to how you manage this configuration in your projects.</p>
 					<p>In the past I've often made use of separate config files, where you have a file for "config changes needed on all servers" and then further files for "config changes needed for CM servers", and even down to the level of "config changes needed on server CD01" if necessary. This works fine if your deployment process understands which files should go on which servers.</p>
 					<p>Recently, however, Sitecore have started to offer a "role based configuration" approach in the configuration of v9 – so you can deploy a single config file and the server can pick and choose sections of its configuration based on what role it is performing. But back in the real world, most of us are still supporting V8 (and older) sites, so is it possible for them to adopt something similar to this idea? Here's one approach that achieves something similar: 
@@ -151,14 +124,64 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 					<p>Changing how Sitecore's internal configuration framework processes config files is a bit of a tall order, so I decided to try an experiment by making this part of my deployment process. Since picking and choosing config at runtime wasn't practical, I thought I'd try to have a single configuration file where you could mark which sections were not relevant to particular server role. The release process could then examine these as it dealt with the deployment and remove configuration that was not needed...</p>
 					<h2>Markingup the config</h2>
 					<p>Since the configurtaion data for a site is XML, the most obvious way to address the need to remove bits of config that aren't relevant to a particular server is to declare a new namespace and add a "RemoveOn" attribute to any element that's not needed in certain places. So a very simple patch file might look like this:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:role="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;   &lt;sitecore&gt;     &lt;settings&gt;       &lt;setting name="CD-Only-Setting" role:RemoveOn="CM"&gt;         &lt;patch:attribute name="value"&gt;some value&lt;/patch:attribute&gt;       &lt;/setting&gt;     &lt;/settings   &lt;/sitecore&gt; &lt;/configuration&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration xmlns:role="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/">
+  <sitecore>
+    <settings>
+      <setting name="CD-Only-Setting" role:RemoveOn="CM">
+        <patch:attribute name="value">some value</patch:attribute>
+      </setting>
+    </settings
+  </sitecore>
+</configuration>
+
 					</pre>
 					<p>Using a namespace ensures our changes to the XML won't clash with anything else that's in the file – though it does make processing it a bit trickier, as I'll get to later.</p>
 					<h2>Removing unwanted elements</h2>
 					<p>So once a file gets copied to a target server the deployment needs to do something to get rid of the elements that aren't required. A bit of PowerShell can sort that out, and is easy to trigger during a deployment. The process is pretty simple: It can take a file and the roles this server performs, and search the config for elements decorated with
 						<code>RemoveOn</code>
 						attributes. These can be removed and the file saved again. That can be done with a function like so:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Update-ConfigFile {   param   (     [string]$configFile,     [string[]]$roles   )    process   {     $xml = New-Object System.Xml.XmlDocument     $xml.Load($configFile)      $xns = New-Object System.Xml.XmlNamespaceManager $xml.NameTable     $xns.AddNamespace("role", "RoleManagement")      $elements = $xml.DocumentElement.SelectNodes("descendant::*[@role:RemoveOn]", $xns)      Write-Host "Found $($elements.Count) elements to process in $configFile"      $count = 0     foreach($element in $elements)     {       $value = $element.SelectSingleNode("@role:RemoveOn", $xns).Value        if($roles -match $value)       {         $count = $count + 1         $element.ParentNode.RemoveChild($element) | Out-Null       }       else       {         $element.Attributes.RemoveNamedItem("RemoveOn", "RoleManagement") | Out-Null       }     }      Write-Host "Made $count removals in $configFile"      $xml.Save($configFile)   } }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Update-ConfigFile
+{
+  param
+  (
+    [string]$configFile,
+    [string[]]$roles
+  )
+
+  process
+  {
+    $xml = New-Object System.Xml.XmlDocument
+    $xml.Load($configFile)
+
+    $xns = New-Object System.Xml.XmlNamespaceManager $xml.NameTable
+    $xns.AddNamespace("role", "RoleManagement")
+
+    $elements = $xml.DocumentElement.SelectNodes("descendant::*[@role:RemoveOn]", $xns)
+
+    Write-Host "Found $($elements.Count) elements to process in $configFile"
+
+    $count = 0
+    foreach($element in $elements)
+    {
+      $value = $element.SelectSingleNode("@role:RemoveOn", $xns).Value
+
+      if($roles -match $value)
+      {
+        $count = $count + 1
+        $element.ParentNode.RemoveChild($element) | Out-Null
+      }
+      else
+      {
+        $element.Attributes.RemoveNamedItem("RemoveOn", "RoleManagement") | Out-Null
+      }
+    }
+
+    Write-Host "Made $count removals in $configFile"
+
+    $xml.Save($configFile)
+  }
+}
+
 					</pre>
 					<p>It takes a path to a config file, and an array of role names that this server performs. The config file gets loaded into memory as an
 						<code>XmlDocument</code>, and the custom namespace gets registered. This is necessary, because without an
@@ -169,14 +192,46 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 						attribute, across the whole document. For each element found, it checks if that value is contained in the set of roles passed in. If there's a match, the entire element can be removed. However if there isn't a match then all that needs removing is the custom attribute.</p>
 					<p>And finally, once all the changes have been made, the file can be saved.</p>
 					<p>So running this code against the sample above on a "CM" sever gets:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:role="RemoveOn" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;   &lt;sitecore&gt;     &lt;settings&gt;     &lt;/settings&gt;   &lt;/sitecore&gt; &lt;/configuration&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration xmlns:role="RemoveOn" xmlns:patch="http://www.sitecore.net/xmlconfig/">
+  <sitecore>
+    <settings>
+    </settings>
+  </sitecore>
+</configuration>
+
 					</pre>
 					<h2>Tidying up</h2>
 					<p>In theory that should be enough to sort out the config, but in the real world life is actually a bit trickier. If you're generating the config files you deploy using XDT in your Visual Studio project than you can end up with your custom namespace messed up. You may see something like this after your XDT transform completes:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:d3p1="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;   &lt;sitecore&gt;     &lt;settings&gt;       &lt;setting name="CD-Only-Setting" d3p1:RemoveOn="CM"&gt;         &lt;patch:attribute name="value"&gt;some value&lt;/patch:attribute&gt;       &lt;/setting&gt;     &lt;/settings   &lt;/sitecore&gt; &lt;/configuration&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration xmlns:d3p1="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/">
+  <sitecore>
+    <settings>
+      <setting name="CD-Only-Setting" d3p1:RemoveOn="CM">
+        <patch:attribute name="value">some value</patch:attribute>
+      </setting>
+    </settings
+  </sitecore>
+</configuration>
+
 					</pre>
 					<p>That's still perfectly valid XML, but Sitecore doesn't like having any of this left in the config files. So any left-over custom namespace stuff needs to be tidied up. Normally XML processing would be the right way to go about this, but because the custom namespace ends up with an unpredictable name if you run XDT, plain old text processing ends up easier:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Remove-UnwantedNamespaces {   param   (     [string]$file   )   process   {     $txt = Get-Content $file          $expr = '(xmlns:[^=]*="RoleManagement"\s*)|([\w]*:RemoveOn=".*?"\s*)'      $result = $txt -replace $expr, ""     $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False     [System.IO.File]::WriteAllLines($file, $result, $Utf8NoBomEncoding)   } }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Remove-UnwantedNamespaces
+{
+  param
+  (
+    [string]$file
+  )
+  process
+  {
+    $txt = Get-Content $file
+    
+    $expr = '(xmlns:[^=]*="RoleManagement"\s*)|([\w]*:RemoveOn=".*?"\s*)'
+
+    $result = $txt -replace $expr, ""
+    $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
+    [System.IO.File]::WriteAllLines($file, $result, $Utf8NoBomEncoding)
+  }
+}
+
 					</pre>
 					<p>This loads the text out of the file specified, runs a regular expression over it, and then saves the data back to disk being explicit about saving the file without a UTF8 byte order mark – since I found that Sitecore gets unhappy if that's not done correctly.</p>
 					<p>The regular expression looks a bit complicated, but it's just checking for one of two terms. It will match either the
@@ -186,7 +241,39 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 						attribute no matter what namespace prefix is used. If either of these is found, the entire attribute will be removed including its value.</p>
 					<h2>Pulling it all together</h2>
 					<p>The deployment script needs to deal with running the code above across all the required set of config files. It also needs to cope with the fact that the easiest way of passing in the roles a server performs is as a string (coming from whatever release process is running this script). So the functions above can be called from something like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(   [Parameter(Mandatory=$true)]   [string]$configFolder,   [Parameter(Mandatory=$true)]   [string]$configPattern,   [Parameter(Mandatory=$true)]   [string]$currentRoles )  function Split-RoleString {   param   (     [string] $roleString   )   process   {     $splitString = $roleString -split ","     return $splitString | % { $_.Trim() }   } }  $roles = Split-RoleString $currentRoles $filesToProcess = Get-ChildItem -Path $configFolder -Filter $configPattern -Recurse | Select-Object -ExpandProperty FullName  Write-Host "Start: Updating config files to remove instance-specific features" foreach($file in $filesToProcess) {   Update-ConfigFile $file $roles   Remove-UnwantedNamespaces $file } Write-Host "Done: Updating config files to remove instance-specific features"
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
+  [Parameter(Mandatory=$true)]
+  [string]$configFolder,
+  [Parameter(Mandatory=$true)]
+  [string]$configPattern,
+  [Parameter(Mandatory=$true)]
+  [string]$currentRoles
+)
+
+function Split-RoleString
+{
+  param
+  (
+    [string] $roleString
+  )
+  process
+  {
+    $splitString = $roleString -split ","
+    return $splitString | % { $_.Trim() }
+  }
+}
+
+$roles = Split-RoleString $currentRoles
+$filesToProcess = Get-ChildItem -Path $configFolder -Filter $configPattern -Recurse | Select-Object -ExpandProperty FullName
+
+Write-Host "Start: Updating config files to remove instance-specific features"
+foreach($file in $filesToProcess)
+{
+  Update-ConfigFile $file $roles
+  Remove-UnwantedNamespaces $file
+}
+Write-Host "Done: Updating config files to remove instance-specific features"
+
 					</pre>
 					<p>The script takes three parameters: The folder config files live in, the naming pattern for finding the relevant files and the roles this server performs.</p>
 					<p>The roles can be a comma-separated string, and the
@@ -195,6 +282,7 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 					<p>The code can then fetch the set of files to process (by saying "find all files matching the supplied pattern, in any folder under the path provided). Each of these files can then be processed in turn, buy calling the main replacement function and the function to remove any left-over custom XML.</p>
 					<p>So the release process can run the code with something like:</p>
 					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">.\ConfigServerRole.ps1 "c:\inetpub\mysite\website\App_Config\" "*.config" "CM"
+
 					</pre>
 					<h2>Conclusions...</h2>
 					<p>As a first pass at an idea, there are probably some scenarios this doesn't cope with as easily as I might like. The obvious place it's trickier than it should be at the moment is where servers have mixed roles – tagging content as "remove on CM and CD, but not processing". But despite that, it proves that, given a bit of polish it could be a useful addition to my deployment approaches.</p>

@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Recently <a href=&quot;https://twitter.com/steviemcgill&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;>Steve McGill</a> asked me if I'd tried using SIF's certificate creation when automating Solr setup for Sitecore. I realised I'd not put any effort into how this might work – and that seemed like an excellent excuse for some research...">
-		<meta property="og:description" content="Recently <a href=&quot;https://twitter.com/steviemcgill&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;>Steve McGill</a> asked me if I'd tried using SIF's certificate creation when automating Solr setup for Sitecore. I realised I'd not put any effort into how this might work – and that seemed like an excellent excuse for some research...">
+		<meta name="description" content="A Second attempt at installing Solr with&nbsp;SIF">
+		<meta property="og:description" content="A Second attempt at installing Solr with&nbsp;SIF">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - A Second attempt at installing Solr with&nbsp;SIF</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - A Second attempt at installing Solr with&amp;#xA0;SIF">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-second-attempt-at-installing-solr-with-sif-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "A Second attempt at installing Solr with&#xA0;SIF",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/a-second-attempt-at-installing-solr-with-sif-social.png"
-        ],
-        "datePublished": "2019-03-04T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/a-second-attempt-at-installing-solr-with-sif">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:26 -->
+		<!-- 23/01/2022 10:18:53 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,26 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					A Second attempt at installing Solr with&nbsp;SIF
 				</h1>
-				<div class="meta">Published 04 March 2019</div>
-				<div class="flex py-1">
-					<a href="/tags/sif" class="p-1 mr-1 bg-gray-100 rounded-md">
-						SIF</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/solr" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Solr</a>
-					<a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Installation</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Recently
 						<a href="https://twitter.com/steviemcgill" rel="noopener noreferrer" target="_blank">Steve McGill</a>
 						asked me if I'd tried using SIF's certificate creation when automating Solr setup for Sitecore. I realised I'd not put any effort into how this might work – and that seemed like an excellent excuse for some research...
@@ -165,7 +138,32 @@
 					<p>The biggest logical change to the SIF extension for Solr is that we no longer need to generate a certificate. If we just need to copy a certificate that was already generated - hence the code for
 						<code>Invoke-EnsureSSLCertificateTask</code>
 						gets a lot simpler:</p>
-					<pre data-enlighter-highlight="14,21,22" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Invoke-EnsureSSLCertificateTask {     [CmdletBinding(SupportsShouldProcess=$true)]     param(         [parameter(Mandatory=$true)]         [bool]$solrSSL,         [parameter(Mandatory=$true)]         [string]$solrName,         [parameter(Mandatory=$true)]         [string]$solrHost,         [parameter(Mandatory=$true)]         [string]$certificateStore,         [parameter(Mandatory=$true)]         [string]$sourceCert     )      PROCESS     {         if($solrSSL)         {             Write-Information -Message "$sourceCert" -Tag "Copying the site cert to $certificateStore"             copy $sourceCert $certificateStore         }     } }
+					<pre data-enlighter-highlight="14,21,22" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Invoke-EnsureSSLCertificateTask
+{
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param(
+        [parameter(Mandatory=$true)]
+        [bool]$solrSSL,
+        [parameter(Mandatory=$true)]
+        [string]$solrName,
+        [parameter(Mandatory=$true)]
+        [string]$solrHost,
+        [parameter(Mandatory=$true)]
+        [string]$certificateStore,
+        [parameter(Mandatory=$true)]
+        [string]$sourceCert
+    )
+
+    PROCESS
+    {
+        if($solrSSL)
+        {
+            Write-Information -Message "$sourceCert" -Tag "Copying the site cert to $certificateStore"
+            copy $sourceCert $certificateStore
+        }
+    }
+}
+
 					</pre>
 					<p>A new parameter
 						<code>$sourceCert</code>
@@ -173,12 +171,73 @@
 					<p>The location of the new certificate and its password also needs to be passed in to
 						<code>Invoke-ConfigureSolrTask</code>
 						that SIF calls to modify the default Solr config, so it can be passed down the chain...</p>
-					<pre data-enlighter-highlight="14,22" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Invoke-ConfigureSolrTask {     [CmdletBinding(SupportsShouldProcess=$true)]     param(         [parameter(Mandatory=$true)]         [bool]$solrSSL,         [parameter(Mandatory=$true)]         [string]$solrHost,         [parameter(Mandatory=$true)]         [string]$solrRoot,         [parameter(Mandatory=$true)]         [string]$certificateStore,         [parameter(Mandatory=$true)]         [string]$CertificatePassword     )      PROCESS     {         if($solrSSL)         {             Write-Information -Message "HTTPS" -Tag "Configuring Solr for HTTPS access"             configureHTTPS $solrHost $solrRoot $certificateStore $CertificatePassword         }         else         {             Write-Information -Message "HTTP" -Tag "Configuring Solr for HTTP access"             configureHTTP $solrHost $solrRoot         }     } }
+					<pre data-enlighter-highlight="14,22" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Invoke-ConfigureSolrTask
+{
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param(
+        [parameter(Mandatory=$true)]
+        [bool]$solrSSL,
+        [parameter(Mandatory=$true)]
+        [string]$solrHost,
+        [parameter(Mandatory=$true)]
+        [string]$solrRoot,
+        [parameter(Mandatory=$true)]
+        [string]$certificateStore,
+        [parameter(Mandatory=$true)]
+        [string]$CertificatePassword
+    )
+
+    PROCESS
+    {
+        if($solrSSL)
+        {
+            Write-Information -Message "HTTPS" -Tag "Configuring Solr for HTTPS access"
+            configureHTTPS $solrHost $solrRoot $certificateStore $CertificatePassword
+        }
+        else
+        {
+            Write-Information -Message "HTTP" -Tag "Configuring Solr for HTTP access"
+            configureHTTP $solrHost $solrRoot
+        }
+    }
+}
+
 					</pre>
 					<p>...to the
 						<code>configureHTTPS</code>
 						method. It already knows how to point Solr at the certificate, but in my original code I'd hardcoded the certificate password for simplicity. SIF doesn't use a simple default password, so we need to be able to pass in the right password, and it needs to be put into the config:</p>
-					<pre data-enlighter-highlight="7,19,21" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function configureHTTPS {     Param(         [string]$solrHost,         [string]$solrRoot,         [string]$certStore,         [string]$CertificatePassword     )      $solrConfig = "$solrRoot\bin\solr.in.cmd"     if(!(Test-Path -Path "$solrConfig.old"))     {         if($pscmdlet.ShouldProcess("$solrConfig", "Rewriting Solr config file for HTTPS"))         {             $cfg = Get-Content $solrConfig             Rename-Item $solrConfig "$solrRoot\bin\solr.in.cmd.old"             $newCfg = $cfg | % { $_ -replace "REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.jks", "set SOLR_SSL_KEY_STORE=$certStore" }             $newCfg = $newCfg | % { $_ -replace "REM set SOLR_SSL_KEY_STORE_PASSWORD=secret", "set SOLR_SSL_KEY_STORE_PASSWORD=$CertificatePassword" }             $newCfg = $newCfg | % { $_ -replace "REM set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.jks", "set SOLR_SSL_TRUST_STORE=$certStore" }             $newCfg = $newCfg | % { $_ -replace "REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret", "set SOLR_SSL_TRUST_STORE_PASSWORD=$CertificatePassword" }             $newCfg = $newCfg | % { $_ -replace "REM set SOLR_HOST=192.168.1.1", "set SOLR_HOST=$solrHost" }             $newCfg | Set-Content $solrConfig         }          Write-Information -Message "$solrConfig" -Tag "Solr config updated for HTTPS access"     }     else     {         Write-Information -Message "$solrConfig" -Tag "Solr config already updated for HTTPS access - skipping"     } }
+					<pre data-enlighter-highlight="7,19,21" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function configureHTTPS
+{
+    Param(
+        [string]$solrHost,
+        [string]$solrRoot,
+        [string]$certStore,
+        [string]$CertificatePassword
+    )
+
+    $solrConfig = "$solrRoot\bin\solr.in.cmd"
+    if(!(Test-Path -Path "$solrConfig.old"))
+    {
+        if($pscmdlet.ShouldProcess("$solrConfig", "Rewriting Solr config file for HTTPS"))
+        {
+            $cfg = Get-Content $solrConfig
+            Rename-Item $solrConfig "$solrRoot\bin\solr.in.cmd.old"
+            $newCfg = $cfg | % { $_ -replace "REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.jks", "set SOLR_SSL_KEY_STORE=$certStore" }
+            $newCfg = $newCfg | % { $_ -replace "REM set SOLR_SSL_KEY_STORE_PASSWORD=secret", "set SOLR_SSL_KEY_STORE_PASSWORD=$CertificatePassword" }
+            $newCfg = $newCfg | % { $_ -replace "REM set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.jks", "set SOLR_SSL_TRUST_STORE=$certStore" }
+            $newCfg = $newCfg | % { $_ -replace "REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret", "set SOLR_SSL_TRUST_STORE_PASSWORD=$CertificatePassword" }
+            $newCfg = $newCfg | % { $_ -replace "REM set SOLR_HOST=192.168.1.1", "set SOLR_HOST=$solrHost" }
+            $newCfg | Set-Content $solrConfig
+        }
+
+        Write-Information -Message "$solrConfig" -Tag "Solr config updated for HTTPS access"
+    }
+    else
+    {
+        Write-Information -Message "$solrConfig" -Tag "Solr config already updated for HTTPS access - skipping"
+    }
+}
+
 					</pre>
 					<p>So that's the code changes necessary for doing the install of Solr. I realise another tweak I could make here is to get rid of the "install Solr without HTTPS" code path from this file, as we're always using HTTPS. But again, that's a job for when I have some more free time.</p>
 					<p>So next is the configuration that binds this into SIF:</p>
@@ -187,23 +246,90 @@
 						<a href="/posts/2017/solr-installs-with-sif" target="_blank">looked at installing Solr alongside Sitecore using SIF</a>
 						it was against an earlier version of Sitecore. So that's going to require some changes even before we get to the certificates bit...</p>
 					<p>The version of Solr required by v9.1 is Solr 7.2.1. That gets specified in the json file that describes our Solr requirements to SIF. So lets update that parameter. I also have a newer version of Java running on the VM I tested this on, so that needs updating too:</p>
-					<pre data-enlighter-highlight="5,10" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{     "Parameters" : {         "JREVersion": {             "Type": "string",             "DefaultValue": "1.8.0_202",             "Description": "What version of the Java Runtime should "         },         "SolrVersion": {             "Type": "string",             "DefaultValue": "7.2.1",             "Description": "What version of Solr should be downloaded for install"         }     } }
+					<pre data-enlighter-highlight="5,10" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+    "Parameters" : {
+        "JREVersion": {
+            "Type": "string",
+            "DefaultValue": "1.8.0_202",
+            "Description": "What version of the Java Runtime should "
+        },
+        "SolrVersion": {
+            "Type": "string",
+            "DefaultValue": "7.2.1",
+            "Description": "What version of Solr should be downloaded for install"
+        }
+    }
+}
+
 					</pre>
 					<p>I also decided I wanted a way around the issue of the path for the JRE. Depending on whether you're using 64 bit or 32 bit Java, you get your Java program files folder in a different place. So I decided to add a parameter for which Program Files folder it is using, and configured it for the 64-bit version of Java I was using:</p>
-					<pre data-enlighter-highlight="5" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{     "Parameters" : {         "ProgFilesFolder": {             "Type": "string",             "DefaultValue": "C:\\Program Files",             "Description": "Where certificates got exported to after generation"         }     } }
+					<pre data-enlighter-highlight="5" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+    "Parameters" : {
+        "ProgFilesFolder": {
+            "Type": "string",
+            "DefaultValue": "C:\\Program Files",
+            "Description": "Where certificates got exported to after generation"
+        }
+    }
+}
+
 					</pre>
 					<p>That parameter then gets used to help work out the correct JRE path variable from the original script:</p>
-					<pre data-enlighter-highlight="3" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{     "Variables" : {         "JREPath":             "[concat(parameter('ProgFilesFolder'), '\\Java\\jre', parameter('JREVersion'))]"     }, }
+					<pre data-enlighter-highlight="3" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+    "Variables" : {
+        "JREPath":             "[concat(parameter('ProgFilesFolder'), '\\Java\\jre', parameter('JREVersion'))]"
+    },
+}
+
 					</pre>
 					<p>Since we changed some method signatures in the PowerShell, the Tasks binding needs updating:</p>
-					<pre data-enlighter-highlight="10,20" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{     "Tasks" : {         "Rewrite Solr config file": {             "Type": "ConfigureSolr",             "Params": {                 "solrSSL":             "[parameter('SolrUseSSL')]",                 "solrHost":             "[parameter('SolrHost')]",                 "solrRoot":             "[variable('SolrInstallFolder')]",                 "certificateStore":  "[variable('CertStoreFile')]",                 "CertificatePassword": "[parameter('CertificatePassword')]"             }         },         "Ensure trusted SSL certificate exists (if required)": {             "Type": "EnsureSSLCertificate",             "Params": {                 "solrSSL":             "[parameter('SolrUseSSL')]",                 "solrName":             "[variable('SolrName')]",                 "solrHost":             "[parameter('SolrHost')]",                 "certificateStore":     "[variable('CertStoreFile')]",                 "sourceCert":           "[variable('SourceCert')]"             }         }     } }
+					<pre data-enlighter-highlight="10,20" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+    "Tasks" : {
+        "Rewrite Solr config file": {
+            "Type": "ConfigureSolr",
+            "Params": {
+                "solrSSL":             "[parameter('SolrUseSSL')]",
+                "solrHost":             "[parameter('SolrHost')]",
+                "solrRoot":             "[variable('SolrInstallFolder')]",
+                "certificateStore":  "[variable('CertStoreFile')]",
+                "CertificatePassword": "[parameter('CertificatePassword')]"
+            }
+        },
+        "Ensure trusted SSL certificate exists (if required)": {
+            "Type": "EnsureSSLCertificate",
+            "Params": {
+                "solrSSL":             "[parameter('SolrUseSSL')]",
+                "solrName":             "[variable('SolrName')]",
+                "solrHost":             "[parameter('SolrHost')]",
+                "certificateStore":     "[variable('CertStoreFile')]",
+                "sourceCert":           "[variable('SourceCert')]"
+            }
+        }
+    }
+}
+
 					</pre>
 					<p>Those changes require some extra data to be passed in. The source certificate name is going to be a combination of a path, the host name we're using for Solr and the ".pfx" extension. Since that involves calculation, it means we need to set it up as a Variable:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="2" data-enlighter-language="text" style="width:100%; overflow:scroll;">
-						"Variables" : {         "SourceCert":        "[concat(parameter('CertFilePath'), parameter('SolrHost'), '.pfx')]"     }
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="2" data-enlighter-language="text" style="width:100%; overflow:scroll;">    "Variables" : {
+        "SourceCert":        "[concat(parameter('CertFilePath'), parameter('SolrHost'), '.pfx')]"
+    }
+
 					</pre>
 					<p>And that means we also have two new parameters to the overall SIF script, in the folder we'll find the certificate in, and the password for the certificate file:</p>
-					<pre data-enlighter-highlight="5,10" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{     "Parameters" : {         "CertFilePath": {             "Type": "string",             "DefaultValue": "c:\\certificates\\",             "Description": "Where certificates got exported to after generation"         },         "CertificatePassword": {             "Type": "string",             "DefaultValue": "SIF-Default",             "Description": "The password set on the certificate"     } }
+					<pre data-enlighter-highlight="5,10" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+    "Parameters" : {
+        "CertFilePath": {
+            "Type": "string",
+            "DefaultValue": "c:\\certificates\\",
+            "Description": "Where certificates got exported to after generation"
+        },
+        "CertificatePassword": {
+            "Type": "string",
+            "DefaultValue": "SIF-Default",
+            "Description": "The password set on the certificate"
+    }
+}
+
 					</pre>
 					<p>And that's the changes necessary to my original SIF process.
 						<a href="https://gist.github.com/jermdavis/989cdec72ede2824012d81ce8610ed37#file-solrserver-json" rel="noopener noreferrer" target="_blank">The json file</a>
@@ -219,19 +345,97 @@
 						is that we need to trigger the creation of a certificate for Solr and then to call the Solr install we created above. These need inserting at the top of the
 						<code>Includes</code>
 						section so that they happen first:</p>
-					<pre data-enlighter-highlight="4,7" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{     "Includes": {         "SolrCertificates": {             "Source": ".\\createcert.json"         },         "Solr": {             "Source": ".\\SolrServer.json"         }     } }
+					<pre data-enlighter-highlight="4,7" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+    "Includes": {
+        "SolrCertificates": {
+            "Source": ".\\createcert.json"
+        },
+        "Solr": {
+            "Source": ".\\SolrServer.json"
+        }
+    }
+}
+
 					</pre>
 					<p>For those to work, some further parameters are required. First up, there are some parameters that define how the rest of the script can work:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="5,10,15" data-enlighter-language="text" style="width:100%; overflow:scroll;">{     "Parameters": {         "SolrExportPassword": {             "Type": "String",             "DefaultValue": "testpassword",             "Description": "Password to export the solr cert with."         },         "CertPath": {             "Type": "String",             "DefaultValue": "c:\\certificates",             "Description": "where exported certs go"         },         "SolrHost": {             "Type": "String",             "DefaultValue": "localhost",             "Description": "The Solr host name to use."         }     } }
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="5,10,15" data-enlighter-language="text" style="width:100%; overflow:scroll;">{
+    "Parameters": {
+        "SolrExportPassword": {
+            "Type": "String",
+            "DefaultValue": "testpassword",
+            "Description": "Password to export the solr cert with."
+        },
+        "CertPath": {
+            "Type": "String",
+            "DefaultValue": "c:\\certificates",
+            "Description": "where exported certs go"
+        },
+        "SolrHost": {
+            "Type": "String",
+            "DefaultValue": "localhost",
+            "Description": "The Solr host name to use."
+        }
+    }
+}
+
 					</pre>
 					<p>We don't want SIF to generate a password for the Solr certificate, so we need to define a value for that. And we need to tell the Solr install script where it can find the generated certificate and what the host name for Solr should be.</p>
 					<p>Some of those values then need passing in to other bits of the script. SIF defines a special naming convention when you want a value to be passed to a specific included script. Where a parameter name is prefixed with the name of an include and a colon, it is specific to that include. Also, instead of defining a default value for these parameters, they define a reference to another parameter's name – effectively copying that value:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="5,10,15" data-enlighter-language="text" style="width:100%; overflow:scroll;">{     "Parameters": {         "SolrCertificates:CertificateName": {             "Type": "String",             "Reference": "SolrHost",             "Description": "Override to pass SolrCertificateName value to SolrCertificates config."         },         "SolrCertificates:ExportPassword": {             "Type": "String",             "Reference": "SolrExportPassword",             "Description": "Password to export the solr cert with."         },         "Solr:CertificatePassword": {             "Type": "String",             "Reference": "SolrExportPassword",             "Description": "Password the solr cert was exported with."         }     } }
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="5,10,15" data-enlighter-language="text" style="width:100%; overflow:scroll;">{
+    "Parameters": {
+        "SolrCertificates:CertificateName": {
+            "Type": "String",
+            "Reference": "SolrHost",
+            "Description": "Override to pass SolrCertificateName value to SolrCertificates config."
+        },
+        "SolrCertificates:ExportPassword": {
+            "Type": "String",
+            "Reference": "SolrExportPassword",
+            "Description": "Password to export the solr cert with."
+        },
+        "Solr:CertificatePassword": {
+            "Type": "String",
+            "Reference": "SolrExportPassword",
+            "Description": "Password the solr cert was exported with."
+        }
+    }
+}
+
 					</pre>
 					<p>Once these changes are made, you then need to tweak the PowerShell that invokes the JSON data. The change I made here was to pass in the
 						<code>SolrHost</code>
 						value, but you could pass in the password as well if you wanted to change the default above:</p>
-					<pre data-enlighter-highlight="2,11" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># Solr host name $SolrHost = "solr";  # Install XP0 via combined partials file. $singleDeveloperParams = @{     Path = "$SCInstallRoot\XP0-SingleDeveloper.json"     SqlServer = $SqlServer     SqlAdminUser = $SqlAdminUser     SqlAdminPassword = $SqlAdminPassword     SitecoreAdminPassword = $SitecoreAdminPassword     SolrHost = $SolrHost     SolrUrl = $SolrUrl     SolrRoot = $SolrRoot     SolrService = $SolrService     Prefix = $Prefix     XConnectCertificateName = $XConnectSiteName     IdentityServerCertificateName = $IdentityServerSiteName     IdentityServerSiteName = $IdentityServerSiteName     LicenseFile = $LicenseFile     XConnectPackage = $XConnectPackage     SitecorePackage = $SitecorePackage     IdentityServerPackage = $IdentityServerPackage     XConnectSiteName = $XConnectSiteName     SitecoreSitename = $SitecoreSiteName     PasswordRecoveryUrl = $PasswordRecoveryUrl     SitecoreIdentityAuthority = $SitecoreIdentityAuthority     XConnectCollectionService = $XConnectCollectionService     ClientSecret = $ClientSecret     AllowedCorsOrigins = $AllowedCorsOrigins }
+					<pre data-enlighter-highlight="2,11" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># Solr host name
+$SolrHost = "solr";
+
+# Install XP0 via combined partials file.
+$singleDeveloperParams = @{
+    Path = "$SCInstallRoot\XP0-SingleDeveloper.json"
+    SqlServer = $SqlServer
+    SqlAdminUser = $SqlAdminUser
+    SqlAdminPassword = $SqlAdminPassword
+    SitecoreAdminPassword = $SitecoreAdminPassword
+    SolrHost = $SolrHost
+    SolrUrl = $SolrUrl
+    SolrRoot = $SolrRoot
+    SolrService = $SolrService
+    Prefix = $Prefix
+    XConnectCertificateName = $XConnectSiteName
+    IdentityServerCertificateName = $IdentityServerSiteName
+    IdentityServerSiteName = $IdentityServerSiteName
+    LicenseFile = $LicenseFile
+    XConnectPackage = $XConnectPackage
+    SitecorePackage = $SitecorePackage
+    IdentityServerPackage = $IdentityServerPackage
+    XConnectSiteName = $XConnectSiteName
+    SitecoreSitename = $SitecoreSiteName
+    PasswordRecoveryUrl = $PasswordRecoveryUrl
+    SitecoreIdentityAuthority = $SitecoreIdentityAuthority
+    XConnectCollectionService = $XConnectCollectionService
+    ClientSecret = $ClientSecret
+    AllowedCorsOrigins = $AllowedCorsOrigins
+}
+
 					</pre>
 					<p>Again, these changes to
 						<a href="https://gist.github.com/jermdavis/989cdec72ede2824012d81ce8610ed37#file-xp0-singledeveloper-json" rel="noopener noreferrer" target="_blank">the SIF json</a>

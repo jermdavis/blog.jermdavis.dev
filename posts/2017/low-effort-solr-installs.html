@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I'm sure I've said before that any task you have to do more than once is worth automating. Well recently I've found myself needing to install Solr in a variety of places – so obviously my mind turned to automation. There are lots of ways this can be approached, and some people have already had a go at it for their own needs, but here's my take.">
-		<meta property="og:description" content="I'm sure I've said before that any task you have to do more than once is worth automating. Well recently I've found myself needing to install Solr in a variety of places – so obviously my mind turned to automation. There are lots of ways this can be approached, and some people have already had a go at it for their own needs, but here's my take.">
+		<meta name="description" content="Low-effort Solr installs">
+		<meta property="og:description" content="Low-effort Solr installs">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Low-effort Solr installs</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Low-effort Solr installs">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/low-effort-solr-installs-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Low-effort Solr installs",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/low-effort-solr-installs-social.png"
-        ],
-        "datePublished": "2017-10-30T00:00:00+00:00",
-        "dateModified": "2018-03-01T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2017/low-effort-solr-installs">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:04 -->
+		<!-- 23/01/2022 10:19:05 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,23 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Low-effort Solr installs
 				</h1>
-				<div class="meta">Published 30 October 2017</div>
-				<div class="meta">Updated 01 March 2018</div>
-				<div class="flex py-1">
-					<a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell</a>
-					<a href="/tags/solr" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Solr</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I'm sure I've said before that any task you have to do more than once is worth automating. Well recently I've found myself needing to install Solr in a variety of places – so obviously my mind turned to automation. There are lots of ways this can be approached, and some people have already had a go at it for their own needs, but here's my take.
 						<!--more-->
 					</p>
@@ -158,11 +133,25 @@
 					<p>The first thing to note is that installing services requires admin privileges. That means the script should probably report an error if it's run from a session that's not elevated.
 						<a href="https://superuser.com/questions/749243/detect-if-powershell-is-running-as-administrator" rel="noopener noreferrer" target="_blank">One approach</a>
 						to testing that state looks like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$elevated = [bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups -match "S-1-5-32-544") if($elevated -eq $false) {     throw "In order to install services, please run this script elevated." }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$elevated = [bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups -match "S-1-5-32-544")
+if($elevated -eq $false)
+{
+    throw "In order to install services, please run this script elevated."
+}
+
 					</pre>
 					<p>That checks if the current user has the Administrator security principal, and if not, throws an error to stop the script.</p>
 					<p>Now the script is going to need some input from the user to decide what it needs to do:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Param(     $installFolder = "c:\solr",     $nssmVersion = "2.24",     $solrVersion = "6.6.2",     $solrPort = "8983",     $solrHost = "localhost",     $solrSSL = $true,     $JREVersion = "1.8.0_151" )
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Param(
+    $installFolder = "c:\solr",
+    $nssmVersion = "2.24",
+    $solrVersion = "6.6.2",
+    $solrPort = "8983",
+    $solrHost = "localhost",
+    $solrSSL = $true,
+    $JREVersion = "1.8.0_151"
+)
+
 					</pre>
 					<p>It needs to know where to put the stuff being installed via
 						<code>$installFolder</code>, and it needs to know versions of the software we want to install via
@@ -175,7 +164,14 @@
 						<code>$solrSSL</code>. And finally we need to know what version of the Java runtime Solr should use when it runs if there's not global setting for this, via
 						<code>$JREVersion</code>.</p>
 					<p>Based on those settings, the script can compute a few other values that will be used later:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$JREPath = "C:\Program Files (x86)\Java\jre$JREVersion" $solrName = "solr-$solrVersion" $solrRoot = "$installFolder\$solrName" $nssmRoot = "$installFolder\nssm-$nssmVersion" $solrPackage = "https://archive.apache.org/dist/lucene/solr/$solrVersion/$solrName.zip" $nssmPackage = "https://nssm.cc/release/nssm-$nssmVersion.zip" $downloadFolder = "~\Downloads"
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$JREPath = "C:\Program Files (x86)\Java\jre$JREVersion"
+$solrName = "solr-$solrVersion"
+$solrRoot = "$installFolder\$solrName"
+$nssmRoot = "$installFolder\nssm-$nssmVersion"
+$solrPackage = "https://archive.apache.org/dist/lucene/solr/$solrVersion/$solrName.zip"
+$nssmPackage = "https://nssm.cc/release/nssm-$nssmVersion.zip"
+$downloadFolder = "~\Downloads"
+
 					</pre>
 					<p>
 						<i>
@@ -186,29 +182,127 @@
 							folder. That's only appropriate if you're using the 32bit java runtime. If you are using the 64bit version you will need to change this path so that it points to the right location for your machine.</i>
 					</p>
 					<p>Next we need to ensure that Solr and NSSM are downloaded and unzipped to the right place. Since the same task has to happen for two things, that suggests a function... To avoid downloading and unzipping when it's not necessary this should check if the destination folder we're using exists, and do nothing if it does. If it doesn't exist then it should check if the zip file exists before downloading it:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function downloadAndUnzipIfRequired {     Param(         [string]$toolName,         [string]$toolFolder,         [string]$toolZip,         [string]$toolSourceFile,         [string]$installRoot     )      if(!(Test-Path -Path $toolFolder))     {         if(!(Test-Path -Path $toolZip))         {             Write-Host "Downloading $toolName..."             Start-BitsTransfer -Source $toolSourceFile -Destination $toolZip         }          Write-Host "Extracting $toolName to $toolFolder..."         Expand-Archive $toolZip -DestinationPath $installRoot     } }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function downloadAndUnzipIfRequired
+{
+    Param(
+        [string]$toolName,
+        [string]$toolFolder,
+        [string]$toolZip,
+        [string]$toolSourceFile,
+        [string]$installRoot
+    )
+
+    if(!(Test-Path -Path $toolFolder))
+    {
+        if(!(Test-Path -Path $toolZip))
+        {
+            Write-Host "Downloading $toolName..."
+            Start-BitsTransfer -Source $toolSourceFile -Destination $toolZip
+        }
+
+        Write-Host "Extracting $toolName to $toolFolder..."
+        Expand-Archive $toolZip -DestinationPath $installRoot
+    }
+}
+
 					</pre>
 					<p>That can be called once for each of the zip files we want downloaded and extracted:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$solrZip = "$downloadFolder\$solrName.zip" downloadAndUnzipIfRequired "Solr" $solrRoot $solrZip $solrPackage $installFolder  $nssmZip = "$downloadFolder\nssm-$nssmVersion.zip" downloadAndUnzipIfRequired "NSSM" $nssmRoot $nssmZip $nssmPackage $installFolder
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$solrZip = "$downloadFolder\$solrName.zip"
+downloadAndUnzipIfRequired "Solr" $solrRoot $solrZip $solrPackage $installFolder
+
+$nssmZip = "$downloadFolder\nssm-$nssmVersion.zip"
+downloadAndUnzipIfRequired "NSSM" $nssmRoot $nssmZip $nssmPackage $installFolder
+
 					</pre>
 					<p>Solr is a Java application, so it needs to know which Java runtime to make use of. You can set this in the Solr config files, but my preference is to ensure that there's a global environment variable to specify this, as that makes it easier to change it for everything when the runtime gets updated. So if the system doesn't have the right value for the
 						<code>JAVA_HOME</code>
 						environment variable, the script needs to set that to match the version of Java the parameter specifies:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$jreVal = [Environment]::GetEnvironmentVariable("JAVA_HOME", [EnvironmentVariableTarget]::Machine) if($jreVal -ne $JREPath) {     Write-Host "Setting JAVA_HOME environment variable"     [Environment]::SetEnvironmentVariable("JAVA_HOME", $JREPath, [EnvironmentVariableTarget]::Machine) }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$jreVal = [Environment]::GetEnvironmentVariable("JAVA_HOME", [EnvironmentVariableTarget]::Machine)
+if($jreVal -ne $JREPath)
+{
+    Write-Host "Setting JAVA_HOME environment variable"
+    [Environment]::SetEnvironmentVariable("JAVA_HOME", $JREPath, [EnvironmentVariableTarget]::Machine)
+}
+
 					</pre>
 					<p>The next thing we need, is to deal with the configuration for Solr. If the parameters for the script say it's using HTTP, that's pretty easy:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($solrSSL -eq $false) {     if(!(Test-Path -Path "$solrRoot\bin\solr.in.cmd.old"))     {         Write-Host "Rewriting solr config"          $cfg = Get-Content "$solrRoot\bin\solr.in.cmd"         Rename-Item "$solrRoot\bin\solr.in.cmd" "$solrRoot\bin\solr.in.cmd.old"         $newCfg = $newCfg | % { $_ -replace "REM set SOLR_HOST=192.168.1.1", "set SOLR_HOST=$solrHost" }         $newCfg | Set-Content "$solrRoot\bin\solr.in.cmd"     } }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($solrSSL -eq $false)
+{
+    if(!(Test-Path -Path "$solrRoot\bin\solr.in.cmd.old"))
+    {
+        Write-Host "Rewriting solr config"
+
+        $cfg = Get-Content "$solrRoot\bin\solr.in.cmd"
+        Rename-Item "$solrRoot\bin\solr.in.cmd" "$solrRoot\bin\solr.in.cmd.old"
+        $newCfg = $newCfg | % { $_ -replace "REM set SOLR_HOST=192.168.1.1", "set SOLR_HOST=$solrHost" }
+        $newCfg | Set-Content "$solrRoot\bin\solr.in.cmd"
+    }
+}
+
 					</pre>
 					<p>Most of the config parameters for Solr can be set by amending the defaults in the
 						<code>solr.in.cmd</code>
 						file. So the script can read that, find the line that needs updating, and replace it with the right value. Before changing anything it backs up the original file - which is also an easy way to tell if the changes have already been made.</p>
 					<p>If the host name we're using for Solr here isn't "localhost" then it's proably also useful to add that to the machine's hosts file:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($solrHost -ne "localhost") {     $hostFileName = "c:\\windows\system32\drivers\etc\hosts"     $hostFile = [System.Io.File]::ReadAllText($hostFileName)     if(!($hostFile -like "*$solrHost*"))     {         Write-Host "Updating host file"         `r`n127.0.0.1`t$solrHost" | Add-Content $hostFileName     } }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($solrHost -ne "localhost")
+{
+    $hostFileName = "c:\\windows\system32\drivers\etc\hosts"
+    $hostFile = [System.Io.File]::ReadAllText($hostFileName)
+    if(!($hostFile -like "*$solrHost*"))
+    {
+        Write-Host "Updating host file"
+        `r`n127.0.0.1`t$solrHost" | Add-Content $hostFileName
+    }
+}
+
 					</pre>
 					<p>Life is a bit more complex if HTTPS is enabled, as the certificates need setting up as well. That involves four things: Generating a certificate, exporting it so Solr can make use of it for its web server, trusting the certificate and finally more config changes.</p>
 					<p>Being a Java application, Solr's default is to use the not-very-Windows-friendly "JKS" export format for the certificates. If you prefer that approach,
 						<a href="https://gist.github.com/kamsar/c3c8322c1ec40eac64c7dd546e5124de#file-solrssl-ps1" rel="noopener noreferrer" target="_blank">the code is out there</a>. But newer versions of Solr can use "PFX" files, which is easier to deal with in a PowerShell-native way.</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($solrSSL -eq $true) {     $existingCert = Get-ChildItem Cert:\LocalMachine\Root | where FriendlyName -eq "$solrName"     if(!($existingCert))     {         Write-Host "Creating &amp; trusting an new SSL Cert for $solrHost"          $cert = New-SelfSignedCertificate -FriendlyName "$solrName" -DnsName "$solrHost" -CertStoreLocation "cert:\LocalMachine" -NotAfter (Get-Date).AddYears(10)          $store = New-Object System.Security.Cryptography.X509Certificates.X509Store "Root","LocalMachine"         $store.Open("ReadWrite")         $store.Add($cert)         $store.Close()          # remove the untrusted copy of the cert         $cert | Remove-Item     }      if(!(Test-Path -Path "$solrRoot\server\etc\solr-ssl.keystore.pfx"))     {         Write-Host "Exporting cert for Solr to use"          $cert = Get-ChildItem Cert:\LocalMachine\Root | where FriendlyName -eq "$solrName"              $certStore = "$solrRoot\server\etc\solr-ssl.keystore.pfx"         $certPwd = ConvertTo-SecureString -String "secret" -Force -AsPlainText         $cert | Export-PfxCertificate -FilePath $certStore -Password $certpwd | Out-Null     }      if(!(Test-Path -Path "$solrRoot\bin\solr.in.cmd.old"))     {         Write-Host "Rewriting solr config"          $cfg = Get-Content "$solrRoot\bin\solr.in.cmd"         Rename-Item "$solrRoot\bin\solr.in.cmd" "$solrRoot\bin\solr.in.cmd.old"         $newCfg = $cfg | % { $_ -replace "REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.jks", "set SOLR_SSL_KEY_STORE=$certStore" }         $newCfg = $newCfg | % { $_ -replace "REM set SOLR_SSL_KEY_STORE_PASSWORD=secret", "set SOLR_SSL_KEY_STORE_PASSWORD=secret" }         $newCfg = $newCfg | % { $_ -replace "REM set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.jks", "set SOLR_SSL_TRUST_STORE=$certStore" }         $newCfg = $newCfg | % { $_ -replace "REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret", "set SOLR_SSL_TRUST_STORE_PASSWORD=secret" }         $newCfg = $newCfg | % { $_ -replace "REM set SOLR_HOST=192.168.1.1", "set SOLR_HOST=$solrHost" }         $newCfg | Set-Content "$solrRoot\bin\solr.in.cmd"     } }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($solrSSL -eq $true)
+{
+    $existingCert = Get-ChildItem Cert:\LocalMachine\Root | where FriendlyName -eq "$solrName"
+    if(!($existingCert))
+    {
+        Write-Host "Creating & trusting an new SSL Cert for $solrHost"
+
+        $cert = New-SelfSignedCertificate -FriendlyName "$solrName" -DnsName "$solrHost" -CertStoreLocation "cert:\LocalMachine" -NotAfter (Get-Date).AddYears(10)
+
+        $store = New-Object System.Security.Cryptography.X509Certificates.X509Store "Root","LocalMachine"
+        $store.Open("ReadWrite")
+        $store.Add($cert)
+        $store.Close()
+
+        # remove the untrusted copy of the cert
+        $cert | Remove-Item
+    }
+
+    if(!(Test-Path -Path "$solrRoot\server\etc\solr-ssl.keystore.pfx"))
+    {
+        Write-Host "Exporting cert for Solr to use"
+
+        $cert = Get-ChildItem Cert:\LocalMachine\Root | where FriendlyName -eq "$solrName"
+    
+        $certStore = "$solrRoot\server\etc\solr-ssl.keystore.pfx"
+        $certPwd = ConvertTo-SecureString -String "secret" -Force -AsPlainText
+        $cert | Export-PfxCertificate -FilePath $certStore -Password $certpwd | Out-Null
+    }
+
+    if(!(Test-Path -Path "$solrRoot\bin\solr.in.cmd.old"))
+    {
+        Write-Host "Rewriting solr config"
+
+        $cfg = Get-Content "$solrRoot\bin\solr.in.cmd"
+        Rename-Item "$solrRoot\bin\solr.in.cmd" "$solrRoot\bin\solr.in.cmd.old"
+        $newCfg = $cfg | % { $_ -replace "REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.jks", "set SOLR_SSL_KEY_STORE=$certStore" }
+        $newCfg = $newCfg | % { $_ -replace "REM set SOLR_SSL_KEY_STORE_PASSWORD=secret", "set SOLR_SSL_KEY_STORE_PASSWORD=secret" }
+        $newCfg = $newCfg | % { $_ -replace "REM set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.jks", "set SOLR_SSL_TRUST_STORE=$certStore" }
+        $newCfg = $newCfg | % { $_ -replace "REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret", "set SOLR_SSL_TRUST_STORE_PASSWORD=secret" }
+        $newCfg = $newCfg | % { $_ -replace "REM set SOLR_HOST=192.168.1.1", "set SOLR_HOST=$solrHost" }
+        $newCfg | Set-Content "$solrRoot\bin\solr.in.cmd"
+    }
+}
+
 					</pre>
 					<p>If a certificate for the host name doesn't already exist in the trusted store, then the code can use
 						<code>New-SelfSignedCertificate</code>
@@ -216,12 +310,30 @@
 					<p>If no certificate exists in the Solr folders then it can be exported to there in PFX format. This script is only aimed at development environments, so I've not bothered with a strong password for this file – but that would be easy to add if you needed it.</p>
 					<p>Finally, the same tactic for updating the config file can set the host, and the relevant settings for SSL.</p>
 					<p>With all that in place, Solr is ready to be started, so the service is the next thing to sort out:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$svc = Get-Service "$solrName" -ErrorAction SilentlyContinue if(!($svc)) {     Write-Host "Installing Solr service"     &amp;"$installFolder\nssm-$nssmVersion\win64\nssm.exe" install "$solrName" "$solrRoot\bin\solr.cmd" "-f" "-p $solrPort"     $svc = Get-Service "$solrName" -ErrorAction SilentlyContinue } if($svc.Status -ne "Running") {     Write-Host "Starting Solr service"     Start-Service "$solrName" }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$svc = Get-Service "$solrName" -ErrorAction SilentlyContinue
+if(!($svc))
+{
+    Write-Host "Installing Solr service"
+    &"$installFolder\nssm-$nssmVersion\win64\nssm.exe" install "$solrName" "$solrRoot\bin\solr.cmd" "-f" "-p $solrPort"
+    $svc = Get-Service "$solrName" -ErrorAction SilentlyContinue
+}
+if($svc.Status -ne "Running")
+{
+    Write-Host "Starting Solr service"
+    Start-Service "$solrName"
+}
+
 					</pre>
 					<p>It checks if a correctly named service exists, and if not
 						<a href="https://nssm.cc/usage" rel="noopener noreferrer" target="_blank">gets NSSM to set one up</a>. If the service isn't running it gets started.</p>
 					<p>Finally, to prove it worked, the script opens the Solr UI in your default browser:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$protocol = "http" if($solrSSL -eq $true) {     $protocol = "https" } Invoke-Expression "start $($protocol)://$($solrHost):$solrPort/solr/#/"
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$protocol = "http"
+if($solrSSL -eq $true)
+{
+    $protocol = "https"
+}
+Invoke-Expression "start $($protocol)://$($solrHost):$solrPort/solr/#/"
+
 					</pre>
 					<p>And there's Solr ready to configure for use with Sitecore, or whatever other uses you have for it...</p>
 					<p>

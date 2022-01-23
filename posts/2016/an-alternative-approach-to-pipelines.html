@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="There was a lot of exciting new stuff on show at the Sitecore's recent MVP Summit and Symposium the other week. Plenty of others have written up the general goings on at those events (have a google – there's lots to read), so I thought I'd focus on something more specific that piqued my interest: the novel approach that's being taken to pipelines in some of the new code Sitecore are producing.">
-		<meta property="og:description" content="There was a lot of exciting new stuff on show at the Sitecore's recent MVP Summit and Symposium the other week. Plenty of others have written up the general goings on at those events (have a google – there's lots to read), so I thought I'd focus on something more specific that piqued my interest: the novel approach that's being taken to pipelines in some of the new code Sitecore are producing.">
+		<meta name="description" content="An alternative approach to&nbsp;pipelines">
+		<meta property="og:description" content="An alternative approach to&nbsp;pipelines">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - An alternative approach to&nbsp;pipelines</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - An alternative approach to&amp;#xA0;pipelines">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/an-alternative-approach-to-pipelines-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "An alternative approach to&#xA0;pipelines",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/an-alternative-approach-to-pipelines-social.png"
-        ],
-        "datePublished": "2016-10-03T00:00:00+00:00",
-        "dateModified": "2016-11-05T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/an-alternative-approach-to-pipelines">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:30 -->
+		<!-- 23/01/2022 10:18:54 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,21 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					An alternative approach to&nbsp;pipelines
 				</h1>
-				<div class="meta">Published 03 October 2016</div>
-				<div class="meta">Updated 05 November 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>There was a lot of exciting new stuff on show at the Sitecore's recent MVP Summit and Symposium the other week. Plenty of others have written up the general goings on at those events (have a google – there's lots to read), so I thought I'd focus on something more specific that piqued my interest: the novel approach that's being taken to pipelines in some of the new code Sitecore are producing.
 						<!--more-->
 					</p>
@@ -158,42 +135,145 @@
 					<p>And after a bit of tinkering and thinking about what Stephen had been saying, it turns out you can do quite interesting things with some pretty simple code here...</p>
 					<h2>One approach...</h2>
 					<p>In generic terms, a pipeline step can be described as an interface with single a processing method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep&lt;INPUT, OUTPUT&gt; {     OUTPUT Process(INPUT input); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep<INPUT, OUTPUT>
+{
+    OUTPUT Process(INPUT input);
+}
+
 					</pre>
 					<p>By declaring different type parameters for the input and the output, we can describe a step that changes the type of the data it's processing...</p>
 					<p>So a (trivial) concrete example of such a step might turn an integer to a string like so:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class IntToStringStep : IPipelineStep&lt;int, string&gt; {     public string Process(int input)     {         return input.ToString();     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class IntToStringStep : IPipelineStep<int, string>
+{
+    public string Process(int input)
+    {
+        return input.ToString();
+    }
+}
+
 					</pre>
 					<p>A pipeline needs to be able to compose together a set of these steps. The usage I've been thinking about would adopt a "code first" approach to setting these things up. Extension methods give an easy way to achieve this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class PipelineStepExtensions {     public static OUTPUT Step&lt;INPUT, OUTPUT&gt;(this INPUT input, IPipelineStep&lt;INPUT, OUTPUT&gt; step)     {         return step.Process(input);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class PipelineStepExtensions
+{
+    public static OUTPUT Step<INPUT, OUTPUT>(this INPUT input, IPipelineStep<INPUT, OUTPUT> step)
+    {
+        return step.Process(input);
+    }
+}
+
 					</pre>
 					<p>So you can stack together a set of steps using code like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">int input=5; string result = input                   .Step(new IntToStringStep())                   .Step(new DoSomethingToAString());
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">int input=5;
+string result = input
+                  .Step(new IntToStringStep())
+                  .Step(new DoSomethingToAString());
+
 					</pre>
 					<p>But literal code like that isn't much use if we want to inject a pipeline via DI, so we need a wrapper class which can be used as a base for types that will be be registered for injection. At its most simple, (ignoring the whole business of naming pipelines, patching of pipeline steps etc) that just needs to expose a method to process the data, and set up the pipeline internally:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class Pipeline&lt;INPUT, OUTPUT&gt; {     public Func&lt;INPUT, OUTPUT&gt; PipelineSteps { get; protected set; }      public OUTPUT Process(INPUT input)     {         return PipelineSteps(input);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class Pipeline<INPUT, OUTPUT>
+{
+    public Func<INPUT, OUTPUT> PipelineSteps { get; protected set; }
+
+    public OUTPUT Process(INPUT input)
+    {
+        return PipelineSteps(input);
+    }
+}
+
 					</pre>
 					<p>So you can create a concrete pipeline just by defining the set of steps you need in the constructor. Taking the trivial example from above:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TrivalPipeline : Pipeline&lt;int, string&gt; {     public TrivialPipeline()     {         PipelineSteps = input =&gt; input             .Step(new IntToStringStep())             .Step(new DoSomethingToAString());     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TrivalPipeline : Pipeline<int, string>
+{
+    public TrivialPipeline()
+    {
+        PipelineSteps = input => input
+            .Step(new IntToStringStep())
+            .Step(new DoSomethingToAString());
+    }
+}
+
 					</pre>
 					<p>Already that's looking interesting, but:</p>
 					<h2>Here's where it gets more interesting...</h2>
 					<p>So that works fairly simply and easily, and you can build up quite complex pipelines with the compiler doing all your type checking for you. But during my chat with Stephen he suggested some other really interesting ideas that can stem from this design...</p>
 					<p>First up: what if the overall pipeline class above implements the IPipelineStep interface? It's a trivial change:</p>
-					<pre data-enlighter-highlight="1" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class Pipeline&lt;INPUT, OUTPUT&gt; : IPipelineStep&lt;INPUT, OUTPUT&gt; {     public Func&lt;INPUT, OUTPUT&gt; PipelineSteps { get; protected set; }      public OUTPUT Process(INPUT input)     {         return PipelineSteps(input);     } }
+					<pre data-enlighter-highlight="1" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class Pipeline<INPUT, OUTPUT> : IPipelineStep<INPUT, OUTPUT>
+{
+    public Func<INPUT, OUTPUT> PipelineSteps { get; protected set; }
+
+    public OUTPUT Process(INPUT input)
+    {
+        return PipelineSteps(input);
+    }
+}
+
 					</pre>
 					<p>But it allows you to nest your pipeline objects, so that the top level pipeline can use other pipelines instead of individual steps. So you can build up more complex behaviour from groups of simpler tasks. Continuing with the trivial examples:</p>
-					<pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CompoundPipeline : Pipeline&lt;int, string&gt; {     public ExamplePipeline()     {         PipelineSteps = input =&gt; input             .Step(new AnInitialStep())             .Step(new InnerPipeline())             .Step(new IntToStringStep())             .Step(new DoSomethingWithAString())     } }  public class InnerPipeline : Pipeline&lt;int, int&gt; {     public InnerPipeline()     {         PipelineSteps = input =&gt; input             .Step(new DoSomethingWithAnInteger())             .Step(new SomethingElseWithAnInteger());     } }
+					<pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CompoundPipeline : Pipeline<int, string>
+{
+    public ExamplePipeline()
+    {
+        PipelineSteps = input => input
+            .Step(new AnInitialStep())
+            .Step(new InnerPipeline())
+            .Step(new IntToStringStep())
+            .Step(new DoSomethingWithAString())
+    }
+}
+
+public class InnerPipeline : Pipeline<int, int>
+{
+    public InnerPipeline()
+    {
+        PipelineSteps = input => input
+            .Step(new DoSomethingWithAnInteger())
+            .Step(new SomethingElseWithAnInteger());
+    }
+}
+
 					</pre>
 					<p>The second interesting thing that you can do with this approach is that pipeline steps can be decorators that add logic to an inner step. For example, what about a scenario where you want to make a particular step optional, based on some sort of criteria? Rather than baking that logic into the underlying component, you can put the logic into a decorator and wrap it around any component you want to make optional. For example:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class OptionalStep&lt;INPUT, OUTPUT&gt; : IPipelineStep&lt;INPUT, OUTPUT&gt; where INPUT : OUTPUT {     private IPipelineStep&lt;INPUT, OUTPUT&gt; _step;     private Func&lt;INPUT, bool&gt; _choice;      public OptionalStep(Func&lt;INPUT, bool&gt; choice, IPipelineStep&lt;INPUT, OUTPUT&gt; step)     {         _choice = choice;         _step = step;     }      public OUTPUT Process(INPUT input)     {         if (_choice(input))         {             return _step.Process(input);         }         else         {             return input;         }     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class OptionalStep<INPUT, OUTPUT> : IPipelineStep<INPUT, OUTPUT> where INPUT : OUTPUT
+{
+    private IPipelineStep<INPUT, OUTPUT> _step;
+    private Func<INPUT, bool> _choice;
+
+    public OptionalStep(Func<INPUT, bool> choice, IPipelineStep<INPUT, OUTPUT> step)
+    {
+        _choice = choice;
+        _step = step;
+    }
+
+    public OUTPUT Process(INPUT input)
+    {
+        if (_choice(input))
+        {
+            return _step.Process(input);
+        }
+        else
+        {
+            return input;
+        }
+    }
+}
+
 					</pre>
 					<p>This step takes a function that operates on the input, to decide whether to run the child step or just pass the output through. Note that unlike the previous steps we've looked at, this one requires that the input and the output are the same type, because otherwise the "skip over" behaviour doesn't work – so this has a type constraint to ensure
 						<code>INPUT</code>
 						and
 						<code>OUTPUT</code>
 						are related. So if you wanted a particular step to only run if the input was greater than 15 you could use something like:</p>
-					<pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PipelineWithOptionalStep : Pipeline&lt;int, int&gt; {     public PipelineWithOptionalStep()     {         PipelineSteps = input =&gt; input             .Step(new DoSomething())             .Step(new OptionalStep&lt;int, int&gt;(i =&gt; i &gt; 15, new ThisStepIsOptional()))             .Step(new DoADifferentThing());     } }
+					<pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PipelineWithOptionalStep : Pipeline<int, int>
+{
+    public PipelineWithOptionalStep()
+    {
+        PipelineSteps = input => input
+            .Step(new DoSomething())
+            .Step(new OptionalStep<int, int>(i => i > 15, new ThisStepIsOptional()))
+            .Step(new DoADifferentThing());
+    }
+}
+
 					</pre>
 					<p>And it's easy to move from this code to a step which can choose between options for the step to run as well. And of course the optional step or steps you pick from can be entire pipelines themselves... Potentially other things like "exception handling of failing steps" or logging could be wrapped up in that style.</p>
 					<h2>In conclusion...</h2>

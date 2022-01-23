@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="A while back I wrote <a href=&quot;/posts/2016/an-alternative-approach-to-pipelines&quot; target=&quot;_blank&quot;>a couple</a> <a href=&quot;/posts/2016/getting-pipelines-from-config&quot; target=&quot;_blank&quot;>of posts</a> on the subject of how code pipelines can work in a more functional .Net world. I've made use of those patterns in some code of my own, and I've found these posts have generated quite a lot of questions from readers here and followers on twitter. But I've never been quite happy with the implementation in my own code... ">
-		<meta property="og:description" content="A while back I wrote <a href=&quot;/posts/2016/an-alternative-approach-to-pipelines&quot; target=&quot;_blank&quot;>a couple</a> <a href=&quot;/posts/2016/getting-pipelines-from-config&quot; target=&quot;_blank&quot;>of posts</a> on the subject of how code pipelines can work in a more functional .Net world. I've made use of those patterns in some code of my own, and I've found these posts have generated quite a lot of questions from readers here and followers on twitter. But I've never been quite happy with the implementation in my own code... ">
+		<meta name="description" content="Thinking about errors in code&nbsp;pipelines">
+		<meta property="og:description" content="Thinking about errors in code&nbsp;pipelines">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Thinking about errors in code&nbsp;pipelines</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Thinking about errors in code&amp;#xA0;pipelines">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/thinking-about-errors-in-code-pipelines-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Thinking about errors in code&#xA0;pipelines",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/thinking-about-errors-in-code-pipelines-social.png"
-        ],
-        "datePublished": "2019-02-18T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/thinking-about-errors-in-code-pipelines">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:28 -->
+		<!-- 23/01/2022 10:19:16 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,22 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Thinking about errors in code&nbsp;pipelines
 				</h1>
-				<div class="meta">Published 18 February 2019</div>
-				<div class="flex py-1">
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-					<a href="/tags/pipelines" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Pipelines</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>A while back I wrote
 						<a href="/posts/2016/an-alternative-approach-to-pipelines" target="_blank">a couple</a>
 						<a href="/posts/2016/getting-pipelines-from-config" target="_blank">of posts</a>
@@ -153,35 +130,111 @@
 						<code>Either</code>
 						objects?</p>
 					<p>For the sort of pipeline I'm thinking about for my RSS Reader, we're probably thinking about a pipeline that can return either a successful data object, or an error exception that occurred while the data was being processed. So the type looks something like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public struct Either&lt;SUCCESS, FAILURE&gt; {     private readonly bool _isSuccess;     private readonly SUCCESS _success;     private readonly FAILURE _failure;      public bool IsSuccess =&gt; _isSuccess;     public bool IsFailure =&gt; !IsSuccess;      public SUCCESS SuccessValue =&gt; _success;     public FAILURE FailureValue =&gt; _failure;      public Either(SUCCESS value)     {         _isSuccess = true;         _success = value;         _failure = default(FAILURE);     }      public Either(FAILURE value)     {         _isSuccess = false;         _success = default(SUCCESS);         _failure = value;     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public struct Either<SUCCESS, FAILURE>
+{
+    private readonly bool _isSuccess;
+    private readonly SUCCESS _success;
+    private readonly FAILURE _failure;
+
+    public bool IsSuccess => _isSuccess;
+    public bool IsFailure => !IsSuccess;
+
+    public SUCCESS SuccessValue => _success;
+    public FAILURE FailureValue => _failure;
+
+    public Either(SUCCESS value)
+    {
+        _isSuccess = true;
+        _success = value;
+        _failure = default(FAILURE);
+    }
+
+    public Either(FAILURE value)
+    {
+        _isSuccess = false;
+        _success = default(SUCCESS);
+        _failure = value;
+    }
+}
+
 					</pre>
 					<p>So we have a type that can store either a success or a failure, of whatever type is needed, and it's fairly simple. Now another thing that will be helpful for this later is to have some implicit conversions between the
 						<code>Either</code>
 						type and the two types it wraps. The conversion definitions aren't wildly readable to my mind, but to cast the object either way we need:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static implicit operator Either&lt;SUCCESS, FAILURE&gt;(FAILURE value) =&gt; new Either&lt;SUCCESS, FAILURE&gt;(value); public static implicit operator Either&lt;SUCCESS, FAILURE&gt;(SUCCESS value) =&gt; new Either&lt;SUCCESS, FAILURE&gt;(value);  public static implicit operator SUCCESS(Either&lt;SUCCESS, FAILURE&gt; value) =&gt; value._success; public static implicit operator FAILURE(Either&lt;SUCCESS, FAILURE&gt; value) =&gt; value._failure;
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static implicit operator Either<SUCCESS, FAILURE>(FAILURE value) => new Either<SUCCESS, FAILURE>(value);
+public static implicit operator Either<SUCCESS, FAILURE>(SUCCESS value) => new Either<SUCCESS, FAILURE>(value);
+
+public static implicit operator SUCCESS(Either<SUCCESS, FAILURE> value) => value._success;
+public static implicit operator FAILURE(Either<SUCCESS, FAILURE> value) => value._failure;
+
 					</pre>
 					<p>With that object in place, we need to re-define the basic pipeline step in terms of
 						<code>Either</code>:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IErrorAwarePipelineStep&lt;INPUT, OUTPUT, ERROR&gt; {     Either&lt;OUTPUT, ERROR&gt; Process(Either&lt;INPUT, ERROR&gt; input); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IErrorAwarePipelineStep<INPUT, OUTPUT, ERROR>
+{
+    Either<OUTPUT, ERROR> Process(Either<INPUT, ERROR> input);
+}
+
 					</pre>
 					<p>The pipeline steps are now defined in terms of their input and output types for the happy path, and their error type when something goes wrong. And the
 						<code>Process()</code>
 						function signature now has its inputs and outputs defined in terms of
 						<code>Either</code>.</p>
 					<p>And as before the overall pipeline is defined as having the same interface as an individual step, and having the set of steps collected together:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IErrorAwarePipeline&lt;INPUT, OUTPUT, ERROR&gt; : IErrorAwarePipelineStep&lt;INPUT, OUTPUT, ERROR&gt; {     Func&lt;Either&lt;INPUT, ERROR&gt;, Either&lt;OUTPUT, ERROR&gt;&gt; PipelineSteps { get; } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IErrorAwarePipeline<INPUT, OUTPUT, ERROR> : IErrorAwarePipelineStep<INPUT, OUTPUT, ERROR>
+{
+    Func<Either<INPUT, ERROR>, Either<OUTPUT, ERROR>> PipelineSteps { get; }
+}
+
 					</pre>
 					<p>And we can have an abstract base to implement some reusable code for the overall pipeline too:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ErrorAwarePipeline&lt;INPUT, OUTPUT, ERROR&gt; : IErrorAwarePipeline&lt;INPUT, OUTPUT, ERROR&gt; {     public Func&lt;Either&lt;INPUT, ERROR&gt;, Either&lt;OUTPUT, ERROR&gt;&gt; PipelineSteps { get; protected set; }      public Either&lt;OUTPUT, ERROR&gt; Process(Either&lt;INPUT, ERROR&gt; input)     {         return PipelineSteps(input);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ErrorAwarePipeline<INPUT, OUTPUT, ERROR> : IErrorAwarePipeline<INPUT, OUTPUT, ERROR>
+{
+    public Func<Either<INPUT, ERROR>, Either<OUTPUT, ERROR>> PipelineSteps { get; protected set; }
+
+    public Either<OUTPUT, ERROR> Process(Either<INPUT, ERROR> input)
+    {
+        return PipelineSteps(input);
+    }
+}
+
 					</pre>
 					<p>In the
 						<a href="/posts/2016/an-alternative-approach-to-pipelines" target="_blank">previous implementation</a>
 						we had a helper extension method to make composing the pipeline steps together. That also needs redefining in terms of
 						<code>Either</code>:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class ErrorAwarePipelineStepExtensions {     public static Either&lt;OUTPUT, ERROR&gt; ErrorAwareStep&lt;INPUT, OUTPUT, ERROR&gt;(this Either&lt;INPUT, ERROR&gt; input, IErrorAwarePipelineStep&lt;INPUT, OUTPUT, ERROR&gt; step)     {         return step.Process(input);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class ErrorAwarePipelineStepExtensions
+{
+    public static Either<OUTPUT, ERROR> ErrorAwareStep<INPUT, OUTPUT, ERROR>(this Either<INPUT, ERROR> input, IErrorAwarePipelineStep<INPUT, OUTPUT, ERROR> step)
+    {
+        return step.Process(input);
+    }
+}
+
 					</pre>
 					<p>Now for individual steps, the logic changes a bit in this model becauuse they now have to cope with two scenarios. The input to any step can be one of two things: Some happy-path data to process or an error state. That means each step needs to make a decision about which path it's going to go down, and since that's pretty standard logic it seems like a good case for an abstract base type for the steps:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ErrorAwarePipelineStep&lt;INPUT, OUTPUT, ERROR&gt; : IErrorAwarePipelineStep&lt;INPUT, OUTPUT, ERROR&gt; {     public abstract Either&lt;OUTPUT, ERROR&gt; ProcessSuccessInput(Either&lt;INPUT, ERROR&gt; input);      public virtual Either&lt;OUTPUT, ERROR&gt; ProcessErrorInput(Either&lt;INPUT, ERROR&gt; input)     {         return input.FailureValue;     }      public Either&lt;OUTPUT, ERROR&gt; Process(Either&lt;INPUT, ERROR&gt; input)     {         if (input.IsSuccess)         {             return ProcessSuccessInput(input);         }         else         {             return ProcessErrorInput(input);         }     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ErrorAwarePipelineStep<INPUT, OUTPUT, ERROR> : IErrorAwarePipelineStep<INPUT, OUTPUT, ERROR>
+{
+    public abstract Either<OUTPUT, ERROR> ProcessSuccessInput(Either<INPUT, ERROR> input);
+
+    public virtual Either<OUTPUT, ERROR> ProcessErrorInput(Either<INPUT, ERROR> input)
+    {
+        return input.FailureValue;
+    }
+
+    public Either<OUTPUT, ERROR> Process(Either<INPUT, ERROR> input)
+    {
+        if (input.IsSuccess)
+        {
+            return ProcessSuccessInput(input);
+        }
+        else
+        {
+            return ProcessErrorInput(input);
+        }
+    }
+}
+
 					</pre>
 					<p>The
 						<code>Process()</code>
@@ -189,19 +242,63 @@
 					<p>And that's most of the basic logic we need to try this out...</p>
 					<h2>An example</h2>
 					<p>Lets make up some trivial pipeline steps to try this out. A very simple example of a step that might have an error is parsing a string to a number. So lets try a step that does that:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ErrorAwareStringToIntStep : ErrorAwarePipelineStep&lt;string, int, Exception&gt; {     public override Either&lt;int, Exception&gt; ProcessSuccessInput(Either&lt;string, Exception&gt; input)     {         int value;         if (int.TryParse(input.SuccessValue, out value))         {             return value;         }         else         {             return new Exception("Can't parse string to integer");         }     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ErrorAwareStringToIntStep : ErrorAwarePipelineStep<string, int, Exception>
+{
+    public override Either<int, Exception> ProcessSuccessInput(Either<string, Exception> input)
+    {
+        int value;
+        if (int.TryParse(input.SuccessValue, out value))
+        {
+            return value;
+        }
+        else
+        {
+            return new Exception("Can't parse string to integer");
+        }
+    }
+}
+
 					</pre>
 					<p>So the step is defined in terms of taking in a string, returning an integer or returning an exception. It doesn't have any behaviour for the "failure" path, so no need to override that method, but the happy path can try to parse the string and return either the integer or the exception.</p>
 					<p>(And note that thanks to the explicit conversions we defined before, there's no need to explicitly cast the return values – the compiler sorts that out for us)</p>
 					<p>Another simple test component could multiply our result by a float to get a float result:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ErrorAwareMultiplyStep : ErrorAwarePipelineStep&lt;int, float, Exception&gt; {     public override Either&lt;float, Exception&gt; ProcessSuccessInput(Either&lt;int, Exception&gt; input)     {         return input * 2.1f;     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ErrorAwareMultiplyStep : ErrorAwarePipelineStep<int, float, Exception>
+{
+    public override Either<float, Exception> ProcessSuccessInput(Either<int, Exception> input)
+    {
+        return input * 2.1f;
+    }
+}
+
 					</pre>
 					<p>The other things we should try is to do something on the failure path. We can add happy path logic to do nothing, but override the failure path code to do something with the error data:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ErrorStateChangeStep : ErrorAwarePipelineStep&lt;float, float, Exception&gt; {     public override Either&lt;float, Exception&gt; ProcessSuccessInput(Either&lt;float, Exception&gt; input)     {         return input;     }      public override Either&lt;float, Exception&gt; ProcessErrorInput(Either&lt;float, Exception&gt; input)     {         return new Exception("This is a custom exception", input.FailureValue);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ErrorStateChangeStep : ErrorAwarePipelineStep<float, float, Exception>
+{
+    public override Either<float, Exception> ProcessSuccessInput(Either<float, Exception> input)
+    {
+        return input;
+    }
+
+    public override Either<float, Exception> ProcessErrorInput(Either<float, Exception> input)
+    {
+        return new Exception("This is a custom exception", input.FailureValue);
+    }
+}
+
 					</pre>
 					<p>In this case we're just trivially wrapping up the exception inside another exception – but it gives an indication of what can be done.</p>
 					<p>And with that in place we can then compose those components into a simple example pipeline:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleErrorAwarePipeline : ErrorAwarePipeline&lt;string, float, Exception&gt; {     public ExampleErrorAwarePipeline()     {         PipelineSteps = input =&gt; input             .ErrorAwareStep(new ErrorAwareStringToIntStep())             .ErrorAwareStep(new ErrorAwareMultiplyStep())             .ErrorAwareStep(new ErrorStateChangeStep());     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleErrorAwarePipeline : ErrorAwarePipeline<string, float, Exception>
+{
+    public ExampleErrorAwarePipeline()
+    {
+        PipelineSteps = input => input
+            .ErrorAwareStep(new ErrorAwareStringToIntStep())
+            .ErrorAwareStep(new ErrorAwareMultiplyStep())
+            .ErrorAwareStep(new ErrorStateChangeStep());
+    }
+}
+
 					</pre>
 					<p>So our pipeline will now take a string and give us back either a float or an exception, depending on what happens...</p>
 					<p>Now something else I realised when I started to try and set up some code to test out this example pipeline was that it would be helpful to have an easy way to process the result based on whether the
@@ -211,10 +308,48 @@
 						method to
 						<code>Either</code>
 						which you pass a function to for success or failure:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public T Match&lt;T&gt;(Func&lt;SUCCESS, T&gt; successFn, Func&lt;FAILURE, T&gt; failureFn) {     if(_isSuccess)     {         return successFn(_success);     }     else     {         return failureFn(_failure);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public T Match<T>(Func<SUCCESS, T> successFn, Func<FAILURE, T> failureFn)
+{
+    if(_isSuccess)
+    {
+        return successFn(_success);
+    }
+    else
+    {
+        return failureFn(_failure);
+    }
+}
+
 					</pre>
 					<p>And that allows us to write a simple test where we can call the test pipeline defined above with a set of test data to see what happens:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class Program {     private static IErrorAwarePipeline&lt;string, float, Exception&gt; _pipeline = new ExampleErrorAwarePipeline();      private static void runPipeline(string input)     {         Console.WriteLine("Running pipeline:");          var result = _pipeline             .Process(input)             .Match(                 f =&gt; $"Success: Transformed {input}[{input.GetType().Name}] to {f}[{f.GetType().Name}]",                 f =&gt; $"Error: Transformed {input}[{input.GetType().Name}] to {f}[{f.GetType().Name}]"             );          Console.WriteLine(result);         Console.WriteLine();     }      private static void Main(string[] args)     {         runPipeline("27");         runPipeline("0");         runPipeline("0.1");         runPipeline("hello");     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class Program
+{
+    private static IErrorAwarePipeline<string, float, Exception> _pipeline = new ExampleErrorAwarePipeline();
+
+    private static void runPipeline(string input)
+    {
+        Console.WriteLine("Running pipeline:");
+
+        var result = _pipeline
+            .Process(input)
+            .Match(
+                f => $"Success: Transformed {input}[{input.GetType().Name}] to {f}[{f.GetType().Name}]",
+                f => $"Error: Transformed {input}[{input.GetType().Name}] to {f}[{f.GetType().Name}]"
+            );
+
+        Console.WriteLine(result);
+        Console.WriteLine();
+    }
+
+    private static void Main(string[] args)
+    {
+        runPipeline("27");
+        runPipeline("0");
+        runPipeline("0.1");
+        runPipeline("hello");
+    }
+}
+
 					</pre>
 					<p>Which gives the expected results:</p>
 					<p>

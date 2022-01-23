@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I've been slowly improving the release process for the container-based project I'm working on. There's a lot to learn about the ways to configure the Azure Devops pipelines for this work, because targeting Kubernetes is quite different from the old IaaS and PaaS approaches I was used to. ">
-		<meta property="og:description" content="I've been slowly improving the release process for the container-based project I'm working on. There's a lot to learn about the ways to configure the Azure Devops pipelines for this work, because targeting Kubernetes is quite different from the old IaaS and PaaS approaches I was used to. ">
+		<meta name="description" content="Waiting for <strike>Godot</strike> Kubernetes">
+		<meta property="og:description" content="Waiting for <strike>Godot</strike> Kubernetes">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Waiting for &lt;strike&gt;Godot&lt;/strike&gt; Kubernetes</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Waiting for &amp;lt;strike&amp;gt;Godot&amp;lt;/strike&amp;gt; Kubernetes">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/waiting-for-kubernetes-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Waiting for &lt;strike&gt;Godot&lt;/strike&gt; Kubernetes",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/waiting-for-kubernetes-social.png"
-        ],
-        "datePublished": "2021-03-15T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/waiting-for-kubernetes">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:35 -->
+		<!-- 23/01/2022 10:19:18 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,24 +106,17 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Waiting for
 					<strike>Godot</strike>
 					Kubernetes
 				</h1>
-				<div class="meta">Published 15 March 2021</div>
-				<div class="flex py-1">
-					<a href="/tags/kubernetes" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Kubernetes</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I've been slowly improving the release process for the container-based project I'm working on. There's a lot to learn about the ways to configure the Azure Devops pipelines for this work, because targeting Kubernetes is quite different from the old IaaS and PaaS approaches I was used to. 
 						<!--more-->
 					</p>
@@ -158,6 +135,7 @@
 					</p>
 					<p>So I configured an initial attempt in DevOps that waited for all the pods in my namespace to be ready, and give me output data in a json format. (So I could see what went on after the deploy completed) I also picked a pretty big timeout, since it can take a while for all the pods in a Sitecore XP deployment download and get ready. The command line equivalent of the setup in DevOps looks like:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe wait --for=condition=Ready pods --all -n client-namespace --timeout=2700s -o json
+
 					</pre>
 					<p>And I tried some command-line tests against a demo instance, where this worked. But when I used it in DevOps against my client's official Kubernetes instance it sat and waited forever. Even when the release of my new images appeared to be complete, this command didn't finish.</p>
 					<p>Back to the drawing board...</p>
@@ -168,7 +146,9 @@
 						<strong>So learning point #1:</strong>
 						Finished jobs are still important...</p>
 					<p>But that wasn't the only issue: I was also seeing warnings from DevOps where it complained that the wait operation was generating too much data:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2021-02-03T14:00:24.2280843Z ##[warning]Output variable not set as kubectl command output exceeded the maximum supported length. Output length: 413314, Maximum supported length: 32766 2021-02-03T14:00:24.2289418Z ##[warning]Capturing deployment metadata failed with error: YAMLException: unexpected end of the stream within a double quoted scalar at line 1353, column 1:
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2021-02-03T14:00:24.2280843Z ##[warning]Output variable not set as kubectl command output exceeded the maximum supported length. Output length: 413314, Maximum supported length: 32766
+2021-02-03T14:00:24.2289418Z ##[warning]Capturing deployment metadata failed with error: YAMLException: unexpected end of the stream within a double quoted scalar at line 1353, column 1:
+
 					</pre>
 					<p>Turns out that when you have all the pods for a Sitecore XP setup, and you tell kubectl to return details as json, that generates quite a lot of data.</p>
 					<p>
@@ -177,6 +157,7 @@
 					<h2>Fixing that...</h2>
 					<p>So after a bit more thinking, I revised my command a bit:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe wait --for=condition=Ready pods -l app=cm -n sitecore --timeout=2700s
+
 					</pre>
 					<p>Instead of waiting for all the pods, I've changed to waiting for just the CM pod to be ready. That's the key thing for my onward deployment – in that my next step involves talking to the CM box. And the other thing is that there's now no output command. That means it's not flooding the DevOps agent log with piles of data.</p>
 					<p>

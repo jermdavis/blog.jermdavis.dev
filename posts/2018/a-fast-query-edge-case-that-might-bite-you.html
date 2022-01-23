@@ -4,10 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="There's been a bit of discussion (I might even go as far as to say ranting 😉 ) on the subject of <a href=&quot;https://intothecloud.blog/2018/10/21/It-s-time-to-put-fast-query-to-rest/&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;>not using &quot;fast query&quot; in your website code</a> recently. I'm a supporter of this idea – but I came across an issue recently that points out why it's not always easy to be confident that you're not making use of it indirectly...
-So, for the benefit of Google: ">
-		<meta property="og:description" content="There's been a bit of discussion (I might even go as far as to say ranting 😉 ) on the subject of <a href=&quot;https://intothecloud.blog/2018/10/21/It-s-time-to-put-fast-query-to-rest/&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;>not using &quot;fast query&quot; in your website code</a> recently. I'm a supporter of this idea – but I came across an issue recently that points out why it's not always easy to be confident that you're not making use of it indirectly...
-So, for the benefit of Google: ">
+		<meta name="description" content="A fast query edge case that might bite&nbsp;you">
+		<meta property="og:description" content="A fast query edge case that might bite&nbsp;you">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - A fast query edge case that might bite&nbsp;you</title>
@@ -20,24 +18,8 @@ So, for the benefit of Google: ">
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - A fast query edge case that might bite&amp;#xA0;you">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-fast-query-edge-case-that-might-bite-you-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "A fast query edge case that might bite&#xA0;you",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/a-fast-query-edge-case-that-might-bite-you-social.png"
-        ],
-        "datePublished": "2018-11-12T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/a-fast-query-edge-case-that-might-bite-you">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -48,7 +30,7 @@ So, for the benefit of Google: ">
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:26 -->
+		<!-- 23/01/2022 10:18:51 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -124,26 +106,15 @@ So, for the benefit of Google: ">
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					A fast query edge case that might bite&nbsp;you
 				</h1>
-				<div class="meta">Published 12 November 2018</div>
-				<div class="flex py-1">
-					<a href="/tags/bug" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Bug</a>
-					<a href="/tags/commerce-connect" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Commerce Connect</a>
-					<a href="/tags/fast-query" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Fast Query</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>There's been a bit of discussion (I might even go as far as to say ranting 😉 ) on the subject of
 						<a href="https://intothecloud.blog/2018/10/21/It-s-time-to-put-fast-query-to-rest/" rel="noopener" target="_blank">not using "fast query" in your website code</a>
 						recently. I'm a supporter of this idea – but I came across an issue recently that points out why it's not always easy to be confident that you're not making use of it indirectly...</p>
@@ -161,9 +132,11 @@ So, for the benefit of Google: ">
 						<code>EaPlanProvider</code>
 						class was the source of their problem. On their newly published site, it was failing to resolve the correct engagement plan for basket operations. After some disassembly and digging through the code behind this, we could see that there were two operations in this code that would fail:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">EngagementPlanItem engagementPlanItem = Tracker.DefinitionDatabase.Automation().EngagementPlans[engagementPlanName];
+
 					</pre>
 					<p>where it tries to find the definition item for the engagement plan, and</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">EngagementPlanStateItem engagementPlanStateItem = engagementPlanItem.States[stateName];
+
 					</pre>
 					<p>where it tries to find the right state item in that plan.</p>
 					<p>Under the surface, both of these lines of code call the
@@ -171,7 +144,30 @@ So, for the benefit of Google: ">
 						object's
 						<code>GetName()</code>
 						method. And when you look at the innards of that:</p>
-					<pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private TItemType FindByName(string name) {     Assert.ArgumentNotNull(name, "name");     ItemUtil.AssertItemName(name);     if (root != null)     {         string format = deep ? "fast://*[@@id = {0}]//*[@@name = {1}]" : "fast://*[@@id = {0}]/*[@@name = {1}]";         string query = string.Format(format, EscapeQueryParameter(root.ID.Guid.ToString()), EscapeQueryParameter(name));         Item[] array = root.Database.SelectItems(query);         if (array != null &amp;&amp; array.Length &gt; 0)         {             Item[] array2 = array;             foreach (Item item in array2)             {                 if (templateFilter(item))                 {                     return Wrap(item);                 }             }         }     }     return default(TItemType); }
+					<pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private TItemType FindByName(string name)
+{
+    Assert.ArgumentNotNull(name, "name");
+    ItemUtil.AssertItemName(name);
+    if (root != null)
+    {
+        string format = deep ? "fast://*[@@id = {0}]//*[@@name = {1}]" : "fast://*[@@id = {0}]/*[@@name = {1}]";
+        string query = string.Format(format, EscapeQueryParameter(root.ID.Guid.ToString()), EscapeQueryParameter(name));
+        Item[] array = root.Database.SelectItems(query);
+        if (array != null && array.Length > 0)
+        {
+            Item[] array2 = array;
+            foreach (Item item in array2)
+            {
+                if (templateFilter(item))
+                {
+                    return Wrap(item);
+                }
+            }
+        }
+    }
+    return default(TItemType);
+}
+
 					</pre>
 					<p>It makes a fast query!</p>
 					<p>So the client's problem was that publishing a brand new store also published brand new Engagement Plan items to go with the store. And since Publishing Service is now configured not to update the descendants table, this fast query is never going to return the correct items, and you get a null reference exception...</p>

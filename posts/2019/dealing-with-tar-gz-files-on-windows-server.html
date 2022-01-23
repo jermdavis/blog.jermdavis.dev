@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="A couple of times recently, I've found myself needing to deploy files that come wrapped in a <code>.tar.gz</code> archive onto servers. On your desktop that's not too much of a problem – you just run the installer for your preferred <a href=&quot;https://www.7-zip.org/&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;>3rd party tool</a>, or maybe <a href=&quot;https://docs.microsoft.com/en-us/windows/wsl/install-win10&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;>use the new Unixy shell</a> and you get on with it. But on client servers security can be higher and you don't always get the option to run any old installer. So I needed an alternative...">
-		<meta property="og:description" content="A couple of times recently, I've found myself needing to deploy files that come wrapped in a <code>.tar.gz</code> archive onto servers. On your desktop that's not too much of a problem – you just run the installer for your preferred <a href=&quot;https://www.7-zip.org/&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;>3rd party tool</a>, or maybe <a href=&quot;https://docs.microsoft.com/en-us/windows/wsl/install-win10&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;>use the new Unixy shell</a> and you get on with it. But on client servers security can be higher and you don't always get the option to run any old installer. So I needed an alternative...">
+		<meta name="description" content="Dealing with .tar.gz files on Windows&nbsp;Server">
+		<meta property="og:description" content="Dealing with .tar.gz files on Windows&nbsp;Server">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Dealing with .tar.gz files on Windows&nbsp;Server</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Dealing with .tar.gz files on Windows&amp;#xA0;Server">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/dealing-with-tar-gz-files-on-windows-server-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Dealing with .tar.gz files on Windows&#xA0;Server",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/dealing-with-tar-gz-files-on-windows-server-social.png"
-        ],
-        "datePublished": "2019-05-13T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/dealing-with-tar-gz-files-on-windows-server">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:52 -->
+		<!-- 23/01/2022 10:19:00 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,22 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Dealing with .tar.gz files on Windows&nbsp;Server
 				</h1>
-				<div class="meta">Published 13 May 2019</div>
-				<div class="flex py-1">
-					<a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell</a>
-					<a href="/tags/windows" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Windows</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>A couple of times recently, I've found myself needing to deploy files that come wrapped in a
 						<code>.tar.gz</code>
 						archive onto servers. On your desktop that's not too much of a problem – you just run the installer for your preferred
@@ -157,7 +134,17 @@
 						archives.</p>
 					<h2>The main script</h2>
 					<p>To be useful, the script is going to need to receive a file to extract, and a folder to put the results into. That's easily done by declaring a couple of mandatory parameters:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">[cmdletbinding(SupportsShouldProcess=$True)] param(     [Parameter(Mandatory=$True)]     [string]$FileToExtract,      [Parameter(Mandatory=$True)]     [string]$TargetFolder,      [int]$BufferSize = 1024 )
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">[cmdletbinding(SupportsShouldProcess=$True)]
+param(
+    [Parameter(Mandatory=$True)]
+    [string]$FileToExtract,
+
+    [Parameter(Mandatory=$True)]
+    [string]$TargetFolder,
+
+    [int]$BufferSize = 1024
+)
+
 					</pre>
 					<p>The parameters also declare that this script will honour the
 						<code>-whatif</code>
@@ -167,10 +154,18 @@
 						<code>.gzip</code>
 						stream - more on that later.</p>
 					<p>The logic of the script is fairly simple. First it needs to do some basic validation of the file it's going to process. First it can test the file actually exists:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if(!(Test-Path $FileToExtract)) {     throw "Source file '$FileToExtract' does not exist" }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if(!(Test-Path $FileToExtract))
+{
+    throw "Source file '$FileToExtract' does not exist"
+}
+
 					</pre>
 					<p>And then it can test that it has the right extension:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if(!$FileToExtract.EndsWith(".tar.gz", "CurrentCultureIgnoreCase")) {     throw "Source file '$FileToExtract' does not have a .tar.gz extension" }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if(!$FileToExtract.EndsWith(".tar.gz", "CurrentCultureIgnoreCase"))
+{
+    throw "Source file '$FileToExtract' does not have a .tar.gz extension"
+}
+
 					</pre>
 					<p>Once it's happy, the overall processing is broken up into six operations. The first two make sure that the source file has an absolute path, before working out the right name for the
 						<code>.tar</code>
@@ -184,14 +179,32 @@
 						files is installed - by grabbing a copy of the "7Zip4PowerShell" PowerShell module if it's not available already. That can then be called to extract the data, before finally deleting the temporary
 						<code>.tar</code>
 						file:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$FileToExtract = Resolve-Path $FileToExtract $tarFile = Calculate-TarFileName $FileToExtract  Expand-GZip $FileToExtract $tarFile $BufferSize Ensure-7Zip Extract-Tar $tarFile $TargetFolder  if ($PSCmdlet.ShouldProcess($tarFile,'Remove temporary tar file')) {     Remove-Item $tarFile }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$FileToExtract = Resolve-Path $FileToExtract
+$tarFile = Calculate-TarFileName $FileToExtract
+
+Expand-GZip $FileToExtract $tarFile $BufferSize
+Ensure-7Zip
+Extract-Tar $tarFile $TargetFolder
+
+if ($PSCmdlet.ShouldProcess($tarFile,'Remove temporary tar file')) {
+    Remove-Item $tarFile
+}
+
 					</pre>
 					<p>What's in all those functions? Read on...</p>
 					<h2>Expanding the GZip stuff</h2>
 					<p>The first step is working out the name for the output from the GZip file – which is the tar file. That's pretty trivial, as it just means stripping the final
 						<code>.gz</code>
 						off the input filename:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Calculate-TarFileName {     param(         [Parameter(Mandatory=$true)]         [string] $targzFile     )      $targzFile.Substring(0, $targzFile.LastIndexOfAny('.')) }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Calculate-TarFileName {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string] $targzFile
+    )
+
+    $targzFile.Substring(0, $targzFile.LastIndexOfAny('.'))
+}
+
 					</pre>
 					<p>Expanding the GZip file takes a bit more work. This is largely
 						<a href="https://stackoverflow.com/a/42165686/847953" rel="noopener" target="_blank">cribbed from one of the answers on the Stack Overflow thread</a>
@@ -200,13 +213,84 @@
 						and won't actually generate the new file in that scenario. And secondly it adds some code to enable a progress bar. Other than that, it's basically just processing the
 						<code>GzipStream</code>
 						using standard .Net code:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Expand-GZip {     [cmdletbinding(SupportsShouldProcess=$True)]     param(         [Parameter(Mandatory=$true)]         [string]$infile,         [Parameter(Mandatory=$true)]         [string]$outFile,         [int]$bufferSize = 1024     )     $fileSize = Original-GzipFileSize $inFile     $processed = 0      if ($PSCmdlet.ShouldProcess($infile,"Expand gzip stream")) {         $input = New-Object System.IO.FileStream $inFile, ([IO.FileMode]::Open), ([IO.FileAccess]::Read), ([IO.FileShare]::Read)         $output = New-Object System.IO.FileStream $outFile, ([IO.FileMode]::Create), ([IO.FileAccess]::Write), ([IO.FileShare]::None)         $gzipStream = New-Object System.IO.Compression.GzipStream $input, ([IO.Compression.CompressionMode]::Decompress)          $buffer = New-Object byte[]($bufferSize)         while($true){                      $pc = (($processed / $fileSize) * 100) % 100             Write-Progress "Extracting tar from gzip" -PercentComplete $pc                      $read = $gzipstream.Read($buffer, 0, $bufferSize)              $processed = $processed + $read              if ($read -le 0)             {                 Write-Progress "Extracting tar from gzip" -Completed                 break             }             $output.Write($buffer, 0, $read)         }          $gzipStream.Close()         $output.Close()         $input.Close()     } }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Expand-GZip {
+    [cmdletbinding(SupportsShouldProcess=$True)]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$infile,
+        [Parameter(Mandatory=$true)]
+        [string]$outFile,
+        [int]$bufferSize = 1024
+    )
+    $fileSize = Original-GzipFileSize $inFile
+    $processed = 0
+
+    if ($PSCmdlet.ShouldProcess($infile,"Expand gzip stream")) {
+        $input = New-Object System.IO.FileStream $inFile, ([IO.FileMode]::Open), ([IO.FileAccess]::Read), ([IO.FileShare]::Read)
+        $output = New-Object System.IO.FileStream $outFile, ([IO.FileMode]::Create), ([IO.FileAccess]::Write), ([IO.FileShare]::None)
+        $gzipStream = New-Object System.IO.Compression.GzipStream $input, ([IO.Compression.CompressionMode]::Decompress)
+
+        $buffer = New-Object byte[]($bufferSize)
+        while($true){
+        
+            $pc = (($processed / $fileSize) * 100) % 100
+            Write-Progress "Extracting tar from gzip" -PercentComplete $pc
+        
+            $read = $gzipstream.Read($buffer, 0, $bufferSize)
+
+            $processed = $processed + $read
+
+            if ($read -le 0)
+            {
+                Write-Progress "Extracting tar from gzip" -Completed
+                break
+            }
+            $output.Write($buffer, 0, $read)
+        }
+
+        $gzipStream.Close()
+        $output.Close()
+        $input.Close()
+    }
+}
+
 					</pre>
 					<p>Making a useful progress bar involves knowing the size of the final stream, however. But Google to the rescue again here, as it pointed me towards
 						<a href="https://www.codeproject.com/Tips/638039/GZipStream-length-when-uncompressed" rel="noopener" target="_blank">this CodeProject posting that describes the C# code to achieve this</a>. Turns out you just need to verify that it's actually a GZip stream (looking at the first three bytes) and the find the last four bytes to get an
 						<code>Int32</code>
 						that is the original length:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Original-GzipFileSize {     param(         [Parameter(Mandatory=$true)]         [string] $gzipFile     )          $fs = New-Object System.IO.FileStream $gzipFile, ([IO.FileMode]::Open), ([IO.FileAccess]::Read), ([IO.FileShare]::Read)      try     {         $fh = New-Object byte[](3)         $fs.Read($fh, 0, 3) | Out-Null         # If magic numbers are 31 and 139 and the deflation id is 8 then this is a file to process         if ($fh[0] -eq 31 -and $fh[1] -eq 139 -and $fh[2] -eq 8)          {             $ba = New-Object byte[](4)             $fs.Seek(-4, [System.IO.SeekOrigin]::End) | Out-Null             $fs.Read($ba, 0, 4) | Out-Null                              return [int32][System.BitConverter]::ToInt32($ba, 0)         }         else         {             throw "File '$gzipFile' does not have the correct gzip header"         }     }     finally     {         $fs.Close()     } }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Original-GzipFileSize {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string] $gzipFile
+    )
+    
+    $fs = New-Object System.IO.FileStream $gzipFile, ([IO.FileMode]::Open), ([IO.FileAccess]::Read), ([IO.FileShare]::Read)
+
+    try
+    {
+        $fh = New-Object byte[](3)
+        $fs.Read($fh, 0, 3) | Out-Null
+        # If magic numbers are 31 and 139 and the deflation id is 8 then this is a file to process
+        if ($fh[0] -eq 31 -and $fh[1] -eq 139 -and $fh[2] -eq 8) 
+        {
+            $ba = New-Object byte[](4)
+            $fs.Seek(-4, [System.IO.SeekOrigin]::End) | Out-Null
+            $fs.Read($ba, 0, 4) | Out-Null
+                
+            return [int32][System.BitConverter]::ToInt32($ba, 0)
+        }
+        else
+        {
+            throw "File '$gzipFile' does not have the correct gzip header"
+        }
+    }
+    finally
+    {
+        $fs.Close()
+    }
+}
+
 					</pre>
 					<p>So the
 						<code>Expand-GZip</code>
@@ -226,15 +310,55 @@
 						commandlet to fetch it from the public feed. For laughs I decided to combine the two, as I could see scenarios where both mught be useful.</p>
 					<p>So if you put the files for the package to the "7Zip4Powershell" folder next to the script, it'll spot them and use this local copy. To get those files you can run</p>
 					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Save-Module -Name 7Zip4Powershell -Path .
+
 					</pre>
 					<p>from a prompt. This approach will be most useful on highly-secured servers where the admins want to vet all the files your work uses before you do anything with them. You can hand over both this script and the files for that module for investigation, and they just need copying to the server for use.</p>
 					<p>Alternatively, if that folder does not exist, it'll pull the module from the public feed. That's the "zero effort" approach when you're allowed to use it. You don't need to do any extra work – it'll just pull in the right code if it's not already installed for you. And as before, the logic is wrapped up to support
 						<code>-WhatIf</code>.</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Ensure-7Zip {     param(         [string]$pathToModule = ".\7Zip4Powershell\1.9.0\7Zip4PowerShell.psd1"     )      if (-not (Get-Command Expand-7Zip -ErrorAction Ignore)) {         if(Test-Path $pathToModule)         {             if ($PSCmdlet.ShouldProcess($pathToModule,"Install 7Zip module from local path")) {                 Write-Progress -Activity "Installing the 7Zip4PowerShell module" "Using local module" -PercentComplete 50                 Import-Module $pathToModule                 Write-Progress -Activity "Installing the 7Zip4PowerShell module" "Using local module" -Completed             }         }         else         {             if ($PSCmdlet.ShouldProcess("PowerShell feed",'Install 7Zip module')) {                 Write-Progress  -Activity "Installing the 7Zip4PowerShell module" "Using public feed" -PercentComplete 50                 $progressPreference = 'silentlyContinue'                 Install-Package -Scope CurrentUser -Force 7Zip4PowerShell &gt; $null                 $progressPreference = 'Continue'                 Write-Progress  -Activity "Installing the 7Zip4PowerShell module" "Using public feed" -Completed             }         }     } }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Ensure-7Zip {
+    param(
+        [string]$pathToModule = ".\7Zip4Powershell\1.9.0\7Zip4PowerShell.psd1"
+    )
+
+    if (-not (Get-Command Expand-7Zip -ErrorAction Ignore)) {
+        if(Test-Path $pathToModule)
+        {
+            if ($PSCmdlet.ShouldProcess($pathToModule,"Install 7Zip module from local path")) {
+                Write-Progress -Activity "Installing the 7Zip4PowerShell module" "Using local module" -PercentComplete 50
+                Import-Module $pathToModule
+                Write-Progress -Activity "Installing the 7Zip4PowerShell module" "Using local module" -Completed
+            }
+        }
+        else
+        {
+            if ($PSCmdlet.ShouldProcess("PowerShell feed",'Install 7Zip module')) {
+                Write-Progress  -Activity "Installing the 7Zip4PowerShell module" "Using public feed" -PercentComplete 50
+                $progressPreference = 'silentlyContinue'
+                Install-Package -Scope CurrentUser -Force 7Zip4PowerShell > $null
+                $progressPreference = 'Continue'
+                Write-Progress  -Activity "Installing the 7Zip4PowerShell module" "Using public feed" -Completed
+            }
+        }
+    }
+}
+
 					</pre>
 					<p>At the moment this code is hard-coded to the current version of this module - Making that more flexible is on my backlog, if I get a chance...</p>
 					<p>Once the code installed, the actual command to run the extraction is easy:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Extract-Tar {     [cmdletbinding(SupportsShouldProcess=$True)]     param(         [Parameter(Mandatory=$true)]         [string] $tarFile,         [Parameter(Mandatory=$true)]         [string] $dest     )      if ($PSCmdlet.ShouldProcess($tarFile,"Expand tar file")) {         Expand-7Zip $tarFile $dest     } }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Extract-Tar {
+    [cmdletbinding(SupportsShouldProcess=$True)]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string] $tarFile,
+        [Parameter(Mandatory=$true)]
+        [string] $dest
+    )
+
+    if ($PSCmdlet.ShouldProcess($tarFile,"Expand tar file")) {
+        Expand-7Zip $tarFile $dest
+    }
+}
+
 					</pre>
 					<p>All that adds on top of the 7Zip command is the
 						<code>-WhatIf</code>

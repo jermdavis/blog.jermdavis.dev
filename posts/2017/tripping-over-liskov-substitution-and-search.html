@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="When you're working with a &quot;provider&quot; model for services in your applications you get used to the assumption that everything follows the <a href=&quot;https://en.wikipedia.org/wiki/Liskov_substitution_principle&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Liskov Substitution Principle</a> and whatever provider you plug in will work in the same way. Unfortunately, for software our in the real world that's not always entirely true. Recently I came across an example of this which helped point out a bug in some search code in Sitecore...">
-		<meta property="og:description" content="When you're working with a &quot;provider&quot; model for services in your applications you get used to the assumption that everything follows the <a href=&quot;https://en.wikipedia.org/wiki/Liskov_substitution_principle&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Liskov Substitution Principle</a> and whatever provider you plug in will work in the same way. Unfortunately, for software our in the real world that's not always entirely true. Recently I came across an example of this which helped point out a bug in some search code in Sitecore...">
+		<meta name="description" content="Tripping over Liskov Substitution and&nbsp;search">
+		<meta property="og:description" content="Tripping over Liskov Substitution and&nbsp;search">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Tripping over Liskov Substitution and&nbsp;search</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Tripping over Liskov Substitution and&amp;#xA0;search">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/tripping-over-liskov-substitution-and-search-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Tripping over Liskov Substitution and&#xA0;search",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/tripping-over-liskov-substitution-and-search-social.png"
-        ],
-        "datePublished": "2017-02-20T00:00:00+00:00",
-        "dateModified": "2017-06-17T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2017/tripping-over-liskov-substitution-and-search">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:34 -->
+		<!-- 23/01/2022 10:19:17 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,25 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Tripping over Liskov Substitution and&nbsp;search
 				</h1>
-				<div class="meta">Published 20 February 2017</div>
-				<div class="meta">Updated 17 June 2017</div>
-				<div class="flex py-1">
-					<a href="/tags/coveo" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Coveo</a>
-					<a href="/tags/lucene" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Lucene</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>When you're working with a "provider" model for services in your applications you get used to the assumption that everything follows the
 						<a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle" target="_blank" rel="noopener noreferrer">Liskov Substitution Principle</a>
 						and whatever provider you plug in will work in the same way. Unfortunately, for software our in the real world that's not always entirely true. Recently I came across an example of this which helped point out a bug in some search code in Sitecore...
@@ -149,7 +122,21 @@
 					</p>
 					<h2>The scenario</h2>
 					<p>A component I found myself looking at was using the ContentSearch APIs to perform some queries and then render UI based on the results. There wasn't anything special going on. It was just finding an appropriate index, building up a query, running it and then displaying how many items matched. The relevant bit was vaguely along the lines of:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var index = fetchContextIndex(someContentItem); var predicate = buildTheSearchCriteria(currentState);  using (IProviderSearchContext context = index.CreateSearchContext()) {     var query = context         .GetQueryable&lt;SearchResultItem&gt;()         .Filter(predicate);      var fullResultsSet = query.GetResults();     var totalResults = fullResultsSet.Count();      // Display the number of matches }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var index = fetchContextIndex(someContentItem);
+var predicate = buildTheSearchCriteria(currentState);
+
+using (IProviderSearchContext context = index.CreateSearchContext())
+{
+    var query = context
+        .GetQueryable<SearchResultItem>()
+        .Filter(predicate);
+
+    var fullResultsSet = query.GetResults();
+    var totalResults = fullResultsSet.Count();
+
+    // Display the number of matches
+}
+
 					</pre>
 					<h2>The confusion</h2>
 					<p>The code started off running against an index managed by Lucene. With the particular set of content on the server, the value of the variable
@@ -192,7 +179,12 @@
 					<p>The code for the
 						<code>TotalSearchResults</code>
 						property is set specifically by the provider generating the results:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public int TotalSearchResults { 	get; 	private set; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public int TotalSearchResults
+{
+	get;
+	private set;
+}
+
 					</pre>
 					<p>That value is set by the constructor, and it can be independent of the size of results page being returned for this query.</p>
 					<p>But the value of a call to
@@ -202,7 +194,11 @@
 						returns an enumeration taken from the inner
 						<code>Hits</code>
 						collection:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">IEnumerator&lt;SearchHit&lt;TSource&gt;&gt; IEnumerable&lt;SearchHit&lt;TSource&gt;&gt;.GetEnumerator() { 	return this.Hits.GetEnumerator(); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">IEnumerator<SearchHit<TSource>> IEnumerable<SearchHit<TSource>>.GetEnumerator()
+{
+	return this.Hits.GetEnumerator();
+}
+
 					</pre>
 					<p>For Lucene, a query with no pagination will return all the index items matched up to the maximum defined in the config setting for "max result set size" (The
 						<code>ContentSearch.SearchMaxResults</code>

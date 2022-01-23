@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Sitecore config patches are great, right? We (should) all be using them to ensure that our changes in configuration don't get stomped on when we upgrade, or install new modules. But like any bit of technology, they can sometimes cause problems. Here's an example of one I saw recently, in the hope it can save others from similar issues: ">
-		<meta property="og:description" content="Sitecore config patches are great, right? We (should) all be using them to ensure that our changes in configuration don't get stomped on when we upgrade, or install new modules. But like any bit of technology, they can sometimes cause problems. Here's an example of one I saw recently, in the hope it can save others from similar issues: ">
+		<meta name="description" content="How to shoot yourself in the foot with a config&nbsp;patch...">
+		<meta property="og:description" content="How to shoot yourself in the foot with a config&nbsp;patch...">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - How to shoot yourself in the foot with a config&nbsp;patch...</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - How to shoot yourself in the foot with a config&amp;#xA0;patch...">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/how-to-shoot-yourself-in-the-foot-with-a-config-patch-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "How to shoot yourself in the foot with a config&#xA0;patch...",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/how-to-shoot-yourself-in-the-foot-with-a-config-patch-social.png"
-        ],
-        "datePublished": "2016-07-11T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/how-to-shoot-yourself-in-the-foot-with-a-config-patch">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:56 -->
+		<!-- 23/01/2022 10:19:05 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,27 +106,34 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					How to shoot yourself in the foot with a config&nbsp;patch...
 				</h1>
-				<div class="meta">Published 11 July 2016</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Sitecore config patches are great, right? We (should) all be using them to ensure that our changes in configuration don't get stomped on when we upgrade, or install new modules. But like any bit of technology, they can sometimes cause problems. Here's an example of one I saw recently, in the hope it can save others from similar issues: 
 						<!--more-->
 					</p>
 					<h2>The issue</h2>
 					<p>A colleague reported that a server in a load-balanced production cluster running Sitecore 8.0 had been taken down for a scheduled reboot, but had failed to come back up afterwards. Instead of serving pages, it was now throwing 500 errors for many requests. The Windows Log was filling up with errors like this:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Exception information:      Exception type: InvalidOperationException      Exception message: Tracker.Current is not initialized    at Sitecore.Analytics.Pipelines.StartAnalytics.StartTracking.Process(PipelineArgs args)    at (Object , Object[] )    at Sitecore.Pipelines.CorePipeline.Run(PipelineArgs args)    at Sitecore.Mvc.Analytics.Pipelines.MvcEvents.RequestBegin.StartTracking.Process(RequestBeginArgs args)    at (Object , Object[] )    at Sitecore.Pipelines.CorePipeline.Run(PipelineArgs args)    at Sitecore.Mvc.Pipelines.PipelineService.RunPipeline[TArgs](String pipelineName, TArgs args)    at Sitecore.Mvc.Routing.RouteHttpHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, Object extraData)    at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()    at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean&amp; completedSynchronously)
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Exception information: 
+    Exception type: InvalidOperationException 
+    Exception message: Tracker.Current is not initialized
+   at Sitecore.Analytics.Pipelines.StartAnalytics.StartTracking.Process(PipelineArgs args)
+   at (Object , Object[] )
+   at Sitecore.Pipelines.CorePipeline.Run(PipelineArgs args)
+   at Sitecore.Mvc.Analytics.Pipelines.MvcEvents.RequestBegin.StartTracking.Process(RequestBeginArgs args)
+   at (Object , Object[] )
+   at Sitecore.Pipelines.CorePipeline.Run(PipelineArgs args)
+   at Sitecore.Mvc.Pipelines.PipelineService.RunPipeline[TArgs](String pipelineName, TArgs args)
+   at Sitecore.Mvc.Routing.RouteHttpHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, Object extraData)
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+
 					</pre>
 					<p>That's not an exception in the custom code for the website – it's Sitecore complaining that something is wrong with the configuration for analytics. Googling for the error brings up a few hits mostly
 						<a href="https://community.sitecore.net/developers/f/9/p/543/8320#8320" target="_blank" rel="noopener noreferrer">discussing how some specific configuration</a>
@@ -152,7 +142,19 @@
 					<p>Cue head scratching...</p>
 					<h2>The cause</h2>
 					<p>Quite by chance, while zipping up config files to drag back to my dev machine for a big "diff all the files" exercise, the colleague who had reported the issue noticed a typo in a configuration patch file. Edited to focus on the issue, it was something like:</p>
-					<pre data-enlighter-highlight="9" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;   &lt;sitecore&gt;      &lt;sites&gt;       &lt;site patch:before="*[@name='website']"           name="some-other-site"           hostName="the-analytics-host-name"             -- load of other attributes we can ignore -- /&gt;     &lt;/sits&gt;    &lt;/sitecore&gt; &lt;/configuration&gt;
+					<pre data-enlighter-highlight="9" data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration xmlns:patch="http://www.sitecore.net/xmlconfig/">
+  <sitecore>
+
+    <sites>
+      <site patch:before="*[@name='website']"
+          name="some-other-site"
+          hostName="the-analytics-host-name"  
+          -- load of other attributes we can ignore -- />
+    </sits>
+
+  </sitecore>
+</configuration>
+
 					</pre>
 					<p>Somehow the closing tag for the custom
 						<code>&lt;site/&gt;</code>
@@ -161,7 +163,21 @@
 						entry, and hence the host name in the analytics wasn't correct. And
 						<a href="http://i.giphy.com/QuQIIEvbjE9r2.gif" target="_blank" rel="noopener noreferrer">the tracker goes boom</a>...</p>
 					<p>Initially, this confused me quite a bit. Surely an invalid configuration file should prevent the site starting? I was expecting to get a 500 error for failing to parse the dodgy XML. So as a test, I applied a similar dodgy patch to a vanilla instance of Sitecore 8. I got the following in the log files:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">...  460 09:23:38 ERROR Could not load configuration file: C:\Inetpub\wwwroot\my-host-name\Website\App_Config\Include\zz_test\broken.config: System.Xml.XmlException: The 'sites' start tag on line 4 position 6 does not match the end tag of 'sits'. Line 8, position 7.    at System.Xml.XmlTextReaderImpl.Throw(Exception e)    at System.Xml.XmlTextReaderImpl.ThrowTagMismatch(NodeData startTag)    at System.Xml.XmlTextReaderImpl.ParseEndElement()    at System.Xml.XmlTextReaderImpl.ParseElementContent()    at Sitecore.Xml.Patch.XmlReaderSource.&lt;GetChildren&gt;d__4.MoveNext()    at Sitecore.Xml.Patch.XmlPatchUtils.MergeChildren(XmlNode target, IXmlElement patch, XmlPatchNamespaces ns, Boolean targetWasInserted)    at Sitecore.Xml.Patch.XmlPatchUtils.MergeChildren(XmlNode target, IXmlElement patch, XmlPatchNamespaces ns, Boolean targetWasInserted)    at Sitecore.Xml.Patch.XmlPatchUtils.MergeChildren(XmlNode target, IXmlElement patch, XmlPatchNamespaces ns, Boolean targetWasInserted)    at Sitecore.Configuration.ConfigPatcher.ApplyPatch(TextReader patch, String sourceName)    at Sitecore.Configuration.ConfigPatcher.ApplyPatch(String filename)    at Sitecore.Configuration.Factory.LoadAutoIncludeFiles(ConfigPatcher patcher, String folder) ...
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">...
+ 460 09:23:38 ERROR Could not load configuration file: C:\Inetpub\wwwroot\my-host-name\Website\App_Config\Include\zz_test\broken.config: System.Xml.XmlException: The 'sites' start tag on line 4 position 6 does not match the end tag of 'sits'. Line 8, position 7.
+   at System.Xml.XmlTextReaderImpl.Throw(Exception e)
+   at System.Xml.XmlTextReaderImpl.ThrowTagMismatch(NodeData startTag)
+   at System.Xml.XmlTextReaderImpl.ParseEndElement()
+   at System.Xml.XmlTextReaderImpl.ParseElementContent()
+   at Sitecore.Xml.Patch.XmlReaderSource.<GetChildren>d__4.MoveNext()
+   at Sitecore.Xml.Patch.XmlPatchUtils.MergeChildren(XmlNode target, IXmlElement patch, XmlPatchNamespaces ns, Boolean targetWasInserted)
+   at Sitecore.Xml.Patch.XmlPatchUtils.MergeChildren(XmlNode target, IXmlElement patch, XmlPatchNamespaces ns, Boolean targetWasInserted)
+   at Sitecore.Xml.Patch.XmlPatchUtils.MergeChildren(XmlNode target, IXmlElement patch, XmlPatchNamespaces ns, Boolean targetWasInserted)
+   at Sitecore.Configuration.ConfigPatcher.ApplyPatch(TextReader patch, String sourceName)
+   at Sitecore.Configuration.ConfigPatcher.ApplyPatch(String filename)
+   at Sitecore.Configuration.Factory.LoadAutoIncludeFiles(ConfigPatcher patcher, String folder)
+...
+
 					</pre>
 					<p>So while this is recorded as an error int the log, it does not stop startup. Sitecore just ignores the dodgy config patch file and carries on regardless.</p>
 					<p>That left me wondering if this behaviour changed at some point, or whether I've always just had a wrong expectation of the software's behaviour here. That's something to do some digging about when I have some free time. So probably never then... 😉</p>

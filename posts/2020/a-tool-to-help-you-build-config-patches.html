@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Recently, I caught sight of a discussion in Sitecore Slack where the lack of tooling for helping you build config patch files came up. For some reason that struck a chord with me, and having mulled over it a bit, I decided I'd have a go at making something to see if it could be done...">
-		<meta property="og:description" content="Recently, I caught sight of a discussion in Sitecore Slack where the lack of tooling for helping you build config patch files came up. For some reason that struck a chord with me, and having mulled over it a bit, I decided I'd have a go at making something to see if it could be done...">
+		<meta name="description" content="A tool to help you build config&nbsp;patches">
+		<meta property="og:description" content="A tool to help you build config&nbsp;patches">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - A tool to help you build config&nbsp;patches</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - A tool to help you build config&amp;#xA0;patches">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-tool-to-help-you-build-config-patches-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "A tool to help you build config&#xA0;patches",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/a-tool-to-help-you-build-config-patches-social.png"
-        ],
-        "datePublished": "2020-04-27T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2020/a-tool-to-help-you-build-config-patches">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:26 -->
+		<!-- 23/01/2022 10:18:53 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,22 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					A tool to help you build config&nbsp;patches
 				</h1>
-				<div class="meta">Published 27 April 2020</div>
-				<div class="flex py-1">
-					<a href="/tags/configuration" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Configuration</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Recently, I caught sight of a discussion in Sitecore Slack where the lack of tooling for helping you build config patch files came up. For some reason that struck a chord with me, and having mulled over it a bit, I decided I'd have a go at making something to see if it could be done...
 						<!--more-->
 					</p>
@@ -215,10 +192,31 @@
 						operation is represented by the
 						<code>PatchMaker.PatchInstead</code>
 						class. These model classes are made up of some simple properties to represent the data needed for this patch:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PatchInstead : BasePatch {     public string XPathForParent { get; }     public string XPathForReplacement { get; }     public XElement Replacement { get; } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PatchInstead : BasePatch
+{
+    public string XPathForParent { get; }
+    public string XPathForReplacement { get; }
+    public XElement Replacement { get; }
+}
+
 					</pre>
 					<p>These have a constructor, which sets up these values, and they implement a method which can construct the correct XML for the patch based on the source XML document, and these properties:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public override void ApplyPatchElement(XDocument sourceXml, XDocument patchXml) {     var targetElement = sourceXml.SafeXPathSelectElement(XPathForParent);      if (targetElement == null)     {         throw new PatchException(nameof(PatchInstead), XPathForParent, nameof(XPathForParent));     }      var newElement = new XElement(Replacement);     newElement.Add(new XAttribute(Namespaces.Patch + "instead", XPathForReplacement));      var currentPatchNode = base.CopyAncestorsAndSelf(targetElement, patchXml.Root);     currentPatchNode.Add(newElement); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public override void ApplyPatchElement(XDocument sourceXml, XDocument patchXml)
+{
+    var targetElement = sourceXml.SafeXPathSelectElement(XPathForParent);
+
+    if (targetElement == null)
+    {
+        throw new PatchException(nameof(PatchInstead), XPathForParent, nameof(XPathForParent));
+    }
+
+    var newElement = new XElement(Replacement);
+    newElement.Add(new XAttribute(Namespaces.Patch + "instead", XPathForReplacement));
+
+    var currentPatchNode = base.CopyAncestorsAndSelf(targetElement, patchXml.Root);
+    currentPatchNode.Add(newElement);
+}
+
 					</pre>
 					<p>In general these methods are constructing the tree of ancestor elements, and then applying the right patch-namespace attributes and elements to match
 						<a href="https://doc.sitecore.com/developers/90/platform-administration-and-architecture/en/configuration-patch-file-examples.html" rel="noopener" target="_blank">Sitecore's schema</a>.</p>

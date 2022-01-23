@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Be honest people: how many of you have wasted a few hours of your life by accidentally clicking &quot;Revert Database&quot; when you meant to click &quot;Update Database&quot; after a long evening at the development coal face? I certainly have. And if you're like me and tend to serialise only the things you've changed in your project, then that means you generally end up with a dead instance of Sitecore.">
-		<meta property="og:description" content="Be honest people: how many of you have wasted a few hours of your life by accidentally clicking &quot;Revert Database&quot; when you meant to click &quot;Update Database&quot; after a long evening at the development coal face? I certainly have. And if you're like me and tend to serialise only the things you've changed in your project, then that means you generally end up with a dead instance of Sitecore.">
+		<meta name="description" content="Confirming Sitecore Commands">
+		<meta property="og:description" content="Confirming Sitecore Commands">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Confirming Sitecore Commands</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Confirming Sitecore Commands">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/confirming-sitecore-commands-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Confirming Sitecore Commands",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/confirming-sitecore-commands-social.png"
-        ],
-        "datePublished": "2014-02-17T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/confirming-sitecore-commands">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:43 -->
+		<!-- 23/01/2022 10:18:59 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,25 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Confirming Sitecore Commands
 				</h1>
-				<div class="meta">Published 17 February 2014</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/ui" class="p-1 mr-1 bg-gray-100 rounded-md">
-						UI</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Be honest people: how many of you have wasted a few hours of your life by accidentally clicking "Revert Database" when you meant to click "Update Database" after a long evening at the development coal face? I certainly have. And if you're like me and tend to serialise only the things you've changed in your project, then that means you generally end up with a dead instance of Sitecore.
 						<!--more-->
 					</p>
@@ -150,13 +123,34 @@
 					</p>
 					<p>The starting point for anything triggered by clicking a button in the ribbon is a class which inherits from
 						<code>Sitecore.Shell.Framework.Commands.Command</code>, and they require an Execute() method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace Blog.Examples {     public class ConfirmCommand : Command     {         public override void Execute(CommandContext context)         {         }     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace Blog.Examples
+{
+    public class ConfirmCommand : Command
+    {
+        public override void Execute(CommandContext context)
+        {
+        }
+    }
+}
+
 					</pre>
 					<p>Whenever you want to make use of a class derived from Command in your ribbon configuration, you need to register it in the Sitecore configuration. And that means a quick configuration patch. Each entry in the commands collection in configuration needs two bits of data. The "type" attribute is a normal .Net type descriptor for the class you've implemented, and the "name" attribute is the textual name you will use later when you specify what gets called when a ribbon button is clicked. So we can use example:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;command name="extensions:confirm" type="Blog.Examples.ConfirmCommand,Blog.Examples" /&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><command name="extensions:confirm" type="Blog.Examples.ConfirmCommand,Blog.Examples" />
+
 					</pre>
 					<p>With that done, we need to make the command present some UI. Having done a bit of spelunking through the commands that ship with Sitecore, they share a common pattern where the command launches a pipeline in order to allow the UI to display UI and then process its results:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ConfirmCommand : Command {     public override void Execute(CommandContext context)     {         Sitecore.Context.ClientPage.Start(this, "Confirm", context.Parameters);     }      protected void Confirm(ClientPipelineArgs args)     {     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ConfirmCommand : Command
+{
+    public override void Execute(CommandContext context)
+    {
+        Sitecore.Context.ClientPage.Start(this, "Confirm", context.Parameters);
+    }
+
+    protected void Confirm(ClientPipelineArgs args)
+    {
+    }
+}
+
 					</pre>
 					<p>The next thing to consider is how the code will find out what it is supposed to be confirming. Looking at some of the commands that ship with Sitecore, they get parameters passed from their item in the ribbon in the definition of their click event:</p>
 					<a target="_blank" rel="noopener noreferrer" href="/img/2014/finding-item.png">
@@ -164,14 +158,62 @@
 					</a>
 					<p>Examining the code for these commands shows that the parameters inside the brackets are parsed into the Parameters collection of the commands context object as a name/value collection. A quick test shows that this means you can just wrap the command you want to confirm as a parameter of the confirm command itself. So, thinking this through the confirm command will also need to know what text to put in the confirmation dialog, so we need two parameters:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">extensions:confirm(title=revert the database, cmd=itemsync:loaddatabase(revert=1))
+
 					</pre>
 					<p>The "title" parameter optionally provides the text to append to the dialog message, and "cmd" provides the command to be executed. And the code to process this looks like this: (Error handling and validation omitted for clarity)</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Confirm(ClientPipelineArgs args) {     string msg;     if (!string.IsNullOrWhiteSpace(args.Parameters["title"]))     {         msg = "Are you sure you want to " + args.Parameters["title"] + "?";     }     else     {         msg = "Are you sure you want to do that?";     }      SheerResponse.Confirm(msg);     args.WaitForPostBack(); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Confirm(ClientPipelineArgs args)
+{
+    string msg;
+    if (!string.IsNullOrWhiteSpace(args.Parameters["title"]))
+    {
+        msg = "Are you sure you want to " + args.Parameters["title"] + "?";
+    }
+    else
+    {
+        msg = "Are you sure you want to do that?";
+    }
+
+    SheerResponse.Confirm(msg);
+    args.WaitForPostBack();
+}
+
 					</pre>
 					<p>The call to
 						<code>args.WaitForPostBack()</code>
 						signals to the internals of Sitecore that this code wants to know the response from the dialog box that we've displayed. What happens as a result of that is when the user makes their click our code gets run again, passing in a new parameter to say what button got clicked. So we need to refactor this method slightly to detect that we've had a "postback" from the dialog box, and process it appropriately. That makes our Run() method look like this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Confirm(ClientPipelineArgs args) {     if (args.IsPostBack)     {         if (args.Result == "yes")         {             string cmd = args.Parameters["cmd"];             Sitecore.Context.ClientPage.SendMessage(this, cmd);             return;         }          if (args.Result == "no")         {             return;         }     }     else     {         string msg;         if (!string.IsNullOrWhiteSpace(args.Parameters["title"]))         {             msg = "Are you sure you want to " + args.Parameters["title"] + "?";         }         else         {             msg = "Are you sure you want to do that?";         }          SheerResponse.Confirm(msg);         args.WaitForPostBack();     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Confirm(ClientPipelineArgs args)
+{
+    if (args.IsPostBack)
+    {
+        if (args.Result == "yes")
+        {
+            string cmd = args.Parameters["cmd"];
+            Sitecore.Context.ClientPage.SendMessage(this, cmd);
+            return;
+        }
+
+        if (args.Result == "no")
+        {
+            return;
+        }
+    }
+    else
+    {
+        string msg;
+        if (!string.IsNullOrWhiteSpace(args.Parameters["title"]))
+        {
+            msg = "Are you sure you want to " + args.Parameters["title"] + "?";
+        }
+        else
+        {
+            msg = "Are you sure you want to do that?";
+        }
+
+        SheerResponse.Confirm(msg);
+        args.WaitForPostBack();
+    }
+}
+
 					</pre>
 					<p>Simple enough change. When the code is run for the first time, we display the dialog. But on the second pass through we check the
 						<code>args.Result</code>

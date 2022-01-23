@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Another helpful addition to the &quot;<a href=&quot;/posts/2015/automated-package-installs&quot; target=&quot;_blank&quot;>scripted installs</a>&quot; functions I've been looking at for the last few weeks is the ability to trigger a full rebuild of a search index. Last week we looked at <a href=&quot;/posts/2015/improving-the-automated-package-installs&quot; target=&quot;_blank&quot;>deferring the indexing of items installed by a package</a> to try and help speed up the scripted install of packages. So it makes sense to be able to trigger a build as well... ">
-		<meta property="og:description" content="Another helpful addition to the &quot;<a href=&quot;/posts/2015/automated-package-installs&quot; target=&quot;_blank&quot;>scripted installs</a>&quot; functions I've been looking at for the last few weeks is the ability to trigger a full rebuild of a search index. Last week we looked at <a href=&quot;/posts/2015/improving-the-automated-package-installs&quot; target=&quot;_blank&quot;>deferring the indexing of items installed by a package</a> to try and help speed up the scripted install of packages. So it makes sense to be able to trigger a build as well... ">
+		<meta name="description" content="Enabling automated index&nbsp;rebuilds">
+		<meta property="og:description" content="Enabling automated index&nbsp;rebuilds">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Enabling automated index&nbsp;rebuilds</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Enabling automated index&amp;#xA0;rebuilds">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/enabling-automated-index-rebuilds-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Enabling automated index&#xA0;rebuilds",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/enabling-automated-index-rebuilds-social.png"
-        ],
-        "datePublished": "2015-07-13T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/enabling-automated-index-rebuilds">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:49 -->
+		<!-- 23/01/2022 10:19:02 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,25 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Enabling automated index&nbsp;rebuilds
 				</h1>
-				<div class="meta">Published 13 July 2015</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/lucene" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Lucene</a>
-					<a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Another helpful addition to the "<a href="/posts/2015/automated-package-installs" target="_blank">scripted installs</a>" functions I've been looking at for the last few weeks is the ability to trigger a full rebuild of a search index. Last week we looked at
 						<a href="/posts/2015/improving-the-automated-package-installs" target="_blank">deferring the indexing of items installed by a package</a>
 						to try and help speed up the scripted install of packages. So it makes sense to be able to trigger a build as well... 
@@ -156,7 +129,73 @@
 						<i>The code presented here was put together for scripting private development instances. If you were to use it on publicly accessible sites you would have to pay close attention to security, as it presents an opportunity for denial of service attacks against your site. As mentioned in the comments, you should probably consider IP Address restrictions.</i>
 					</blockquote>
 					<p>Sitecore exposes an API for index building, but it changes between v6.6 and v7.0 due to the way the infrastructure for search changes between these versions. Only one line needs to change here, so the code below includes both, with the v7 version commented out Based on modifying the package install endpoint we've looked at before, the code is as follows:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;%@ Assembly Name="Sitecore.Client" %&gt; &lt;%@ Import Namespace="System.IO" %&gt; &lt;%@ Import Namespace="System" %&gt; &lt;%@ Import Namespace="System.Text.RegularExpressions" %&gt; &lt;%@ Import Namespace="System.Configuration" %&gt; &lt;%@ Import Namespace="log4net" %&gt; &lt;%@ Import Namespace="Sitecore.Web" %&gt;  &lt;%@ Language="C#" %&gt; &lt;html&gt; &lt;script runat="server" language="C#"&gt;     public void Page_Load(object sender, EventArgs e)     {         var indexes = WebUtil.GetQueryString("indexes").Split('|');         if (indexes.Length == 0)         {             Response.Write("No Indexes specified");             return;         }         Sitecore.Context.SetActiveSite("shell");         foreach(var index in indexes)         {             if(!string.IsNullOrWhiteSpace(index))             {                 Response.Write("Index: " + index + "&lt;br/&gt;");                 bool result = Update(index);                 if(result)                 {                     Response.Write("Updated Index: " + index + "&lt;br/&gt;");                 }             }         }     }      protected static bool Update(string index)     {         // Include this line for Sitecore v6.6         var idx = Sitecore.Search.SearchManager.GetIndex(index);          // Include this line for Sitecore v7.0 and up         // var idx = Sitecore.ContentSearch.ContentSearchManager.GetIndex(index);          if(idx != null)         {             idx.Rebuild();                          return true;         }          return false;     }      protected String GetTime()     {         return DateTime.Now.ToString("t");     } &lt;/script&gt; &lt;body&gt;     &lt;form id="MyForm" runat="server"&gt;     &lt;div&gt;         This rebuilds Sitecore 6.x search indexes.&lt;/div&gt;     Current server time is     &lt;% =GetTime()%&gt;     &lt;/form&gt; &lt;/body&gt; &lt;/html&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><%@ Assembly Name="Sitecore.Client" %>
+<%@ Import Namespace="System.IO" %>
+<%@ Import Namespace="System" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.Configuration" %>
+<%@ Import Namespace="log4net" %>
+<%@ Import Namespace="Sitecore.Web" %>
+
+<%@ Language="C#" %>
+<html>
+<script runat="server" language="C#">
+    public void Page_Load(object sender, EventArgs e)
+    {
+        var indexes = WebUtil.GetQueryString("indexes").Split('|');
+        if (indexes.Length == 0)
+        {
+            Response.Write("No Indexes specified");
+            return;
+        }
+        Sitecore.Context.SetActiveSite("shell");
+        foreach(var index in indexes)
+        {
+            if(!string.IsNullOrWhiteSpace(index))
+            {
+                Response.Write("Index: " + index + "<br/>");
+                bool result = Update(index);
+                if(result)
+                {
+                    Response.Write("Updated Index: " + index + "<br/>");
+                }
+            }
+        }
+    }
+
+    protected static bool Update(string index)
+    {
+        // Include this line for Sitecore v6.6
+        var idx = Sitecore.Search.SearchManager.GetIndex(index);
+
+        // Include this line for Sitecore v7.0 and up
+        // var idx = Sitecore.ContentSearch.ContentSearchManager.GetIndex(index);
+
+        if(idx != null)
+        {
+            idx.Rebuild();
+            
+            return true;
+        }
+
+        return false;
+    }
+
+    protected String GetTime()
+    {
+        return DateTime.Now.ToString("t");
+    }
+</script>
+<body>
+    <form id="MyForm" runat="server">
+    <div>
+        This rebuilds Sitecore 6.x search indexes.</div>
+    Current server time is
+    <% =GetTime()%>
+    </form>
+</body>
+</html>
+
 					</pre>
 					<p>You can call this by making a request to whatever you called this page and passing a querystring that names the indexes to build. For example
 						<code>/IndexRebuild.aspx?indexes=indexNameOne|indexNameTwo</code>
@@ -166,18 +205,61 @@
 					<p>First we need to tell the config for the instance we're installing where to find the
 						<code>.ASPX</code>
 						file for building the index. We can also add some configuration</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;config&gt;   &lt;params&gt;      &lt;param name="IndexBuildTool"&gt;.\files\IndexRebuild.aspx&lt;/param&gt;    &lt;/params&gt;    &lt;indexes&gt;     &lt;index&gt;MyCustomIndex&lt;/index&gt;   &lt;/indexes&gt;  &lt;/config&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><config>
+  <params>
+
+    <param name="IndexBuildTool">.\files\IndexRebuild.aspx</param>
+
+  </params>
+
+  <indexes>
+    <index>MyCustomIndex</index>
+  </indexes>
+
+</config>
+
 					</pre>
 					<p>The set of indexes can be retrieved with a bit of PowerShell similar to the way we're extracting packages to install:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Get-ConfigIndexes() {     return Select-XML "/config/indexes/index/text()" $xml }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Get-ConfigIndexes() {
+    return Select-XML "/config/indexes/index/text()" $xml
+}
+
 					</pre>
 					<p>The
 						<code>.ASPX</code>
 						can then be copied to the new Sitecore instance:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-IndexBuild() {     $siteName = Get-ConfigParam "InstanceName"     $sitecoreFolder = "C:\Inetpub\wwwroot\$($siteName)\Website"          $buildTool = Get-ConfigParam "IndexBuildTool"          Write-Host "Adding index build tool to Sitecore..."     Copy-Item $buildTool $sitecoreFolder -force }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-IndexBuild() {
+    $siteName = Get-ConfigParam "InstanceName"
+    $sitecoreFolder = "C:\Inetpub\wwwroot\$($siteName)\Website"
+    
+    $buildTool = Get-ConfigParam "IndexBuildTool"
+    
+    Write-Host "Adding index build tool to Sitecore..."
+    Copy-Item $buildTool $sitecoreFolder -force
+}
+
 					</pre>
 					<p>And then the config can be processed to update the indexes:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Rebuild-Indexes() {     $siteName = Get-ConfigParam "InstanceName"     $sitecoreFolder = "C:\Inetpub\wwwroot\$($siteName)\Data\packages"             foreach($index in Get-ConfigIndexes) {                      Write-Host "Updating search index $index"              # call tool         $url = "http://$siteNameIndexRebuild.aspx?indexes=$index"         $result = Invoke-WebRequest -Uri $url -TimeoutSec 600 -OutFile ".\$siteName-IndexBuild-$index.log" -PassThru                  if($result.StatusCode -ne 200) {             Write-Host "StatusCode: $($result.StatusCode)"             throw "Index build failed for $($index)"         }     }      write-host "Index build done..." }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Rebuild-Indexes() {
+    $siteName = Get-ConfigParam "InstanceName"
+    $sitecoreFolder = "C:\Inetpub\wwwroot\$($siteName)\Data\packages"   
+    
+    foreach($index in Get-ConfigIndexes) {             
+        Write-Host "Updating search index $index"
+    
+        # call tool
+        $url = "http://$siteNameIndexRebuild.aspx?indexes=$index"
+        $result = Invoke-WebRequest -Uri $url -TimeoutSec 600 -OutFile ".\$siteName-IndexBuild-$index.log" -PassThru
+        
+        if($result.StatusCode -ne 200) {
+            Write-Host "StatusCode: $($result.StatusCode)"
+            throw "Index build failed for $($index)"
+        }
+    }
+
+    write-host "Index build done..."
+}
+
 					</pre>
 					<p>Since this is re-worked from the package install code, it generates an HTTP request for each index in configuration for performance in order to try and avoid any timeouts for these calls. But the code could just issue one request for all the configured indexes if this was more appropriate.</p>
 					<blockquote>

@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="There's quite a bit of material out on the internet about creating custom fields in Sitecore. But inevitably, when I found myself with a requirement to create one, I couldn't find anything particularly close to my needs. So here's another post about creating a custom field – maybe it'll be of help to someone...">
-		<meta property="og:description" content="There's quite a bit of material out on the internet about creating custom fields in Sitecore. But inevitably, when I found myself with a requirement to create one, I couldn't find anything particularly close to my needs. So here's another post about creating a custom field – maybe it'll be of help to someone...">
+		<meta name="description" content="Autocomplete for a text&nbsp;field">
+		<meta property="og:description" content="Autocomplete for a text&nbsp;field">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Autocomplete for a text&nbsp;field</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Autocomplete for a text&amp;#xA0;field">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/autocomplete-for-a-text-field-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Autocomplete for a text&#xA0;field",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/autocomplete-for-a-text-field-social.png"
-        ],
-        "datePublished": "2014-07-28T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/autocomplete-for-a-text-field">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:39 -->
+		<!-- 23/01/2022 10:18:56 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,25 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Autocomplete for a text&nbsp;field
 				</h1>
-				<div class="meta">Published 28 July 2014</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/fields" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Fields</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/ui" class="p-1 mr-1 bg-gray-100 rounded-md">
-						UI</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>There's quite a bit of material out on the internet about creating custom fields in Sitecore. But inevitably, when I found myself with a requirement to create one, I couldn't find anything particularly close to my needs. So here's another post about creating a custom field – maybe it'll be of help to someone...
 						<!--more-->
 					</p>
@@ -153,7 +126,13 @@
 					<h2>Creating a basic new field type</h2>
 					<p>Creating a new field type requires a few simple steps:</p>
 					<p>First, create a class that will be your field editing control. There are various base types that this could inherit from, but since I wanted all the base behaviour of the standard Single Line Text field, the standard text editing control seemed like a safe bet:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace Testing.Fields {     public class ItemAutoCompleteField : Sitecore.Shell.Applications.ContentEditor.Text     {     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace Testing.Fields
+{
+    public class ItemAutoCompleteField : Sitecore.Shell.Applications.ContentEditor.Text
+    {
+    }
+}
+
 					</pre>
 					<p>Field types are defined in Sitecore using items in the Core database. Hence you need to create a new item to represent your field type, and to bind the field editor control you've created. Under
 						<code>/sitecore/System/Field types/</code>
@@ -182,11 +161,59 @@
 					<h2>Loading items to autocomplete from</h2>
 					<p>The code in the field editor control needs to take the value of the Source property and fetch the set of items this points to. It might be a query or it might be a path – but either way we need to process it.</p>
 					<p>A little fiddling about with Reflector reveals that we can create a simple Property to access the data that the ContentEditor UI maintains about this field:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public string Source {     get { return base.GetViewStateString("Source"); }     set { base.SetViewStateString("Source", value); } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public string Source
+{
+    get { return base.GetViewStateString("Source"); }
+    set { base.SetViewStateString("Source", value); }
+}
+
 					</pre>
 					<p>If the UI Framework finds a property like this on your class it will write the Source data from the template at runtime.</p>
 					<p>Hence we can write a bit of code to process this data into a list of strings for our auto-complete script to process:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public string ItemID {     get { return base.GetViewStateString("ItemID"); }     set { base.SetViewStateString("ItemID", value); } }  public string ItemVersion {     get { return base.GetViewStateString("ItemVersion"); }     set { base.SetViewStateString("ItemVersion", value); } }  private IEnumerable&lt;string&gt; loadAutoCompleteItems() {     var master = Sitecore.Configuration.Factory.GetDatabase("master");     var itemLanguage = Language.Parse(base.ItemLanguage);      if (Source.StartsWith("query:", StringComparison.InvariantCultureIgnoreCase))     {         // run a query to get the parent folder         string query = Source.Substring(6);          Item[] queryItems;         if (query.StartsWith("."))         {             var version = Sitecore.Data.Version.Parse(ItemVersion);             var ctxItem = master.GetItem(ItemID, itemLanguage, version);             queryItems = ctxItem.Axes.SelectItems(query);         }         else         {             queryItems = master.SelectItems(query);         }          return queryItems.Select(i =&gt; i.DisplayName);         // what do we return if query errors or finds nothing?     }     else     {         Item srcItem = master.GetItem(Source, itemLanguage);         return srcItem.Children.Select(i =&gt; i.DisplayName);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public string ItemID
+{
+    get { return base.GetViewStateString("ItemID"); }
+    set { base.SetViewStateString("ItemID", value); }
+}
+
+public string ItemVersion
+{
+    get { return base.GetViewStateString("ItemVersion"); }
+    set { base.SetViewStateString("ItemVersion", value); }
+}
+
+private IEnumerable<string> loadAutoCompleteItems()
+{
+    var master = Sitecore.Configuration.Factory.GetDatabase("master");
+    var itemLanguage = Language.Parse(base.ItemLanguage);
+
+    if (Source.StartsWith("query:", StringComparison.InvariantCultureIgnoreCase))
+    {
+        // run a query to get the parent folder
+        string query = Source.Substring(6);
+
+        Item[] queryItems;
+        if (query.StartsWith("."))
+        {
+            var version = Sitecore.Data.Version.Parse(ItemVersion);
+            var ctxItem = master.GetItem(ItemID, itemLanguage, version);
+            queryItems = ctxItem.Axes.SelectItems(query);
+        }
+        else
+        {
+            queryItems = master.SelectItems(query);
+        }
+
+        return queryItems.Select(i => i.DisplayName);
+        // what do we return if query errors or finds nothing?
+    }
+    else
+    {
+        Item srcItem = master.GetItem(Source, itemLanguage);
+        return srcItem.Children.Select(i => i.DisplayName);
+    }
+}
+
 					</pre>
 					<p>I've added two extra properties for the class – ItemID and ItemVersion. The ContentEditor framework will fill these in with the unique ID and version identifer of the context item. We'll need that in a bit. Note that the base class here defines an equivalent property for ItemLanguage.</p>
 					<p>The code here will run with the
@@ -201,18 +228,112 @@
 					<p>As described in the blog post referenced at the start of this, if you need to add custom scripts to the Content Editor UI, you need to do so through the
 						<code>renderContentEditor</code>
 						pipeline. So to add a simple auto-complete script to the page we need a quick pipeline component to inject it for us:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class InjectAutoCompleteScript {     public void Process(PipelineArgs args)     {         if (!Context.ClientPage.IsEvent)         {             HttpContext current = HttpContext.Current;             if (current != null)             {                 Page handler = current.Handler as Page;                 if (handler != null)                 {                     Assert.IsNotNull(handler.Header, "Content Editor &lt;head&gt; tag is missing runat='value'");                     handler.Header.Controls.Add(new LiteralControl("&lt;link rel='stylesheet' href='/sitecore/shell/Testing/Fields/ItemAutoCompleteField.css' /&gt;"));                     handler.Header.Controls.Add(new LiteralControl("&lt;script type='text/javascript' language='javascript' src='/sitecore/shell/Testing/Fields/autocomplete.min.js'&gt;&lt;/script&gt;"));                 }             }         }     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class InjectAutoCompleteScript
+{
+    public void Process(PipelineArgs args)
+    {
+        if (!Context.ClientPage.IsEvent)
+        {
+            HttpContext current = HttpContext.Current;
+            if (current != null)
+            {
+                Page handler = current.Handler as Page;
+                if (handler != null)
+                {
+                    Assert.IsNotNull(handler.Header, "Content Editor <head> tag is missing runat='value'");
+                    handler.Header.Controls.Add(new LiteralControl("<link rel='stylesheet' href='/sitecore/shell/Testing/Fields/ItemAutoCompleteField.css' />"));
+                    handler.Header.Controls.Add(new LiteralControl("<script type='text/javascript' language='javascript' src='/sitecore/shell/Testing/Fields/autocomplete.min.js'></script>"));
+                }
+            }
+        }
+    }
+}
+
 					</pre>
 					<p>This is also adding some extra CSS that we'll make use of later. This is based on the HTML that the auto-complete code adds as it runs:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">.ac_input_Active {     border:1px solid green; }  div.ac_results {    border: 1px solid green;    padding: 3px;    background-color: white;  }  div.ac_results ul {     margin-bottom: 0px;     padding-bottom: 0px;     margin-top: 0px;     padding-top: 0px; }  div.ac_results ul li {     cursor: pointer; }
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">.ac_input_Active
+{
+    border:1px solid green;
+}
+
+div.ac_results
+{
+   border: 1px solid green;
+   padding: 3px;
+   background-color: white; 
+}
+
+div.ac_results ul
+{
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+    margin-top: 0px;
+    padding-top: 0px;
+}
+
+div.ac_results ul li
+{
+    cursor: pointer;
+}
+
 					</pre>
 					<p>And we configure this with a config patch:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8" ?&gt;  &lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;   &lt;sitecore&gt;     &lt;pipelines&gt;        &lt;renderContentEditor&gt;         &lt;processor patch:before="*[1]" type="Testing.Fields.InjectAutoCompleteScript, Testing.Fields" /&gt;       &lt;/renderContentEditor&gt;            &lt;/pipelines&gt;   &lt;/sitecore&gt; &lt;/configuration&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><?xml version="1.0" encoding="utf-8" ?> 
+<configuration xmlns:patch="http://www.sitecore.net/xmlconfig/">
+  <sitecore>
+    <pipelines>
+
+      <renderContentEditor>
+        <processor patch:before="*[1]" type="Testing.Fields.InjectAutoCompleteScript, Testing.Fields" />
+      </renderContentEditor>
+      
+    </pipelines>
+  </sitecore>
+</configuration>
+
 					</pre>
 					<p>With that added in, the autocomplete script will be added to the page. For the purposes of this code
 						<a href="https://github.com/agarzola/jQueryAutocompletePlugin" target="_blank" rel="noopener noreferrer">I'm making use of an old jQuery plugin for auto-complete</a>. (Yes, I know this has been superseded by jQuery UI – but there are reasons for keeping using this for my requirements – you're free to make use of the newer version) I've copied the minimised script for this into my project.</p>
 					<p>With that basic script in place, we need to attach it to our text editing field control. Based on the blog post above, we can put together some code:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string findID(string attrs) {     string[] parts = attrs.Split(' ');      string part = parts.Where(p  =&gt; p.StartsWith("id=",StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();      if (part != null)     {         string[] segments = part.Split('=');         return segments[1].Replace("\"", "");     }     else     {         return null;     } }  protected override void DoRender(System.Web.UI.HtmlTextWriter output) {     string id = findID(base.ControlAttributes);      IEnumerable&lt;string&gt; items = loadAutoCompleteItems();      output.Write(@" &lt;script&gt;                         $sc(function () {                              $sc('#" + id + @"').autocomplete(                                 ['" + String.Join("', '", items.ToArray()) + @"'],                                 {                                     mustMatch: false                                 }                             );                          });                     &lt;/script&gt;");      base.DoRender(output); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string findID(string attrs)
+{
+    string[] parts = attrs.Split(' ');
+
+    string part = parts.Where(p  => p.StartsWith("id=",StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+
+    if (part != null)
+    {
+        string[] segments = part.Split('=');
+        return segments[1].Replace("\"", "");
+    }
+    else
+    {
+        return null;
+    }
+}
+
+protected override void DoRender(System.Web.UI.HtmlTextWriter output)
+{
+    string id = findID(base.ControlAttributes);
+
+    IEnumerable<string> items = loadAutoCompleteItems();
+
+    output.Write(@" <script>
+                        $sc(function () {
+
+                            $sc('#" + id + @"').autocomplete(
+                                ['" + String.Join("', '", items.ToArray()) + @"'],
+                                {
+                                    mustMatch: false
+                                }
+                            );
+
+                        });
+                    </script>");
+
+    base.DoRender(output);
+}
+
 					</pre>
 					<p>The
 						<code>DoRender()</code>

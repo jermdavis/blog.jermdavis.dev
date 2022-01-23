@@ -4,10 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="A while back <a href=&quot;/posts/2014/faceted-search-in-sitecore-6-6&quot; target=&quot;_blank&quot;>I wrote up the faceted search example I'd presented at the London Sitecore User Group</a>, and commented that ASP.Net WebForms wasn't really great technology for providing that sort of UI. I noted that it would work better if it could be implemented using Ajax-style UI.
-Having finally had a chance to work out a basic pattern for <a href=&quot;/posts/2014/json-web-services-when-youre-stuck-in-with-basic-asp-net&quot; target=&quot;_blank&quot;>building JSON web services using the sort of technology that's easily available in basic Sitecore 6.6 websites</a> last week, I've now had a chance to get around to implementing a prototype of how the faceted search might be built with client-side processing. ">
-		<meta property="og:description" content="A while back <a href=&quot;/posts/2014/faceted-search-in-sitecore-6-6&quot; target=&quot;_blank&quot;>I wrote up the faceted search example I'd presented at the London Sitecore User Group</a>, and commented that ASP.Net WebForms wasn't really great technology for providing that sort of UI. I noted that it would work better if it could be implemented using Ajax-style UI.
-Having finally had a chance to work out a basic pattern for <a href=&quot;/posts/2014/json-web-services-when-youre-stuck-in-with-basic-asp-net&quot; target=&quot;_blank&quot;>building JSON web services using the sort of technology that's easily available in basic Sitecore 6.6 websites</a> last week, I've now had a chance to get around to implementing a prototype of how the faceted search might be built with client-side processing. ">
+		<meta name="description" content="Updating faceted search with client-side&nbsp;code">
+		<meta property="og:description" content="Updating faceted search with client-side&nbsp;code">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Updating faceted search with client-side&nbsp;code</title>
@@ -20,25 +18,8 @@ Having finally had a chance to work out a basic pattern for <a href=&quot;/posts
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Updating faceted search with client-side&amp;#xA0;code">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/client-side-faceted-search-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Updating faceted search with client-side&#xA0;code",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/client-side-faceted-search-social.png"
-        ],
-        "datePublished": "2014-09-15T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/client-side-faceted-search">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -49,7 +30,7 @@ Having finally had a chance to work out a basic pattern for <a href=&quot;/posts
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:41 -->
+		<!-- 23/01/2022 10:18:58 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -125,25 +106,15 @@ Having finally had a chance to work out a basic pattern for <a href=&quot;/posts
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Updating faceted search with client-side&nbsp;code
 				</h1>
-				<div class="meta">Published 15 September 2014</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/javascript" class="p-1 mr-1 bg-gray-100 rounded-md">
-						JavaScript</a>
-					<a href="/tags/lucene" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Lucene</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>A while back
 						<a href="/posts/2014/faceted-search-in-sitecore-6-6" target="_blank">I wrote up the faceted search example I'd presented at the London Sitecore User Group</a>, and commented that ASP.Net WebForms wasn't really great technology for providing that sort of UI. I noted that it would work better if it could be implemented using Ajax-style UI.</p>
 					<p>Having finally had a chance to work out a basic pattern for
@@ -164,7 +135,19 @@ Having finally had a chance to work out a basic pattern for <a href=&quot;/posts
 					</p>
 					<p>We need a block of UI that contains the set of filters, and a list of the results that were generated.</p>
 					<p>Because the HTML won't include any actual data when it is downloaded from the server, we also need to have some "loading" placeholders as well:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;body&gt;     &lt;h1&gt;Search TShirts&lt;/h1&gt;      &lt;form id="filters"&gt;         &lt;input type="hidden" id="configID" value="{027184E8-8007-49A2-B14C-1D02B766FE55}" /&gt;         &lt;div class="loading"&gt;-- Loading --&lt;/div&gt;     &lt;/form&gt;      &lt;ul id="results"&gt;         &lt;li class="loading"&gt;-- Loading --&lt;/li&gt;     &lt;/ul&gt; &lt;/body&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><body>
+    <h1>Search TShirts</h1>
+
+    <form id="filters">
+        <input type="hidden" id="configID" value="{027184E8-8007-49A2-B14C-1D02B766FE55}" />
+        <div class="loading">-- Loading --</div>
+    </form>
+
+    <ul id="results">
+        <li class="loading">-- Loading --</li>
+    </ul>
+</body>
+
 					</pre>
 					<p>The
 						<code>&lt;form&gt;</code>
@@ -175,33 +158,257 @@ Having finally had a chance to work out a basic pattern for <a href=&quot;/posts
 					<h2>Fetching configuration</h2>
 					<p>When the HTML for the page finishes loading the first thing that needs to happen is that the search configuration needs to be fetched. There needs to be a method on the search service that can take the GUID of the configuration template defined in the earlier posting, and it needs to return the display name for the facet and the HTML field name we plan to use. (And in more complex implementations it could also return data about the type of UI to display)</p>
 					<p>To do that we need some classes to represent the data, and an API method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FilterConfig {     public string DisplayName { get; set; }     public string FieldName { get; set; } }  public class SearchConfiguration {     public FilterConfig[] Filters { get; set; }     public bool Error { get; set; } }  [WebMethod] [ScriptMethod(ResponseFormat = ResponseFormat.Json)] public SearchConfiguration GetConfig(string configID) {     SearchConfiguration result = new SearchConfiguration();      Item cfgItem = Sitecore.Context.Database.GetItem(configID);     if (cfgItem == null)     {         result.Error = true;     }     else     {         string facets = cfgItem.Fields["Facets"].Value;         if (!string.IsNullOrEmpty(facets))         {             result.Filters = facets.Split('|')                 .Select(id =&gt; Sitecore.Context.Database.GetItem(id))                 .Select(itm =&gt; new FilterConfig() { DisplayName = itm.DisplayName, FieldName = itm.Fields["SearchIndexField"].Value })                 .Where(fc =&gt; !string.IsNullOrWhiteSpace(fc.FieldName) &amp;&amp; !string.IsNullOrWhiteSpace(fc.DisplayName))                 .Select(fc =&gt; { fc.FieldName = fc.FieldName.ToLower(); return fc; })                 .ToArray();         }     }      return result; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FilterConfig
+{
+    public string DisplayName { get; set; }
+    public string FieldName { get; set; }
+}
+
+public class SearchConfiguration
+{
+    public FilterConfig[] Filters { get; set; }
+    public bool Error { get; set; }
+}
+
+[WebMethod]
+[ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+public SearchConfiguration GetConfig(string configID)
+{
+    SearchConfiguration result = new SearchConfiguration();
+
+    Item cfgItem = Sitecore.Context.Database.GetItem(configID);
+    if (cfgItem == null)
+    {
+        result.Error = true;
+    }
+    else
+    {
+        string facets = cfgItem.Fields["Facets"].Value;
+        if (!string.IsNullOrEmpty(facets))
+        {
+            result.Filters = facets.Split('|')
+                .Select(id => Sitecore.Context.Database.GetItem(id))
+                .Select(itm => new FilterConfig() { DisplayName = itm.DisplayName, FieldName = itm.Fields["SearchIndexField"].Value })
+                .Where(fc => !string.IsNullOrWhiteSpace(fc.FieldName) && !string.IsNullOrWhiteSpace(fc.DisplayName))
+                .Select(fc => { fc.FieldName = fc.FieldName.ToLower(); return fc; })
+                .ToArray();
+        }
+    }
+
+    return result;
+}
+
 					</pre>
 					<p>The code for the API call follows a similar pattern to the similar code in the WebForms version. It loads the item specified by the configuration item GUID and transforms the GUIDs in the "Facets" field and projects them into
 						<code>FilterConfig</code>
 						items to return.</p>
 					<p>Then the client side code can call this method:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var config = null;  function getConfig() {     var cfgID = $("#configID").val();      $.ajax({         url: "/Search/SearchApi.asmx/GetConfig",         data: data: JSON.stringify({ configID: cfgID}),         contentType: "application/json; charset=utf-8",         type: "POST",         dataType: "json",         async: false,         success: function (data) {             if (data.d.Error) {                 alert("Failed to find config");             }              config = data.d.Filters;         }     }); }
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var config = null;
+
+function getConfig() {
+    var cfgID = $("#configID").val();
+
+    $.ajax({
+        url: "/Search/SearchApi.asmx/GetConfig",
+        data: data: JSON.stringify({ configID: cfgID}),
+        contentType: "application/json; charset=utf-8",
+        type: "POST",
+        dataType: "json",
+        async: false,
+        success: function (data) {
+            if (data.d.Error) {
+                alert("Failed to find config");
+            }
+
+            config = data.d.Filters;
+        }
+    });
+}
+
 					</pre>
 					<p>It fetches the value from the hidden form field for the configuration item ID and passes it across to the server. The result data then gets stored for use by future methods.</p>
 					<p>Next the code needs to create the UI controls for the set of filters defined in the configuration:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function setupUI() {     for (i in config) {         var filter = config[i];          var block = $('&lt;div&gt;');         var span = $('&lt;span class="fieldName"&gt;' + filter.DisplayName + '&lt;/span&gt;');         var select = $('&lt;select&gt;').attr({ id: filter.FieldName });          span.appendTo(block);         select.appendTo(block);         block.appendTo('#filters');          select.change(function () {             if (!ignoreChangeEvents) {                 var val = $(this).val();                 if (typeof val === "undefined" | val == null | val == "") {                     jQuery.bbq.removeState($(this).attr('id'));                 } else {                     var state = {};                     state[$(this).attr('id')] = val;                     jQuery.bbq.pushState(state);                 }             }         });     } }
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function setupUI() {
+    for (i in config) {
+        var filter = config[i];
+
+        var block = $('<div>');
+        var span = $('<span class="fieldName">' + filter.DisplayName + '</span>');
+        var select = $('<select>').attr({ id: filter.FieldName });
+
+        span.appendTo(block);
+        select.appendTo(block);
+        block.appendTo('#filters');
+
+        select.change(function () {
+            if (!ignoreChangeEvents) {
+                var val = $(this).val();
+                if (typeof val === "undefined" | val == null | val == "") {
+                    jQuery.bbq.removeState($(this).attr('id'));
+                } else {
+                    var state = {};
+                    state[$(this).attr('id')] = val;
+                    jQuery.bbq.pushState(state);
+                }
+            }
+        });
+    }
+}
+
 					</pre>
 					<p>For each of the filter definitions returned in the config, a block of HTML is created to label the field and set up the dropdown list. And then it attaches an on-change event that's called when the user changes the value. This event checks if we're in a state where the changes to the UI controls should be reflected in the hash fragments of the URL. If so, the new value for the field gets added to the URL's hash fragment. If the new value is empty or null, the code removes that item from the hash.</p>
 					<p>[The hash fragment management here makes use of a simple jQuery extension to provide automation for this:
 						<a href="http://benalman.com/projects/jquery-bbq-plugin/" title="jQuery BBQ" target="_blank" rel="noopener noreferrer">jQuery BBQ</a>]</p>
 					<p>After this is set up we can run the initial search – which I'll discuss in a second.</p>
 					<p>Once that initial search has been run, the last thing that needs to be done is to attach an event to the "hashchange" event so that whenever the URL's hash fragment changes we run a new search:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function setupHashChangeEvent() {     $(window).bind('hashchange', function (e) {         ignoreChangeEvents = true;         copyHashParamsToFormFields();         ignoreChangeEvents = false;         search(function (field) {             return $('#' + field).val();         });     }); }
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function setupHashChangeEvent() {
+    $(window).bind('hashchange', function (e) {
+        ignoreChangeEvents = true;
+        copyHashParamsToFormFields();
+        ignoreChangeEvents = false;
+        search(function (field) {
+            return $('#' + field).val();
+        });
+    });
+}
+
 					</pre>
 					<p>It stops the event handle for dropdown list changes from updating the hash fragment (so we don't get an infinite loop), updates the UI dropdowns and then runs the search...</p>
 					<h2>Running a search</h2>
 					<p>Client side, the search code needs to show the "loading" placeholder, fetch the filter values to post back, talk to the server and then update the UI:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function search(filterFunction) {     $(".loading").show();      var filters = collateFilterData(filterFunction);     var data = { filterValues: filters };      $.ajax({         url: "/Search/SearchApi.asmx/Search",         data: JSON.stringify(data),         contentType: "application/json; charset=utf-8",         type: "POST",         dataType: "json",         async: false,         success: function (data) {             if (data.d.Error) {                 alert("error in search response");                 return;             }             bindDropdowns(data.d.Filters);             bindResults(data.d.Results);         }     }); }  function collateFilterData(fn) {     var filters = {};     for (i in config) {         var filter = config[i];          var val = fn(filter.FieldName);         if (typeof val === "undefined" | val === null) {             val = "";         }          filters[filter.FieldName] = val;     }      return filters; }
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function search(filterFunction) {
+    $(".loading").show();
+
+    var filters = collateFilterData(filterFunction);
+    var data = { filterValues: filters };
+
+    $.ajax({
+        url: "/Search/SearchApi.asmx/Search",
+        data: JSON.stringify(data),
+        contentType: "application/json; charset=utf-8",
+        type: "POST",
+        dataType: "json",
+        async: false,
+        success: function (data) {
+            if (data.d.Error) {
+                alert("error in search response");
+                return;
+            }
+            bindDropdowns(data.d.Filters);
+            bindResults(data.d.Results);
+        }
+    });
+}
+
+function collateFilterData(fn) {
+    var filters = {};
+    for (i in config) {
+        var filter = config[i];
+
+        var val = fn(filter.FieldName);
+        if (typeof val === "undefined" | val === null) {
+            val = "";
+        }
+
+        filters[filter.FieldName] = val;
+    }
+
+    return filters;
+}
+
 					</pre>
 					<p>Depending on where we are in the code, the place we want to take the filter parameters from changes. For the first run of the code, when the page first loads, we want to take the filter values direct from the hash fragment. But for subsequent searches the values can come from the form fields that get set up after the first search. The function that allows fetching of the correct facet values is passed in as a parameter here.</p>
 					<p>On the server side, again we need some simple classes for the return data, and similar code to the old version of the code to run the search. The server receives the facet filter values from the client request, transforms them into a Lucene query, runs it and then constructs the result set:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SearchResults {     public IEnumerable&lt;FilterData&gt; Filters { get; set; }     public IEnumerable&lt;Result&gt; Results { get; set; }     public bool Error { get; set; } }  public class Result {     public string DisplayName { get; set; }     // plus whatever other fields are required }  [WebMethod] [ScriptMethod(ResponseFormat = ResponseFormat.Json)] public SearchResults Search(Dictionary&lt;string,object&gt; filterValues) {     SearchResults retVal = new SearchResults();      BooleanQuery query = buildQuery(filterValues);     SearchResultCollection results = runQuery(query);      retVal.Filters = buildFilterData(filterValues, results);     retVal.Results = buildResults(results);      return retVal; }  private BooleanQuery buildQuery(Dictionary&lt;string, object&gt; filterValues) {     BooleanQuery query = new BooleanQuery();      query.Add(new TermQuery(new Term("_template", ShortID.Encode(_template).ToLowerInvariant())), BooleanClause.Occur.MUST);      foreach (var kvp in filterValues)     {         string val = (string)kvp.Value;         if (!string.IsNullOrWhiteSpace(val))         {             query.Add(new TermQuery(new Term(kvp.Key, val)), BooleanClause.Occur.MUST);         }     }      return query; }  private SearchResultCollection runQuery(BooleanQuery query) {     Index index = Sitecore.Search.SearchManager.GetIndex("demo");      using (IndexSearchContext isc = index.CreateSearchContext())     {         SearchHits hits = isc.Search(query, 1000);         return hits.FetchResults(0, 1000);     } }  private IEnumerable&lt;FilterData&gt; buildFilterData(Dictionary&lt;string, object&gt; filterValues, SearchResultCollection results) {     var filters = new List&lt;FilterData&gt;();      foreach (var kvp in filterValues)     {         var options = results.Select(r =&gt; r.Document.GetValues(kvp.Key))                     .Where(v =&gt; v != null &amp;&amp; v.Length &gt; 0)                     .SelectMany(v =&gt; v)                     .Distinct()                     .Select(v =&gt; Sitecore.Context.Database.GetItem(ShortID.Parse(v).ToID()))                     .Select(v =&gt; new ListItem(v.DisplayName, v.ID.ToShortID().ToString().ToLower()))                     .Select(li =&gt; { li.Selected = li.Value == kvp.Value.ToString(); return li;})                     .OrderBy(i =&gt; i.Text);          FilterData fd = new FilterData();         fd.FieldName = kvp.Key;         fd.Values = options.ToList();          filters.Add(fd);     }      return filters; }  private IEnumerable&lt;Result&gt; buildResults(SearchResultCollection results) {     return results         .Select(r =&gt; r.GetObject&lt;Item&gt;())         .Select(i =&gt; new Result() { DisplayName = i.DisplayName })         .ToList(); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SearchResults
+{
+    public IEnumerable<FilterData> Filters { get; set; }
+    public IEnumerable<Result> Results { get; set; }
+    public bool Error { get; set; }
+}
+
+public class Result
+{
+    public string DisplayName { get; set; }
+    // plus whatever other fields are required
+}
+
+[WebMethod]
+[ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+public SearchResults Search(Dictionary<string,object> filterValues)
+{
+    SearchResults retVal = new SearchResults();
+
+    BooleanQuery query = buildQuery(filterValues);
+    SearchResultCollection results = runQuery(query);
+
+    retVal.Filters = buildFilterData(filterValues, results);
+    retVal.Results = buildResults(results);
+
+    return retVal;
+}
+
+private BooleanQuery buildQuery(Dictionary<string, object> filterValues)
+{
+    BooleanQuery query = new BooleanQuery();
+
+    query.Add(new TermQuery(new Term("_template", ShortID.Encode(_template).ToLowerInvariant())), BooleanClause.Occur.MUST);
+
+    foreach (var kvp in filterValues)
+    {
+        string val = (string)kvp.Value;
+        if (!string.IsNullOrWhiteSpace(val))
+        {
+            query.Add(new TermQuery(new Term(kvp.Key, val)), BooleanClause.Occur.MUST);
+        }
+    }
+
+    return query;
+}
+
+private SearchResultCollection runQuery(BooleanQuery query)
+{
+    Index index = Sitecore.Search.SearchManager.GetIndex("demo");
+
+    using (IndexSearchContext isc = index.CreateSearchContext())
+    {
+        SearchHits hits = isc.Search(query, 1000);
+        return hits.FetchResults(0, 1000);
+    }
+}
+
+private IEnumerable<FilterData> buildFilterData(Dictionary<string, object> filterValues, SearchResultCollection results)
+{
+    var filters = new List<FilterData>();
+
+    foreach (var kvp in filterValues)
+    {
+        var options = results.Select(r => r.Document.GetValues(kvp.Key))
+                    .Where(v => v != null && v.Length > 0)
+                    .SelectMany(v => v)
+                    .Distinct()
+                    .Select(v => Sitecore.Context.Database.GetItem(ShortID.Parse(v).ToID()))
+                    .Select(v => new ListItem(v.DisplayName, v.ID.ToShortID().ToString().ToLower()))
+                    .Select(li => { li.Selected = li.Value == kvp.Value.ToString(); return li;})
+                    .OrderBy(i => i.Text);
+
+        FilterData fd = new FilterData();
+        fd.FieldName = kvp.Key;
+        fd.Values = options.ToList();
+
+        filters.Add(fd);
+    }
+
+    return filters;
+}
+
+private IEnumerable<Result> buildResults(SearchResultCollection results)
+{
+    return results
+        .Select(r => r.GetObject<Item>())
+        .Select(i => new Result() { DisplayName = i.DisplayName })
+        .ToList();
+}
+
 					</pre>
 					<p>As with the previous version of this code, this skips over pagination – but data for that could easily be passed in with the facet filter data. Also, the results here are only including the item display name. In reality the UI requirements of the UI designs would determine</p>
 					<p>Once the data is returned from the server, it can be bound to the UI. For the dropdowns, the code goes through the values that get sent back from the server. For each of the
@@ -209,7 +416,40 @@ Having finally had a chance to work out a basic pattern for <a href=&quot;/posts
 						elements that it matches up it removes the
 						<code>&lt;option&gt;</code>
 						elements that exist and add in new ones. And for the results, a similar process removes any previous results and inserts the new ones:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function bindDropdowns(dropdownValues) {     for (i in dropdownValues) {         var dropdownValue = dropdownValues[i];          var ddl = $('#' + dropdownValue.FieldName);         ddl.find('option').remove();         ddl.append('&lt;option value=""&gt;All ' + dropdownValue.FieldName + '&lt;/option&gt;');          for (v in dropdownValue.Values) {             var li = dropdownValue.Values[v];             ddl.append($("&lt;option&gt;&lt;/option&gt;")                 .attr("value", li.Value)                 .attr("selected", li.Selected)                 .text(li.Text));         }     }      $("#filters .loading").hide(); }  function bindResults(resultValues) {     var resultDiv = $("#results");     resultDiv.children().remove();      for (i in resultValues) {         var resultValue = resultValues[i];         resultDiv             .append($("&lt;li&gt;&lt;/li&gt;")             .text(resultValue.DisplayName));     }      $("#results .loading").hide(); }
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function bindDropdowns(dropdownValues) {
+    for (i in dropdownValues) {
+        var dropdownValue = dropdownValues[i];
+
+        var ddl = $('#' + dropdownValue.FieldName);
+        ddl.find('option').remove();
+        ddl.append('<option value="">All ' + dropdownValue.FieldName + '</option>');
+
+        for (v in dropdownValue.Values) {
+            var li = dropdownValue.Values[v];
+            ddl.append($("<option></option>")
+                .attr("value", li.Value)
+                .attr("selected", li.Selected)
+                .text(li.Text));
+        }
+    }
+
+    $("#filters .loading").hide();
+}
+
+function bindResults(resultValues) {
+    var resultDiv = $("#results");
+    resultDiv.children().remove();
+
+    for (i in resultValues) {
+        var resultValue = resultValues[i];
+        resultDiv
+            .append($("<li></li>")
+            .text(resultValue.DisplayName));
+    }
+
+    $("#results .loading").hide();
+}
+
 					</pre>
 					<p>That's all the code that's required for this example. Whether you change the URL or the dropdown lists, the results now update with the server-side results:</p>
 					<p>

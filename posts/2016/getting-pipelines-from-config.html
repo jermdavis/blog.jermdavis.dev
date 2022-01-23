@@ -4,10 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="In my last post I was <a href=&quot;/posts/2016/an-alternative-approach-to-pipelines&quot; target=&quot;_blank&quot;>thinking about a more functional approach to defining pipelines</a>, after having heard about some interesting new code that Sitecore had been working on. Since writing that I've had a few conversations where the topic &quot;but what about if I want a pipeline to come from configuration?&quot; has come up. I've been away from work for the last week doing my civic duty on Jury Service, but I've had some time in between court sessions that I've spent thinking about how last weeks ideas and configuration files might be combined.
-So here's one way it could work:">
-		<meta property="og:description" content="In my last post I was <a href=&quot;/posts/2016/an-alternative-approach-to-pipelines&quot; target=&quot;_blank&quot;>thinking about a more functional approach to defining pipelines</a>, after having heard about some interesting new code that Sitecore had been working on. Since writing that I've had a few conversations where the topic &quot;but what about if I want a pipeline to come from configuration?&quot; has come up. I've been away from work for the last week doing my civic duty on Jury Service, but I've had some time in between court sessions that I've spent thinking about how last weeks ideas and configuration files might be combined.
-So here's one way it could work:">
+		<meta name="description" content="Getting pipelines from&nbsp;config">
+		<meta property="og:description" content="Getting pipelines from&nbsp;config">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Getting pipelines from&nbsp;config</title>
@@ -20,24 +18,8 @@ So here's one way it could work:">
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Getting pipelines from&amp;#xA0;config">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/getting-pipelines-from-config-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Getting pipelines from&#xA0;config",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/getting-pipelines-from-config-social.png"
-        ],
-        "datePublished": "2016-10-17T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/getting-pipelines-from-config">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -48,7 +30,7 @@ So here's one way it could work:">
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:56 -->
+		<!-- 23/01/2022 10:19:03 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -124,20 +106,15 @@ So here's one way it could work:">
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Getting pipelines from&nbsp;config
 				</h1>
-				<div class="meta">Published 17 October 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>In my last post I was
 						<a href="/posts/2016/an-alternative-approach-to-pipelines" target="_blank">thinking about a more functional approach to defining pipelines</a>, after having heard about some interesting new code that Sitecore had been working on. Since writing that I've had a few conversations where the topic "but what about if I want a pipeline to come from configuration?" has come up. I've been away from work for the last week doing my civic duty on Jury Service, but I've had some time in between court sessions that I've spent thinking about how last weeks ideas and configuration files might be combined.</p>
 					<p>So here's one way it could work:
@@ -145,7 +122,12 @@ So here's one way it could work:">
 					</p>
 					<h2>First step is having some configuration...</h2>
 					<p>A very simple structure to store a pipeline might look like this:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;pipeline name="example"&gt;   &lt;step type="StronglyTypedPipelines.DoubleStep, StronglyTypedPipelines" /&gt;   &lt;step type="StronglyTypedPipelines.ToStringStep, StronglyTypedPipelines" /&gt;   &lt;step type="StronglyTypedPipelines.DuplicateStep, StronglyTypedPipelines" /&gt; &lt;/pipeline&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><pipeline name="example">
+  <step type="StronglyTypedPipelines.DoubleStep, StronglyTypedPipelines" />
+  <step type="StronglyTypedPipelines.ToStringStep, StronglyTypedPipelines" />
+  <step type="StronglyTypedPipelines.DuplicateStep, StronglyTypedPipelines" />
+</pipeline>
+
 					</pre>
 					<p>It's just a root element for the pipeline, containing steps. And each
 						<code>&lt;step&gt;</code>
@@ -154,21 +136,61 @@ So here's one way it could work:">
 					<p>So the next task is to load the XML and get it ready for processing:</p>
 					<h2>Loading the XML</h2>
 					<p>Ideally there shouldn't be any significant differences between a "loaded from config" pipeline and a "created by code" one. So the code can start from a new abstract class that inherits from our original pipeline type:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ConfigBasedPipeline&lt;INPUT, OUTPUT&gt; : Pipeline&lt;INPUT, OUTPUT&gt; { }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ConfigBasedPipeline<INPUT, OUTPUT> : Pipeline<INPUT, OUTPUT>
+{
+}
+
 					</pre>
 					<p>The functional difference between config and code based pipelines is basically how they're initialised, so the logic to do the loading can be put into the constructor of this type. Since the config will be written in XML, this code can be based on receiving the XML that describes the pipeline being loaded, and we can assume that any patching required has been done before the point that our class receives it.</p>
 					<p>So the constructor might look like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public ConfigBasedPipeline(XElement pipelineXml) {     if (pipelineXml == null)     {         throw new ArgumentNullException(nameof(pipelineXml));     }      var pipelineSteps = parsePipelineSteps(pipelineXml);     validatePipelineSteps(pipelineSteps);      PipelineSteps = input =&gt; processPipelineSteps(pipelineSteps, input); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public ConfigBasedPipeline(XElement pipelineXml)
+{
+    if (pipelineXml == null)
+    {
+        throw new ArgumentNullException(nameof(pipelineXml));
+    }
+
+    var pipelineSteps = parsePipelineSteps(pipelineXml);
+    validatePipelineSteps(pipelineSteps);
+
+    PipelineSteps = input => processPipelineSteps(pipelineSteps, input);
+}
+
 					</pre>
 					<p>It checks that we got a valid XML Element, tries to parse it into pipeline step objects and then tries to validate that these meet the type requirements of the pipeline. Finally we can use those objects to initialise the
 						<code>Func&lt;INPUT,OUTPUT&gt;</code>
 						which actually runs the pipeline process that we saw described in the code-first constructor from the previous post.</p>
 					<h2>Parsing and validating</h2>
 					<p>Parsing the XML into objects is fairly simple:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IList&lt;IPipelineStep&gt; parsePipelineSteps(XElement pipelineXml) {     var pipeline = new List&lt;IPipelineStep&gt;();      foreach (var xStep in pipelineXml.Elements("step"))     {         string typeName = xStep.Attribute("type").Value;          var type = Type.GetType(typeName);         var ctr = type.GetConstructor(Type.EmptyTypes);         var obj = (IPipelineStep)ctr.Invoke(Type.EmptyTypes);          pipeline.Add(obj);     }      return pipeline; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IList<IPipelineStep> parsePipelineSteps(XElement pipelineXml)
+{
+    var pipeline = new List<IPipelineStep>();
+
+    foreach (var xStep in pipelineXml.Elements("step"))
+    {
+        string typeName = xStep.Attribute("type").Value;
+
+        var type = Type.GetType(typeName);
+        var ctr = type.GetConstructor(Type.EmptyTypes);
+        var obj = (IPipelineStep)ctr.Invoke(Type.EmptyTypes);
+
+        pipeline.Add(obj);
+    }
+
+    return pipeline;
+}
+
 					</pre>
 					<p>The result of parsing is going to be a list of pipeline steps. In the previous post, the interface defining a step had generic parameters for the input and output. That makes it a bit difficult to handle here, as we don't know it's type parameters until after it's been created – which in turn makes defining a list to hold it harder. So to make this easier, I went back and added a base interface without type parameters that all the steps inherit from:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep { }  public interface IPipelineStep&lt;INPUT, OUTPUT&gt; : IPipelineStep {     OUTPUT Process(INPUT input); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep
+{
+}
+
+public interface IPipelineStep<INPUT, OUTPUT> : IPipelineStep
+{
+    OUTPUT Process(INPUT input);
+}
+
 					</pre>
 					<p>That allows creating a simple
 						<code>List&lt;IPipelineStep&gt;</code>
@@ -182,7 +204,35 @@ So here's one way it could work:">
 					<p>That's handled by the
 						<code>validatePipelineSteps()</code>
 						method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void validatePipelineSteps(IList&lt;IPipelineStep&gt; pipelineSteps) {     int stepNumber = 0;      Type pipelineBaseInterface = this.GetType().GetInterface("IPipelineStep`2");     Type currentInputType = pipelineBaseInterface.GenericTypeArguments[0];     Type outputType = pipelineBaseInterface.GenericTypeArguments[1];     foreach (var step in pipelineSteps)     {         stepNumber += 1;          Type stepBaseInterface = step.GetType().GetInterface("IPipelineStep`2");         Type stepInType = stepBaseInterface.GenericTypeArguments[0];         Type stepOutType = stepBaseInterface.GenericTypeArguments[1];          if (currentInputType != stepInType)         {             string msg = "Step #{0} {1} input type {2} does not match current type {3}.";             throw new InvalidOperationException(string.Format(msg, stepNumber, step.GetType().Name, stepInType.Name, currentInputType.Name));         }         currentInputType = stepOutType;     }     if (currentInputType != outputType)     {         string msg = "Final step #{0} {1} output type {2} does not equal output of pipeline {3}.";         throw new InvalidOperationException(string.Format(msg, stepNumber, pipelineSteps.Last().GetType().Name, currentInputType.Name, outputType.Name));     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void validatePipelineSteps(IList<IPipelineStep> pipelineSteps)
+{
+    int stepNumber = 0;
+
+    Type pipelineBaseInterface = this.GetType().GetInterface("IPipelineStep`2");
+    Type currentInputType = pipelineBaseInterface.GenericTypeArguments[0];
+    Type outputType = pipelineBaseInterface.GenericTypeArguments[1];
+    foreach (var step in pipelineSteps)
+    {
+        stepNumber += 1;
+
+        Type stepBaseInterface = step.GetType().GetInterface("IPipelineStep`2");
+        Type stepInType = stepBaseInterface.GenericTypeArguments[0];
+        Type stepOutType = stepBaseInterface.GenericTypeArguments[1];
+
+        if (currentInputType != stepInType)
+        {
+            string msg = "Step #{0} {1} input type {2} does not match current type {3}.";
+            throw new InvalidOperationException(string.Format(msg, stepNumber, step.GetType().Name, stepInType.Name, currentInputType.Name));
+        }
+        currentInputType = stepOutType;
+    }
+    if (currentInputType != outputType)
+    {
+        string msg = "Final step #{0} {1} output type {2} does not equal output of pipeline {3}.";
+        throw new InvalidOperationException(string.Format(msg, stepNumber, pipelineSteps.Last().GetType().Name, currentInputType.Name, outputType.Name));
+    }
+}
+
 					</pre>
 					<p>This needs to iterate through each of the objects we generated from the XML and check it's inputs and outputs. It starts by looking at the type parameters for the overall pipeline object. Fetching the base generic pipeline step interface allows us to work out what the type parameters for the input and output of the overall pipeline is. So we can assume that the first step we encounter needs to have an input that is the same type as the overall pipeline.</p>
 					<p>Then the code can loop through each subsequent step, checking that the output type of one step matches the input type of the next. Again, it can use the type parameters of the base step interface to work this out. And finally, the output of the very last step must match the output of the overall pipeline.</p>
@@ -191,7 +241,19 @@ So here's one way it could work:">
 					<p>If the steps validate, all that remains is to provide the code which can execute them. We can't easily express the
 						<code>Func&lt;INPUT,OUTPUT&gt;</code>
 						from the previous post because we don't know the actual step objects involve this time around. But we can iterate them and make use of reflection to get them to do their job anyway:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private OUTPUT processPipelineSteps(IList&lt;IPipelineStep&gt; pipelineSteps, INPUT input) {     object output = input;      foreach (IPipelineStep step in pipelineSteps)     {         MethodInfo mi = step.GetType().GetMethod("Process", BindingFlags.Public | BindingFlags.Instance);         output = mi.Invoke(step, new[] { output });     }      return (OUTPUT)output; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private OUTPUT processPipelineSteps(IList<IPipelineStep> pipelineSteps, INPUT input)
+{
+    object output = input;
+
+    foreach (IPipelineStep step in pipelineSteps)
+    {
+        MethodInfo mi = step.GetType().GetMethod("Process", BindingFlags.Public | BindingFlags.Instance);
+        output = mi.Invoke(step, new[] { output });
+    }
+
+    return (OUTPUT)output;
+}
+
 					</pre>
 					<p>We need to define the output as
 						<code>object</code>
@@ -203,10 +265,27 @@ So here's one way it could work:">
 						<code>OUTPUT</code>
 						(since we validated the steps earlier) so we know we're safe to cast to that to return the "right" data.</p>
 					<p>Finally, we need to wrap up out abstract config-based pipeline class in a concrete type that specifies what the input and output are:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleConfigBasedPipeline : ConfigBasedPipeline&lt;int, string&gt; {     public ExampleConfigBasedPipeline(XElement pipelineXml) : base(pipelineXml)     {     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleConfigBasedPipeline : ConfigBasedPipeline<int, string>
+{
+    public ExampleConfigBasedPipeline(XElement pipelineXml) : base(pipelineXml)
+    {
+    }
+}
+
 					</pre>
 					<p>With that done, a config-based pipeline can be called with fairly similar code to the code-based ones:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var input = 13;  XDocument xd = XDocument.Load("ConfigBasedPipeline.xml"); // // Patching the configuration data would go here // XElement pipelineXml = xd.Document.Element("pipeline");  var pipeline = new ExampleConfigBasedPipeline(pipelineXml);  var output = pipeline.Process(input);
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var input = 13;
+
+XDocument xd = XDocument.Load("ConfigBasedPipeline.xml");
+//
+// Patching the configuration data would go here
+//
+XElement pipelineXml = xd.Document.Element("pipeline");
+
+var pipeline = new ExampleConfigBasedPipeline(pipelineXml);
+
+var output = pipeline.Process(input);
+
 					</pre>
 					<p>Other than the need to fetch (and potentially patch) the XML to create the pipeline, this can behave in the same way as the code-first approach.</p>
 					<h2>In conclusion...</h2>

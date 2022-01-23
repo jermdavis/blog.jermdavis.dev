@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I hit an interesting issue recently: Some code that worked fine on a QA instance of Sitecore had been deployed for UAT and was now failing with an odd error message. Whilst this issue was entirely our fault, there wasn't much in Google about the error messages I was seeing, so I'm trying to correct that problem today...">
-		<meta property="og:description" content="I hit an interesting issue recently: Some code that worked fine on a QA instance of Sitecore had been deployed for UAT and was now failing with an odd error message. Whilst this issue was entirely our fault, there wasn't much in Google about the error messages I was seeing, so I'm trying to correct that problem today...">
+		<meta name="description" content="Pay attention to your index&nbsp;exclusions">
+		<meta property="og:description" content="Pay attention to your index&nbsp;exclusions">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Pay attention to your index&nbsp;exclusions</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Pay attention to your index&amp;#xA0;exclusions">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/pay-attention-to-your-index-exclusions-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Pay attention to your index&#xA0;exclusions",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/pay-attention-to-your-index-exclusions-social.png"
-        ],
-        "datePublished": "2019-07-04T00:00:00+00:00",
-        "dateModified": "2019-08-05T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/pay-attention-to-your-index-exclusions">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:12 -->
+		<!-- 23/01/2022 10:19:10 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,41 +106,50 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Pay attention to your index&nbsp;exclusions
 				</h1>
-				<div class="meta">Published 04 July 2019</div>
-				<div class="meta">Updated 05 August 2019</div>
-				<div class="flex py-1">
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/solr" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Solr</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I hit an interesting issue recently: Some code that worked fine on a QA instance of Sitecore had been deployed for UAT and was now failing with an odd error message. Whilst this issue was entirely our fault, there wasn't much in Google about the error messages I was seeing, so I'm trying to correct that problem today...
 						<!--more-->
 					</p>
 					<h2>The issue</h2>
 					<p>The code in question was runing on a Sitecore 7 instance. It fell over on UAT with this error:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">[ArgumentNullException: Value cannot be null. Parameter name: key]    System.ThrowHelper.ThrowArgumentNullException(ExceptionArgument argument) +49    System.Collections.Generic.Dictionary`2.FindEntry(TKey key) +14545882    System.Collections.Generic.Dictionary`2.TryGetValue(TKey key, TValue&amp; value) +20    Sitecore.ContentSearch.ContentSearchManager.GetIndex(String name) +52    Sitecore.ContentSearch.ContentSearchManager.CreateSearchContext(IIndexable indexable) +17
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">[ArgumentNullException: Value cannot be null.
+Parameter name: key]
+   System.ThrowHelper.ThrowArgumentNullException(ExceptionArgument argument) +49
+   System.Collections.Generic.Dictionary`2.FindEntry(TKey key) +14545882
+   System.Collections.Generic.Dictionary`2.TryGetValue(TKey key, TValue& value) +20
+   Sitecore.ContentSearch.ContentSearchManager.GetIndex(String name) +52
+   Sitecore.ContentSearch.ContentSearchManager.CreateSearchContext(IIndexable indexable) +17
+
 					</pre>
 					<p>That's not a very helpful error, so I spent some time tracking it down. From the stack trace you can see that the problem seems to be in translating an
 						<code>IIndexable</code>
 						into a search context, but it doesn't say anything helpful about why...</p>
 					<p>And under the surface, the code which was crashing looked something like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var root = Sitecore.Context.GetItem("{08D9E0A1-BB72-48FD-AAB2-EFCD6F3B3C92}");  using (var context = ContentSearchManager.CreateSearchContext(new SitecoreIndexableItem(root))) {     // run some search queries starting from the "root" item... }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var root = Sitecore.Context.GetItem("{08D9E0A1-BB72-48FD-AAB2-EFCD6F3B3C92}");
+
+using (var context = ContentSearchManager.CreateSearchContext(new SitecoreIndexableItem(root)))
+{
+    // run some search queries starting from the "root" item...
+}
+
 					</pre>
 					<h2>The cause</h2>
 					<p>A bit of digging with my old friend ILSpy lead to me working out that the exception being thrown here is because
 						<code>CreateSearchContext()</code>
 						above does two things:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IProviderSearchContext CreateSearchContext(IIndexable indexable) {   return GetIndex(indexable).CreateSearchContext(SearchSecurityOptions.EnableSecurityCheck); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IProviderSearchContext CreateSearchContext(IIndexable indexable)
+{
+  return GetIndex(indexable).CreateSearchContext(SearchSecurityOptions.EnableSecurityCheck);
+}
+
 					</pre>
 					<p>It translates the
 						<code>IIndexable</code>
@@ -177,7 +169,27 @@
 						<code>ContentSearchManager.CreateSearchContext()</code>
 						on from your indexes. And 2) Manage your configuration across deployments better than this... 😉</p>
 					<p>Having done some further testing, the error message above seems specific to older versions of Sitecore. I've tested this on V9.1 as well, and it still crashes in this scenario, but it shows a different exception:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">[NullReferenceException: Object reference not set to an instance of an object.]    Sitecore.ContentSearch.SitecoreItemCrawler.IsExcludedFromIndex(SitecoreIndexableItem indexable, Boolean checkLocation) +69    Sitecore.ContentSearch.SitecoreItemCrawler.GetContextIndexRanking(IIndexable indexable) +113    System.Linq.WhereSelectListIterator`2.MoveNext() +116    System.Linq.Enumerable.Min(IEnumerable`1 source) +72    Sitecore.ContentSearch.AbstractSearchIndex.Sitecore.ContentSearch.Pipelines.GetContextIndex.IContextIndexRankable.GetContextIndexRanking(IIndexable indexable) +119    Sitecore.ContentSearch.Pipelines.GetContextIndex.&lt;&gt;c__DisplayClass6_0.&lt;RankContextIndexes&gt;b__0(ISearchIndex i) +71    System.Linq.WhereSelectEnumerableIterator`2.MoveNext() +237    System.Linq.Buffer`1..ctor(IEnumerable`1 source) +280    System.Linq.&lt;GetEnumerator&gt;d__1.MoveNext() +115    System.Linq.Buffer`1..ctor(IEnumerable`1 source) +280    System.Linq.Enumerable.ToArray(IEnumerable`1 source) +89    Sitecore.ContentSearch.Pipelines.GetContextIndex.FetchIndex.GetContextIndex(IIndexable indexable, GetContextIndexArgs args) +699    Sitecore.ContentSearch.Pipelines.GetContextIndex.FetchIndex.Process(GetContextIndexArgs args) +48    (Object , Object ) +13    Sitecore.Pipelines.CorePipeline.Run(PipelineArgs args) +483    Sitecore.Pipelines.DefaultCorePipelineManager.Run(String pipelineName, PipelineArgs args, String pipelineDomain, Boolean failIfNotExists) +235    Sitecore.Pipelines.DefaultCorePipelineManager.Run(String pipelineName, PipelineArgs args, String pipelineDomain) +21    Sitecore.Abstractions.CorePipelineWrapper.Run(String pipelineName, PipelineArgs args) +73    Sitecore.ContentSearch.Pipelines.GetContextIndex.GetContextIndexPipeline.Run(ICorePipeline pipeline, GetContextIndexArgs args) +38
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">[NullReferenceException: Object reference not set to an instance of an object.]
+   Sitecore.ContentSearch.SitecoreItemCrawler.IsExcludedFromIndex(SitecoreIndexableItem indexable, Boolean checkLocation) +69
+   Sitecore.ContentSearch.SitecoreItemCrawler.GetContextIndexRanking(IIndexable indexable) +113
+   System.Linq.WhereSelectListIterator`2.MoveNext() +116
+   System.Linq.Enumerable.Min(IEnumerable`1 source) +72
+   Sitecore.ContentSearch.AbstractSearchIndex.Sitecore.ContentSearch.Pipelines.GetContextIndex.IContextIndexRankable.GetContextIndexRanking(IIndexable indexable) +119
+   Sitecore.ContentSearch.Pipelines.GetContextIndex.<>c__DisplayClass6_0.<RankContextIndexes>b__0(ISearchIndex i) +71
+   System.Linq.WhereSelectEnumerableIterator`2.MoveNext() +237
+   System.Linq.Buffer`1..ctor(IEnumerable`1 source) +280
+   System.Linq.<GetEnumerator>d__1.MoveNext() +115
+   System.Linq.Buffer`1..ctor(IEnumerable`1 source) +280
+   System.Linq.Enumerable.ToArray(IEnumerable`1 source) +89
+   Sitecore.ContentSearch.Pipelines.GetContextIndex.FetchIndex.GetContextIndex(IIndexable indexable, GetContextIndexArgs args) +699
+   Sitecore.ContentSearch.Pipelines.GetContextIndex.FetchIndex.Process(GetContextIndexArgs args) +48
+   (Object , Object ) +13
+   Sitecore.Pipelines.CorePipeline.Run(PipelineArgs args) +483
+   Sitecore.Pipelines.DefaultCorePipelineManager.Run(String pipelineName, PipelineArgs args, String pipelineDomain, Boolean failIfNotExists) +235
+   Sitecore.Pipelines.DefaultCorePipelineManager.Run(String pipelineName, PipelineArgs args, String pipelineDomain) +21
+   Sitecore.Abstractions.CorePipelineWrapper.Run(String pipelineName, PipelineArgs args) +73
+   Sitecore.ContentSearch.Pipelines.GetContextIndex.GetContextIndexPipeline.Run(ICorePipeline pipeline, GetContextIndexArgs args) +38
+
 					</pre>
 					<p>The trace is a bit more obvious – but for people new to Sitecore's index configuration process that still might be confusing. So if you're seeing either of the error messages shown above, check what you're excluding from your indexes...</p>
 				</div>

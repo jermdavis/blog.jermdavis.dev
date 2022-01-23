@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Whenever you're making requests to a Sitecore instance, you're generating log data. Sitecore does include a scheduled tasks using the <code>Sitecore.Tasks.CleanupAgent</code> to remove old log entries. However what happens if you don't want to delete old logs? Recently I was talking to a developer who needed to keep them but also save disk space. So I hacked up a quick example of one way you might schedule zipping the logs through Sitecore. (rather than via the Windows scheduler or some other route) I'm reproducing it here in case it's of use to anyone else.">
-		<meta property="og:description" content="Whenever you're making requests to a Sitecore instance, you're generating log data. Sitecore does include a scheduled tasks using the <code>Sitecore.Tasks.CleanupAgent</code> to remove old log entries. However what happens if you don't want to delete old logs? Recently I was talking to a developer who needed to keep them but also save disk space. So I hacked up a quick example of one way you might schedule zipping the logs through Sitecore. (rather than via the Windows scheduler or some other route) I'm reproducing it here in case it's of use to anyone else.">
+		<meta name="description" content="Zipping your log&nbsp;files...">
+		<meta property="og:description" content="Zipping your log&nbsp;files...">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Zipping your log&nbsp;files...</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Zipping your log&amp;#xA0;files...">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/zipping-your-log-files-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Zipping your log&#xA0;files...",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/zipping-your-log-files-social.png"
-        ],
-        "datePublished": "2015-02-23T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/zipping-your-log-files">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:39 -->
+		<!-- 23/01/2022 10:19:21 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,21 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Zipping your log&nbsp;files...
 				</h1>
-				<div class="meta">Published 23 February 2015</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Whenever you're making requests to a Sitecore instance, you're generating log data. Sitecore does include a scheduled tasks using the
 						<code>Sitecore.Tasks.CleanupAgent</code>
 						to remove old log entries. However what happens if you don't want to delete old logs? Recently I was talking to a developer who needed to keep them but also save disk space. So I hacked up a quick example of one way you might schedule zipping the logs through Sitecore. (rather than via the Windows scheduler or some other route) I'm reproducing it here in case it's of use to anyone else.
@@ -151,7 +128,36 @@
 						<li>Remove the log files</li>
 					</ul>
 					<p>In .Net 4.5 and later we can do this with the following simple code:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class LogArchiver  {     public void Run()     {         Sitecore.Diagnostics.Log.Info("Running log cleanup...", this);          DateTime filterDate = DateTime.Now.AddDays(-1).Date;          string logFolder = Path.Combine(Sitecore.Configuration.Settings.DataFolder, "logs");         DirectoryInfo di = new DirectoryInfo(logFolder);          var files = di.EnumerateFiles("*.txt")             .Where(f =&gt; f.LastWriteTime &lt;= filterDate);          if(files.Any())         {             string zipFile = Path.Combine(logFolder, string.Format("LogArchive-{0}-{1}-{2}.zip", filterDate.Year, filterDate.Month, filterDate.Day));              using (var zip = ZipFile.Open(zipFile, ZipArchiveMode.Create))             {                 foreach (var file in files)                 {                     var entry = zip.CreateEntryFromFile(file.FullName, file.Name);                     File.Delete(file.FullName);                 }             }         }     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class LogArchiver 
+{
+    public void Run()
+    {
+        Sitecore.Diagnostics.Log.Info("Running log cleanup...", this);
+
+        DateTime filterDate = DateTime.Now.AddDays(-1).Date;
+
+        string logFolder = Path.Combine(Sitecore.Configuration.Settings.DataFolder, "logs");
+        DirectoryInfo di = new DirectoryInfo(logFolder);
+
+        var files = di.EnumerateFiles("*.txt")
+            .Where(f => f.LastWriteTime <= filterDate);
+
+        if(files.Any())
+        {
+            string zipFile = Path.Combine(logFolder, string.Format("LogArchive-{0}-{1}-{2}.zip", filterDate.Year, filterDate.Month, filterDate.Day));
+
+            using (var zip = ZipFile.Open(zipFile, ZipArchiveMode.Create))
+            {
+                foreach (var file in files)
+                {
+                    var entry = zip.CreateEntryFromFile(file.FullName, file.Name);
+                    File.Delete(file.FullName);
+                }
+            }
+        }
+    }
+}
+
 					</pre>
 					<p>The compression classes in .Net 4.5 make the code to put files into a zip simple – but it's worth pointing out that you need to make sure you have
 						<code>System.IO.Compression</code>
@@ -167,7 +173,14 @@
 						or
 						<a href="http://icsharpcode.github.io/SharpZipLib/" target="_blank" rel="noopener noreferrer">SharpZipLib</a>.</p>
 					<p>Once you've put your code together it can be configured to run regularly in one of two different ways. The first is using a configuration patch:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;   &lt;sitecore&gt;     &lt;scheduling&gt;       &lt;agent type="Testing.LogArchiver" method="Run" interval="01:00:00" /&gt;     &lt;/scheduling&gt;   &lt;/sitecore&gt; &lt;/configuration&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration xmlns:patch="http://www.sitecore.net/xmlconfig/">
+  <sitecore>
+    <scheduling>
+      <agent type="Testing.LogArchiver" method="Run" interval="01:00:00" />
+    </scheduling>
+  </sitecore>
+</configuration>
+
 					</pre>
 					<p>You supply the fully qualified type name along with the method name you want executed, and an execution interval in "hrs:mins:secs" format. This approach is most suitable to situations where the developers need to control the schedule of execution and it's not expected to change much.</p>
 					<p>Alternatively you can set up the event through the Content Editor if your scenario needs the schedule to be more easily flexible. While it's not entirely suitable for users to modify it, this approach allows changing the schedule via content rather than configuration. This involves creating

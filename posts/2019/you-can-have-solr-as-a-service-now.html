@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Recently I was writing about the <a href=&quot;/posts/2018/surviving-the-developers-javapocalypse&quot; target=&quot;_blank&quot;>changes to Java licensing that Oracle are enforcing in 2019</a>. It's not an uncommon reaction to the challenges that the new license introduces to start thinking about alternatives to how you might manage search for your Sitecore deployments. So what can you do? ">
-		<meta property="og:description" content="Recently I was writing about the <a href=&quot;/posts/2018/surviving-the-developers-javapocalypse&quot; target=&quot;_blank&quot;>changes to Java licensing that Oracle are enforcing in 2019</a>. It's not an uncommon reaction to the challenges that the new license introduces to start thinking about alternatives to how you might manage search for your Sitecore deployments. So what can you do? ">
+		<meta name="description" content="You can have “Solr as a Service”&nbsp;now...">
+		<meta property="og:description" content="You can have “Solr as a Service”&nbsp;now...">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - You can have “Solr as a Service”&nbsp;now...</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - You can have &amp;#x201C;Solr as a Service&amp;#x201D;&amp;#xA0;now...">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/you-can-have-solr-as-a-service-now-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "You can have &#x201C;Solr as a Service&#x201D;&#xA0;now...",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/you-can-have-solr-as-a-service-now-social.png"
-        ],
-        "datePublished": "2019-01-07T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/you-can-have-solr-as-a-service-now">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:40 -->
+		<!-- 23/01/2022 10:19:21 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,22 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					You can have “Solr as a Service”&nbsp;now...
 				</h1>
-				<div class="meta">Published 07 January 2019</div>
-				<div class="flex py-1">
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/solr" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Solr</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Recently I was writing about the
 						<a href="/posts/2018/surviving-the-developers-javapocalypse" target="_blank">changes to Java licensing that Oracle are enforcing in 2019</a>. It's not an uncommon reaction to the challenges that the new license introduces to start thinking about alternatives to how you might manage search for your Sitecore deployments. So what can you do? 
 						<!--more-->
@@ -210,7 +187,26 @@
 						for setting up a SolrCloud instance. SearchStax says "you need to use our Zookeeper scripts to upload the Solr configuration remotely", but Sitecore says "Run the standard Zookeeper scripts on the Solr server". Not being much of an expert on Solr, I chose to follow the SearchStax model, since it was obvious to me that this was designed to work when you have a replicated cluster of Solr instances in one "SolrCloud" deployment, and you don't have RDP access to any of them. It's not obvious from Sitecore's docs whether their approach will work remotely to configure all of the Solr servers in the Zookeeper Ensemble – especially since you never configure Sitecore with any data about the Zookeeper endpoints. (Again, I'm happy to be proved wrong here – comment below if you know more about this than me, and I'll update my post)</p>
 					<p>Since I'm not too confident about what might have changed in the Solr indexes for v9.1 I decided I'd just upload the config for each individual local index up to SearchStax, so I could use the "right" config against each index I ended up creating. That saves any messing about with diff tools looking to see which config files might be different...</p>
 					<p>Given there are 13 indexes in a 9.1 install, I decided that uploading all this config needed some automation...</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># What did I name my Sitecore instance $prefix = "sc910"  # What did SearchStax say my Zookeeper Ensemble was? $zkEnsemble = "ss000000-1-eu-west-2-aws.searchstax.com:2181,ss000000-2-eu-west-2-aws.searchstax.com:2181,ss000000-3-eu-west-2-aws.searchstax.com:2181"  # Where did I put the SearchStax zkcli.bat file? cd "C:\Users\Administrator\Desktop\solr-7\scripts"  # Grab all the solr indexes that SIF created $folders = Get-ChildItem "C:\Solr\solr-7.2.1\server\solr\$prefix*"  # Iterate the solr indexes $folders | % {    # And for each one, upload its config to the SearchStax Zookeeper ensemble with a unique name   .\zkcli.bat -zkhost $zkEnsemble -cmd upconfig -confdir C:\Solr\solr-7.2.1\server\solr\$($_.Name)\conf -confname cfg_$($_.Name)  }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># What did I name my Sitecore instance
+$prefix = "sc910"
+
+# What did SearchStax say my Zookeeper Ensemble was?
+$zkEnsemble = "ss000000-1-eu-west-2-aws.searchstax.com:2181,ss000000-2-eu-west-2-aws.searchstax.com:2181,ss000000-3-eu-west-2-aws.searchstax.com:2181"
+
+# Where did I put the SearchStax zkcli.bat file?
+cd "C:\Users\Administrator\Desktop\solr-7\scripts"
+
+# Grab all the solr indexes that SIF created
+$folders = Get-ChildItem "C:\Solr\solr-7.2.1\server\solr\$prefix*"
+
+# Iterate the solr indexes
+$folders | % {
+
+  # And for each one, upload its config to the SearchStax Zookeeper ensemble with a unique name
+  .\zkcli.bat -zkhost $zkEnsemble -cmd upconfig -confdir C:\Solr\solr-7.2.1\server\solr\$($_.Name)\conf -confname cfg_$($_.Name)
+
+}
+
 					</pre>
 					<p>That hacky bit of PowerShell pushed the config from each of my local Solr indexes up into the cloud, so it was available to attach to the correct collection in SearchStax. It takes a while to run (as each individual upload takes some time) but it completed ok.</p>
 					<p>So the next job was to create cores/indexes/whatever in my SearchStax solr instance. Checking Sitecores docs, the correct things to create for SolrCloud are actually "collections". I could probably automate this too, but it was a simple enough form to fill in to create them, so I just copied and pasted into the Solr UI:</p>
@@ -237,10 +233,49 @@
 					<p>Plus I don't see any of the traditional issues associated with Solr being broken – like Experience Forms not showing forms you've created, or the Analytics report pages having cryptic "An error occurred" messages in a red banner across the top.</p>
 					<p>But I note there are some errors in the Sitecore logs.</p>
 					<p>In the crawling log, I've seen odd errors about computed fields failing:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">3136 19:12:53 WARN  Could not compute value for ComputedIndexField: __solr_field_type for indexable: sitecore://core/{4255D463-DBA7-4E62-8B5D-68986A39BD96}?lang=da&amp;ver=1 Exception: System.Exception Message: Item "/sitecore/client/Business Component Library/version 2/Layouts/Renderings/Common/ActionControl/Action/__Standard Values" is not a template section. (method: Sitecore.Data.Items.TemplateFieldItem.op_Implicit(Item item)). Source: Sitecore.Data.Items.TemplateFieldItem.op_Implicit(Item item)    at Sitecore.Diagnostics.Error.Raise(String error, String method)    at Sitecore.Data.Items.TemplateSectionItem.op_Implicit(Item item)    at Sitecore.Data.Items.TemplateFieldItem.op_Implicit(Item item)    at Sitecore.ContentSearch.SolrProvider.FieldNames.TypeResolving.Index.ComputedFields.TemplateFieldComputedIndexField.ComputeFieldValue(IIndexable indexable)    at Sitecore.ContentSearch.AbstractDocumentBuilder`1.&lt;&gt;c__DisplayClass57_0.&lt;AddComputedIndexFieldsInParallel&gt;b__0(IComputedIndexField computedIndexField, ParallelLoopState parallelLoopState)
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">3136 19:12:53 WARN  Could not compute value for ComputedIndexField: __solr_field_type for indexable: sitecore://core/{4255D463-DBA7-4E62-8B5D-68986A39BD96}?lang=da&ver=1
+Exception: System.Exception
+Message: Item "/sitecore/client/Business Component Library/version 2/Layouts/Renderings/Common/ActionControl/Action/__Standard Values" is not a template section. (method: Sitecore.Data.Items.TemplateFieldItem.op_Implicit(Item item)).
+Source: Sitecore.Data.Items.TemplateFieldItem.op_Implicit(Item item)
+   at Sitecore.Diagnostics.Error.Raise(String error, String method)
+   at Sitecore.Data.Items.TemplateSectionItem.op_Implicit(Item item)
+   at Sitecore.Data.Items.TemplateFieldItem.op_Implicit(Item item)
+   at Sitecore.ContentSearch.SolrProvider.FieldNames.TypeResolving.Index.ComputedFields.TemplateFieldComputedIndexField.ComputeFieldValue(IIndexable indexable)
+   at Sitecore.ContentSearch.AbstractDocumentBuilder`1.<>c__DisplayClass57_0.<AddComputedIndexFieldsInParallel>b__0(IComputedIndexField computedIndexField, ParallelLoopState parallelLoopState)
+
 					</pre>
 					<p>And in the main site logs I've also seen errors that appear to be "Sitecore could not see the Solr server" for some reason:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">3472 19:04:02 ERROR Unable to connect to the remote server Exception: SolrNet.Exceptions.SolrConnectionException Message: Unable to connect to the remote server Source: SolrNet    at SolrNet.Impl.SolrConnection.Get(String relativeUrl, IEnumerable`1 parameters)    at SolrNet.Impl.SolrCoreAdmin.Status(String coreName)    at Sitecore.ContentSearch.SolrProvider.SolrCloudIndexSummary.GetReplicaIndex(Replica replica)    at System.Linq.Enumerable.&lt;&gt;c__DisplayClass7_0`3.&lt;CombineSelectors&gt;b__0(TSource x)    at System.Linq.Enumerable.WhereSelectEnumerableIterator`2.MoveNext()    at System.Linq.Enumerable.Sum(IEnumerable`1 source)    at Sitecore.ContentSearch.SolrProvider.SolrCloudIndexSummary.get_NumberOfDocuments()    at Sitecore.ContentSearch.Client.Forms.IndexingManagerWizard.BuildIndexCheckbox(String name, String header, ListString selected, ListString indexMap)  Nested Exception  Exception: System.Net.WebException Message: Unable to connect to the remote server Source: System    at System.Net.HttpWebRequest.GetResponse()    at HttpWebAdapters.Adapters.HttpWebRequestAdapter.GetResponse()    at SolrNet.Impl.SolrConnection.GetResponse(IHttpWebRequest request)    at SolrNet.Impl.SolrConnection.Get(String relativeUrl, IEnumerable`1 parameters)  Nested Exception  Exception: System.Net.Sockets.SocketException Message: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond 10.0.X.XX:8983 Source: System    at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)    at System.Net.ServicePoint.ConnectSocketInternal(Boolean connectFailure, Socket s4, Socket s6, Socket&amp; socket, IPAddress&amp; address, ConnectSocketState state, IAsyncResult asyncResult, Exception&amp; exception)
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">3472 19:04:02 ERROR Unable to connect to the remote server
+Exception: SolrNet.Exceptions.SolrConnectionException
+Message: Unable to connect to the remote server
+Source: SolrNet
+   at SolrNet.Impl.SolrConnection.Get(String relativeUrl, IEnumerable`1 parameters)
+   at SolrNet.Impl.SolrCoreAdmin.Status(String coreName)
+   at Sitecore.ContentSearch.SolrProvider.SolrCloudIndexSummary.GetReplicaIndex(Replica replica)
+   at System.Linq.Enumerable.<>c__DisplayClass7_0`3.<CombineSelectors>b__0(TSource x)
+   at System.Linq.Enumerable.WhereSelectEnumerableIterator`2.MoveNext()
+   at System.Linq.Enumerable.Sum(IEnumerable`1 source)
+   at Sitecore.ContentSearch.SolrProvider.SolrCloudIndexSummary.get_NumberOfDocuments()
+   at Sitecore.ContentSearch.Client.Forms.IndexingManagerWizard.BuildIndexCheckbox(String name, String header, ListString selected, ListString indexMap)
+
+Nested Exception
+
+Exception: System.Net.WebException
+Message: Unable to connect to the remote server
+Source: System
+   at System.Net.HttpWebRequest.GetResponse()
+   at HttpWebAdapters.Adapters.HttpWebRequestAdapter.GetResponse()
+   at SolrNet.Impl.SolrConnection.GetResponse(IHttpWebRequest request)
+   at SolrNet.Impl.SolrConnection.Get(String relativeUrl, IEnumerable`1 parameters)
+
+Nested Exception
+
+Exception: System.Net.Sockets.SocketException
+Message: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond 10.0.X.XX:8983
+Source: System
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.ServicePoint.ConnectSocketInternal(Boolean connectFailure, Socket s4, Socket s6, Socket& socket, IPAddress& address, ConnectSocketState state, IAsyncResult asyncResult, Exception& exception)
+
 					</pre>
 					<p>In both cases these errors crop up a few times, but they're not flooding the logs.</p>
 					<p>Since I've not spent much time with v9.1 I'm not entirely sure if these are issues with my 9.1 install or issues with the config I've changed for SearchStax. When I get a chance I need to swap back to the local Solr instance and test whether the same errors crop up in that configuration.</p>

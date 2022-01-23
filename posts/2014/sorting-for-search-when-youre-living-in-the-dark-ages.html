@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I've written before about <a href=&quot;/posts/2014/faceted-search-in-sitecore-6-6&quot; target=&quot;_blank&quot;>filtering data</a> in <a href=&quot;/posts/2014/client-side-faceted-search&quot; target=&quot;_blank&quot;>Lucene searches</a> if you're still using Sitecore 6.x. Having been doing more legacy work on this front over the last couple of weeks, I've got a couple of new things to add. Previously, the search work I'd been doing had relied on the default &quot;relevance&quot; sort order, or <a href=&quot;http://en.wikipedia.org/wiki/Language_Integrated_Query&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>LINQ</a> OrderBy clauses. However recently I've needed to enable some more complicated sorting, which has lead me to a few new (to me, at least) discoveries. ">
-		<meta property="og:description" content="I've written before about <a href=&quot;/posts/2014/faceted-search-in-sitecore-6-6&quot; target=&quot;_blank&quot;>filtering data</a> in <a href=&quot;/posts/2014/client-side-faceted-search&quot; target=&quot;_blank&quot;>Lucene searches</a> if you're still using Sitecore 6.x. Having been doing more legacy work on this front over the last couple of weeks, I've got a couple of new things to add. Previously, the search work I'd been doing had relied on the default &quot;relevance&quot; sort order, or <a href=&quot;http://en.wikipedia.org/wiki/Language_Integrated_Query&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>LINQ</a> OrderBy clauses. However recently I've needed to enable some more complicated sorting, which has lead me to a few new (to me, at least) discoveries. ">
+		<meta name="description" content="Sorting for search, when you're living in the dark&nbsp;ages">
+		<meta property="og:description" content="Sorting for search, when you're living in the dark&nbsp;ages">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Sorting for search, when you're living in the dark&nbsp;ages</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Sorting for search, when you&amp;#x27;re living in the dark&amp;#xA0;ages">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/sorting-for-search-when-youre-living-in-the-dark-ages-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Sorting for search, when you&#x27;re living in the dark&#xA0;ages",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/sorting-for-search-when-youre-living-in-the-dark-ages-social.png"
-        ],
-        "datePublished": "2014-12-01T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/sorting-for-search-when-youre-living-in-the-dark-ages">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:20 -->
+		<!-- 23/01/2022 10:19:13 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,23 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Sorting for search, when you're living in the dark&nbsp;ages
 				</h1>
-				<div class="meta">Published 01 December 2014</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/lucene" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Lucene</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I've written before about
 						<a href="/posts/2014/faceted-search-in-sitecore-6-6" target="_blank">filtering data</a>
 						in
@@ -152,13 +127,71 @@
 					<p>Doing sorts using LINQ clauses isn't very efficient. Generally you have to get all the results to do a valid sort. Surely it's possible to get Lucene to do this job for us before we go to the trouble of fetching all the results? Initially that doesn't look easy. How do you pass a sort order into your query? The
 						<code>IndexSearchContext</code>
 						class that you use to execute a search has lots of methods, but none mention sorting:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class IndexSearchContext : IndexContextBase, IDisposable {     protected IndexSearchContext();     public IndexSearchContext(ILuceneIndex index);      public IndexSearcher Searcher { get; }      protected BooleanQuery CreateBooleanQuery(BooleanQuery prototype, params object[] args);     protected BooleanQuery CreateBooleanQuery(bool disableCoord, float boost, params object[] args);     protected PrefixQuery CreatePrefixQuery(TermQuery termQuery);     protected PrefixQuery CreatePrefixQuery(string name, string value, float boost);     protected TermQuery CreateTermQuery(string name, string value, float boost);     public void Dispose();     public static string Escape(string query);     public Explanation Explain(PreparedQuery query, int doc);     protected void Initialize(ILuceneIndex index, bool close);     protected Query InternalParse(string query);     protected Query InternalParse(string query, string defaultField);     public PreparedQuery Parse(string query);     public PreparedQuery Parse(string query, ISearchContext context);     public PreparedQuery Prepare(QueryBase query);     protected PreparedQuery Prepare(Query query, ISearchContext context);     public PreparedQuery Prepare(QueryBase query, ISearchContext context);     [Obsolete("Use Search(PrepareQuery query, int n)")]     public SearchHits Search(PreparedQuery query);     [Obsolete("Deprecated. Use Search(Query query, int n)")]     public SearchHits Search(Query query);     [Obsolete("Deprecated. Use Search(QueryBase query, int n)")]     public SearchHits Search(QueryBase query);     [Obsolete("Use Search(string query, int n)")]     public SearchHits Search(string query);     public SearchHits Search(PreparedQuery query, int n);     public SearchHits Search(Query query, int n);     [Obsolete("Deprecated. Use Search(Query query, int n, ISearchContext context")]     public SearchHits Search(Query query, ISearchContext context);     public SearchHits Search(QueryBase query, int n);     [Obsolete("Deprecated. Use Search(QueryBase query, int n, ISearchContext context)")]     public SearchHits Search(QueryBase query, ISearchContext context);     public SearchHits Search(string query, int n);     [Obsolete("Use Search(string query, int n, ISearchContext context)")]     public SearchHits Search(string query, ISearchContext context);     public SearchHits Search(Query query, int n, ISearchContext context);     public SearchHits Search(QueryBase query, int n, ISearchContext context);     public SearchHits Search(string query, int n, ISearchContext context);     protected virtual Query Translate(QueryBase query); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class IndexSearchContext : IndexContextBase, IDisposable
+{
+    protected IndexSearchContext();
+    public IndexSearchContext(ILuceneIndex index);
+
+    public IndexSearcher Searcher { get; }
+
+    protected BooleanQuery CreateBooleanQuery(BooleanQuery prototype, params object[] args);
+    protected BooleanQuery CreateBooleanQuery(bool disableCoord, float boost, params object[] args);
+    protected PrefixQuery CreatePrefixQuery(TermQuery termQuery);
+    protected PrefixQuery CreatePrefixQuery(string name, string value, float boost);
+    protected TermQuery CreateTermQuery(string name, string value, float boost);
+    public void Dispose();
+    public static string Escape(string query);
+    public Explanation Explain(PreparedQuery query, int doc);
+    protected void Initialize(ILuceneIndex index, bool close);
+    protected Query InternalParse(string query);
+    protected Query InternalParse(string query, string defaultField);
+    public PreparedQuery Parse(string query);
+    public PreparedQuery Parse(string query, ISearchContext context);
+    public PreparedQuery Prepare(QueryBase query);
+    protected PreparedQuery Prepare(Query query, ISearchContext context);
+    public PreparedQuery Prepare(QueryBase query, ISearchContext context);
+    [Obsolete("Use Search(PrepareQuery query, int n)")]
+    public SearchHits Search(PreparedQuery query);
+    [Obsolete("Deprecated. Use Search(Query query, int n)")]
+    public SearchHits Search(Query query);
+    [Obsolete("Deprecated. Use Search(QueryBase query, int n)")]
+    public SearchHits Search(QueryBase query);
+    [Obsolete("Use Search(string query, int n)")]
+    public SearchHits Search(string query);
+    public SearchHits Search(PreparedQuery query, int n);
+    public SearchHits Search(Query query, int n);
+    [Obsolete("Deprecated. Use Search(Query query, int n, ISearchContext context")]
+    public SearchHits Search(Query query, ISearchContext context);
+    public SearchHits Search(QueryBase query, int n);
+    [Obsolete("Deprecated. Use Search(QueryBase query, int n, ISearchContext context)")]
+    public SearchHits Search(QueryBase query, ISearchContext context);
+    public SearchHits Search(string query, int n);
+    [Obsolete("Use Search(string query, int n, ISearchContext context)")]
+    public SearchHits Search(string query, ISearchContext context);
+    public SearchHits Search(Query query, int n, ISearchContext context);
+    public SearchHits Search(QueryBase query, int n, ISearchContext context);
+    public SearchHits Search(string query, int n, ISearchContext context);
+    protected virtual Query Translate(QueryBase query);
+}
+
 					</pre>
 					<p>A bit of messing about with Google looking for ideas, and I came across a post on the developer's favourite website
 						<a href="http://stackoverflow.com/questions/7314195/how-to-sort-filter-using-the-new-sitecore-search-api" target="_blank" rel="noopener noreferrer">Stack Overflow suggesting a solution</a>: You can overload the
 						<code>IndexSearchContext</code>
 						with method(s) which do pass a sort parameter on to Lucene:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SortableIndexSearchContext : IndexSearchContext {     public SortableIndexSearchContext(ILuceneIndex index)     {         Initialize(index, true);     }      public SearchHits Search(Query query, Sort sort)     {         return Search(query, SearchContext.Empty, sort);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SortableIndexSearchContext : IndexSearchContext
+{
+    public SortableIndexSearchContext(ILuceneIndex index)
+    {
+        Initialize(index, true);
+    }
+
+    public SearchHits Search(Query query, Sort sort)
+    {
+        return Search(query, SearchContext.Empty, sort);
+    }
+}
+
 					</pre>
 					<p>(See
 						<a target="_blank" rel="noopener noreferrer" href="https://twitter.com/techphoria414">@techphoria414</a>‘s answer in
@@ -169,7 +202,13 @@
 						object. That consists of one or more
 						<code>SortField</code>
 						instructions to sort based on a field name. So you can create sorts with something like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">Sort singleLevelText = new Sort(new SortField("indexfieldname", SortField.STRING, false));  Sort twoLevel = new Sort(new SortField[] {     new SortField("firstfieldname", SortField.INT, true),     new SortField("secondfieldname", SortField.STRING, false) });
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">Sort singleLevelText = new Sort(new SortField("indexfieldname", SortField.STRING, false));
+
+Sort twoLevel = new Sort(new SortField[] {
+    new SortField("firstfieldname", SortField.INT, true),
+    new SortField("secondfieldname", SortField.STRING, false)
+});
+
 					</pre>
 					<p>Each
 						<code>SortField</code>
@@ -177,7 +216,18 @@
 						<code>SortField.AUTO</code>
 						option where it tries to work out the type to sort itself, this is marked as obsolete. An accurate description of the data type should be provided.</p>
 					<p>So now you can write code to run a sorted search along the lines of:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">BooleanQuery query = generateAQuery(); Sort sort = new Sort(new SortField("title", SortField.STRING, false));  var index = Sitecore.Search.SearchManager.GetIndex("myIndex");  using (var isc = new SortableIndexSearchContext(index)) {     SearchHits hits = isc.Search(query, sort);      // process the sorted results }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">BooleanQuery query = generateAQuery();
+Sort sort = new Sort(new SortField("title", SortField.STRING, false));
+
+var index = Sitecore.Search.SearchManager.GetIndex("myIndex");
+
+using (var isc = new SortableIndexSearchContext(index))
+{
+    SearchHits hits = isc.Search(query, sort);
+
+    // process the sorted results
+}
+
 					</pre>
 					<p>No need to
 						<code>OrderBy()</code>
@@ -195,7 +245,34 @@
 						that loads the right value. It needs to implement the
 						<code>ResolveValue()</code>
 						method to transform the current item into the value you want indexed:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class MyDynamicField : scSearchContrib.Crawler.DynamicFields.BaseDynamicField {     private static readonly ID correctTemplateID = new ID("{00000000-0000-0000-0000-000000000000}");     private static readonly ID fieldID = new ID("{00000000-0000-0000-0000-000000000000}");      public override string ResolveValue(Item item)     {         if(item.TemplateID == correctTemplateID)         {             string fieldValue = item.Fields[fieldID].Value;             if(!string.IsNullOrWhiteSpace(fieldValue))             {                 ID itemID;                 if(ID.TryParse(fieldValue, out itemID))                 {                     Item otherItem = item.Database.GetItem(itemID);                     if(otherItem != null)                     {                         return otherItem.DisplayName;                     }                 }             }         }          return string.Empty;     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class MyDynamicField : scSearchContrib.Crawler.DynamicFields.BaseDynamicField
+{
+    private static readonly ID correctTemplateID = new ID("{00000000-0000-0000-0000-000000000000}");
+    private static readonly ID fieldID = new ID("{00000000-0000-0000-0000-000000000000}");
+
+    public override string ResolveValue(Item item)
+    {
+        if(item.TemplateID == correctTemplateID)
+        {
+            string fieldValue = item.Fields[fieldID].Value;
+            if(!string.IsNullOrWhiteSpace(fieldValue))
+            {
+                ID itemID;
+                if(ID.TryParse(fieldValue, out itemID))
+                {
+                    Item otherItem = item.Database.GetItem(itemID);
+                    if(otherItem != null)
+                    {
+                        return otherItem.DisplayName;
+                    }
+                }
+            }
+        }
+
+        return string.Empty;
+    }
+}
+
 					</pre>
 					<p>The code starts off by checking if the current item being indexed has the correct template. Generally you only want to apply this sort of lookup to items based on specific templates - hence the test. Then the code extracts the value from the field we want to look up, checks it has a value and tries to parse it as a Sitecore ID. Assuming those tests pass we can try to load the item from the database.</p>
 					<p>Note that we use the database which the context item came from. The
@@ -211,7 +288,11 @@
 						file. Inside the
 						<code>&lt;dynamicFields&gt;</code>
 						element you add a new value for your code:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;dynamicFields hint="raw:AddDynamicFields"&gt;     &lt;!-- other entries here --&gt;     &lt;dynamicField type="MyNamespace.MyDynamicField,MyAssembly" name="newindexfield" storageType="NO" indexType="TOKENIZED" vectorType="NO" boost="1f" /&gt; &lt;/dynamicFields&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><dynamicFields hint="raw:AddDynamicFields">
+    <!-- other entries here -->
+    <dynamicField type="MyNamespace.MyDynamicField,MyAssembly" name="newindexfield" storageType="NO" indexType="TOKENIZED" vectorType="NO" boost="1f" />
+</dynamicFields>
+
 					</pre>
 					<p>The
 						<code>type</code>

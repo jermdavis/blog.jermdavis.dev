@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Most of the time when you need to cache things in Sitecore, it's handled for you with the built in frameworks for data and UI layer caches. Usually your problems are solved by tuning the sizes of the caches and configuring the right caching settings on your UI components. But what happens when you've got bits of data which you want to cache that are neither components or items? ">
-		<meta property="og:description" content="Most of the time when you need to cache things in Sitecore, it's handled for you with the built in frameworks for data and UI layer caches. Usually your problems are solved by tuning the sizes of the caches and configuring the right caching settings on your UI components. But what happens when you've got bits of data which you want to cache that are neither components or items? ">
+		<meta name="description" content="Edge cases of&nbsp;caching">
+		<meta property="og:description" content="Edge cases of&nbsp;caching">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Edge cases of&nbsp;caching</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Edge cases of&amp;#xA0;caching">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/edge-cases-of-caching-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Edge cases of&#xA0;caching",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/edge-cases-of-caching-social.png"
-        ],
-        "datePublished": "2016-05-30T00:00:00+00:00",
-        "dateModified": "2016-05-31T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/edge-cases-of-caching">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:50 -->
+		<!-- 23/01/2022 10:19:03 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,46 +106,86 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Edge cases of&nbsp;caching
 				</h1>
-				<div class="meta">Published 30 May 2016</div>
-				<div class="meta">Updated 31 May 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Most of the time when you need to cache things in Sitecore, it's handled for you with the built in frameworks for data and UI layer caches. Usually your problems are solved by tuning the sizes of the caches and configuring the right caching settings on your UI components. But what happens when you've got bits of data which you want to cache that are neither components or items? 
 						<!--more-->
 					</p>
 					<p>Recently I was doing some performance tuning for a site, and noticed that there were some fairly high-effort calls required in layout code that couldn't be moved out to a component. For example, how can you optimise code to calculate attributes that go into the
 						<code>&lt;html&gt;</code>
 						element? I was looking at code where extension methods were injecting this data:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;!DOCTYPE html&gt; &lt;html lang="@Html.CurrentLanguage()" @Html.TextDirection()&gt;   &lt;head&gt;     &lt;!-- metadata components etc. go here --&gt;   &lt;/head&gt;   &lt;body&gt;     &lt;!-- placeholders and body markup --&gt;   &lt;/body&gt; &lt;/html&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><!DOCTYPE html>
+<html lang="@Html.CurrentLanguage()" @Html.TextDirection()>
+  <head>
+    <!-- metadata components etc. go here -->
+  </head>
+  <body>
+    <!-- placeholders and body markup -->
+  </body>
+</html> 
+
 					</pre>
 					<p>Now layouts are never cached by Sitecore, so these extension method calls will always run. What can be done to speed them up?</p>
 					<p>The pattern I decided to experiment with was to add these bits of data into the HTML cache with some custom code. That means the expensive bit of these calls only gets made once, but the cached values will still get cleared out by publishing operations - ensuring that pages will be updated to match any content changes.</p>
 					<p>There were a number of these extension methods in the code which could benefit from being cached, so to try and write one bit of code which could be reused for each of these methods I added helper function which each of the extensions could use:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private static string htmlCacheable(string key, Func&lt;string&gt; dataFn) {     string value = Sitecore.Context.Site.SiteInfo.HtmlCache.GetHtml(key);      if (string.IsNullOrWhiteSpace(value))     {         value = dataFn();         Sitecore.Context.Site.SiteInfo.HtmlCache.SetHtml(key, value);     }      return value; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private static string htmlCacheable(string key, Func<string> dataFn)
+{
+    string value = Sitecore.Context.Site.SiteInfo.HtmlCache.GetHtml(key);
+
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        value = dataFn();
+        Sitecore.Context.Site.SiteInfo.HtmlCache.SetHtml(key, value);
+    }
+
+    return value;
+}
+
 					</pre>
 					<p>The method checks whether the current
 						<code>&lt;site/&gt;</code>‘s HTML cache contains the specified key. If it does this value is returned. But if the cache returns nothing then the value which needs to be cached is computed by calling the data generating function, before adding the result to the cache. Since the cache is found based on the context site, you don't have to worry about which site is running this code.</p>
 					<p>That means that the code for individual extension methods can go from their old structure:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CurrentLanguage(this HtmlHelper html) {     // code to calculate the right value     return value; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CurrentLanguage(this HtmlHelper html)
+{
+    // code to calculate the right value
+    return value;
+}
+
 					</pre>
 					<p>To this structure:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CurrentLanguage(this HtmlHelper html) {     string key = "layout::language";     Func&lt;string&gt; dataFn = () =&gt;     {         // code to calculate the right value         return value;     };      return htmlCacheable(key, dataFn); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CurrentLanguage(this HtmlHelper html)
+{
+    string key = "layout::language";
+    Func<string> dataFn = () =>
+    {
+        // code to calculate the right value
+        return value;
+    };
+
+    return htmlCacheable(key, dataFn);
+}
+
 					</pre>
 					<p>This works great for simple helpers, as long as you think of a unique value for your cache key. However, some of the extension methods I was looking at could take parameters. In that situation, it's important to ensure you use all the parameter values when you're creating your cache key. That means you'll get a separate cache entry for each distinct call. For example:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CalculateCorrectSiteLogoMarkup(this HtmlHelper html, int width, int height) {     string key = string.Format("layout::logo|width={0}|height={1}", width, height);     Func&lt;string&gt; dataFn = () =&gt;     {         // code to calculate the right value         return value;     };      return htmlCacheable(key, dataFn); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CalculateCorrectSiteLogoMarkup(this HtmlHelper html, int width, int height)
+{
+    string key = string.Format("layout::logo|width={0}|height={1}", width, height);
+    Func<string> dataFn = () =>
+    {
+        // code to calculate the right value
+        return value;
+    };
+
+    return htmlCacheable(key, dataFn);
+}
+
 					</pre>
 					<p>And with that, you can cache pretty much any of the long running functions that might be hiding behind a layout...</p>
 				</div>

@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="An issue I've bumped into a number of times over the years, is that sometimes developers want to be able to look at the query that got generated when they did something with Sitecore's ContentSearch APIs. The traditional answer of &quot;go look in the logs&quot; is one way to deal with this, but some recent project work got me wondering if there were alternatives...">
-		<meta property="og:description" content="An issue I've bumped into a number of times over the years, is that sometimes developers want to be able to look at the query that got generated when they did something with Sitecore's ContentSearch APIs. The traditional answer of &quot;go look in the logs&quot; is one way to deal with this, but some recent project work got me wondering if there were alternatives...">
+		<meta name="description" content="Peeking into search&nbsp;queries">
+		<meta property="og:description" content="Peeking into search&nbsp;queries">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Peeking into search&nbsp;queries</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Peeking into search&amp;#xA0;queries">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/peeking-into-search-queries-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Peeking into search&#xA0;queries",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/peeking-into-search-queries-social.png"
-        ],
-        "datePublished": "2021-01-20T00:00:00+00:00",
-        "dateModified": "2021-02-01T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/peeking-into-search-queries">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:15 -->
+		<!-- 23/01/2022 10:19:10 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,31 +106,34 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Peeking into search&nbsp;queries
 				</h1>
-				<div class="meta">Published 20 January 2021</div>
-				<div class="meta">Updated 01 February 2021</div>
-				<div class="flex py-1">
-					<a href="/tags/contentsearch" class="p-1 mr-1 bg-gray-100 rounded-md">
-						ContentSearch</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/solr" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Solr</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>An issue I've bumped into a number of times over the years, is that sometimes developers want to be able to look at the query that got generated when they did something with Sitecore's ContentSearch APIs. The traditional answer of "go look in the logs" is one way to deal with this, but some recent project work got me wondering if there were alternatives...
 						<!--more-->
 					</p>
 					<h2>What's the issue?</h2>
 					<p>When you fire up some code for a query, you're generally using something vaguely along the lines of:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name"); using (var context = index.CreateSearchContext()) {     var query = context.GetQueryable&lt;SearchResultItem&gt;();          // add some parameters to your filter your query     // add some sort order     // add some pagination      var results = query.GetResults();      // do somethig with the results }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name");
+using (var context = index.CreateSearchContext())
+{
+    var query = context.GetQueryable<SearchResultItem>();
+    
+    // add some parameters to your filter your query
+    // add some sort order
+    // add some pagination
+
+    var results = query.GetResults();
+
+    // do somethig with the results
+}
+
 					</pre>
 					<p>But what happens if you need to debug this query? A call to
 						<code>GetQueryable&lt;T&gt;()</code>
@@ -157,7 +143,11 @@
 						interface is a generic representation of a query - it doesn't know anything specific about Solr, Azure Search or any other Sitecore provider. But that raw quey must get generated at some point in order to run the search – and we know it turns up in the logs. You can look at any of the
 						<code>Search.log.*.*.txt</code>
 						files that Sitecore writes and see things like:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="4" data-enlighter-language="text" style="width:100%; overflow:scroll;">3044 15:25:54 INFO  Warming and Caching your search indexes 3044 15:25:54 INFO  /******* Warming Queries ********/ 3044 15:25:54 INFO  /*************************/ 2780 15:36:15 INFO  Solr Query - ?q=(_name:(item*) OR (_content:(*item*) OR _name:(item) OR (_content:(item) AND _language:(en)))) AND _val_:__boost&amp;start=0&amp;rows=1000000&amp;fq=_indexname:(sitecore_master_index)&amp;wt=xml
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="4" data-enlighter-language="text" style="width:100%; overflow:scroll;">3044 15:25:54 INFO  Warming and Caching your search indexes
+3044 15:25:54 INFO  /******* Warming Queries ********/
+3044 15:25:54 INFO  /*************************/
+2780 15:36:15 INFO  Solr Query - ?q=(_name:(item*) OR (_content:(*item*) OR _name:(item) OR (_content:(item) AND _language:(en)))) AND _val_:__boost&start=0&rows=1000000&fq=_indexname:(sitecore_master_index)&wt=xml
+
 					</pre>
 					<p>That's got your debugging needs covered in most scenarios – but it doesn't help when your code wants to know what the query looks like at runtime...</p>
 					<p>Why might you need that? Well one example might be something like this: My colleagues are working on some fancy search UI which involves grouping. If you look up how to do grouping with Solr and ContentSearch in the Sitecore docs
@@ -182,7 +172,28 @@
 					<p>Well at runtime has we have
 						<code>GenericQueryable&lt;T, SolrCompositeQuery&gt;</code>
 						as it's concrete type. That looks like it might be more helpful. What does that give us?</p>
-					<pre data-enlighter-highlight="17" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class GenericQueryable&lt;TElement, TQuery&gt; : IOrderedQueryable&lt;TElement&gt;, IQueryable&lt;TElement&gt;, IEnumerable&lt;TElement&gt;, IEnumerable, IQueryable, IOrderedQueryable, IQueryProvider, IHasNativeQuery&lt;TQuery&gt;, IHasNativeQuery, IHasTraceWriter, IContentSearchQueryable {     public GenericQueryable(Index&lt;TElement, TQuery&gt; index, QueryMapper&lt;TQuery&gt; queryMapper, IQueryOptimizer queryOptimizer, FieldNameTranslator fieldNameTranslator, IExpressionParser parser);     protected GenericQueryable(Index&lt;TQuery&gt; index, QueryMapper&lt;TQuery&gt; queryMapper, IQueryOptimizer queryOptimizer, Expression expression, Type itemType, FieldNameTranslator fieldNameTranslator, IExpressionParser parser);     public FieldNameTranslator FieldNameTranslator { get; set; }     public IQueryOptimizer QueryOptimizer { get; set; }     public virtual IQueryProvider Provider { get; }     public virtual Expression Expression { get; }     public virtual Type ElementType { get; }     protected Type ItemType { get; set; }     protected Index&lt;TQuery&gt; Index { get; set; }     protected IExpressionParser Parser { get; set; }     protected QueryMapper&lt;TQuery&gt; QueryMapper { get; set; }     public virtual IQueryable&lt;TElement&gt; CreateQuery&lt;TElement&gt;(Expression expression);     public virtual TResult Execute&lt;TResult&gt;(Expression expression);     public virtual IEnumerator&lt;TElement&gt; GetEnumerator();     public TQuery GetQuery();     protected virtual TQuery GetQuery(Expression expression);     protected virtual void Trace(IDumpable dumpable, string title);     protected virtual void Trace(Expression expression, string title); }
+					<pre data-enlighter-highlight="17" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class GenericQueryable<TElement, TQuery> : IOrderedQueryable<TElement>, IQueryable<TElement>, IEnumerable<TElement>, IEnumerable, IQueryable, IOrderedQueryable, IQueryProvider, IHasNativeQuery<TQuery>, IHasNativeQuery, IHasTraceWriter, IContentSearchQueryable
+{
+    public GenericQueryable(Index<TElement, TQuery> index, QueryMapper<TQuery> queryMapper, IQueryOptimizer queryOptimizer, FieldNameTranslator fieldNameTranslator, IExpressionParser parser);
+    protected GenericQueryable(Index<TQuery> index, QueryMapper<TQuery> queryMapper, IQueryOptimizer queryOptimizer, Expression expression, Type itemType, FieldNameTranslator fieldNameTranslator, IExpressionParser parser);
+    public FieldNameTranslator FieldNameTranslator { get; set; }
+    public IQueryOptimizer QueryOptimizer { get; set; }
+    public virtual IQueryProvider Provider { get; }
+    public virtual Expression Expression { get; }
+    public virtual Type ElementType { get; }
+    protected Type ItemType { get; set; }
+    protected Index<TQuery> Index { get; set; }
+    protected IExpressionParser Parser { get; set; }
+    protected QueryMapper<TQuery> QueryMapper { get; set; }
+    public virtual IQueryable<TElement> CreateQuery<TElement>(Expression expression);
+    public virtual TResult Execute<TResult>(Expression expression);
+    public virtual IEnumerator<TElement> GetEnumerator();
+    public TQuery GetQuery();
+    protected virtual TQuery GetQuery(Expression expression);
+    protected virtual void Trace(IDumpable dumpable, string title);
+    protected virtual void Trace(Expression expression, string title);
+}
+
 					</pre>
 					<p>There's a lot going on there... But one thing stands out: the
 						<code>GetQuery()</code>
@@ -191,7 +202,12 @@
 						type, and poking about inside that shows it has a very interesting looking
 						<code>ToString()</code>
 						method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public override string ToString() { 	DefaultQuerySerializerEx defaultQuerySerializerEx = new DefaultQuerySerializerEx((ISolrFieldSerializer)(object)new DefaultFieldSerializer()); 	return defaultQuerySerializerEx.Serialize(Query); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public override string ToString()
+{
+	DefaultQuerySerializerEx defaultQuerySerializerEx = new DefaultQuerySerializerEx((ISolrFieldSerializer)(object)new DefaultFieldSerializer());
+	return defaultQuerySerializerEx.Serialize(Query);
+}
+
 					</pre>
 					<p>A query serialiser seems like exactly what would help...</p>
 					<p>So what happens if we pull that together into a code snippet and give it a try? Well you need to
@@ -199,7 +215,22 @@
 							<code>Sitecore.ContentSearch.Linq.Solr.dll</code>
 						</a>
 						in order to do this, but it works out fairly simply:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name"); using (var context = index.CreateSearchContext()) {     var q = context.GetQueryable&lt;SearchResultItem&gt;();      // Set up your query with something appropriate to your work..     q = q.Where(r =&gt; r.Name == "test");     // add whatever else is necessary for ordering etc.      var genericQuery = q as GenericQueryable&lt;SearchResultItem, SolrCompositeQuery&gt;;     var solrCompositeQuery = genericQuery.GetQuery();     string queryText = solrCompositeQuery.ToString();      return queryText; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name");
+using (var context = index.CreateSearchContext())
+{
+    var q = context.GetQueryable<SearchResultItem>();
+
+    // Set up your query with something appropriate to your work..
+    q = q.Where(r => r.Name == "test");
+    // add whatever else is necessary for ordering etc.
+
+    var genericQuery = q as GenericQueryable<SearchResultItem, SolrCompositeQuery>;
+    var solrCompositeQuery = genericQuery.GetQuery();
+    string queryText = solrCompositeQuery.ToString();
+
+    return queryText;
+}
+
 					</pre>
 					<p>And when you run that you do get back something that looks like a query. For example, the test above returns
 						<code>_name:(test) AND _val_:__boost</code>. And pasting that into Solr's UI gives results:</p>

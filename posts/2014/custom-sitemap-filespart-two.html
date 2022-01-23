@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="<a href=&quot;/posts/2014/custom-sitemap-filespart-one&quot; target=&quot;_blank&quot;>Last week we looked at the stuff to create in Sitecore to configure a custom sitemap generator</a>. This week we'll carry on and look at the basic proof-of-concept code that can be used to process that configuration and generate a sitemaps and sitemap index files. It's another epic post... ">
-		<meta property="og:description" content="<a href=&quot;/posts/2014/custom-sitemap-filespart-one&quot; target=&quot;_blank&quot;>Last week we looked at the stuff to create in Sitecore to configure a custom sitemap generator</a>. This week we'll carry on and look at the basic proof-of-concept code that can be used to process that configuration and generate a sitemaps and sitemap index files. It's another epic post... ">
+		<meta name="description" content="Custom Sitemap Files – Part Two">
+		<meta property="og:description" content="Custom Sitemap Files – Part Two">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Custom Sitemap Files – Part Two</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Custom Sitemap Files &amp;#x2013; Part Two">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/custom-sitemap-filespart-two-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Custom Sitemap Files &#x2013; Part Two",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/custom-sitemap-filespart-two-social.png"
-        ],
-        "datePublished": "2014-05-19T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/custom-sitemap-filespart-two">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:45 -->
+		<!-- 23/01/2022 10:19:01 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,38 +106,102 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Custom Sitemap Files – Part Two
 				</h1>
-				<div class="meta">Published 19 May 2014</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>
 						<a href="/posts/2014/custom-sitemap-filespart-one" target="_blank">Last week we looked at the stuff to create in Sitecore to configure a custom sitemap generator</a>. This week we'll carry on and look at the basic proof-of-concept code that can be used to process that configuration and generate a sitemaps and sitemap index files. It's another epic post... 
 						<!--more-->
 					</p>
 					<p>The sitemap generation process starts when Sitecore triggers the custom event handler class we defined. When that runs we need to get the configuration defined for the module and iterate it:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Publish(object sender, EventArgs args) {     Database master = Sitecore.Configuration.Factory.GetDatabase("master");     Item configRoot = master.GetItem(Identifiers.ConfigItemID);      string query = string.Format("child::*[@@templateid='{0}' or @@templateid='{1}']", Identifiers.SitemapFileTemplateID, Identifiers.SitemapIndexFileTemplateID);      foreach (Item siteConfig in configRoot.Axes.SelectItems(query))     {         if (siteConfig.TemplateID == Identifiers.SitemapIndexFileTemplateID)         {             publishSiteIndex(siteConfig);         }          if (siteConfig.TemplateID == Identifiers.SitemapFileTemplateID)         {             publishSite(siteConfig);         }     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Publish(object sender, EventArgs args)
+{
+    Database master = Sitecore.Configuration.Factory.GetDatabase("master");
+    Item configRoot = master.GetItem(Identifiers.ConfigItemID);
+
+    string query = string.Format("child::*[@@templateid='{0}' or @@templateid='{1}']", Identifiers.SitemapFileTemplateID, Identifiers.SitemapIndexFileTemplateID);
+
+    foreach (Item siteConfig in configRoot.Axes.SelectItems(query))
+    {
+        if (siteConfig.TemplateID == Identifiers.SitemapIndexFileTemplateID)
+        {
+            publishSiteIndex(siteConfig);
+        }
+
+        if (siteConfig.TemplateID == Identifiers.SitemapFileTemplateID)
+        {
+            publishSite(siteConfig);
+        }
+    }
+}
+
 					</pre>
 					<p>Here we're fetching a reference to the Master database by using Sitecore's internal configuration factory. This is necessary because there is no context database available here. Then we use that database to load the root configuration item we talked about last week. The ID of the item we need to load is defined in a static class. (It's a common pattern in Sitecore development to define a class in which you put the IDs of items and fields that you will need to reference later. You can generate these using things like Hedgehog TDS and T4 templates, or you can maintain them manually – all of the IDs in this example code will be defined that way) We can then run a query on that item to find all its children which are either Sitemap definitions or Sitemap Index File definitions, and iterate those.</p>
 					<p>If we find an item based on the Sitemap Index File template then we need to process it:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void publishSiteIndex(Item siteIndexConfig) {     SiteIndexConfiguration sc = new SiteIndexConfiguration(siteIndexConfig);      SitemapIndex si = new SitemapIndex();      var urlOptions = new Sitecore.Links.UrlOptions()     {         AlwaysIncludeServerUrl = true,         LanguageEmbedding = Sitecore.Links.LanguageEmbedding.AsNeeded,         ShortenUrls = true     };      foreach (Item s in sc.SiteConfigurations)     {         SiteConfiguration cfg = publishSite(s);          Item root = cfg.SitemapSourceDatabase.GetItem(cfg.SitemapRootItem);         string rootUrl = Sitecore.Links.LinkManager.GetItemUrl(root, urlOptions);         Uri rootUri = new Uri(rootUrl, UriKind.Absolute);          Uri fileUri = new Uri(rootUri, "/" + cfg.SitemapFilename);          si.Add(new SitemapIndexItem() {              Location = fileUri.ToString(),             LastModified = DateTime.Now         });     }      string filename = System.Web.Hosting.HostingEnvironment.MapPath("/" + sc.SitemapIndexFilename);     saveXmlToFile(filename, si.Serialise()); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void publishSiteIndex(Item siteIndexConfig)
+{
+    SiteIndexConfiguration sc = new SiteIndexConfiguration(siteIndexConfig);
+
+    SitemapIndex si = new SitemapIndex();
+
+    var urlOptions = new Sitecore.Links.UrlOptions()
+    {
+        AlwaysIncludeServerUrl = true,
+        LanguageEmbedding = Sitecore.Links.LanguageEmbedding.AsNeeded,
+        ShortenUrls = true
+    };
+
+    foreach (Item s in sc.SiteConfigurations)
+    {
+        SiteConfiguration cfg = publishSite(s);
+
+        Item root = cfg.SitemapSourceDatabase.GetItem(cfg.SitemapRootItem);
+        string rootUrl = Sitecore.Links.LinkManager.GetItemUrl(root, urlOptions);
+        Uri rootUri = new Uri(rootUrl, UriKind.Absolute);
+
+        Uri fileUri = new Uri(rootUri, "/" + cfg.SitemapFilename);
+
+        si.Add(new SitemapIndexItem() { 
+            Location = fileUri.ToString(),
+            LastModified = DateTime.Now
+        });
+    }
+
+    string filename = System.Web.Hosting.HostingEnvironment.MapPath("/" + sc.SitemapIndexFilename);
+    saveXmlToFile(filename, si.Serialise());
+}
+
 					</pre>
 					<p>This method gets called passing in the item that represents the Sitemap Index file configuration that an editor has set up. So the first thing to do is parse it, in order to get the configuration into a strongly typed class. In the real world this is best done with a tool like
 						<a href="http://glass.lu/" target="_blank" rel="noopener noreferrer">Glass Mapper</a>
 						but to keep things simple and avoid dependencies here I've just used a simple model class:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SiteIndexConfiguration {     public string SitemapIndexFilename { get; private set; }     public IEnumerable&lt;item&gt; SiteConfigurations { get; private set; }      public SiteIndexConfiguration(Item cfg)     {         SitemapIndexFilename = cfg.Fields[Identifiers.SitemapIndexFilenameFieldID].Value;          var siteConfigs = cfg.Axes.SelectItems(string.Format("./*[@@templateid='{0}']", Identifiers.SitemapFileTemplateID));         if (siteConfigs != null &amp;&amp; siteConfigs.Length &gt; 0)         {             SiteConfigurations = siteConfigs;         }         else         {             SiteConfigurations = new List&lt;item&gt;();         }     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SiteIndexConfiguration
+{
+    public string SitemapIndexFilename { get; private set; }
+    public IEnumerable<item> SiteConfigurations { get; private set; }
+
+    public SiteIndexConfiguration(Item cfg)
+    {
+        SitemapIndexFilename = cfg.Fields[Identifiers.SitemapIndexFilenameFieldID].Value;
+
+        var siteConfigs = cfg.Axes.SelectItems(string.Format("./*[@@templateid='{0}']", Identifiers.SitemapFileTemplateID));
+        if (siteConfigs != null && siteConfigs.Length > 0)
+        {
+            SiteConfigurations = siteConfigs;
+        }
+        else
+        {
+            SiteConfigurations = new List<item>();
+        }
+    }
+}
+
 					</pre>
 					<p>It just extracts the relevant fields from the item into properties... This pattern will get reused throughout the rest of the code too.</p>
 					<p>With that loaded, next we set up a
@@ -179,38 +226,231 @@
 						which we can save. Having tried to write this code using the
 						<code>XmlSerialiser</code>
 						instead initially, I came to the conclusion that the code required to get the namespaces and null-element handling correct wasn't worth the extra effort. Manually serialising the data to exactly the required format turned out simpler. The code for these data classes is as follows:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SitemapIndex {     private List&lt;sitemapindexitem&gt; _items = new List&lt;sitemapindexitem&gt;();      public IEnumerable&lt;sitemapindexitem&gt; IndexItems { get { return _items; } }      public static readonly XNamespace Namespace = "http://www.sitemaps.org/schemas/sitemap/0.9";      public void Add(SitemapIndexItem itm)     {         _items.Add(itm);     }      public XElement Serialise()     {         XElement root = new XElement("sitemapindex");         root.Add(new XAttribute("xmlns", Namespace));          foreach (SitemapIndexItem i in _items)         {             root.Add(i.Serialise());         }          return root;     } }  public class SitemapIndexItem {     public string Location { get; set; }     public DateTime LastModified { get; set; }      public XElement Serialise()     {         XElement root = new XElement("sitemap");          root.Add(new XElement("loc", Location));         root.Add(new XElement("lastmod", LastModified.ToString("yyyy-MM-dd")));          return root;     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SitemapIndex
+{
+    private List<sitemapindexitem> _items = new List<sitemapindexitem>();
+
+    public IEnumerable<sitemapindexitem> IndexItems { get { return _items; } }
+
+    public static readonly XNamespace Namespace = "http://www.sitemaps.org/schemas/sitemap/0.9";
+
+    public void Add(SitemapIndexItem itm)
+    {
+        _items.Add(itm);
+    }
+
+    public XElement Serialise()
+    {
+        XElement root = new XElement("sitemapindex");
+        root.Add(new XAttribute("xmlns", Namespace));
+
+        foreach (SitemapIndexItem i in _items)
+        {
+            root.Add(i.Serialise());
+        }
+
+        return root;
+    }
+}
+
+public class SitemapIndexItem
+{
+    public string Location { get; set; }
+    public DateTime LastModified { get; set; }
+
+    public XElement Serialise()
+    {
+        XElement root = new XElement("sitemap");
+
+        root.Add(new XElement("loc", Location));
+        root.Add(new XElement("lastmod", LastModified.ToString("yyyy-MM-dd")));
+
+        return root;
+    }
+}
+
 					</pre>
 					<p>Again, this pattern of having data classes that know how to serialise themselves will be repeated later...</p>
 					<p>So the next bit of code we need is the
 						<code>publishSite()</code>
 						method mentioned above – to save the data for an individual sitemap. This is a bit more complex, so we'll break it into pieces. First of all, we'll generate the data and store it:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SiteConfiguration publishSite(Item siteConfig) {     SiteConfiguration sc = new SiteConfiguration(siteConfig);      SitemapUrlSet sitemap = processSite(sc);      if (sitemap != null)     {         string filename = System.Web.Hosting.HostingEnvironment.MapPath("/" + sc.SitemapFilename);         saveXmlToFile(filename, sitemap.Serialise());     }      return sc; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SiteConfiguration publishSite(Item siteConfig)
+{
+    SiteConfiguration sc = new SiteConfiguration(siteConfig);
+
+    SitemapUrlSet sitemap = processSite(sc);
+
+    if (sitemap != null)
+    {
+        string filename = System.Web.Hosting.HostingEnvironment.MapPath("/" + sc.SitemapFilename);
+        saveXmlToFile(filename, sitemap.Serialise());
+    }
+
+    return sc;
+}
+
 					</pre>
 					<p>This loads the configuration data that was passed in, calls
 						<code>processSite()</code>
 						to generate the sitemap data object, serialises it, and then saves the XML to disk in the same way we did before. The config class does a bit more this time:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SiteConfiguration {     public string SitemapFilename { get; private set; }     public string SitemapSourceDatabaseName { get; private set; }     public Database SitemapSourceDatabase { get; private set; }     public ID SitemapRootItem { get; private set; }     public IEnumerable&lt;string&gt; SitemapIncludeLanguages { get; private set; }     public IEnumerable&lt;id&gt; SitemapIncludeTemplates { get; private set; }      private Language getLanguage(string name)     {         Language l;          if (Language.TryParse(name, out l))         {             return l;         }          return null;     }      public SiteConfiguration(Item siteItem)     {         SitemapFilename = siteItem.Fields[Identifiers.SitemapFilenameFieldID].Value;          SitemapSourceDatabaseName = siteItem.Fields[Identifiers.SitemapSourceDatabaseFieldID].Value;          SitemapSourceDatabase = Sitecore.Configuration.Factory.GetDatabase(SitemapSourceDatabaseName);          ID rootItem = ID.Null;         ID.TryParse(siteItem.Fields[Identifiers.SitemapRootItemFieldID].Value, out rootItem);         SitemapRootItem = rootItem;          SitemapIncludeLanguages = siteItem.Fields[Identifiers.SitemapIncludeLanguagesFieldID].Value.Split('|')             .Where(s =&gt; !string.IsNullOrWhiteSpace(s))             .Select(s =&gt; ID.Parse(s))             .Select(i =&gt; SitemapSourceDatabase.GetItem(i))             .Select(l =&gt; l.Name);          SitemapIncludeTemplates = siteItem.Fields[Identifiers.SitemapIncludeTemplatesFieldID].Value.Split('|')             .Where(s =&gt; !string.IsNullOrWhiteSpace(s))             .Select(s =&gt; ID.Parse(s));     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SiteConfiguration
+{
+    public string SitemapFilename { get; private set; }
+    public string SitemapSourceDatabaseName { get; private set; }
+    public Database SitemapSourceDatabase { get; private set; }
+    public ID SitemapRootItem { get; private set; }
+    public IEnumerable<string> SitemapIncludeLanguages { get; private set; }
+    public IEnumerable<id> SitemapIncludeTemplates { get; private set; }
+
+    private Language getLanguage(string name)
+    {
+        Language l;
+
+        if (Language.TryParse(name, out l))
+        {
+            return l;
+        }
+
+        return null;
+    }
+
+    public SiteConfiguration(Item siteItem)
+    {
+        SitemapFilename = siteItem.Fields[Identifiers.SitemapFilenameFieldID].Value;
+
+        SitemapSourceDatabaseName = siteItem.Fields[Identifiers.SitemapSourceDatabaseFieldID].Value;
+
+        SitemapSourceDatabase = Sitecore.Configuration.Factory.GetDatabase(SitemapSourceDatabaseName);
+
+        ID rootItem = ID.Null;
+        ID.TryParse(siteItem.Fields[Identifiers.SitemapRootItemFieldID].Value, out rootItem);
+        SitemapRootItem = rootItem;
+
+        SitemapIncludeLanguages = siteItem.Fields[Identifiers.SitemapIncludeLanguagesFieldID].Value.Split('|')
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Select(s => ID.Parse(s))
+            .Select(i => SitemapSourceDatabase.GetItem(i))
+            .Select(l => l.Name);
+
+        SitemapIncludeTemplates = siteItem.Fields[Identifiers.SitemapIncludeTemplatesFieldID].Value.Split('|')
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Select(s => ID.Parse(s));
+    }
+}
+
 					</pre>
 					<p>Again, the code is extracting the fields from the configuration template for the sitemap that we defined last week. There's a bit more effort here to get the content database we need, parse out the ID values and extract the lists of languages and templates to include. Linq projections are used to get the data in the appropriate format.</p>
 					<p>So the
 						<code>processSite()</code>
 						method looks like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SitemapUrlSet processSite(SiteConfiguration sc) {     Item rootItem = sc.SitemapSourceDatabase.GetItem(sc.SitemapRootItem);     SitemapUrlSet sitemap = new SitemapUrlSet();      process(sc, sitemap, rootItem);          return sitemap; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SitemapUrlSet processSite(SiteConfiguration sc)
+{
+    Item rootItem = sc.SitemapSourceDatabase.GetItem(sc.SitemapRootItem);
+    SitemapUrlSet sitemap = new SitemapUrlSet();
+
+    process(sc, sitemap, rootItem);
+    
+    return sitemap;
+}
+
 					</pre>
 					<p>This doesn't do a great deal – it fetches the root item from the database, creates an empty
 						<code>SitemapUrlSet</code>
 						object to gather the data and calls
 						<code>process()</code>
 						on the root item to start generating data. This code is factored out into a recursive method, as we need to transform the tree of Sitecore content into a list of entries for the sitemap file. That process is broken up into two parts – first we generate the set of URLs for the current item (it can be more than one URL due to language versions). Second we process any children this item has:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void process(SiteConfiguration sc, SitemapUrlSet urls, Item item) {     IEnumerable&lt;sitemapurl&gt; u = buildSitemapUrl(sc, item);     if (u != null &amp;&amp; u.Count() &gt; 0)     {         urls.AddRange(u);     }      foreach (Item child in item.Children)     {         process(sc, urls, child);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void process(SiteConfiguration sc, SitemapUrlSet urls, Item item)
+{
+    IEnumerable<sitemapurl> u = buildSitemapUrl(sc, item);
+    if (u != null && u.Count() > 0)
+    {
+        urls.AddRange(u);
+    }
+
+    foreach (Item child in item.Children)
+    {
+        process(sc, urls, child);
+    }
+}
+
 					</pre>
 					<p>And then we can generate the list of URLs for an individual item:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable&lt;sitemapurl&gt; buildSitemapUrl(SiteConfiguration sc, Item item) {     if(sc.SitemapIncludeTemplates.Count() &gt; 0 &amp;&amp; !sc.SitemapIncludeTemplates.Contains(item.TemplateID))     {         return null;     }      if (item.Fields.Contains(Identifiers.SitemapIncludeFieldID))     {         CheckboxField cf = (CheckboxField)item.Fields[Identifiers.SitemapIncludeFieldID];         if(!cf.Checked)         {             return null;         }     }      List&lt;sitemapurl&gt; urls = new List&lt;sitemapurl&gt;();     foreach (Language l in item.Languages)     {         if (sc.SitemapIncludeLanguages.Contains(l.Name))         {             Item i = sc.SitemapSourceDatabase.GetItem(item.ID, l);             if (i.Versions.Count &gt; 0)             {                 SitemapUrl u = processLanguage(sc, i, l);                 if (u != null)                 {                     urls.Add(u);                 }             }         }     }     return urls; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable<sitemapurl> buildSitemapUrl(SiteConfiguration sc, Item item)
+{
+    if(sc.SitemapIncludeTemplates.Count() > 0 && !sc.SitemapIncludeTemplates.Contains(item.TemplateID))
+    {
+        return null;
+    }
+
+    if (item.Fields.Contains(Identifiers.SitemapIncludeFieldID))
+    {
+        CheckboxField cf = (CheckboxField)item.Fields[Identifiers.SitemapIncludeFieldID];
+        if(!cf.Checked)
+        {
+            return null;
+        }
+    }
+
+    List<sitemapurl> urls = new List<sitemapurl>();
+    foreach (Language l in item.Languages)
+    {
+        if (sc.SitemapIncludeLanguages.Contains(l.Name))
+        {
+            Item i = sc.SitemapSourceDatabase.GetItem(item.ID, l);
+            if (i.Versions.Count > 0)
+            {
+                SitemapUrl u = processLanguage(sc, i, l);
+                if (u != null)
+                {
+                    urls.Add(u);
+                }
+            }
+        }
+    }
+    return urls;
+}
+
 					</pre>
 					<p>This method starts by checking if the item being processed is based on one of the templates that have been specified for inclusion into the sitemap file. If templates have been specified, but this item is not based on one of them then we skip this item by returning null. Next we check if this item includes our "should this item be included in the sitemap" flag. If it does we check its value. If it says no, then we skip the item.</p>
 					<p>Finally we need to process each of the languages our item defines. We test if this language should be included or not. If the language should be included then we re-load the item in that language and check we got a valid version. If so, we process that version to generate the Sitemap file entry data:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SitemapUrl processLanguage(SiteConfiguration sc, Item item, Language l) {     SitemapUrl url = new SitemapUrl();      var urlOptions = new Sitecore.Links.UrlOptions()     {         AlwaysIncludeServerUrl = true,         LanguageEmbedding = Sitecore.Links.LanguageEmbedding.AsNeeded,         ShortenUrls = true,         Language = l     };      url.Location = Sitecore.Links.LinkManager.GetItemUrl(item, urlOptions);      DateField df = (DateField)item.Fields[Identifiers.__UpdatedFieldID];     url.LastModified = df.DateTime;      if (item.Fields.Contains(Identifiers.SitemapPriorityFieldID))     {         float f;         if (float.TryParse(item.Fields[Identifiers.SitemapPriorityFieldID].Value, out f))         {             url.Priority = f;         }     }      if (item.Fields.Contains(Identifiers.SitemapChangeFrequencyFieldID))     {         ChangeFrequency cf;         if (Enum.TryParse&lt;changefrequency&gt;(item.Fields[Identifiers.SitemapChangeFrequencyFieldID].Value, true, out cf))         {             url.ChangeFrequency = cf;         }     }      return url; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SitemapUrl processLanguage(SiteConfiguration sc, Item item, Language l)
+{
+    SitemapUrl url = new SitemapUrl();
+
+    var urlOptions = new Sitecore.Links.UrlOptions()
+    {
+        AlwaysIncludeServerUrl = true,
+        LanguageEmbedding = Sitecore.Links.LanguageEmbedding.AsNeeded,
+        ShortenUrls = true,
+        Language = l
+    };
+
+    url.Location = Sitecore.Links.LinkManager.GetItemUrl(item, urlOptions);
+
+    DateField df = (DateField)item.Fields[Identifiers.__UpdatedFieldID];
+    url.LastModified = df.DateTime;
+
+    if (item.Fields.Contains(Identifiers.SitemapPriorityFieldID))
+    {
+        float f;
+        if (float.TryParse(item.Fields[Identifiers.SitemapPriorityFieldID].Value, out f))
+        {
+            url.Priority = f;
+        }
+    }
+
+    if (item.Fields.Contains(Identifiers.SitemapChangeFrequencyFieldID))
+    {
+        ChangeFrequency cf;
+        if (Enum.TryParse<changefrequency>(item.Fields[Identifiers.SitemapChangeFrequencyFieldID].Value, true, out cf))
+        {
+            url.ChangeFrequency = cf;
+        }
+    }
+
+    return url;
+}
+
 					</pre>
 					<p>As we did with the index file above, we use
 						<code>LinkManager</code>
@@ -224,7 +464,82 @@
 						and
 						<code>SitemapUrl</code>
 						classes that we need to serialise into our sitemap xml data:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SitemapUrlSet {     private List&lt;sitemapurl&gt; _urls = new List&lt;sitemapurl&gt;();      public IEnumerable&lt;sitemapurl&gt; SitemapUrls { get { return _urls; } }      public void Add(SitemapUrl url)     {         _urls.Add(url);     }      public void AddRange(IEnumerable&lt;sitemapurl&gt; urls)     {         _urls.AddRange(urls);     }      public static readonly XNamespace Namespace = "http://www.sitemaps.org/schemas/sitemap/0.9";      public XElement Serialise()     {         XElement root = new XElement("urlset");         root.Add(new XAttribute("xmlns", Namespace));         root.Add(new XAttribute(XNamespace.Xmlns + "image", SitemapImage.Namespace));          foreach (SitemapUrl u in _urls)         {             root.Add(u.Serialise());         }          return root;     } }  public enum ChangeFrequency  {     Always,     Hourly,     Daily,     Weekly,     Monthly,     Yearly,     Never }  public class SitemapUrl {     public string Location { get; set; }     public DateTime? LastModified { get; set; }     public ChangeFrequency? ChangeFrequency { get; set; }     public Single? Priority { get; set; }      public XElement Serialise()     {         XElement root = new XElement("url");          root.Add(new XElement("loc", Location));                  if(LastModified.HasValue)         {             root.Add(new XElement("lastmod", LastModified.Value.ToString("yyyy-MM-dd")));         }          if (ChangeFrequency.HasValue)         {             root.Add(new XElement("changefreq", ChangeFrequency.Value.ToString().ToLower()));         }          if (Priority.HasValue)         {             root.Add(new XElement("priority", Priority.Value.ToString("0.0")));         }          return root;     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SitemapUrlSet
+{
+    private List<sitemapurl> _urls = new List<sitemapurl>();
+
+    public IEnumerable<sitemapurl> SitemapUrls { get { return _urls; } }
+
+    public void Add(SitemapUrl url)
+    {
+        _urls.Add(url);
+    }
+
+    public void AddRange(IEnumerable<sitemapurl> urls)
+    {
+        _urls.AddRange(urls);
+    }
+
+    public static readonly XNamespace Namespace = "http://www.sitemaps.org/schemas/sitemap/0.9";
+
+    public XElement Serialise()
+    {
+        XElement root = new XElement("urlset");
+        root.Add(new XAttribute("xmlns", Namespace));
+        root.Add(new XAttribute(XNamespace.Xmlns + "image", SitemapImage.Namespace));
+
+        foreach (SitemapUrl u in _urls)
+        {
+            root.Add(u.Serialise());
+        }
+
+        return root;
+    }
+}
+
+public enum ChangeFrequency 
+{
+    Always,
+    Hourly,
+    Daily,
+    Weekly,
+    Monthly,
+    Yearly,
+    Never
+}
+
+public class SitemapUrl
+{
+    public string Location { get; set; }
+    public DateTime? LastModified { get; set; }
+    public ChangeFrequency? ChangeFrequency { get; set; }
+    public Single? Priority { get; set; }
+
+    public XElement Serialise()
+    {
+        XElement root = new XElement("url");
+
+        root.Add(new XElement("loc", Location));
+        
+        if(LastModified.HasValue)
+        {
+            root.Add(new XElement("lastmod", LastModified.Value.ToString("yyyy-MM-dd")));
+        }
+
+        if (ChangeFrequency.HasValue)
+        {
+            root.Add(new XElement("changefreq", ChangeFrequency.Value.ToString().ToLower()));
+        }
+
+        if (Priority.HasValue)
+        {
+            root.Add(new XElement("priority", Priority.Value.ToString("0.0")));
+        }
+
+        return root;
+    }
+}
+
 					</pre>
 					<p>And that's it for the code. We can now set up a test, and try building a sitemap. If we set up a Sitemap Index:</p>
 					<a target="_blank" rel="noopener noreferrer" href="/img/2014/ExampleSitemapSettings.png">
@@ -235,10 +550,38 @@
 						<img alt="Default sitemap settings" src="/img/2014/DefaultSitemapSettings.png">
 					</a>
 					<p>Then we can set up a bit of test content and hit publish. What we find on disk afterwards is two XML files. First, in the index file we find:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"&gt;   &lt;sitemap&gt;     &lt;loc&gt;http://test/default-sitemap.xml&lt;/loc&gt;     &lt;lastmod&gt;2014-59-12&lt;/lastmod&gt;   &lt;/sitemap&gt; &lt;/sitemapindex&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>http://test/default-sitemap.xml</loc>
+    <lastmod>2014-59-12</lastmod>
+  </sitemap>
+</sitemapindex>
+
 					</pre>
 					<p>And then in the sitemap itself we find:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"&gt;   &lt;url&gt;     &lt;loc&gt;http://test/en/sitecore/content/Home&lt;/loc&gt;     &lt;lastmod&gt;2014-10-05&lt;/lastmod&gt;     &lt;changefreq&gt;daily&lt;/changefreq&gt;     &lt;priority&gt;0.7&lt;/priority&gt;   &lt;/url&gt;   &lt;url&gt;     &lt;loc&gt;http://test/ja-JP/sitecore/content/Home&lt;/loc&gt;     &lt;lastmod&gt;2013-09-11&lt;/lastmod&gt;     &lt;changefreq&gt;daily&lt;/changefreq&gt;     &lt;priority&gt;0.7&lt;/priority&gt;   &lt;/url&gt;   &lt;url&gt;     &lt;loc&gt;http://test/en/sitecore/content/Home/Global shared content/Sample&lt;/loc&gt;     &lt;lastmod&gt;2014-29-21&lt;/lastmod&gt;   &lt;/url&gt;   &lt;url&gt;     &lt;loc&gt;http://test/en/sitecore/content/Home/Sample Page&lt;/loc&gt;     &lt;lastmod&gt;2014-12-03&lt;/lastmod&gt;   &lt;/url&gt; &lt;/urlset&gt;
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>http://test/en/sitecore/content/Home</loc>
+    <lastmod>2014-10-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>http://test/ja-JP/sitecore/content/Home</loc>
+    <lastmod>2013-09-11</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>http://test/en/sitecore/content/Home/Global shared content/Sample</loc>
+    <lastmod>2014-29-21</lastmod>
+  </url>
+  <url>
+    <loc>http://test/en/sitecore/content/Home/Sample Page</loc>
+    <lastmod>2014-12-03</lastmod>
+  </url>
+</urlset>
+
 					</pre>
 					<p>Bingo. There's our sitemap data! It shows the appropriate data, as defined by our test items.</p>
 					<p>Now there's quite a bit that could be done here to improve this code – but it proves that the approach works. As mentioned, the usual error checking and patterns like Glass could be applied. One other thing that struck me is that if this code was run against a large site it would be creating lots of small objects in memory before serialising them. So a good optimisation would probably be to write the serialised data directly into the output files without the need for the intermediate objects. That would allow much larger sites to be generated more efficiently.</p>

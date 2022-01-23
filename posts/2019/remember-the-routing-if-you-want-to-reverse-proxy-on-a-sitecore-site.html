@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Ever been asked to set up a Reverse Proxy to allow a particular URL on your website to fetch its content from a site somewhere else? It's not an uncommon requirement, but it seems to cause some configuration challenges too. Having been drafted in to solve some issues with just such a setup recently, here's a quick description of the stuff I need to remember next time I get this job:">
-		<meta property="og:description" content="Ever been asked to set up a Reverse Proxy to allow a particular URL on your website to fetch its content from a site somewhere else? It's not an uncommon requirement, but it seems to cause some configuration challenges too. Having been drafted in to solve some issues with just such a setup recently, here's a quick description of the stuff I need to remember next time I get this job:">
+		<meta name="description" content="Remember the routing if you want to reverse-proxy on a Sitecore&nbsp;site">
+		<meta property="og:description" content="Remember the routing if you want to reverse-proxy on a Sitecore&nbsp;site">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Remember the routing if you want to reverse-proxy on a Sitecore&nbsp;site</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Remember the routing if you want to reverse-proxy on a Sitecore&amp;#xA0;site">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/remember-the-routing-if-you-want-to-reverse-proxy-on-a-sitecore-site-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Remember the routing if you want to reverse-proxy on a Sitecore&#xA0;site",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/remember-the-routing-if-you-want-to-reverse-proxy-on-a-sitecore-site-social.png"
-        ],
-        "datePublished": "2019-02-04T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/remember-the-routing-if-you-want-to-reverse-proxy-on-a-sitecore-site">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:17 -->
+		<!-- 23/01/2022 10:19:12 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,22 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Remember the routing if you want to reverse-proxy on a Sitecore&nbsp;site
 				</h1>
-				<div class="meta">Published 04 February 2019</div>
-				<div class="flex py-1">
-					<a href="/tags/iis" class="p-1 mr-1 bg-gray-100 rounded-md">
-						IIS</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Ever been asked to set up a Reverse Proxy to allow a particular URL on your website to fetch its content from a site somewhere else? It's not an uncommon requirement, but it seems to cause some configuration challenges too. Having been drafted in to solve some issues with just such a setup recently, here's a quick description of the stuff I need to remember next time I get this job:
 						<!--more-->
 					</p>
@@ -180,14 +157,25 @@
 					<h2>Don't forget to make Sitecore play nice!</h2>
 					<p>A key thing that gets forgotten here is that you need to make sure Sitecore doesn't attempt to handle the URL you want to be reverse-proxied. If it does get involved, then you're going to end up with Sitecore's 404 page, because whatever the path you're trying to rewrite with your proxy url, it's almost certainly not going to map to a valid Sitecore content item that can be rendered...</p>
 					<p>There are two ways you can go about this. First, you can write some code to customise routing, and explicitly tell the routing engine to ignore the path(s) you want to reverse-proxy for. Depending on the version of Sitecore, you might add some routing config to the initialise pipeline to do this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static void RegisterRoutes(RouteCollection routes) {   routes.IgnoreRoute("some-reverse-proxied-path/{*pathInfo}"); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static void RegisterRoutes(RouteCollection routes)
+{
+  routes.IgnoreRoute("some-reverse-proxied-path/{*pathInfo}");
+}
+
 					</pre>
 					<p>(<a href="https://doc.sitecore.com/developers/90/sitecore-experience-management/en/use-mvc-routing.html" rel="noopener" target="_blank">See documentation for details</a>, or
 						<a href="https://sitecore.stackexchange.com/a/3652/233" rel="noopener" target="_blank">this Stack Exchange thread</a>.)</p>
 					<p>Or alternatively you can patch Sitecore's pre-existing setting for what URLs it should ignore. While this isn't one of the easiest settings to patch (Because by default it's just a big string –
 						<a href="http://firebreaksice.com/sitecore-patchable-ignore-lists/" rel="noopener" target="_blank">though there are approaches you can use to make this easier</a>
 						if you want), it is probably the quickest way to make Sitecore ignore a url, and doesn't involve deploying code:</p>
-					<pre data-enlighter-highlight="4" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;   &lt;sitecore&gt;     &lt;settings&gt;       &lt;setting name="IgnoreUrlPrefixes" value="/the-url-you-want-to-reverse-proxy|/sitecore/default.aspx|/trace.axd|/webresource.axd|/sitecore/shell/Controls/Rich Text Editor/Telerik.Web.UI.DialogHandler.aspx|/sitecore/shell/applications/content manager/telerik.web.ui.dialoghandler.aspx|/sitecore/shell/Controls/Rich Text Editor/Telerik.Web.UI.SpellCheckHandler.axd|/Telerik.Web.UI.WebResource.axd|/sitecore/admin/upgrade/|/layouts/testing|/sitecore/service/xdb/disabled.aspx" /&gt;     &lt;/settings&gt;   &lt;/sitecore&gt; &lt;/configuration&gt;
+					<pre data-enlighter-highlight="4" data-enlighter-language="xml" style="width:100%; overflow:scroll;"><configuration xmlns:patch="http://www.sitecore.net/xmlconfig/">
+  <sitecore>
+    <settings>
+      <setting name="IgnoreUrlPrefixes" value="/the-url-you-want-to-reverse-proxy|/sitecore/default.aspx|/trace.axd|/webresource.axd|/sitecore/shell/Controls/Rich Text Editor/Telerik.Web.UI.DialogHandler.aspx|/sitecore/shell/applications/content manager/telerik.web.ui.dialoghandler.aspx|/sitecore/shell/Controls/Rich Text Editor/Telerik.Web.UI.SpellCheckHandler.axd|/Telerik.Web.UI.WebResource.axd|/sitecore/admin/upgrade/|/layouts/testing|/sitecore/service/xdb/disabled.aspx" />
+    </settings>
+  </sitecore>
+</configuration>
+
 					</pre>
 					<p>OTB it's just a pipe-separated list of URL prefixes, without domain names – so you can just stick your required URL onto the beginning...</p>
 					<p>And once you've sorted those three settings you should find that your reverse-proxy urls start to work.</p>

@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Recently a client I work for came to me with an interesting question. Their Sitecore-based website makes heavy use of Aliases to set up shortened URLs for publicity purposes, but they were finding it difficult to manage the large number of aliases they were creating. Their key issues were remembering which pages had aliases defined, and remembering to delete aliases when they removed the pages they were related to. ">
-		<meta property="og:description" content="Recently a client I work for came to me with an interesting question. Their Sitecore-based website makes heavy use of Aliases to set up shortened URLs for publicity purposes, but they were finding it difficult to manage the large number of aliases they were creating. Their key issues were remembering which pages had aliases defined, and remembering to delete aliases when they removed the pages they were related to. ">
+		<meta name="description" content="Visualising Aliases">
+		<meta property="og:description" content="Visualising Aliases">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Visualising Aliases</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Visualising Aliases">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/visualising-aliases-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Visualising Aliases",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/visualising-aliases-social.png"
-        ],
-        "datePublished": "2014-03-10T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/visualising-aliases">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:35 -->
+		<!-- 23/01/2022 10:19:18 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,25 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Visualising Aliases
 				</h1>
-				<div class="meta">Published 10 March 2014</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/ui" class="p-1 mr-1 bg-gray-100 rounded-md">
-						UI</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Recently a client I work for came to me with an interesting question. Their Sitecore-based website makes heavy use of Aliases to set up shortened URLs for publicity purposes, but they were finding it difficult to manage the large number of aliases they were creating. Their key issues were remembering which pages had aliases defined, and remembering to delete aliases when they removed the pages they were related to. 
 						<!--more-->
 					</p>
@@ -161,7 +134,14 @@
 						class. All you have to provide is an implementation for the
 						<code>GetIconDescriptor()</code>
 						method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class AliasGutterRenderer : GutterRenderer {     protected override GutterIconDescriptor GetIconDescriptor(Sitecore.Data.Items.Item item)     {         return null;     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class AliasGutterRenderer : GutterRenderer
+{
+    protected override GutterIconDescriptor GetIconDescriptor(Sitecore.Data.Items.Item item)
+    {
+        return null;
+    }
+}
+
 					</pre>
 					<p>If we want to visualise Aliases, we need to write some sort of query to detect if the current item has any Aliases attached to it. There are a couple of ways you can go about this. One way would be to write a query for children of the /sitecore/system/Aliases item, and look for references to the current item's ID in the Linked Item field. But Sitecore can make our life easier than this – since it maintains something called the Link Database for us. Inside the Sitecore database, it maintains references between items. Whenever you fill in a field which stores a link between two or more items this relationship is stored in the Link Database to make it easy to query these relationships later. You can see this data yourself when you click the Links button in the Navigate tab of the ribbon:</p>
 					<a target="_blank" href="/img/2014/RibbonLinksDropdown.png">
@@ -169,7 +149,21 @@
 					</a>
 					<p>You'll notice that this example page has lots of links in the database table – it references things like workflow, templates, sublayouts etc. But it also shows that it is referred to by an Alias item. And that shows us that we can use the Links Database to do the query we need.</p>
 					<p>So we can write a bit of code to count the number of Aliases related to the current item with a simple Linq query:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class AliasGutterRenderer : GutterRenderer {     private static Sitecore.Data.ID aliasID = new Sitecore.Data.ID("{54BCFFB7-8F46-4948-AE74-DA5B6B5AFA86}");      protected override GutterIconDescriptor GetIconDescriptor(Sitecore.Data.Items.Item item)     {        int aliases = Sitecore.Globals.LinkDatabase.GetReferrers(item)             .Select(l =&gt; l.GetSourceItem())             .Where(s =&gt; s.TemplateID == aliasID)             .Count();          return null;     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class AliasGutterRenderer : GutterRenderer
+{
+    private static Sitecore.Data.ID aliasID = new Sitecore.Data.ID("{54BCFFB7-8F46-4948-AE74-DA5B6B5AFA86}");
+
+    protected override GutterIconDescriptor GetIconDescriptor(Sitecore.Data.Items.Item item)
+    {
+       int aliases = Sitecore.Globals.LinkDatabase.GetReferrers(item)
+            .Select(l => l.GetSourceItem())
+            .Where(s => s.TemplateID == aliasID)
+            .Count();
+
+        return null;
+    }
+}
+
 					</pre>
 					<p>Every time Sitecore processes an item in the content tree it passes that item into our method – and we count the Aliases. The
 						<code>GetReferrers()</code>
@@ -183,7 +177,42 @@
 						<code>GutterIconDescriptor</code>
 						class – and we fill in and return an instance of this to tell the UI what to render. It's simple enough to fill in – you can provide a path to an icon, a tooltip string and an on-click event to trigger. And when you return this data, the UI renders it in the gutter.</p>
 					<p>Putting all that together gives us:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class AliasGutterRenderer : GutterRenderer {     private static Sitecore.Data.ID aliasID = new Sitecore.Data.ID("{54BCFFB7-8F46-4948-AE74-DA5B6B5AFA86}");      protected override GutterIconDescriptor GetIconDescriptor(Sitecore.Data.Items.Item item)     {         GutterIconDescriptor gid = null;         int aliases = 0;          try         {             aliases = Sitecore.Globals.LinkDatabase.GetReferrers(item)                 .Select(l =&gt; l.GetSourceItem())                 .Where(s =&gt; s.TemplateID == aliasID)                 .Count();         }         catch (Exception)         {             // this should always succeed - exceptions seem to come             // if link database is out of date             // In production code we'd do something cleverer than             // this and try to prevent rather than catch the exception         }          if (aliases &gt; 0)         {             gid = new GutterIconDescriptor();             gid.Icon = "Network/32x32/spy.png";             gid.Tooltip = string.Format("This item has {0} alias{1}", aliases, aliases &gt; 1 ? "es" : "");             gid.Click = "item:setaliases(id=" + item.ID + ")";         }          return gid;     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class AliasGutterRenderer : GutterRenderer
+{
+    private static Sitecore.Data.ID aliasID = new Sitecore.Data.ID("{54BCFFB7-8F46-4948-AE74-DA5B6B5AFA86}");
+
+    protected override GutterIconDescriptor GetIconDescriptor(Sitecore.Data.Items.Item item)
+    {
+        GutterIconDescriptor gid = null;
+        int aliases = 0;
+
+        try
+        {
+            aliases = Sitecore.Globals.LinkDatabase.GetReferrers(item)
+                .Select(l => l.GetSourceItem())
+                .Where(s => s.TemplateID == aliasID)
+                .Count();
+        }
+        catch (Exception)
+        {
+            // this should always succeed - exceptions seem to come
+            // if link database is out of date
+            // In production code we'd do something cleverer than
+            // this and try to prevent rather than catch the exception
+        }
+
+        if (aliases > 0)
+        {
+            gid = new GutterIconDescriptor();
+            gid.Icon = "Network/32x32/spy.png";
+            gid.Tooltip = string.Format("This item has {0} alias{1}", aliases, aliases > 1 ? "es" : "");
+            gid.Click = "item:setaliases(id=" + item.ID + ")";
+        }
+
+        return gid;
+    }
+}
+
 					</pre>
 					<p>Here we've set the gutter icon to be the same as the icon used by the Aliases button in the ribbon for consistency. And we've set the tooltip to show how many aliases the current item has. Finally, the Click event has been set to the same command used by the Aliases button in the ribbon – a call to the
 						<code>item:setaliases</code>

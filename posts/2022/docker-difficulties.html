@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I spent some time working with a colleague who couldn't get his docker instance to start up happily this week. And it's reminded me that for all its positives, there are still some challenges with understanding the underlying issues when a developer container instance breaks. I realised I need a &quot;go read this&quot; post for the start of future discussions like this, so here are some problems you might see, and some diagnostic suggestions I wanted a convenient way to share: ">
-		<meta property="og:description" content="I spent some time working with a colleague who couldn't get his docker instance to start up happily this week. And it's reminded me that for all its positives, there are still some challenges with understanding the underlying issues when a developer container instance breaks. I realised I need a &quot;go read this&quot; post for the start of future discussions like this, so here are some problems you might see, and some diagnostic suggestions I wanted a convenient way to share: ">
+		<meta name="description" content="A brief guide to Docker difficulties">
+		<meta property="og:description" content="A brief guide to Docker difficulties">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - A brief guide to Docker difficulties</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - A brief guide to Docker difficulties">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/docker-difficulties-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "A brief guide to Docker difficulties",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/docker-difficulties-social.png"
-        ],
-        "datePublished": "2022-01-16T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2022/docker-difficulties">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:49 -->
+		<!-- 23/01/2022 10:19:02 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,25 +106,16 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					A brief guide to Docker difficulties
 				</h1>
 				<h2 class="text-2xl">It's not always easy to spot what's wrong</h2>
-				<div class="meta">Published 16 January 2022</div>
-				<div class="flex py-1">
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/docker" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Docker</a>
-					<a href="/tags/containers" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Containers</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I spent some time working with a colleague who couldn't get his docker instance to start up happily this week. And it's reminded me that for all its positives, there are still some challenges with understanding the underlying issues when a developer container instance breaks. I realised I need a "go read this" post for the start of future discussions like this, so here are some problems you might see, and some diagnostic suggestions I wanted a convenient way to share: 
 						<!--more-->
 					</p>
@@ -194,10 +169,12 @@
 								<b>Skip past Traefik</b>
 								<br>
 								Since Traefik is the reverse proxy for your containers, if it's down it can be difficult to see what (if any) messages are being returned if a web request fails. One trick for bypassing this issue is to make use of the fact that Docker containers are actually proper VMs - so you can connect directly to them and run other commands. That means we can fire up PowerShell inside our misbehaving CM container:</p>
-							<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">docker exec -it &lt;your-cm-container-name&gt; powershell.exe
+							<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">docker exec -it <your-cm-container-name> powershell.exe
+
 							</pre>
 							<p>When you type that, you should get a new powershell session inside your container. So you can use that to directly make an HTTP request to Sitecore, and see what (if any) error comes back:</p>
 							<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Invoke-WebRequest http://localhost/ -UseBasicParsing
+
 							</pre>
 							<p>Note that you need to use "localhost" and "http://" here - Traefik does SSL termination for you, so inside the container doesn't use HTTPS. And it also handles the DNS naming of your site - so inside the container the site is just localhost. The parameter
 								<code>-UseBasicParsing</code>

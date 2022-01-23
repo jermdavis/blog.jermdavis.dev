@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I kicked off this series last week with <a href=&quot;/posts/2015/development-environments-with-powershell-dsc-part-1&quot; target=&quot;_blank&quot;>a look at what PowerShell DSC is</a>. This week I'm going to look at scripts you can use for basic configuration of Windows itself for a hypothetical development environment. I'll cover basic Windows features, a few issues you might encounter and helpful tweaks like being able to disable IE's &quot;enhanced security&quot; mode if you're working on a server.">
-		<meta property="og:description" content="I kicked off this series last week with <a href=&quot;/posts/2015/development-environments-with-powershell-dsc-part-1&quot; target=&quot;_blank&quot;>a look at what PowerShell DSC is</a>. This week I'm going to look at scripts you can use for basic configuration of Windows itself for a hypothetical development environment. I'll cover basic Windows features, a few issues you might encounter and helpful tweaks like being able to disable IE's &quot;enhanced security&quot; mode if you're working on a server.">
+		<meta name="description" content="Development environments with PowerShell DSC – Part&nbsp;2">
+		<meta property="og:description" content="Development environments with PowerShell DSC – Part&nbsp;2">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;2</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC &amp;#x2013; Part&amp;#xA0;2">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-2-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Development environments with PowerShell DSC &#x2013; Part&#xA0;2",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-2-social.png"
-        ],
-        "datePublished": "2015-10-19T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-2">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:48 -->
+		<!-- 23/01/2022 10:19:00 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,25 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Development environments with PowerShell DSC – Part&nbsp;2
 				</h1>
-				<div class="meta">Published 19 October 2015</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell</a>
-					<a href="/tags/powershell-dsc" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell DSC</a>
-					<a href="/tags/installation" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Installation</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I kicked off this series last week with
 						<a href="/posts/2015/development-environments-with-powershell-dsc-part-1" target="_blank">a look at what PowerShell DSC is</a>. This week I'm going to look at scripts you can use for basic configuration of Windows itself for a hypothetical development environment. I'll cover basic Windows features, a few issues you might encounter and helpful tweaks like being able to disable IE's "enhanced security" mode if you're working on a server.
 						<!--more-->
@@ -192,12 +165,250 @@
 						<code>WindowsFeature</code>
 						resource. This allows you to specify the top-level feature and have DSC install every one of its child features. However if you explicitly need to install just some features, you do seem to need to list them out one by one.</p>
 					<p>You might end up with something like:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration WindowsFeatureInstall {     Node $AllNodes.where{ $_.Role.Contains("WindowsFeatures") }.NodeName     {         WindowsFeature WebServer         {             Name = "Web-Server"             Ensure = "Present"         }                  WindowsFeature WebWebServer         {             Name = "Web-WebServer"             Ensure = "Present"         }                  WindowsFeature WebCommonHttp         {             Name = "Web-Common-Http"             Ensure = "Present"         }          WindowsFeature WebDefaultDoc         {             Name = "Web-Default-Doc"             Ensure = "Present"         }          WindowsFeature WebDirBrowsing         {             Name = "Web-Dir-Browsing"             Ensure = "Present"         }          WindowsFeature WebHttpErrors         {             Name = "Web-Http-Errors"             Ensure = "Present"         }          WindowsFeature WebStaticContent         {             Name = "Web-Static-Content"             Ensure = "Present"         }          WindowsFeature WebHttpRedirect         {             Name = "Web-Http-Redirect"             Ensure = "Present"         }          WindowsFeature WebDavPublishing         {             Name = "Web-DAV-Publishing"             Ensure = "Present"         }          WindowsFeature WebHttpLogging         {             Name = "Web-Http-Logging"             Ensure = "Present"         }          WindowsFeature WebLogLibraries         {             Name = "Web-Log-Libraries"             Ensure = "Present"         }          WindowsFeature WebRequestMonitor         {             Name = "Web-Request-Monitor"             Ensure = "Present"         }          WindowsFeature WebHttpTracing         {             Name = "Web-Http-Tracing"             Ensure = "Present"         }          WindowsFeature WebPerformance         {             Name = "Web-Performance"             Ensure = "Present"         }          WindowsFeature WebStaticCompression         {             Name = "Web-Stat-Compression"             Ensure = "Present"         }          WindowsFeature WebDynamicCompression         {             Name = "Web-Dyn-Compression"             Ensure = "Present"         }          WindowsFeature WebSecurity         {             Name = "Web-Security"             Ensure = "Present"         }          WindowsFeature WebFiltering         {             Name = "Web-Filtering"             Ensure = "Present"         }          WindowsFeature WebBasicAuth         {             Name = "Web-Basic-Auth"             Ensure = "Present"         }          WindowsFeature WebCertProvider         {             Name = "Web-CertProvider"             Ensure = "Present"         }          WindowsFeature WebClientAuth         {             Name = "Web-Client-Auth"             Ensure = "Present"         }          WindowsFeature WebDigestAuth         {             Name = "Web-Digest-Auth"             Ensure = "Present"         }          WindowsFeature WebUrlAuth         {             Name = "Web-Url-Auth"             Ensure = "Present"         }          WindowsFeature WebWindowsAuth         {             Name = "Web-Windows-Auth"             Ensure = "Present"         }          WindowsFeature WebAppDev         {             Name = "Web-App-Dev"             Ensure = "Present"         }          WindowsFeature WebNetExt         {             Name = "Web-Net-Ext"             Ensure = "Present"         }          WindowsFeature WebNetExt45         {             Name = "Web-Net-Ext45"             Ensure = "Present"         }          WindowsFeature WebAspNet         {             Name = "Web-Asp-Net"             Ensure = "Present"         }          WindowsFeature WebAspNet45         {             Name = "Web-Asp-Net45"             Ensure = "Present"         }          WindowsFeature WebIsapiExt         {             Name = "Web-ISAPI-Ext"             Ensure = "Present"         }          WindowsFeature WebIsapiFilter         {             Name = "Web-ISAPI-Filter"             Ensure = "Present"         }          WindowsFeature WebMgmtConsole         {             Name = "Web-Mgmt-Console"             Ensure = "Present"         }          WindowsFeature NetFrameworkFeatures         {             Name = "NET-Framework-Features"             Ensure = "Present"         }          WindowsFeature NETFrameworkCore         {             Name = "NET-Framework-Core"             Ensure = "Present"         }          WindowsFeature NETFramework45Features         {             Name = "NET-Framework-45-Features"             Ensure = "Present"         }          WindowsFeature NETFramework45Core         {             Name = "NET-Framework-45-Core"             Ensure = "Present"         }          WindowsFeature NETFramework45ASPNET         {             Name = "NET-Framework-45-ASPNET"             Ensure = "Present"         }     } }  WindowsFeatureInstall -ConfigurationData "configData.psd1" Start-DscConfiguration -Path .\WindowsFeatureInstall -Verbose -Wait -Force
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration WindowsFeatureInstall
+{
+    Node $AllNodes.where{ $_.Role.Contains("WindowsFeatures") }.NodeName
+    {
+        WindowsFeature WebServer
+        {
+            Name = "Web-Server"
+            Ensure = "Present"
+        }
+        
+        WindowsFeature WebWebServer
+        {
+            Name = "Web-WebServer"
+            Ensure = "Present"
+        }
+        
+        WindowsFeature WebCommonHttp
+        {
+            Name = "Web-Common-Http"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebDefaultDoc
+        {
+            Name = "Web-Default-Doc"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebDirBrowsing
+        {
+            Name = "Web-Dir-Browsing"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebHttpErrors
+        {
+            Name = "Web-Http-Errors"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebStaticContent
+        {
+            Name = "Web-Static-Content"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebHttpRedirect
+        {
+            Name = "Web-Http-Redirect"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebDavPublishing
+        {
+            Name = "Web-DAV-Publishing"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebHttpLogging
+        {
+            Name = "Web-Http-Logging"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebLogLibraries
+        {
+            Name = "Web-Log-Libraries"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebRequestMonitor
+        {
+            Name = "Web-Request-Monitor"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebHttpTracing
+        {
+            Name = "Web-Http-Tracing"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebPerformance
+        {
+            Name = "Web-Performance"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebStaticCompression
+        {
+            Name = "Web-Stat-Compression"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebDynamicCompression
+        {
+            Name = "Web-Dyn-Compression"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebSecurity
+        {
+            Name = "Web-Security"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebFiltering
+        {
+            Name = "Web-Filtering"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebBasicAuth
+        {
+            Name = "Web-Basic-Auth"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebCertProvider
+        {
+            Name = "Web-CertProvider"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebClientAuth
+        {
+            Name = "Web-Client-Auth"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebDigestAuth
+        {
+            Name = "Web-Digest-Auth"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebUrlAuth
+        {
+            Name = "Web-Url-Auth"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebWindowsAuth
+        {
+            Name = "Web-Windows-Auth"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebAppDev
+        {
+            Name = "Web-App-Dev"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebNetExt
+        {
+            Name = "Web-Net-Ext"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebNetExt45
+        {
+            Name = "Web-Net-Ext45"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebAspNet
+        {
+            Name = "Web-Asp-Net"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebAspNet45
+        {
+            Name = "Web-Asp-Net45"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebIsapiExt
+        {
+            Name = "Web-ISAPI-Ext"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebIsapiFilter
+        {
+            Name = "Web-ISAPI-Filter"
+            Ensure = "Present"
+        }
+
+        WindowsFeature WebMgmtConsole
+        {
+            Name = "Web-Mgmt-Console"
+            Ensure = "Present"
+        }
+
+        WindowsFeature NetFrameworkFeatures
+        {
+            Name = "NET-Framework-Features"
+            Ensure = "Present"
+        }
+
+        WindowsFeature NETFrameworkCore
+        {
+            Name = "NET-Framework-Core"
+            Ensure = "Present"
+        }
+
+        WindowsFeature NETFramework45Features
+        {
+            Name = "NET-Framework-45-Features"
+            Ensure = "Present"
+        }
+
+        WindowsFeature NETFramework45Core
+        {
+            Name = "NET-Framework-45-Core"
+            Ensure = "Present"
+        }
+
+        WindowsFeature NETFramework45ASPNET
+        {
+            Name = "NET-Framework-45-ASPNET"
+            Ensure = "Present"
+        }
+    }
+}
+
+WindowsFeatureInstall -ConfigurationData "configData.psd1"
+Start-DscConfiguration -Path .\WindowsFeatureInstall -Verbose -Wait -Force
+
 					</pre>
 					<p>This (big) example is ensuring you have key IIS features and the ASP.Net v4 runtime features ready for running websites.</p>
 					<p>It's making reference to a config data file.
 						<a href="/posts/2015/development-environments-with-powershell-dsc-part-1" target="_blank">I talked a bit about this last week</a>, but for the purposes of the examples in this post, all it needs to define is the server / role data I talked about before. For example:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{     AllNodes = @(         @{             NodeName = "WIN-AQEKG7L9SE8"             Role = "Setup, DesktopExperience, WindowsFeatures, IE, SqlServer, MongoDB, Sitecore"          }     ); }
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
+    AllNodes = @(
+        @{
+            NodeName = "WIN-AQEKG7L9SE8"
+            Role = "Setup, DesktopExperience, WindowsFeatures, IE, SqlServer, MongoDB, Sitecore"
+         }
+    );
+}
+
 					</pre>
 					<p>Future posts will extend this with more data. But for the moment, that can be saved as
 						<code>configData.psd1</code>
@@ -207,7 +418,21 @@
 						<a href="https://divamatrix.wordpress.com/2011/10/10/sitecore-install-error-web-client-service-is-unavailable/" target="_blank" rel="noopener noreferrer">running Sitecore on a Windows Server OS it is required to make the WebDAV-based drag-and drop uploading of Media Library resources</a>
 						work. As the linked post suggests, you can just ignore it. But if you need WebDAV to work, beware that this feature seems to always require a reboot.</p>
 					<p>In the short time I've spent with DSC so far, I have not managed to work out a "nice" DSC-based approach to handling this reboot work. There are a variety of tricks you can use, mostly based around breaking out these reboot-requiring features to a separate script. It only requires one feature, so it's a trivial script:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration DesktopExperienceInstall {     Node $AllNodes.where{ $_.Role.Contains("DesktopExperience") }.NodeName     {         WindowsFeature WebDavDesktopExperience         {             Name = "Desktop-Experience"             Ensure="Present"         }     } }  DesktopExperienceInstall -ConfigurationData "configData.psd1" Start-DscConfiguration -Path .\DesktopExperienceInstall -Verbose -Wait -Force
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration DesktopExperienceInstall
+{
+    Node $AllNodes.where{ $_.Role.Contains("DesktopExperience") }.NodeName
+    {
+        WindowsFeature WebDavDesktopExperience
+        {
+            Name = "Desktop-Experience"
+            Ensure="Present"
+        }
+    }
+}
+
+DesktopExperienceInstall -ConfigurationData "configData.psd1"
+Start-DscConfiguration -Path .\DesktopExperienceInstall -Verbose -Wait -Force
+
 					</pre>
 					<p>You can execute this, trigger a reboot (either manually or via the
 						<code>Restart-Computer</code>
@@ -230,7 +455,28 @@
 						<code>xSystemSecurity</code>
 						package (which happens to be supplied as a zip file) and uncompress it to the right location.</p>
 					<p>A DSC script to achieve this might look like:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration SetupInstall {     param (         [Parameter(Mandatory=$true)]         [ValidateNotNullOrEmpty()]         [String]         $PackagePath     )      Node $AllNodes.where{ $_.Role.Contains("Setup") }.NodeName     {         Archive AddxSystemSecurity         {             Path = "$PackagePath\xSystemSecurity_1.0.zip"             Destination = "$Env:ProgramFiles\WindowsPowerShell\Modules"         }     } }  SetupInstall -ConfigurationData "configData.psd1" -PackagePath "\\VBoxSvr\dsc\Setup" Start-DscConfiguration -Path .\SetupInstall -Verbose -Wait -Force
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration SetupInstall
+{
+    param (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $PackagePath
+    )
+
+    Node $AllNodes.where{ $_.Role.Contains("Setup") }.NodeName
+    {
+        Archive AddxSystemSecurity
+        {
+            Path = "$PackagePath\xSystemSecurity_1.0.zip"
+            Destination = "$Env:ProgramFiles\WindowsPowerShell\Modules"
+        }
+    }
+}
+
+SetupInstall -ConfigurationData "configData.psd1" -PackagePath "\\VBoxSvr\dsc\Setup"
+Start-DscConfiguration -Path .\SetupInstall -Verbose -Wait -Force
+
 					</pre>
 					<p>The
 						<code>param()</code>
@@ -257,7 +503,30 @@
 						for a user account which does have permissions to access the share.</p>
 					<h2>Back to IE Enhanced Security Configuration</h2>
 					<p>So now we've added the extra DSC feature required to modify the security settings in IE, how do we actually change them? Simple. You just need to tell DSC you're importing an external Resource and then use it:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIEEsc {     Import-DSCResource -Module xSystemSecurity -Name xIEEsc      Node $AllNodes.where{ $_.Role.Contains("IE") }.NodeName     {         xIEEsc EnableIEEscAdmin         {             IsEnabled = $false             UserRole  = "Administrators"         }          xIEEsc EnableIEEscUser         {             IsEnabled = $false             UserRole  = "Users"         }     }  }  EnableIEEsc -ConfigurationData "configData.psd1" Start-DscConfiguration -Path .\EnableIEEsc -Verbose -Wait -Force
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIEEsc
+{
+    Import-DSCResource -Module xSystemSecurity -Name xIEEsc
+
+    Node $AllNodes.where{ $_.Role.Contains("IE") }.NodeName
+    {
+        xIEEsc EnableIEEscAdmin
+        {
+            IsEnabled = $false
+            UserRole  = "Administrators"
+        }
+
+        xIEEsc EnableIEEscUser
+        {
+            IsEnabled = $false
+            UserRole  = "Users"
+        }
+    }
+
+}
+
+EnableIEEsc -ConfigurationData "configData.psd1"
+Start-DscConfiguration -Path .\EnableIEEsc -Verbose -Wait -Force
+
 					</pre>
 					<p>The
 						<code>Import-DSCResource</code>

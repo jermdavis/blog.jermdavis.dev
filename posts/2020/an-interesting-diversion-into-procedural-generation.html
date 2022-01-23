@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Outside of work I've been looking for non-Sitecore things to experiement with recently, and my eye was caught by a bit of interesting game development technology. I came across a discussion of using code to generate game data with a technique called &quot;Wavefunction Collapse&quot;. It's a simple concept, but it has some interesting results, so I thought I'd have a go at an implementation myself.">
-		<meta property="og:description" content="Outside of work I've been looking for non-Sitecore things to experiement with recently, and my eye was caught by a bit of interesting game development technology. I came across a discussion of using code to generate game data with a technique called &quot;Wavefunction Collapse&quot;. It's a simple concept, but it has some interesting results, so I thought I'd have a go at an implementation myself.">
+		<meta name="description" content="An interesting diversion into procedural generation...">
+		<meta property="og:description" content="An interesting diversion into procedural generation...">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - An interesting diversion into procedural generation...</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - An interesting diversion into procedural generation...">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/an-interesting-diversion-into-procedural-generation-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "An interesting diversion into procedural generation...",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/an-interesting-diversion-into-procedural-generation-social.png"
-        ],
-        "datePublished": "2020-07-06T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2020/an-interesting-diversion-into-procedural-generation">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:36 -->
+		<!-- 23/01/2022 10:18:55 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,20 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					An interesting diversion into procedural generation...
 				</h1>
-				<div class="meta">Published 06 July 2020</div>
-				<div class="flex py-1">
-					<a href="/tags/general" class="p-1 mr-1 bg-gray-100 rounded-md">
-						General</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Outside of work I've been looking for non-Sitecore things to experiement with recently, and my eye was caught by a bit of interesting game development technology. I came across a discussion of using code to generate game data with a technique called "Wavefunction Collapse". It's a simple concept, but it has some interesting results, so I thought I'd have a go at an implementation myself.
 						<!--more-->
 					</p>
@@ -165,29 +144,200 @@
 					<p>At its simplest, a
 						<code>WaveFunction</code>
 						is just an array of possibilities, and a way to work out "entropy" based on how many of those are valid. And if there's only one choice, we've finished processing this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class WaveFunction {     public Tile[] Choices { get; set; }     public int Entropy =&gt; Choices.Where(t =&gt; t != null).Count();     public bool IsResolved =&gt; Entropy == 1; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class WaveFunction
+{
+    public Tile[] Choices { get; set; }
+    public int Entropy => Choices.Where(t => t != null).Count();
+    public bool IsResolved => Entropy == 1;
+}
+
 					</pre>
 					<p>And a tile is a weight plus the character to be displayed:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class Tile {     public int Id {g et; }     public char Character { get; }     public int Weight { get; set; } = 1; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class Tile
+{
+    public int Id {g et; }
+    public char Character { get; }
+    public int Weight { get; set; } = 1;
+}
+
 					</pre>
 					<p>And a rule specifies when a tile is valid in a certain direction, and the weight for that combination:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TileRule {     public int SourceTileId { get; set; }     public int Direction; { get; set; }     public int PossibleTileId; { get; set; }     public int Weight; { get; set; } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TileRule
+{
+    public int SourceTileId { get; set; }
+    public int Direction; { get; set; }
+    public int PossibleTileId; { get; set; }
+    public int Weight; { get; set; }
+}
+
 					</pre>
 					<p>The rules which drive choices can be manually created, or they can be inferred by looking at an example image and processing it. Weights for tiles and rules can also be inferred from an example – the more times a tile or a rule is found in the source data, the higher its weight.</p>
 					<p>The map itself is a set of wavefunctions:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class Map {     public int Width { get; set; }     public int Height { get; set; }      public bool IsResolved     {         get         {             for (int x = 0; x &lt; Width; x++)             {                 for (int y = 0; y &lt; Height; y++)                 {                     var cell = Cells[x, y];                     if (!cell.IsResolved)                     {                         return false;                     }                 }             }              return true;         }     }      public WaveFunction[,] Cells { get; set; }      public Map(int w, int h, TileSet tileset)     {         Width = w;         Height = h;          Cells = new WaveFunction[Width, Height];         Tileset = tileset;          for (int x = 0; x &lt; Width; x++)         {             for (int y = 0; y &lt; Height; y++)             {                 var waveFunction = new WaveFunction();                 waveFunction.Choices = tileset.Fetch();                 Cells[x, y] = waveFunction;             }         }     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class Map
+{
+    public int Width { get; set; }
+    public int Height { get; set; }
+
+    public bool IsResolved
+    {
+        get
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                for (int y = 0; y < Height; y++)
+                {
+                    var cell = Cells[x, y];
+                    if (!cell.IsResolved)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+    }
+
+    public WaveFunction[,] Cells { get; set; }
+
+    public Map(int w, int h, TileSet tileset)
+    {
+        Width = w;
+        Height = h;
+
+        Cells = new WaveFunction[Width, Height];
+        Tileset = tileset;
+
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                var waveFunction = new WaveFunction();
+                waveFunction.Choices = tileset.Fetch();
+                Cells[x, y] = waveFunction;
+            }
+        }
+    }
+}
+
 					</pre>
 					<p>The
 						<code>TileSet</code>
 						contains a list of the tiles, which can be copied to set up each wavefunction.</p>
 					<p>So each update cycle starts with finding the lowest entropy wavefunction to process, and picks randomly if there are multiple choices:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public Point FindLowEntropyWaveFunction() {     var currentTiles = new List&lt;TileOption&gt;();     for (int x = 0; x &lt; _map.Width; x++)     {         for (int y = 0; y &lt; _map.Height; y++)         {             var cell = _map.Cells[x, y];             if (!cell.IsResolved)             {                 currentTiles.Add(new TileOption() { Location = new Point(x, y), Tile = cell });             }         }     }      // order tiles by Entropy     var options = currentTiles         .GroupBy(t =&gt; t.Tile.Entropy)         .OrderBy(g =&gt; g.Key)         .First();      TileOption choice;      // If more than one lowest entropy, pick randomly from them     if (options.Count() &gt; 1)     {         var pick = _rnd.Next(options.Count());         choice = options.ElementAt(pick);     }     else     {         choice = options.First();     }      return choice.Location; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public Point FindLowEntropyWaveFunction()
+{
+    var currentTiles = new List<TileOption>();
+    for (int x = 0; x < _map.Width; x++)
+    {
+        for (int y = 0; y < _map.Height; y++)
+        {
+            var cell = _map.Cells[x, y];
+            if (!cell.IsResolved)
+            {
+                currentTiles.Add(new TileOption() { Location = new Point(x, y), Tile = cell });
+            }
+        }
+    }
+
+    // order tiles by Entropy
+    var options = currentTiles
+        .GroupBy(t => t.Tile.Entropy)
+        .OrderBy(g => g.Key)
+        .First();
+
+    TileOption choice;
+
+    // If more than one lowest entropy, pick randomly from them
+    if (options.Count() > 1)
+    {
+        var pick = _rnd.Next(options.Count());
+        choice = options.ElementAt(pick);
+    }
+    else
+    {
+        choice = options.First();
+    }
+
+    return choice.Location;
+}
+
 					</pre>
 					<p>The chosen tile can then be resolved, paying attention to the tile weight:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Resolve(Point tile) {     var cell = _map.Cells[tile.X, tile.Y];      // find indexes of non-zero items     options.Clear();     for (int i = 0; i &lt; cell.Choices.Length; i++)     {         if (cell.Choices[i] != null)         {             for (int c = 0; c &lt; cell.Choices[i].Weight; c++)             {                 options.Add(i);             }         }     }      var pick = _rnd.Next(options.Count());     var index = options.ElementAt(pick);      // null out the ones not picked     for (int i = 0; i &lt; cell.Choices.Length; i++)     {         if (i != index)         {             cell.Choices[i] = null;         }     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Resolve(Point tile)
+{
+    var cell = _map.Cells[tile.X, tile.Y];
+
+    // find indexes of non-zero items
+    options.Clear();
+    for (int i = 0; i < cell.Choices.Length; i++)
+    {
+        if (cell.Choices[i] != null)
+        {
+            for (int c = 0; c < cell.Choices[i].Weight; c++)
+            {
+                options.Add(i);
+            }
+        }
+    }
+
+    var pick = _rnd.Next(options.Count());
+    var index = options.ElementAt(pick);
+
+    // null out the ones not picked
+    for (int i = 0; i < cell.Choices.Length; i++)
+    {
+        if (i != index)
+        {
+            cell.Choices[i] = null;
+        }
+    }
+}
+
 					</pre>
 					<p>And then that change can be propagated to the remaining tiles:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Propagate(Point tile) {     stack.Push(tile);      while (stack.Count &gt; 0)     {         var point = stack.Pop();         var cellWaveFunction = _map.Cells[point.X, point.Y];          var d = Point.Empty;         foreach (Point adjPos in _helper.Deltas)         {             d = point.Sum(adjPos).Wrap(_map);              var adjWaveFunction = _map.Cells[d.X, d.Y];              bool changed = false;             for (int i = 0; i &lt; adjWaveFunction.Choices.Length; i++)             {                 if (adjWaveFunction.Choices[i] != null)                 {                     if (!TilePossible(cellWaveFunction, adjWaveFunction.Choices[i], adjPos))                     {                         adjWaveFunction.Choices[i] = null;                         changed = true;                     }                 }             }              if (changed)             {                 stack.Push(d);             }              if (adjWaveFunction.Choices.Where(t =&gt; t != null).Count() == 0)             {                 throw new Exception("Map cannot be solved.");             }         }     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Propagate(Point tile)
+{
+    stack.Push(tile);
+
+    while (stack.Count > 0)
+    {
+        var point = stack.Pop();
+        var cellWaveFunction = _map.Cells[point.X, point.Y];
+
+        var d = Point.Empty;
+        foreach (Point adjPos in _helper.Deltas)
+        {
+            d = point.Sum(adjPos).Wrap(_map);
+
+            var adjWaveFunction = _map.Cells[d.X, d.Y];
+
+            bool changed = false;
+            for (int i = 0; i < adjWaveFunction.Choices.Length; i++)
+            {
+                if (adjWaveFunction.Choices[i] != null)
+                {
+                    if (!TilePossible(cellWaveFunction, adjWaveFunction.Choices[i], adjPos))
+                    {
+                        adjWaveFunction.Choices[i] = null;
+                        changed = true;
+                    }
+                }
+            }
+
+            if (changed)
+            {
+                stack.Push(d);
+            }
+
+            if (adjWaveFunction.Choices.Where(t => t != null).Count() == 0)
+            {
+                throw new Exception("Map cannot be solved.");
+            }
+        }
+    }
+}
+
 					</pre>
 					<p>Starting at the current point, it looks around in all the defined directions. For each one, it looks to see if any of the choices at that location is now impossible, based on the current rules. If so, that item gets removed from the target wavefunction's choices, and the updated wavefunction gets added to the "list of places than need processing further". The loop continues until it's run out of things to change.</p>
 					<p>The
@@ -197,7 +347,25 @@
 					<p>What I find particularly interesting about this is that the rules can come from different sources. The generation logic relies on the
 						<code>TileRule</code>
 						class above - and you can write these by hand if you want. For example, here's the definition of a simple three-tile ruleset:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public TileSet Generate(IDirectionHelper dh) {     var ts = new TileSet(dh);      var one = ts.NewTile('█',1);     var two = ts.NewTile('╬',1);     var three = ts.NewTile('┼',1);      ts.AddBidirectionalTileRules(one, one, 1, Directions.North, Directions.South, Directions.East, Directions.West);     ts.AddBidirectionalTileRules(one, two, 1, Directions.North, Directions.South, Directions.East, Directions.West);      ts.AddBidirectionalTileRules(two, two, 1, Directions.North, Directions.South, Directions.East, Directions.West);     ts.AddBidirectionalTileRules(two, three, 1, Directions.North, Directions.South, Directions.East, Directions.West);      ts.AddBidirectionalTileRules(three, three, 1, Directions.North, Directions.South, Directions.East, Directions.West);      return ts; }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public TileSet Generate(IDirectionHelper dh)
+{
+    var ts = new TileSet(dh);
+
+    var one = ts.NewTile('█',1);
+    var two = ts.NewTile('╬',1);
+    var three = ts.NewTile('┼',1);
+
+    ts.AddBidirectionalTileRules(one, one, 1, Directions.North, Directions.South, Directions.East, Directions.West);
+    ts.AddBidirectionalTileRules(one, two, 1, Directions.North, Directions.South, Directions.East, Directions.West);
+
+    ts.AddBidirectionalTileRules(two, two, 1, Directions.North, Directions.South, Directions.East, Directions.West);
+    ts.AddBidirectionalTileRules(two, three, 1, Directions.North, Directions.South, Directions.East, Directions.West);
+
+    ts.AddBidirectionalTileRules(three, three, 1, Directions.North, Directions.South, Directions.East, Directions.West);
+
+    return ts;
+}
+
 					</pre>
 					<p>And that generates something like:</p>
 					<p>
@@ -208,7 +376,11 @@
 					<p>This simple example has bidirectional rules (if a rule is valid left-to-right then it is also valid right-to-left) but that doesn't have to be true – rules can work in a single direction only.</p>
 					<p>But what's really interesting is that you can infer rules from an existing data set. The video example above comes from taking simple "this character has exits east and south" type data, and using that to build a ruleset. But you can also take a text file, and iterate through it to work out what characters can be adjacent to each other, and build a ruleset from that instead. You can also infer weights from how often you see any character, or any relationship between adjacent characters.</p>
 					<p>For example, inferring rules from the following text:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">/---\  +---+ |   |  |   | |   |  |   | \---/  +---+
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">/---\  +---+
+|   |  |   |
+|   |  |   |
+\---/  +---+
+
 					</pre>
 					<p>Can render something like:</p>
 					<p>

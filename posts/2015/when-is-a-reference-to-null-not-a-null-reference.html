@@ -4,12 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I was having a conversation with a programmer new to C# recently, who was rather confused by something similar to the following bit of code. He'd been looking at the source for a library on GitHub, and he didn't understand why this could run without errors:
-
-To him, it seemed to be risking a <code>NullReferenceException</code>, as you can't call a method on a null object.">
-		<meta property="og:description" content="I was having a conversation with a programmer new to C# recently, who was rather confused by something similar to the following bit of code. He'd been looking at the source for a library on GitHub, and he didn't understand why this could run without errors:
-
-To him, it seemed to be risking a <code>NullReferenceException</code>, as you can't call a method on a null object.">
+		<meta name="description" content="When is a reference to null not a null&nbsp;reference?">
+		<meta property="og:description" content="When is a reference to null not a null&nbsp;reference?">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - When is a reference to null not a null&nbsp;reference?</title>
@@ -22,25 +18,8 @@ To him, it seemed to be risking a <code>NullReferenceException</code>, as you ca
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - When is a reference to null not a null&amp;#xA0;reference?">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/when-is-a-reference-to-null-not-a-null-reference-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "When is a reference to null not a null&#xA0;reference?",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/when-is-a-reference-to-null-not-a-null-reference-social.png"
-        ],
-        "datePublished": "2015-08-24T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/when-is-a-reference-to-null-not-a-null-reference">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -51,7 +30,7 @@ To him, it seemed to be risking a <code>NullReferenceException</code>, as you ca
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:39 -->
+		<!-- 23/01/2022 10:19:19 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -127,23 +106,20 @@ To him, it seemed to be risking a <code>NullReferenceException</code>, as you ca
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					When is a reference to null not a null&nbsp;reference?
 				</h1>
-				<div class="meta">Published 24 August 2015</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I was having a conversation with a programmer new to C# recently, who was rather confused by something similar to the following bit of code. He'd been looking at the source for a library on GitHub, and he didn't understand why this could run without errors:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">Widget widget = null; // do stuff that may or may not assign an object to widget widget.DoSomething();
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">Widget widget = null;
+// do stuff that may or may not assign an object to widget
+widget.DoSomething();
+
 					</pre>
 					<p>To him, it seemed to be risking a
 						<code>NullReferenceException</code>, as you can't call a method on a null object.
@@ -154,7 +130,14 @@ To him, it seemed to be risking a <code>NullReferenceException</code>, as you ca
 						is
 						<a href="https://msdn.microsoft.com/en-gb/library/bb383977.aspx" target="_blank" rel="noopener noreferrer">an extension method</a>.</p>
 					<p>Extension methods are not methods on the class you are referring to, they are static methods defined elsewhere in separate static classes. (Hence the name - they are a way of extending the behaviour of other classes or interfaces) And the reason why they can deal with null objects is that their code takes the object in question as a parameter. The definition looks like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class Extensions {   public static void DoSomething(this Widget widget)   {     // do something with the widget   } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class Extensions
+{
+  public static void DoSomething(this Widget widget)
+  {
+    // do something with the widget
+  }
+}
+
 					</pre>
 					<p>The
 						<code>this</code>
@@ -168,7 +151,36 @@ To him, it seemed to be risking a <code>NullReferenceException</code>, as you ca
 					<p>The most commonly used extension methods are probably those provided by the
 						<a href="https://msdn.microsoft.com/en-us/library/bb397926.aspx" target="_blank" rel="noopener noreferrer">Linq framework</a>
 						to do things like add filtering behaviour to all enumerables. But the other common pattern I see (and the source of confusion for the dev I was talking to) is helping to standardise behaviour for handling parameter or object validation. Things like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class ExampleExtensions {   public static void CheckParameterForNull&lt;T&gt;(this T obj, string parameterName) where T : class   {     if(obj == null)     {       throw new ArgumentNullException(parameterName);     }   }   public static bool IsNullOrWhiteSpace(this string str)   {     return string.IsNullOrWhiteSpace(str);   } }  public class MyClass {   public void MyMethod(Widget widget, string text)   {     widget.CheckParameterForNull("obj");      if(text.IsNullOrWhiteSpace())     {       // do stuff     }      // do the rest of the method   } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class ExampleExtensions
+{
+  public static void CheckParameterForNull<T>(this T obj, string parameterName) where T : class
+  {
+    if(obj == null)
+    {
+      throw new ArgumentNullException(parameterName);
+    }
+  }
+  public static bool IsNullOrWhiteSpace(this string str)
+  {
+    return string.IsNullOrWhiteSpace(str);
+  }
+}
+
+public class MyClass
+{
+  public void MyMethod(Widget widget, string text)
+  {
+    widget.CheckParameterForNull("obj");
+
+    if(text.IsNullOrWhiteSpace())
+    {
+      // do stuff
+    }
+
+    // do the rest of the method
+  }
+}
+
 					</pre>
 					<p>As the question which started me thinking about this suggests, you need to be a bit careful applying this pattern though. Because the idea of "calling a method on a null object" is normally an error pattern in .Net (and many other languages) it's important to balance the confusion this might cause against whatever benefits the extension method itself can provide. The long term benefits of clear and readable code can outweigh the short term benefit of a clever pattern.</p>
 					<p>You also have to be a bit careful about the namespaces of your extension methods. You only get intellisense for them (and the code will only compile) if the namespace you declare the static extension class in is included in your current scope – most likely via a

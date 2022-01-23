@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="The approach I read on how to &quot;<a href=&quot;https://intothecloud.blog/2019/09/21/Deploying-and-Debugging-Your-Visual-Studio-Solution-to-Your-Sitecore-Docker-Containers/&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;>how to attach your debugger to Sitecore inside Docker</a>&quot; by running <code>docker inspect</code> to fetch the current IP address, and pasting it into Visual Studio can be a bit of a faff. So I got to wondering: Are there other ways to achieve the same result?">
-		<meta property="og:description" content="The approach I read on how to &quot;<a href=&quot;https://intothecloud.blog/2019/09/21/Deploying-and-Debugging-Your-Visual-Studio-Solution-to-Your-Sitecore-Docker-Containers/&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;>how to attach your debugger to Sitecore inside Docker</a>&quot; by running <code>docker inspect</code> to fetch the current IP address, and pasting it into Visual Studio can be a bit of a faff. So I got to wondering: Are there other ways to achieve the same result?">
+		<meta name="description" content="Attaching a debugger to Sitecore in&nbsp;Docker">
+		<meta property="og:description" content="Attaching a debugger to Sitecore in&nbsp;Docker">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Attaching a debugger to Sitecore in&nbsp;Docker</title>
@@ -18,25 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Attaching a debugger to Sitecore in&amp;#xA0;Docker">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/attaching-a-debugger-to-sitecore-in-docker-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Attaching a debugger to Sitecore in&#xA0;Docker",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/attaching-a-debugger-to-sitecore-in-docker-social.png"
-        ],
-        "datePublished": "2020-02-17T00:00:00+00:00",
-        "dateModified": "2020-03-19T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2020/attaching-a-debugger-to-sitecore-in-docker">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -47,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:38 -->
+		<!-- 23/01/2022 10:18:56 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -123,23 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Attaching a debugger to Sitecore in&nbsp;Docker
 				</h1>
-				<div class="meta">Published 17 February 2020</div>
-				<div class="meta">Updated 19 March 2020</div>
-				<div class="flex py-1">
-					<a href="/tags/docker" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Docker</a>
-					<a href="/tags/visual-studio" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Visual Studio</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>The approach I read on how to "<a href="https://intothecloud.blog/2019/09/21/Deploying-and-Debugging-Your-Visual-Studio-Solution-to-Your-Sitecore-Docker-Containers/" rel="noopener" target="_blank">how to attach your debugger to Sitecore inside Docker</a>" by running
 						<code>docker inspect</code>
 						to fetch the current IP address, and pasting it into Visual Studio can be a bit of a faff. So I got to wondering: Are there other ways to achieve the same result?
@@ -160,10 +135,29 @@
 						<code>json</code>
 						parser. That lets you extract the IP address and send it (plus a port) to the clipboard.</p>
 					<p>Adding a few config options to that, I ended up with something like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(     [Parameter(Mandatory)]     [string]$containerName,     [string]$role = "cm",     [string]$port = "4024" )  $container = "$($containerName)_$($role)_1" $network = "$($containerName)_default"  $json = . docker inspect $container $obj = $json | ConvertFrom-Json    $ip = $obj.NetworkSettings.Networks.$network.IPAddress  $debugTarget = "$($ip):$($port)" $debugTarget | Set-Clipboard Write-Host "Debug target $($debugTarget) sent to clipboard..."
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
+    [Parameter(Mandatory)]
+    [string]$containerName,
+    [string]$role = "cm",
+    [string]$port = "4024"
+)
+
+$container = "$($containerName)_$($role)_1"
+$network = "$($containerName)_default"
+
+$json = . docker inspect $container
+$obj = $json | ConvertFrom-Json  
+
+$ip = $obj.NetworkSettings.Networks.$network.IPAddress
+
+$debugTarget = "$($ip):$($port)"
+$debugTarget | Set-Clipboard
+Write-Host "Debug target $($debugTarget) sent to clipboard..."
+
 					</pre>
 					<p>This assumes that you've kept the default name for Docker's network settings in your compose file – if you don't you'd need to change how the network name is worked out above. Then you can save that as "Get-DebugTarget.ps1" and you can pop up a PowerShell window, and run that against your container:</p>
 					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">.\Get-DebugTarget.ps1 demo
+
 					</pre>
 					<p>and see:</p>
 					<p>
@@ -189,12 +183,37 @@
 						is necessary is that Docker will assign a different IP address each time you bring up your containers. You can tell it to use a fixed IP Address in your compose file – but googling tells me that's not a great idea. So how can we get around the need to know the specific address Docker used?</p>
 					<p>Well, when you browse to your Sitecore website you're able to use
 						<code>localhost</code>. That's because the default compose file maps the IIS port inside your container to a specific port on your default network outside the container:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="9,10" data-enlighter-language="text" style="width:100%; overflow:scroll;">
-						cm:     image: ${REGISTRY}sitecore-xp-spe-standalone:${SITECORE_VERSION}-windowsservercore-${WINDOWSSERVERCORE_VERSION}     entrypoint: powershell.exe -Command "&amp; C:\\tools\\entrypoints\\iis\\Development.ps1 -WatchDirectoryParameters @{ Path = 'C:\\src'; Destination = 'C:\\inetpub\\wwwroot'; ExcludeFiles = @(); }"     volumes:       - ${LICENSE_PATH}:C:\license       - .\data\cm:C:\inetpub\wwwroot\App_Data\logs       - .\code:C:\src       - C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\IDE\Remote Debugger:C:\remote_debugger:ro     ports:       - "44001:80"     links:       - sql       - solr
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="9,10" data-enlighter-language="text" style="width:100%; overflow:scroll;">  cm:
+    image: ${REGISTRY}sitecore-xp-spe-standalone:${SITECORE_VERSION}-windowsservercore-${WINDOWSSERVERCORE_VERSION}
+    entrypoint: powershell.exe -Command "& C:\\tools\\entrypoints\\iis\\Development.ps1 -WatchDirectoryParameters @{ Path = 'C:\\src'; Destination = 'C:\\inetpub\\wwwroot'; ExcludeFiles = @(); }"
+    volumes:
+      - ${LICENSE_PATH}:C:\license
+      - .\data\cm:C:\inetpub\wwwroot\App_Data\logs
+      - .\code:C:\src
+      - C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\IDE\Remote Debugger:C:\remote_debugger:ro
+    ports:
+      - "44001:80"
+    links:
+      - sql
+      - solr
+
 					</pre>
 					<p>If we add the debug port to that mapping, then we could attach the debugger to localhost too:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="11" data-enlighter-language="text" style="width:100%; overflow:scroll;">
-						cm:     image: ${REGISTRY}sitecore-xp-spe-standalone:${SITECORE_VERSION}-windowsservercore-${WINDOWSSERVERCORE_VERSION}     entrypoint: powershell.exe -Command "&amp; C:\\tools\\entrypoints\\iis\\Development.ps1 -WatchDirectoryParameters @{ Path = 'C:\\src'; Destination = 'C:\\inetpub\\wwwroot'; ExcludeFiles = @(); }"     volumes:       - ${LICENSE_PATH}:C:\license       - .\data\cm:C:\inetpub\wwwroot\App_Data\logs       - .\code:C:\src       - C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\IDE\Remote Debugger:C:\remote_debugger:ro     ports:       - "44001:80"       - "4024:4024"     links:       - sql       - solr
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="11" data-enlighter-language="text" style="width:100%; overflow:scroll;">  cm:
+    image: ${REGISTRY}sitecore-xp-spe-standalone:${SITECORE_VERSION}-windowsservercore-${WINDOWSSERVERCORE_VERSION}
+    entrypoint: powershell.exe -Command "& C:\\tools\\entrypoints\\iis\\Development.ps1 -WatchDirectoryParameters @{ Path = 'C:\\src'; Destination = 'C:\\inetpub\\wwwroot'; ExcludeFiles = @(); }"
+    volumes:
+      - ${LICENSE_PATH}:C:\license
+      - .\data\cm:C:\inetpub\wwwroot\App_Data\logs
+      - .\code:C:\src
+      - C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\IDE\Remote Debugger:C:\remote_debugger:ro
+    ports:
+      - "44001:80"
+      - "4024:4024"
+    links:
+      - sql
+      - solr
+
 					</pre>
 					<p>Run
 						<code>docker-compose down</code>, save that change and then run

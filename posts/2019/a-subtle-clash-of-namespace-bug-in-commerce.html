@@ -4,10 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Recently I got the opportunity to do Sitecore's &quot;<a href=&quot;https://www.sitecore.com/services-and-support/training/classroom-training/back-end-developers/sitecore-commerce-for-developers&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;>Implementing Experience Commerce</a>&quot; training course, and get certified in the details of how Commerce works these days. While I was doing the lab exercises for the course I hit an interesting bug, which seemed like just the sort of thing that others might encounter.
-So if you're extending the Commerce OData APIs, watch out:">
-		<meta property="og:description" content="Recently I got the opportunity to do Sitecore's &quot;<a href=&quot;https://www.sitecore.com/services-and-support/training/classroom-training/back-end-developers/sitecore-commerce-for-developers&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;>Implementing Experience Commerce</a>&quot; training course, and get certified in the details of how Commerce works these days. While I was doing the lab exercises for the course I hit an interesting bug, which seemed like just the sort of thing that others might encounter.
-So if you're extending the Commerce OData APIs, watch out:">
+		<meta name="description" content="A subtle clash-of-namespace bug in&nbsp;Commerce">
+		<meta property="og:description" content="A subtle clash-of-namespace bug in&nbsp;Commerce">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - A subtle clash-of-namespace bug in&nbsp;Commerce</title>
@@ -20,24 +18,8 @@ So if you're extending the Commerce OData APIs, watch out:">
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - A subtle clash-of-namespace bug in&amp;#xA0;Commerce">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-subtle-clash-of-namespace-bug-in-commerce-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "A subtle clash-of-namespace bug in&#xA0;Commerce",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/a-subtle-clash-of-namespace-bug-in-commerce-social.png"
-        ],
-        "datePublished": "2019-04-01T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/a-subtle-clash-of-namespace-bug-in-commerce">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -48,7 +30,7 @@ So if you're extending the Commerce OData APIs, watch out:">
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:26 -->
+		<!-- 23/01/2022 10:18:53 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -124,22 +106,15 @@ So if you're extending the Commerce OData APIs, watch out:">
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					A subtle clash-of-namespace bug in&nbsp;Commerce
 				</h1>
-				<div class="meta">Published 01 April 2019</div>
-				<div class="flex py-1">
-					<a href="/tags/commerce" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Commerce</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Recently I got the opportunity to do Sitecore's "<a href="https://www.sitecore.com/services-and-support/training/classroom-training/back-end-developers/sitecore-commerce-for-developers" rel="noopener noreferrer" target="_blank">Implementing Experience Commerce</a>" training course, and get certified in the details of how Commerce works these days. While I was doing the lab exercises for the course I hit an interesting bug, which seemed like just the sort of thing that others might encounter.</p>
 					<p>So if you're extending the Commerce OData APIs, watch out:
 						<!--more-->
@@ -147,17 +122,48 @@ So if you're extending the Commerce OData APIs, watch out:">
 					<p>The lab notes for these exercises usually suggest you copy and paste the code examples into Visual Studio. But to help my understanding I was typing most of the code, in order to pay more attention to what it was doing. In one of the exercises, you have to create an API controller which can answer OData quereries for information about products in your catalog.</p>
 					<p>The Commerce APIs are modern .Net Core code, so in general their controllers return
 						<code>Task&lt;IActionResult&gt;</code>. One of the examples in the training had a controller that looked a bit like this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[EnableQuery] [Route("api/Example")] public class ExampleController : CommerceController {     [EnableQuery]     [HttpGet]     [Route("(Id={id})")]     public async Task&lt;IActionResult&gt; Get(string id)     {         ProductExample yourData = await yourCode.ProcessThisOperation(id);         return new ObjectResult(yourData);     } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[EnableQuery]
+[Route("api/Example")]
+public class ExampleController : CommerceController
+{
+    [EnableQuery]
+    [HttpGet]
+    [Route("(Id={id})")]
+    public async Task<IActionResult> Get(string id)
+    {
+        ProductExample yourData = await yourCode.ProcessThisOperation(id);
+        return new ObjectResult(yourData);
+    }
+}
+
 					</pre>
 					<p>Having entered the code, I followed the lab notes' bland assertion that I should "resolve any namespace issues with
 						<code>using</code>
 						statements". And I did it by accepting the suggestions that Visual Studio's intellisense was suggesting. Having done that I compiled and ran the solution. And followed the instructions to test it with
 						<a href="https://www.getpostman.com/" rel="noopener noreferrer" target="_blank">Postman</a>.</p>
 					<p>And here's where it got confusing. My instance returned a response that initially looked valid:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{     "@odata.context": "https://localhost:5000/Api/$metadata#Example/$entity",     "CompositeKey": null,     "DateCreated": "2019-03-13T16:05:36.7849024Z",     "DateUpdated": "2019-03-13T16:05:36.7849024Z",     "DisplayName": "",     "FriendlyId": null,     "Id": "fdb359edeb5442839b41ee938fe7ac6b",     "Version": 0,     "IsPersisted": false,     "Name": "Entity-ProductExample-Cart01",     "Policies": [] }
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+    "@odata.context": "https://localhost:5000/Api/$metadata#Example/$entity",
+    "CompositeKey": null,
+    "DateCreated": "2019-03-13T16:05:36.7849024Z",
+    "DateUpdated": "2019-03-13T16:05:36.7849024Z",
+    "DisplayName": "",
+    "FriendlyId": null,
+    "Id": "fdb359edeb5442839b41ee938fe7ac6b",
+    "Version": 0,
+    "IsPersisted": false,
+    "Name": "Entity-ProductExample-Cart01",
+    "Policies": []
+}
+
 					</pre>
 					<p>But while it's a success response, it's not the right one. The controller code was returning a custom type which should have added at least one more property to that json object:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ProductExample : CommerceEntity {     [Contained]     public IEnumerable Products { get; set; } }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ProductExample : CommerceEntity
+{
+    [Contained]
+    public IEnumerable Products { get; set; }
+}
+
 					</pre>
 					<p>But that "Products" property was not present in my json data, despite the
 						<code>Products</code>
@@ -170,7 +176,33 @@ So if you're extending the Commerce OData APIs, watch out:">
 						<code>ObjectResult</code>
 						class lived. That appears to work because there is a class with that name there. But it turns out it has subtly different behaviour to the one that lives under
 						<code>Microsoft.AspNetCore.OData</code>. As soon as I changed that over in my code, I started to see the right data:</p>
-					<pre data-enlighter-highlight="14" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{     "@odata.context": "https://localhost:5000/Api/$metadata#Example/$entity",     "CompositeKey": null,     "DateCreated": "2019-03-13T16:05:36.7849024Z",     "DateUpdated": "2019-03-13T16:05:36.7849024Z",     "DisplayName": "",     "FriendlyId": null,     "Id": "fdb359edeb5442839b41ee938fe7ac6b",     "Version": 0,     "IsPersisted": false,     "Name": "Entity-ProductExample-Cart01",     "Policies": [],     "Products@odata.context": "https://localhost:5000/Api/$metadata#Example('fdb359edeb5442839b41ee938fe7ac6b')/Example",     "Products": [         {             "CompositeKey": null,             "DateCreated": "2018-01-18T13:53:30.2133302Z",             "DateUpdated": "2018-05-27T18:10:16.6754176Z",             "DisplayName": "Habitat Centerpiece 1.5 Cu. Ft. Countertop Convection Microwave",             "FriendlyId": "6042749",             "Id": "Entity-SellableItem-6042749",             "Version": 1,             "ListPrice": null         }     ] }
+					<pre data-enlighter-highlight="14" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+    "@odata.context": "https://localhost:5000/Api/$metadata#Example/$entity",
+    "CompositeKey": null,
+    "DateCreated": "2019-03-13T16:05:36.7849024Z",
+    "DateUpdated": "2019-03-13T16:05:36.7849024Z",
+    "DisplayName": "",
+    "FriendlyId": null,
+    "Id": "fdb359edeb5442839b41ee938fe7ac6b",
+    "Version": 0,
+    "IsPersisted": false,
+    "Name": "Entity-ProductExample-Cart01",
+    "Policies": [],
+    "Products@odata.context": "https://localhost:5000/Api/$metadata#Example('fdb359edeb5442839b41ee938fe7ac6b')/Example",
+    "Products": [
+        {
+            "CompositeKey": null,
+            "DateCreated": "2018-01-18T13:53:30.2133302Z",
+            "DateUpdated": "2018-05-27T18:10:16.6754176Z",
+            "DisplayName": "Habitat Centerpiece 1.5 Cu. Ft. Countertop Convection Microwave",
+            "FriendlyId": "6042749",
+            "Id": "Entity-SellableItem-6042749",
+            "Version": 1,
+            "ListPrice": null
+        }
+    ]
+}
+
 					</pre>
 					<p>So if you find yourself writing code that makes use of
 						<code>ObjectResult</code>

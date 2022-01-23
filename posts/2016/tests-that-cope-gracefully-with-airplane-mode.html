@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Have you ever needed to write code that detects if the current computer has an internet connection or not? Having recently tried this, it turns out it's not quite as easy as I expected it would be. So since I've banged my head against the challenge, here's one approach to solving the problem that you might find useful: ">
-		<meta property="og:description" content="Have you ever needed to write code that detects if the current computer has an internet connection or not? Having recently tried this, it turns out it's not quite as easy as I expected it would be. So since I've banged my head against the challenge, here's one approach to solving the problem that you might find useful: ">
+		<meta name="description" content="Tests that cope gracefully with Airplane&nbsp;Mode">
+		<meta property="og:description" content="Tests that cope gracefully with Airplane&nbsp;Mode">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Tests that cope gracefully with Airplane&nbsp;Mode</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Tests that cope gracefully with Airplane&amp;#xA0;Mode">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/tests-that-cope-gracefully-with-airplane-mode-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Tests that cope gracefully with Airplane&#xA0;Mode",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/tests-that-cope-gracefully-with-airplane-mode-social.png"
-        ],
-        "datePublished": "2016-12-26T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/tests-that-cope-gracefully-with-airplane-mode">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:16 -->
+		<!-- 23/01/2022 10:19:15 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,22 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Tests that cope gracefully with Airplane&nbsp;Mode
 				</h1>
-				<div class="meta">Published 26 December 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-					<a href="/tags/unit-test" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Unit Test</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Have you ever needed to write code that detects if the current computer has an internet connection or not? Having recently tried this, it turns out it's not quite as easy as I expected it would be. So since I've banged my head against the challenge, here's one approach to solving the problem that you might find useful: 
 						<!--more-->
 					</p>
@@ -150,7 +127,17 @@
 					<p>In theory, the answer to this is simple. The .Net Framework includes the class
 						<code>NetworkInterface</code>
 						which has a method GetIsNetworkAvailable(). Once you get past the poor naming conventions shown there, it seems like that should solve the problem. My first attempt tried:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestMethod] public void SomeClass_SomeMethod_NetworkFetch_ReturnsValidData() {     if(!NetworkInterface.GetIsNetworkAvailable())     {         Assert.Inconclusive("This test requires network access");     }      // rest of the test... }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestMethod]
+public void SomeClass_SomeMethod_NetworkFetch_ReturnsValidData()
+{
+    if(!NetworkInterface.GetIsNetworkAvailable())
+    {
+        Assert.Inconclusive("This test requires network access");
+    }
+
+    // rest of the test...
+}
+
 					</pre>
 					<p>But sitting on my train with my network disabled, that call to
 						<code>GetIsNetworkAvailable()</code>
@@ -163,20 +150,49 @@
 						<code>GetAllNetworkInterfaces()</code>. So I fired up
 						<a href="https://www.linqpad.net/" target="_blank" rel="noopener noreferrer">LinqPad</a>
 						and I wrote a fragment of code to list out the state of all the adapters on my laptop:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var adapters = NetworkInterface                 .GetAllNetworkInterfaces()                 .Select(i =&gt; i.Description + ": " + i.OperationalStatus.ToString()) Console.WriteLine(String.Join("\r\n", adapters);
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var adapters = NetworkInterface
+                .GetAllNetworkInterfaces()
+                .Select(i => i.Description + ": " + i.OperationalStatus.ToString())
+Console.WriteLine(String.Join("\r\n", adapters);
+
 					</pre>
 					<p>And that returned:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="4,5" data-enlighter-language="text" style="width:100%; overflow:scroll;">Microsoft Wi-Fi Direct Virtual Adapter: Down Intel(R) Dual Band Wireless-AC 7260: Down Intel(R) Ethernet Connection I218-LM: Down VirtualBox Host-Only Ethernet Adapter: Up Software Loopback Interface 1: Up Teredo Tunneling Pseudo-Interface: Down Microsoft ISATAP Adapter #3: Down
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="4,5" data-enlighter-language="text" style="width:100%; overflow:scroll;">Microsoft Wi-Fi Direct Virtual Adapter: Down
+Intel(R) Dual Band Wireless-AC 7260: Down
+Intel(R) Ethernet Connection I218-LM: Down
+VirtualBox Host-Only Ethernet Adapter: Up
+Software Loopback Interface 1: Up
+Teredo Tunneling Pseudo-Interface: Down
+Microsoft ISATAP Adapter #3: Down
+
 					</pre>
 					<p>So the loopback adapter and the
 						<a href="https://www.virtualbox.org/" target="_blank" rel="noopener noreferrer">VirtualBox</a>
 						network adapter are the problem - since neither of them rely on a physical network connection they are both reported as working in Airplane mode.</p>
 					<p>Knowing that, it's pretty easy to code around the problem:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private bool physicalNetworkAvailable() {     return NetworkInterface.GetAllNetworkInterfaces()         .Where(i =&gt; i.OperationalStatus == OperationalStatus.Up )         .Select(i =&gt; i.Description.ToLower())         .Where(n =&gt; !n.Contains("virtualbox"))         .Where(n =&gt; !n.Contains("loopback"))         .Any(); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private bool physicalNetworkAvailable()
+{
+    return NetworkInterface.GetAllNetworkInterfaces()
+        .Where(i => i.OperationalStatus == OperationalStatus.Up )
+        .Select(i => i.Description.ToLower())
+        .Where(n => !n.Contains("virtualbox"))
+        .Where(n => !n.Contains("loopback"))
+        .Any();
+}
+
 					</pre>
 					<p>(Of course it's possible there might be other names that need filtering on your machine)</p>
 					<p>and any tests I need to be skipped when I'm offline can be in the form:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void SomeClass_SomeMethod_NetworkFetch_ReturnsValidData() {     if(!physicalNetworkAvailable())     {         Assert.Inconclusive("This test requires network access");     }      // rest of the test... }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void SomeClass_SomeMethod_NetworkFetch_ReturnsValidData()
+{
+    if(!physicalNetworkAvailable())
+    {
+        Assert.Inconclusive("This test requires network access");
+    }
+
+    // rest of the test...
+}
+
 					</pre>
 					<p>So now I can get back to the important work of fixing the code's dependencies so that I don't need the code here...</p>
 				</div>

@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I was asked to do some configuration on a remote computer recently, and discovered that the security-concious network admins had locked down the ability for me to share my local computer's files with the server via RDP and the ability to get to services like OneDrive. I had a collection of config files I had been asked to deploy, and manually creating each file on the server and copying over its contents seemed like a lot of hassle. So I tried a trick with PowerShell to make my life easier...">
-		<meta property="og:description" content="I was asked to do some configuration on a remote computer recently, and discovered that the security-concious network admins had locked down the ability for me to share my local computer's files with the server via RDP and the ability to get to services like OneDrive. I had a collection of config files I had been asked to deploy, and manually creating each file on the server and copying over its contents seemed like a lot of hassle. So I tried a trick with PowerShell to make my life easier...">
+		<meta name="description" content="A little PowerShell hack for sending files to a remote&nbsp;machine">
+		<meta property="og:description" content="A little PowerShell hack for sending files to a remote&nbsp;machine">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - A little PowerShell hack for sending files to a remote&nbsp;machine</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - A little PowerShell hack for sending files to a remote&amp;#xA0;machine">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-little-powershell-hack-for-sending-files-to-a-remote-machine-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "A little PowerShell hack for sending files to a remote&#xA0;machine",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/a-little-powershell-hack-for-sending-files-to-a-remote-machine-social.png"
-        ],
-        "datePublished": "2019-06-10T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/a-little-powershell-hack-for-sending-files-to-a-remote-machine">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:03:26 -->
+		<!-- 23/01/2022 10:18:51 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,20 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					A little PowerShell hack for sending files to a remote&nbsp;machine
 				</h1>
-				<div class="meta">Published 10 June 2019</div>
-				<div class="flex py-1">
-					<a href="/tags/powershell" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I was asked to do some configuration on a remote computer recently, and discovered that the security-concious network admins had locked down the ability for me to share my local computer's files with the server via RDP and the ability to get to services like OneDrive. I had a collection of config files I had been asked to deploy, and manually creating each file on the server and copying over its contents seemed like a lot of hassle. So I tried a trick with PowerShell to make my life easier...
 						<!--more-->
 					</p>
@@ -149,24 +128,96 @@
 						<a href="/posts/2017/embedding-resources-in-powershell-scripts" target="_blank">embed files directly into PowerShell scripts</a>
 						using Base64 encoding. Since that idea can turn an arbitrary file into text that you can save in a script, it can also be used to encode an arbitrary file and place it onto the clipboard. And that gives you a route to move the file over an RDP session's shared clipboard – which looked like it might be an approach to making my situation easier. So I hacked up a little PowerShell module that can be used to achieve this...</p>
 					<p>So on one machine we're going to need to send a specific file to the clipboard. That entails a commandlet that takes the path to a file, checks it exists and sends the file to the clipboard:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Send-ClipboardFile {     param(         [string]$file     )          if(!(Test-Path $file))     {         throw "Specified file '$file' cannot be found"     }      $fileName = Split-Path $file -leaf      $data = Base64Encode-File $file     "$fileName`b$data" | Set-Clipboard      Write-Host "File `$file` encoded to clipboard in $($data.Length) bytes" }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Send-ClipboardFile
+{
+    param(
+        [string]$file
+    )
+    
+    if(!(Test-Path $file))
+    {
+        throw "Specified file '$file' cannot be found"
+    }
+
+    $fileName = Split-Path $file -leaf
+
+    $data = Base64Encode-File $file
+    "$fileName`b$data" | Set-Clipboard
+
+    Write-Host "File `$file` encoded to clipboard in $($data.Length) bytes"
+}
+
 					</pre>
 					<p>Having checked the file exists, the code uses
 						<code>Split-Path</code>
 						to make sure it has just the file name, ignoring any relative path that may have been passed in. It then turns the file into a base64 string. Finally it sends a string to the clipboard that combines the file name and the encoded data and writes some output.</p>
 					<p>Encoding the file to a base64 string is pretty simple:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Base64Encode-File {   param   (     [Parameter(Mandatory = $true)]     [string]$file   )   process   {     $c = Get-Content $file -Encoding Byte      return [System.Convert]::ToBase64String($c)   } }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Base64Encode-File
+{
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]$file
+  )
+  process
+  {
+    $c = Get-Content $file -Encoding Byte 
+    return [System.Convert]::ToBase64String($c)
+  }
+}
+
 					</pre>
 					<p>All it needs to do is read the contents of the file, and call the .Net function to convert the value into base64.</p>
 					<p>The other end of the process involves receiving the data from the clipboard:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Receive-ClipboardFile {     param(         [string]$alternativeName = $null     )      $clip = Get-Clipboard      $bits = $clip.Split(`b")      if($bits.Length -ne 2)     {         throw "Data error. Expected 2 items of data on clipboard, but got $($bits.Length)"     }      $file = $bits[0]     if($alternativeName -ne $null -and $alternativeName.Length -gt 0)     {         $file = $alternativeName     }     $data = $bits[1]      Write-Host "Receiving file `$file` from $($clip.Length) bytes of data"      Write-EmbeddedFile $data $file }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Receive-ClipboardFile
+{
+    param(
+        [string]$alternativeName = $null
+    )
+
+    $clip = Get-Clipboard
+
+    $bits = $clip.Split(`b")
+
+    if($bits.Length -ne 2)
+    {
+        throw "Data error. Expected 2 items of data on clipboard, but got $($bits.Length)"
+    }
+
+    $file = $bits[0]
+    if($alternativeName -ne $null -and $alternativeName.Length -gt 0)
+    {
+        $file = $alternativeName
+    }
+    $data = $bits[1]
+
+    Write-Host "Receiving file `$file` from $($clip.Length) bytes of data"
+
+    Write-EmbeddedFile $data $file
+}
+
 					</pre>
 					<p>This bit of code grabs the data that's on the clipboard, and tries to split it using the separator character that was used in the sending routine above. It checks to see that it got exactly two items from that. If not, that implies an error. Otherwise you have a filename and a block of encoded data. If the user passed the optional alternative file name parameter then it uses that, otherwise it uses the original file name sent over the clipboard. Then it can write some output, and then turn the clipboard data back into a disk file.</p>
 					<p>And again, writing the data out to disk is pretty simple:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Write-EmbeddedFile {   param   (     [string]$base64,     [string]$targetFile   )   process   {     $Content = [System.Convert]::FromBase64String($base64)     Set-Content -Path ".\$targetFile" -Value $Content -Encoding Byte   } }
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Write-EmbeddedFile
+{
+  param
+  (
+    [string]$base64,
+    [string]$targetFile
+  )
+  process
+  {
+    $Content = [System.Convert]::FromBase64String($base64)
+    Set-Content -Path ".\$targetFile" -Value $Content -Encoding Byte
+  }
+}
+
 					</pre>
 					<p>Finally, the module file can export the two key functions for use:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Export-ModuleMember -Function "Receive-ClipboardFile" Export-ModuleMember -Function "Send-ClipboardFile"
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Export-ModuleMember -Function "Receive-ClipboardFile"
+Export-ModuleMember -Function "Send-ClipboardFile"
+
 					</pre>
 					<p>And with that, all you have to do is drop this script (I named it
 						<code>ClipboardFileTransfer.psm1</code>) into a suitably named folder in your modules directory or locally and you can import it and send some files...</p>

@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="Ages ago I wrote some posts about <a href=&quot;/posts/2016/an-alternative-approach-to-pipelines&quot; target=&quot;_blank&quot;>an approach to pipeline-style code patterns</a> for C# code. Recently I got a question on a gist I'd written to go with that article, because someone was having issues adding async code into pipeline components. Async patterns are much more common now, but this wasn't something I'd actually tried. Cue some interesting experiments... ">
-		<meta property="og:description" content="Ages ago I wrote some posts about <a href=&quot;/posts/2016/an-alternative-approach-to-pipelines&quot; target=&quot;_blank&quot;>an approach to pipeline-style code patterns</a> for C# code. Recently I got a question on a gist I'd written to go with that article, because someone was having issues adding async code into pipeline components. Async patterns are much more common now, but this wasn't something I'd actually tried. Cue some interesting experiments... ">
+		<meta name="description" content="Pipelines and async">
+		<meta property="og:description" content="Pipelines and async">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Pipelines and async</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Pipelines and async">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/pipelines-and-async-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Pipelines and async",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/pipelines-and-async-social.png"
-        ],
-        "datePublished": "2021-06-07T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/pipelines-and-async">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:15 -->
+		<!-- 23/01/2022 10:19:11 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,20 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Pipelines and async
 				</h1>
-				<div class="meta">Published 07 June 2021</div>
-				<div class="flex py-1">
-					<a href="/tags/c" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>Ages ago I wrote some posts about
 						<a href="/posts/2016/an-alternative-approach-to-pipelines" target="_blank">an approach to pipeline-style code patterns</a>
 						for C# code. Recently I got a question on a gist I'd written to go with that article, because someone was having issues adding async code into pipeline components. Async patterns are much more common now, but this wasn't something I'd actually tried. Cue some interesting experiments... 
@@ -143,12 +122,20 @@
 					</p>
 					<h2>Async gets everywhere...</h2>
 					<p>In my original code I had a basic pipeline step pattern that could map an input to an output:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep&lt;INPUT, OUTPUT&gt; { 	OUTPUT Process(INPUT input); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep<INPUT, OUTPUT>
+{
+	OUTPUT Process(INPUT input);
+}
+
 					</pre>
 					<p>If you want to make the
 						<code>Process()</code>
 						method be awaitable, then you have to declare that method slightly differently:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;INPUT, OUTPUT&gt; { 	Task&lt;OUTPUT&gt; Process(INPUT input); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep<INPUT, OUTPUT>
+{
+	Task<OUTPUT> Process(INPUT input);
+}
+
 					</pre>
 					<p>It has to return a
 						<code>Task&lt;T&gt;</code>
@@ -168,16 +155,46 @@
 						<code>Task&lt;INPUT&gt;</code>
 						too? That solves our order-of-steps issue because every step can have the same signature:</p>
 					<p>So the basic definition becomes:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;INPUT, OUTPUT&gt; { 	Task&lt;OUTPUT&gt; Process(Task&lt;INPUT&gt; input); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep<INPUT, OUTPUT>
+{
+	Task<OUTPUT> Process(Task<INPUT> input);
+}
+
 					</pre>
 					<p>Based on that, we need to tweak the definitions of the abstract pipeline based on these steps, to follow the same pattern:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt; { 	public Func&lt;Task&lt;TIn&gt;, Task&lt;TOut&gt;&gt; _pipelineSteps { get; protected set; }  	public Task&lt;TOut&gt; ProcessAsync(Task&lt;TIn&gt; Input) 	{ 		return _pipelineSteps(Input); 	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline<TIn, TOut> : IAsyncPipelineStep<TIn, TOut>
+{
+	public Func<Task<TIn>, Task<TOut>> _pipelineSteps { get; protected set; }
+
+	public Task<TOut> ProcessAsync(Task<TIn> Input)
+	{
+		return _pipelineSteps(Input);
+	}
+}
+
 					</pre>
 					<p>And similarly adjust the helper method which allows us to compose the steps together:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class AsyncPipelineStepExtensions { 	public static Task&lt;TOut&gt; Step&lt;TIn, TOut&gt;(this Task&lt;TIn&gt; Input, IAsyncPipelineStep&lt;TIn, TOut&gt; Step) 	{ 		return Step.ProcessAsync(Input); 	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class AsyncPipelineStepExtensions
+{
+	public static Task<TOut> Step<TIn, TOut>(this Task<TIn> Input, IAsyncPipelineStep<TIn, TOut> Step)
+	{
+		return Step.ProcessAsync(Input);
+	}
+}
+
 					</pre>
 					<p>That gives us a basis to try defining some steps... How about an async fetch for some HTML from a website?</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt; { 	private static readonly HttpClient _client = new HttpClient(); 	 	public async Task&lt;string&gt; ProcessAsync(Task&lt;Uri&gt; Input) 	{ 		var uri = await Input; 		return await _client.GetStringAsync(uri); 	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep<Uri, string>
+{
+	private static readonly HttpClient _client = new HttpClient();
+	
+	public async Task<string> ProcessAsync(Task<Uri> Input)
+	{
+		var uri = await Input;
+		return await _client.GetStringAsync(uri);
+	}
+}
+
 					</pre>
 					<p>The interesting thing here is that our input to each step is a
 						<code>Task&lt;INPUT&gt;</code>
@@ -192,29 +209,87 @@
 						</b>
 					</p>
 					<p>And writing to disk can be async too:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt; { 	public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input) 	{ 		var data = await Input; 		var fileName = System.IO.Path.GetTempFileName(); 		 		await System.IO.File.WriteAllTextAsync(fileName, data); 		 		return fileName; 	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep<string, string>
+{
+	public async Task<string> ProcessAsync(Task<string> Input)
+	{
+		var data = await Input;
+		var fileName = System.IO.Path.GetTempFileName();
+		
+		await System.IO.File.WriteAllTextAsync(fileName, data);
+		
+		return fileName;
+	}
+}
+
 					</pre>
 					<p>This is slightly different, because we're awaiting something which doesn't return data – but it's broadly the same pattern.</p>
 					<p>And we can compose those together into a pipeline:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt; { 	public ExampleAsyncPipeline() 	{ 		_pipelineSteps = input =&gt; input 			.Step(new HttpFetchAsyncStep()) 			.Step(new DiskWriteAsyncStep()); 		 	} }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline<Uri, string>
+{
+	public ExampleAsyncPipeline()
+	{
+		_pipelineSteps = input => input
+			.Step(new HttpFetchAsyncStep())
+			.Step(new DiskWriteAsyncStep());
+		
+	}
+}
+
 					</pre>
 					<p>That doesn't change from our pre-async definition of a new pipeline. But we do need a little tweak to how we use it. Because our steps always have to take a
 						<code>Task&lt;T&gt;</code>
 						as input, we need a little tweak to ensure we have one for the input to the pipeline:</p>
-					<pre data-enlighter-highlight="6" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main() { 	var pipeline = new ExampleAsyncPipeline(); 	var uri = new Uri("https://news.bbc.co.uk/");  	var input = Task.FromResult(uri);  	var tempFile = await pipeline.ProcessAsync(input);  	Console.WriteLine($"{uri} saved to {tempFile}"); }
+					<pre data-enlighter-highlight="6" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main()
+{
+	var pipeline = new ExampleAsyncPipeline();
+	var uri = new Uri("https://news.bbc.co.uk/");
+
+	var input = Task.FromResult(uri);
+
+	var tempFile = await pipeline.ProcessAsync(input);
+
+	Console.WriteLine($"{uri} saved to {tempFile}");
+}
+
 					</pre>
 					<p>Now this runs, and it gives us some valid output:</p>
 					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">https://news.bbc.co.uk/ saved to C:\Users\jeremy\AppData\Local\Temp\tmpF77A.tmp
+
 					</pre>
 					<p>But thinking about it, the code should probably hide the need for the
 						<code>Task.FromResult()</code>
 						call for us. We can amend the abstract
 						<code>AsyncPipeline</code>
 						to do this easily:</p>
-					<pre data-enlighter-highlight="10,11,12,13,14" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt; { 	public Func&lt;Task&lt;TIn&gt;, Task&lt;TOut&gt;&gt; _pipelineSteps { get; protected set; }  	public Task&lt;TOut&gt; ProcessAsync(Task&lt;TIn&gt; Input) 	{ 		return _pipelineSteps(Input); 	}  	public Task&lt;TOut&gt; ProcessAsync(TIn Input) 	{ 		var inputTask = Task.FromResult(Input); 		return _pipelineSteps(inputTask); 	} }
+					<pre data-enlighter-highlight="10,11,12,13,14" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline<TIn, TOut> : IAsyncPipelineStep<TIn, TOut>
+{
+	public Func<Task<TIn>, Task<TOut>> _pipelineSteps { get; protected set; }
+
+	public Task<TOut> ProcessAsync(Task<TIn> Input)
+	{
+		return _pipelineSteps(Input);
+	}
+
+	public Task<TOut> ProcessAsync(TIn Input)
+	{
+		var inputTask = Task.FromResult(Input);
+		return _pipelineSteps(inputTask);
+	}
+}
+
 					</pre>
 					<p>Abstracting that away means we won't forget to do it later, and it makes the code to run the pipeline marginally neater too:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main() { 	var pipeline = new ExampleAsyncPipeline(); 	var uri = new Uri("https://news.bbc.co.uk/");  	var tempFile = await pipeline.ProcessAsync(uri);  	Console.WriteLine($"{uri} saved to {tempFile}"); }
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main()
+{
+	var pipeline = new ExampleAsyncPipeline();
+	var uri = new Uri("https://news.bbc.co.uk/");
+
+	var tempFile = await pipeline.ProcessAsync(uri);
+
+	Console.WriteLine($"{uri} saved to {tempFile}");
+}
+
 					</pre>
 					<p>And now all our pipelines can go async if necessary...</p>
 					<p>

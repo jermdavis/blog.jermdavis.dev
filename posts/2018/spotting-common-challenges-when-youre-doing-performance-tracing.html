@@ -4,10 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="I find myself doing quite a lot of work on performance for Sitecore websites at the moment. Whenever I do a similar job for a group of clients, I start to spot patterns in the sites I'm working on – and it struck me that there are some common performance issues that can be spotted just from the overview graphs you see when you collect trace data.
-So to try and help you all improve the sites you ship, here are three that I've come across in a few projects recently:">
-		<meta property="og:description" content="I find myself doing quite a lot of work on performance for Sitecore websites at the moment. Whenever I do a similar job for a group of clients, I start to spot patterns in the sites I'm working on – and it struck me that there are some common performance issues that can be spotted just from the overview graphs you see when you collect trace data.
-So to try and help you all improve the sites you ship, here are three that I've come across in a few projects recently:">
+		<meta name="description" content="Spotting common challenges when you're doing performance&nbsp;tracing">
+		<meta property="og:description" content="Spotting common challenges when you're doing performance&nbsp;tracing">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Spotting common challenges when you're doing performance&nbsp;tracing</title>
@@ -20,25 +18,8 @@ So to try and help you all improve the sites you ship, here are three that I've 
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - Spotting common challenges when you&amp;#x27;re doing performance&amp;#xA0;tracing">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/spotting-common-challenges-when-youre-doing-performance-tracing-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "Spotting common challenges when you&#x27;re doing performance&#xA0;tracing",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/spotting-common-challenges-when-youre-doing-performance-tracing-social.png"
-        ],
-        "datePublished": "2018-02-05T00:00:00+00:00",
-        "dateModified": "2018-02-06T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/spotting-common-challenges-when-youre-doing-performance-tracing">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -49,7 +30,7 @@ So to try and help you all improve the sites you ship, here are three that I've 
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:19 -->
+		<!-- 23/01/2022 10:19:14 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -125,23 +106,15 @@ So to try and help you all improve the sites you ship, here are three that I've 
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					Spotting common challenges when you're doing performance&nbsp;tracing
 				</h1>
-				<div class="meta">Published 05 February 2018</div>
-				<div class="meta">Updated 06 February 2018</div>
-				<div class="flex py-1">
-					<a href="/tags/performance" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Performance</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>I find myself doing quite a lot of work on performance for Sitecore websites at the moment. Whenever I do a similar job for a group of clients, I start to spot patterns in the sites I'm working on – and it struck me that there are some common performance issues that can be spotted just from the overview graphs you see when you collect trace data.</p>
 					<p>So to try and help you all improve the sites you ship, here are three that I've come across in a few projects recently:
 						<!--more-->
@@ -161,7 +134,10 @@ So to try and help you all improve the sites you ship, here are three that I've 
 						<br>
 						Simply put, you're working the CPU hard when a request looks like this. There are lots of potential reasons for this, but some common scenarios are:</p>
 					<ul>
-						<li>Poor queries against the Sitecore content APIs. Especially where a big chunk of data gets returned, and is then filtered by Linq-to-Objects in memory. For example, work hard to avoid queries that look like this:<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var results = Sitecore.Context.Item                 .Axes("//*")                 .Where(i =&gt; i.TemplateID == requiredTemplateID);
+						<li>Poor queries against the Sitecore content APIs. Especially where a big chunk of data gets returned, and is then filtered by Linq-to-Objects in memory. For example, work hard to avoid queries that look like this:<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var results = Sitecore.Context.Item
+                .Axes("//*")
+                .Where(i => i.TemplateID == requiredTemplateID);
+
 							</pre>
 							because it's a classic performance bottleneck – it can fetch a lot of items from the database (which is itself a problem due to query time and cache churn) but then it filters them in memory, using up lots more CPU time and discarding a chunk of the data that Sitecore worked hard to fetch.</li>
 						<li>Complicated algorithms. Where you're doing big calculations, organising lots of data or parsing big chunks of XML/JSON.</li>

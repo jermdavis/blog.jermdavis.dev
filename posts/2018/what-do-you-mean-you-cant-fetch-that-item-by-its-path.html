@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="There are some things in Sitecore that you just take for granted will work. Loading items is a good example of this. I'll admit that user error can get in your way, but usually if you can see an item in the content tree, you can write code that will load it without issues. So I'll admit I was pretty confused when I came across a scenario recently where this did not appear to work correctly. In case anyone else hits this challenge, here's what happened:">
-		<meta property="og:description" content="There are some things in Sitecore that you just take for granted will work. Loading items is a good example of this. I'll admit that user error can get in your way, but usually if you can see an item in the content tree, you can write code that will load it without issues. So I'll admit I was pretty confused when I came across a scenario recently where this did not appear to work correctly. In case anyone else hits this challenge, here's what happened:">
+		<meta name="description" content="What do you mean you can't fetch that item by its&nbsp;path?">
+		<meta property="og:description" content="What do you mean you can't fetch that item by its&nbsp;path?">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - What do you mean you can't fetch that item by its&nbsp;path?</title>
@@ -18,24 +18,8 @@
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.json">
 		<meta property="og:title" content="Jeremy Davis - What do you mean you can&amp;#x27;t fetch that item by its&amp;#xA0;path?">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/what-do-you-mean-you-cant-fetch-that-item-by-its-path-social.png">
-		<script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "What do you mean you can&#x27;t fetch that item by its&#xA0;path?",
-        "image": [
-            "https://blog.jermdavis.dev/img/featured/what-do-you-mean-you-cant-fetch-that-item-by-its-path-social.png"
-        ],
-        "datePublished": "2018-12-10T00:00:00+00:00",
-        "author": [{
-            "@type": "Person",
-            "name": "Jeremy Davis",
-            "url": "https://jermdavis.dev/"
-        }]
-    }
-    
-		</script>
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/social-card.png">
+		<meta property="og:description" content="Sitecore, C# and web development">
 		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/what-do-you-mean-you-cant-fetch-that-item-by-its-path">
 		<meta property="og:type" content="website">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -46,7 +30,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 18/01/2022 08:04:38 -->
+		<!-- 23/01/2022 10:19:19 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -122,22 +106,15 @@
 			</div>
 		</div>
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
+			<div class="site-heading">
 				<h1 class="text-5xl mb-4 pb-1">
 					What do you mean you can't fetch that item by its&nbsp;path?
 				</h1>
-				<div class="meta">Published 10 December 2018</div>
-				<div class="flex py-1">
-					<a href="/tags/commerce-connect" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Commerce Connect</a>
-					<a href="/tags/sitecore" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
 					<p>There are some things in Sitecore that you just take for granted will work. Loading items is a good example of this. I'll admit that user error can get in your way, but usually if you can see an item in the content tree, you can write code that will load it without issues. So I'll admit I was pretty confused when I came across a scenario recently where this did not appear to work correctly. In case anyone else hits this challenge, here's what happened:
 						<!--more-->
 					</p>
@@ -148,7 +125,12 @@
 					<p>After working through the custom bits of their integration code in the Visual Studio debugger, I spotted a place where this behaviour might occur. When it tried to import a new item of "product category" data, it was looking to load the correct parent item. (So the new child could be created under it) It looked like when a parent didn't exist, it would fail to process new children for that item. But oddly in some circumstances I could step through the code and see that the parent item was visible in the Sitecore content tree, but the request to load it still failed.</p>
 					<p>That confused me. So I did what I usually do when code confuses me: I try to reproduce the situation with the simplest possible thing. And after a few tries, I hit on the following process:</p>
 					<p>If I deleted all the product category data from Sitecore, I could run the Commerce Connect synchronisation process and it would complete ok. But having done that I could run some simple PowerShell that showed the problem:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">get-childitem "/sitecore/content/Product Repository/Product Classifications/storeName/Grocery/Baby Store" Write-host "--" get-item "/sitecore/content/Product Repository/Product Classifications/storeName/Grocery/Baby Store/Baby Bath Skin Care" Write-host "--" get-item -path master: -ID "{F3D09AFA-D9B3-11C7-14B1-4D1096878F21}" | select -ExpandProperty Paths | select FullPath
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">get-childitem "/sitecore/content/Product Repository/Product Classifications/storeName/Grocery/Baby Store"
+Write-host "--"
+get-item "/sitecore/content/Product Repository/Product Classifications/storeName/Grocery/Baby Store/Baby Bath Skin Care"
+Write-host "--"
+get-item -path master: -ID "{F3D09AFA-D9B3-11C7-14B1-4D1096878F21}" | select -ExpandProperty Paths | select FullPath
+
 					</pre>
 					<p>Which gave the following result:</p>
 					<p>
