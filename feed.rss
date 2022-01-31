@@ -6,15 +6,270 @@
 		<description />
 		<copyright>2014-2022</copyright>
 		<managingEditor>Jeremy Davis</managingEditor>
-		<pubDate>Thu, 27 Jan 2022 18:31:23 GMT</pubDate>
-		<lastBuildDate>Thu, 27 Jan 2022 18:31:23 GMT</lastBuildDate>
+		<pubDate>Mon, 31 Jan 2022 07:54:59 GMT</pubDate>
+		<lastBuildDate>Mon, 31 Jan 2022 07:54:59 GMT</lastBuildDate>
+		<item>
+			<title>Docker without the desktop</title>
+			<link>https://blog.jermdavis.dev/posts/2022/docker-without-desktop</link>
+			<description>&lt;p&gt;If you're reading this soon after I post it then it's very nearly the end of the &amp;amp;quot;grace period&amp;amp;quot; where anyone can run Docker Desktop. As of 1st February &lt;a href="https://www.docker.com/pricing/faq#:~:text=Do%20I%20need%20to%20pay%20to%20continue%20to%20use%20Docker%20Desktop%3F" target="_blank" rel="noopener"&gt;if your business meets certain requirements you have to pay for each user&lt;/a&gt;. So what can us Sitecore devs do if we aren't in a position to pay that fee? Well the good news is you can run Docker without the Desktop bit, and it's not too tricky once you wrap your head around a few things...&lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<guid>https://blog.jermdavis.dev/posts/2022/docker-without-desktop</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;If you're reading this soon after I post it then it's very nearly the end of the "grace period" where anyone can run Docker Desktop. As of 1st February &lt;a href="https://www.docker.com/pricing/faq#:~:text=Do%20I%20need%20to%20pay%20to%20continue%20to%20use%20Docker%20Desktop%3F" target="_blank" rel="noopener"&gt;if your business meets certain requirements you have to pay for each user&lt;/a&gt;. So what can us Sitecore devs do if we aren't in a position to pay that fee? Well the good news is you can run Docker without the Desktop bit, and it's not too tricky once you wrap your head around a few things...&lt;!--more--&gt;&lt;/p&gt;
+&lt;p&gt;I should note that I've been working this out on Windows 10 Professional. It's possible that this needs tweaking for Windows 11, but I've only had the chance to test the steps against Win 10 VMs in Azure as that's my use case.&lt;/p&gt;
+&lt;h2 id="first-prerequisites"&gt;First: Prerequisites&lt;/h2&gt;
+&lt;p&gt;Microsoft provide two optional features for Windows which are needed for Docker to run. One is the Hyper-V virtualisation infrastructure that allows the Docker engine to run VMs, and the other is Microsoft's containers feature.&lt;/p&gt;
+&lt;p&gt;It's easy to verify and install optional features via PowerShell. You can call &lt;code&gt;Get-WindowsOptionalFeature&lt;/code&gt; to test if a feature has been installed, and &lt;code&gt;Enable-WindowsOptionalFeature&lt;/code&gt; if you need to add it. So I tried wrapping those up in a helper function to install a named feature:&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function VerifyWindowsFeature
+{
+	param(
+		[string]$featureName
+	)
+	
+	$hasFeature = (Get-WindowsOptionalFeature -FeatureName $featureName -Online | Select -ExpandProperty State) -eq "Enabled"
+	if(-not $hasFeature)
+	{
+		Write-Host "$featureName feature not currently installed - adding" -ForegroundColor Yellow
+		$result = Enable-WindowsOptionalFeature -Online -FeatureName $featureName -NoRestart -All
+
+		return $result.RestartNeeded
+	}
+	else
+	{
+		Write-Host "$featureName feature is already installed" -ForegroundColor Green
+		return $false
+	}
+}
+&lt;/pre&gt;
+&lt;p&gt;Installing features like this often requires a restart - but helpfully you can tell Windows "don't reboot please" and get a flag back saying whether a reboot is required. So this function can be called a couple of times to install the two features needed, and then we can test if a reboot is required:&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function EnsureWindowsFeatures
+{
+	$containersNeedsRestart = VerifyWindowsFeature "Containers"
+	$hyperVNeedsReboot = VerifyWindowsFeature "Microsoft-Hyper-V"
+
+	if($containersNeedsRestart -or $hyperVNeedsReboot)
+	{
+		throw "Restart required after adding Windows features"
+	}
+}
+&lt;/pre&gt;
+&lt;p&gt;I toyed with the idea of using &lt;code&gt;Restart-Computer&lt;/code&gt; here to force a reboot, but ended up leaving it out. I'm not sure that's the best idea. But after this has run and a reboot has been performed (if needed) the machine should be in a state to install Docker.&lt;/p&gt;
+&lt;h2 id="second-the-docker-engine"&gt;Second: The Docker Engine&lt;/h2&gt;
+&lt;p&gt;It's not well advertised, but Docker does provide a simple download for just the Windows container engine. I found this via &lt;a href="https://lippertmarkus.com/2021/09/04/containers-without-docker-desktop/" target="_blank" rel="noopener"&gt;a helpful blog post&lt;/a&gt;, which has a very basic script for installing the Docker engine. It's interesting to note that this download is specifically for Windows containers though - unlike the Docker Desktop install, it doesn't appear to support switching over to Linux. The post highlights what you need to do in order to run in mixed-mode - but I was focused on Windows containers for this, so I've stuck with the simplest solution.&lt;/p&gt;
+&lt;p&gt;That blog post gave the basic outline for getting the Docker engine to run: Download and extract the zip file, add its location to the system path, and register the Docker service. But the script in the blog post doesn't deal with the idea that you might want to change versions, or address the issue of running containers when you're not an admin. So a bit of rework was in order for my needs, and I got to experimenting...&lt;/p&gt;
+&lt;p&gt;The first thing I wanted to check was whether the Docker service was already running. That's fairly easy to do with PowerShell - you can filter the results of &lt;code&gt;Get-Service&lt;/code&gt; by the known name of the Docker service that gets installed. If there are results then the service exists. The result is an object which gives you the name and state of that service, so you can tell if it's running or not. And if it is you can check if there are any active containers. I probably need a better way to handle this, but for a first pass the script throws an exception at that point - I didn't want to try and delete the service if it was working. But otherwise the service can be stopped and (since we know at this point that the Docker code must already be present) the command line to unregister it can be called:&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function StopAndRemoveExistingService
+{
+    param(
+        [string]$svcName
+    )
+    $service = Get-Service | where { $_.Name -eq $svcName }
+    if($service.length -eq 0)
+    {
+        Write-Host "No existing service for $svcName" -ForegroundColor Green
+    }
+    else
+    {
+        $service | % {
+          Write-Host "Service '$($_.DisplayName)' exists" -ForegroundColor Yellow
+          if($_.Status -eq "Running")
+          {
+            Write-Host "$($_.Name) service is running" -ForegroundColor Yellow
+
+            $items = docker ps -q
+
+            if($items -ne $null)
+            {
+                throw "Containers are running - stop them before running this script"
+            }
+
+          }
+
+          Write-Host "Removing service" -ForegroundColor Green
+          Stop-Service $_.Name
+          dockerd --unregister-service
+        }
+    }
+}
+&lt;/pre&gt;
+&lt;p&gt;So with the service stopped and unregistered (if it existed) the next job is to download the archive that Docker provide. Given I was running this code fairly often while I tested, I optimised it a bit by avoiding the download if the file already existed. The &lt;code&gt;$name&lt;/code&gt; variable here is just to make the debug output more readable, as I figured this function might be useful for more than one download in this bit of work: (Spoiler - it was...)&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function DownloadFile
+{
+    param(
+        [string]$name,
+        [string]$downloadUrl,
+        [string]$output
+    )
+
+    if(-not(Test-Path $output))
+    {
+        Write-Host "Downloading $name file" -ForegroundColor Green
+        Invoke-WebRequest -Uri $downloadUrl -OutFile $output
+    }
+    else
+    {
+        Write-Host "$name already exists" -ForegroundColor Yellow
+    }
+}
+&lt;/pre&gt;
+&lt;p&gt;Working out the newest &lt;code&gt;$downloadUrl&lt;/code&gt; here (for the latest version of Docker) is a project for another day - but for the moment it's easy enough to call this function with a fixed version string like &lt;code&gt;https://download.docker.com/win/static/stable/x86_64/docker-20.10.8.zip&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;With that zip downloaded, it can be extracted easily enough:&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;Expand-Archive $dockerZip -DestinationPath $dockerEnginePath -Force
+&lt;/pre&gt;
+&lt;p&gt;In order to be able to run the "register Docker as a service" command, the code needs to make sure that the folder which has been unzipped is in the system path. The easiest way to handle that is to check if the install folder is already in the path, and if not add it:&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function EnsureDockerInPath
+{
+    param(
+        [string]$installPath
+    )
+
+    $path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+    if(-not($path.Contains($installPath)))
+    {
+        $newPath = "$($env:path);$($installPath)"
+        Write-Host "New path: $newPath" -ForegroundColor Green
+        [Environment]::SetEnvironmentVariable("Path", $newPath, [System.EnvironmentVariableTarget]::Machine)
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    }
+    else
+    {
+        Write-Host "Path is already correct" -ForegroundColor Yellow
+    }
+}
+&lt;/pre&gt;
+&lt;p&gt;I suspect this isn't "right" as there are circumstances where the test might get the wrong answer, but it's good enough for a first pass.&lt;/p&gt;
+&lt;p&gt;And with that done, it's easy to install and start the service:&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function EnsureDockerServiceRunning
+{
+    param(
+        [string]$svcName
+    )
+	
+    Write-Host "Registering &amp;amp; starting $svcName service" -ForegroundColor Green
+    dockerd --register-service
+    Start-Service $svcName
+}
+&lt;/pre&gt;
+&lt;p&gt;Those functions are enough to get a basic install running. They can be combined together into a simple overall script:&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;#Requires -RunAsAdministrator
+param(
+    [string]$dockerEnginePath = "C:\",
+    [string]$dockerInstallPath = "C:\Docker",
+    [string]$dockerEngineUrl = "https://download.docker.com/win/static/stable/x86_64/docker-20.10.8.zip",
+    [string]$dockerZip = "docker.zip",
+
+    [string]$serviceName = "docker",
+)
+
+# Make sure Hyper-V etc is installed
+EnsureWindowsFeatures
+
+# Go to this user's downloads folder
+pushd $(New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path
+
+# stop &amp;amp; remove any running service if possible
+StopAndRemoveExistingService $serviceName
+
+# Fetch the docker engine and unzip it
+DownloadFile "Docker" $dockerEngineUrl $dockerZip
+Expand-Archive $dockerZip -DestinationPath $dockerEnginePath -Force
+Remove-Item $dockerZip
+
+# Make sure the docker folder is in the path
+EnsureDockerInPath $dockerInstallPath
+
+# Get docker service running
+EnsureDockerServiceRunning $serviceName
+
+# Aquire Compose v1
+DownloadFile "Compose" $composeEngineUrl $composeExe
+Unblock-File $composeExe
+Move-Item $composeExe $dockerInstallPath
+
+popd
+&lt;/pre&gt;
+&lt;p&gt;After running that script and dealing with any reboots required you should be able to run a simple test container:&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;docker run hello-world
+&lt;/pre&gt;
+&lt;p&gt;But, you won't be able to run Sitecore yet...&lt;/p&gt;
+&lt;h2 id="third-docker-compose"&gt;Third: Docker Compose&lt;/h2&gt;
+&lt;p&gt;The current versions of the Docker engine include Docker Compose as a built-in command - but they have v2 built in to the command line tools. The Docker &lt;a href="https://github.com/sitecore/docker-examples" target="_blank" rel="noopener"&gt;Compose files provided by Sitecore for running developer instances&lt;/a&gt; require v1 at present, however. If you try to start these examples from the command line after running the install outlined above, you'd have to be running &lt;code&gt;docker compose up&lt;/code&gt;. Note the use of a space rather than a hyphen here. That's &lt;code&gt;docker compose&lt;/code&gt; rather than &lt;code&gt;docker-compose&lt;/code&gt; - a subtlety that tripped me up quite hard. The hyphened variant will give a "command not found" error at this point.&lt;/p&gt;
+&lt;p&gt;But running the version with the space also gets an error:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-IncorrectComposeVersion.png"&gt;&lt;img alt="A console showing an error message caused by the incorrect docker-compose version" src="https://blog.jermdavis.dev/img/2022/01-IncorrectComposeVersion.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;For Google's benefit, the important part of that message is:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Error response from daemon: 
+Unrecognised volume spec: file '\\.\pipe\docker_engine` cannot be mapped. 
+Only directories can be mapped on this platform.
+&lt;/pre&gt;
+&lt;p&gt;That looks like something tricky, but it's actually just this versioning issue. When you're running Docker Desktop there's a config setting for "stick with Compose V1", and that distratcted me for a while trying to find the option for doing this with the simple version that has been downloaded here. But that's entirely the wrong approach, it turns out. You're stuck with V2 for the built-in version here, but you can separately download a V1 release of the "docker-compose" command and use that instead.&lt;/p&gt;
+&lt;p&gt;The code for the separate &lt;code&gt;docker-compose&lt;/code&gt; command lives on GitHub, and you can find assorted versions &lt;a href="https://github.com/docker/compose/releases/" target="_blank" rel="noopener"&gt;in the releases there&lt;/a&gt;. So to get something that's compatible with the files we're working with, we need to take the most recent V1 release. There's no installation required here. The download is a plain &lt;code&gt;.exe&lt;/code&gt; file which can be copied to the Docker folder we created above, and run as-is.&lt;/p&gt;
+&lt;p&gt;The extra code to cope with that is fairly simple, and can be added into the base script above. It needs a couple of extra parameters to the overall script:&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;param(
+    [string]$composeEngineUrl = "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Windows-x86_64.exe",
+    [string]$composeExe = "docker-compose.exe"
+)
+&lt;/pre&gt;
+&lt;p&gt;And the download operation can be added to the script's logic&lt;/p&gt;
+&lt;pre data-enlighter-highlight="&amp;quot;4-6&amp;quot;" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;# Get docker service running
+EnsureDockerServiceRunning $serviceName
+
+DownloadFile "Compose" $composeEngineUrl $composeExe
+Unblock-File $composeExe
+Move-Item $composeExe $dockerInstallPath
+
+popd
+&lt;/pre&gt;
+&lt;p&gt;Adding that onto the basic script allows you to run an install which will be able to start an instance of Sitecore.&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2022/01-SuccessfulVersion.png"&gt;&lt;img alt="Installs script allowing 'docker version' to run" src="https://blog.jermdavis.dev/img/2022/01-SuccessfulVersion.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;(Note, if the path to Docker is added by this script, you may well need to open a new PowerShell window in order to run Docker. I thought I'd done the business necessary to refresh the session path, but it doesn't always work for me. Another issue to look into later. But starting a new PowerShell session does always seem to get the new path so the workaround is simple enough for the moment)&lt;/p&gt;
+&lt;h2 id="fourth-non-admin-users"&gt;Fourth: Non-admin users&lt;/h2&gt;
+&lt;p&gt;One thing that took me a while to work out was that the default installation only seems to work if you're running docker commands from an elevated console window. Users who don't have "adminsitrator" rights will get an error message that the Docker CLI commands can't access the named pipe used to talk to the engine even though the service is up and running.&lt;/p&gt;
+&lt;p&gt;That could be an issue for some users, so I did a bit more digging into how this might be resolved. I came across some google results explaining that you need to &lt;a href="https://github.com/tfenster/dockeraccesshelper" target="_blank" rel="noopener"&gt;explicity grant rights to non-admin&lt;/a&gt; users to allow them access to the Docker service. I didn't want to have an external dependency for this bit of script, so I pulled in the core behaviour there to a function:&lt;/p&gt;
+&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function GrantRights
+{
+    param(
+        $domain,
+        $user
+    )
+
+    $account="$($domain)\$($user)"
+    $npipe = "\\.\pipe\docker_engine"                                                                                 
+    $dInfo = New-Object "System.IO.DirectoryInfo" -ArgumentList $npipe                                               
+    $dSec = $dInfo.GetAccessControl()                                                                                 
+    $fullControl =[System.Security.AccessControl.FileSystemRights]::FullControl                                       
+    $allow =[System.Security.AccessControl.AccessControlType]::Allow                                                  
+    $rule = New-Object "System.Security.AccessControl.FileSystemAccessRule" -ArgumentList $account,$fullControl,$allow
+    $dSec.AddAccessRule($rule)                                                                                        
+    $dInfo.SetAccessControl($dSec)
+}
+&lt;/pre&gt;
+&lt;p&gt;For the purposes of a simple install script you can call this passing &lt;code&gt;$env:userdomain&lt;/code&gt; and &lt;code&gt;$env:username&lt;/code&gt; for the user credentials. But in a more complex scenario you might want to use a group, or call it for multiple users.&lt;/p&gt;
+&lt;p&gt;It's worth nothing that this function seems to fail if you try to run it before a fresh install of Docker has actually run a container. So I chose to put it into a separate script for reuse.&lt;/p&gt;
+&lt;h2 id="winning"&gt;Winning!&lt;/h2&gt;
+&lt;p&gt;So with that in place, you can run &lt;code&gt;docker-compose up&lt;/code&gt; for a Sitecore install, and it will successfully start:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-SuccessfulCompose.png"&gt;&lt;img alt="A successful run of docker-compose starting Sitecore" src="https://blog.jermdavis.dev/img/2022/01-SuccessfulCompose.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;(If you get an error starting the Docker service and Event Viewer mentions &lt;code&gt;panic.log&lt;/code&gt;, try deleting the file from &lt;code&gt;C:\ProgramData\docker&lt;/code&gt;)&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;b&gt;&lt;i&gt;I learned an important thing while testing this:&lt;/i&gt;&lt;/b&gt; If you run up a VM in Azure to test Docker (or other virtualisation stuff) then you have to be careful which VM "size" you choose. If you pick a v1 or v2 VM you'll be able to run the script here without errors, but you'll get an error that looks like this when you try to start any container:
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Error response from daemon: 
+hcsshim::CreateComputeSystem 8459c6c816e764642634ce29cfee666d30834df0f2792fba9e411d11bd0c33f6: 
+The virtual machine could not be started because a required feature is not installed
+&lt;/pre&gt;
+&lt;p&gt;After some googling, &lt;a href="https://stackoverflow.com/a/50099965" target="_blank" rel="noopener"&gt;it turns out this is because only v3 and above Azure VMs have Nested Virtualisation enabled&lt;/a&gt;. And that's required to let Docker and Hyper-V run correctly inside an Azure VM. So make sure you're careful what you pick when creating your VMs:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2022/01-VM-size-choice.png"&gt;&lt;img alt="The Azure portal dropdown for picking VM size" src="https://blog.jermdavis.dev/img/2022/01-VM-size-choice.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;There's a pile more work to do here, I think, before this is a fully-fledged install script, but it's a start. There's &lt;a href="https://gist.github.com/jermdavis/6fb0a6e47d6f1342c089af4c04d29c35" target="_blank" rel="noopener"&gt;a gist of this if you fancy playing with the code yourself&lt;/a&gt; - but it's very much an experiment right now. But maybe it'll be of help to you...&lt;/p&gt;
+&lt;p&gt;(And if this isn't the right approach for you, &lt;a href="https://matt-rickard.com/docker-desktop-alternatives/" target="_blank" rel="noopener"&gt;there are alternatives&lt;/a&gt;)&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>A brief guide to Docker difficulties</title>
 			<link>https://blog.jermdavis.dev/posts/2022/docker-difficulties</link>
 			<description>&lt;p&gt;I spent some time working with a colleague who couldn't get his docker instance to start up happily this week. And it's reminded me that for all its positives, there are still some challenges with understanding the underlying issues when a developer container instance breaks. I realised I need a &amp;amp;quot;go read this&amp;amp;quot; post for the start of future discussions like this, so here are some problems you might see, and some diagnostic suggestions I wanted a convenient way to share: &lt;/p&gt;</description>
 			<author>Jeremy Davis</author>
 			<guid>https://blog.jermdavis.dev/posts/2022/docker-difficulties</guid>
-			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<pubDate>Thu, 27 Jan 2022 00:00:00 GMT</pubDate>
 			<content:encoded>&lt;p&gt;I spent some time working with a colleague who couldn't get his docker instance to start up happily this week. And it's reminded me that for all its positives, there are still some challenges with understanding the underlying issues when a developer container instance breaks. I realised I need a "go read this" post for the start of future discussions like this, so here are some problems you might see, and some diagnostic suggestions I wanted a convenient way to share: &lt;!--more--&gt;&lt;/p&gt;
 &lt;p&gt;Trying to start your development instance and seeing something like this can be frustrating:&lt;/p&gt;
 &lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-FailedDockerStart.png"&gt;&lt;img alt="A console window showing docker-compose has failed to start a traefik container" src="https://blog.jermdavis.dev/img/2022/01-FailedDockerStart.png"&gt;&lt;/a&gt;&lt;/p&gt;
@@ -681,70 +936,6 @@ finally
 &amp;lt;/configuration&amp;gt;
 &lt;/pre&gt;
 &lt;p&gt;Problem solved.&lt;/p&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Recovering from a packaging mistake</title>
-			<link>https://blog.jermdavis.dev/posts/2021/recovering-from-a-packaging-mistake</link>
-			<description>&lt;p&gt;A while back I got a support issue where a client's Content Editor was suddenly very broken. No UI – just a giant YSOD. It's turned out to be the sort of mistake which I could see happening to others, so here's some info on what happened and ways the problem can be resolved.&lt;/p&gt;</description>
-			<author>Jeremy Davis</author>
-			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
-			<guid>https://blog.jermdavis.dev/posts/2021/recovering-from-a-packaging-mistake</guid>
-			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
-			<content:encoded>&lt;p&gt;A while back I got a support issue where a client's Content Editor was suddenly very broken. No UI – just a giant YSOD. It's turned out to be the sort of mistake which I could see happening to others, so here's some info on what happened and ways the problem can be resolved.&lt;!--more--&gt;&lt;/p&gt;
-&lt;h2&gt;The report&lt;/h2&gt;
-&lt;p&gt;A bunch of people were working on content entry and migration on a new instance of Sitecore, and suddenly they found Content Editor was broken. Users could log in to Sitecore, the desktop was fine and Experience Editor seemed ok, but as soon as they tried to go to Content Editor it would crash:&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-08-broken-ysod.png" target="_blank"&gt;&lt;img alt="Broken Content Editor" src="https://blog.jermdavis.dev/img/2021/2021-08-broken-ysod.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Since that was blocking content creation work it was a Big Issue for the team. So off to the logs I went. The underlying exception was:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-highlight="16" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Exception: System.Reflection.TargetInvocationException
-Message: Exception has been thrown by the target of an invocation.
-Source: mscorlib
-   at System.RuntimeMethodHandle.InvokeMethod(Object target, Object[] arguments, Signature sig, Boolean constructor)
-   at System.Reflection.RuntimeMethodInfo.UnsafeInvokeInternal(Object obj, Object[] parameters, Object[] arguments)
-   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
-   at Sitecore.Reflection.ReflectionUtil.InvokeMethod(MethodInfo method, Object[] parameters, Object obj)   at Sitecore.Shell.Applications.ContentManager.ContentEditorPage.OnPreRender(EventArgs e)
-   at System.Web.UI.Control.PreRenderRecursiveInternal()
-   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
-
-Nested Exception
-
-Exception: System.NullReferenceException
-Message: Object reference not set to an instance of an object.
-Source: Sitecore.Buckets
-   at Sitecore.Buckets.Commands.MakeTemplateBucketable.GetToolTip(CommandContext context, String tooltip)
-   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.FillParamsFromCommand(CommandContext commandContext, RibbonCommandParams ribbonCommandParams)
-   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.GetCommandParameters(Item controlItem, CommandContext commandContext)
-   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderSmallCheckButton(HtmlTextWriter output, Item button, CommandContext commandContext)
-   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderButton(HtmlTextWriter output, Item button, CommandContext commandContext)
-   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderChunk(HtmlTextWriter output, Item chunk, CommandContext commandContext)
-   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderChunk(HtmlTextWriter output, Item chunk, CommandContext commandContext, Boolean isContextual, String id)
-   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderChunk(HtmlTextWriter output, Item chunk, CommandContext commandContext, Boolean isContextual)
-   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderChunks(HtmlTextWriter output, Item strip, CommandContext commandContext, Boolean isContextual)
-   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderStrips(HtmlTextWriter output, Item ribbon, Boolean isContextual, ListString visibleStripList)
-   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.RenderStrips(HtmlTextWriter output, Item defaultRibbon, Item contextualRibbon, ListString visibleStripList)
-   at Sitecore.Web.UI.WebControls.Ribbons.Ribbon.Render(HtmlTextWriter output)
-   at System.Web.UI.Control.RenderControlInternal(HtmlTextWriter writer, ControlAdapter adapter)
-   at Sitecore.Web.HtmlUtil.RenderControl(Control ctl)
-   at Sitecore.Shell.Applications.ContentManager.ContentEditorForm.UpdateRibbon(Item folder, Boolean isCurrentItemChanged, Boolean showEditor)
-   at Sitecore.Shell.Applications.ContentManager.ContentEditorForm.Update()
-   at Sitecore.Shell.Applications.ContentManager.ContentEditorForm.OnPreRendered(EventArgs e)
-&lt;/pre&gt;
-&lt;h2&gt;The issue&lt;/h2&gt;
-&lt;p&gt;Thankfully there's a &lt;a href="https://stackoverflow.com/questions/54368811/sitecore-content-editor-throws-server-error-in-application-error" rel="noopener" target="_blank"&gt;fair amount in Google about this error&lt;/a&gt; – it comes down to having an item in your content tree whose template does not exist. The Content Editor UI was not implemented to cope with this (fairly exceptional) situation. Hence the exception...&lt;/p&gt;
-&lt;p&gt;That crash is generally a bit of an issue when it happens with any old item – but it's particularly bad if the item in question happens to be "Home". The first item named "home" found under "/sitecore/content" is the one loaded automatically when Content Editor starts. So if this item is broken, then you're a bit stuffed, because Content Editor can't start up without encountering this crash.&lt;/p&gt;
-&lt;h2&gt;The cause&lt;/h2&gt;
-&lt;p&gt;After doing some digging, the cause of the issue here turned out to be that a whole tree of content had been imported from the "old website" instance of Sitecore. To people migrating content this made sense – it's easier to move stuff about and reformat it if it's in the same content tree as your new site. But unfortunately the editors in this case didn't realise that the new instance of Sitecore didn't have any of the templates from the old instance – so they'd accidentally created a tree of hundreds of items, none of which had valid templates.&lt;/p&gt;
-&lt;h2&gt;So how can this be fixed?&lt;/h2&gt;
-&lt;p&gt;Well the standard answer would be "install a package containing the right templates!" because if you do that, Content Editor will go back to being happy again immediately. But in this case that wasn't the right solution, because we didn't really want to have all the legacy content and templates in the shiny new instance of Sitecore.&lt;/p&gt;
-&lt;p&gt;The alternative is that you need to get rid of the item which is causing all the issues. Not having access to Content Editor makes that slightly less easy, but you still have choices. Maybe you have PowerShell Extensions installed? If so that can be used to call &lt;code&gt;Remove-Item&lt;/code&gt; to perform the deletion. But if you don't, it's time to break out a classic old admin tool: DB Browser! You can access this from the &lt;code&gt;/sitecore/admin/&lt;/code&gt; url on your CM instance, and picking "DB Browser" from the menu:&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-08-dbbrowser.png" target="_blank"&gt;&lt;img alt="DB Browser" src="https://blog.jermdavis.dev/img/2021/2021-08-dbbrowser.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;As well as a useful tool, this image actually gives another clue to what's broken. When you look at a working item in DB Browser, it shows you the set of templates the item relies on to the right of the item's path:&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-08-working.png" target="_blank"&gt;&lt;img alt="Working Item" src="https://blog.jermdavis.dev/img/2021/2021-08-working.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;But in the case of our issue, (or similarly broken items) you'll see template(s) missing. In this case, since these items had no valid templates, that space to the right of the path was entirely empty:&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-08-broken.png" target="_blank"&gt;&lt;img alt="Broken Item" src="https://blog.jermdavis.dev/img/2021/2021-08-broken.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;But with this tool, it's an easy job to remove the broken item, by clicking the "Delete" button in the row of commands. With that done, Content Editor will sort itself out.&lt;/p&gt;
-&lt;p&gt;In my case, that was all that needed doing to resolve the issue – well, that and a bit of user education to ensure everyone understood what had gone wrong...&lt;/p&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
