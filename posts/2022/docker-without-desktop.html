@@ -28,6 +28,7 @@
             "https://blog.jermdavis.dev/img/featured/docker-without-desktop-social.png"
         ],
         "datePublished": "2022-01-31T00:00:00+00:00",
+        "dateModified": "2022-02-01T00:00:00+00:00",
         "author": [{
             "@type": "Person",
             "name": "Jeremy Davis",
@@ -46,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 31/01/2022 14:27:44 -->
+		<!-- 01/02/2022 11:30:03 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -128,6 +129,7 @@
 				</h1>
 				<h2 class="text-2xl">If that license fee isn't for you...</h2>
 				<div class="meta">Published 31 January 2022</div>
+				<div class="meta">Updated 01 February 2022</div>
 				<div class="flex py-1">
 					<a href="/tags/docker" class="p-1 mr-1 bg-gray-100 rounded-md">
 						Docker</a>
@@ -193,7 +195,7 @@
 						here to force a reboot, but ended up leaving it out. I'm not sure that's the best idea. But after this has run and a reboot has been performed (if needed) the machine should be in a state to install Docker.</p>
 					<h2 id="second-the-docker-engine">Second: The Docker Engine</h2>
 					<p>It's not well advertised, but Docker does provide a simple download for just the Windows container engine. I found this via
-						<a href="https://lippertmarkus.com/2021/09/04/containers-without-docker-desktop/" target="_blank" rel="noopener">a helpful blog post</a>, which has a very basic script for installing the Docker engine. It's interesting to note that this download is specifically for Windows containers though - unlike the Docker Desktop install, it doesn't appear to support switching over to Linux. The post highlights what you need to do in order to run in mixed-mode - but I was focused on Windows containers for this, so I've stuck with the simplest solution.</p>
+						<a href="https://lippertmarkus.com/2021/09/04/containers-without-docker-desktop/" target="_blank" rel="noopener">a helpful blog post</a>, which has a very basic script for installing the Docker engine. It's interesting to note that this download is specifically for Windows containers though - unlike the Docker Desktop install, it doesn't appear to support switching over to run Linux images. The post does highlight what you need to do in order to run in mixed-mode though, if you want to investigate that - but I was focused on Windows containers for this, so I've stuck with the simplest solution.</p>
 					<p>That blog post gave the basic outline for getting the Docker engine to run: Download and extract the zip file, add its location to the system path, and register the Docker service. But the script in the blog post doesn't deal with the idea that you might want to change versions, or address the issue of running containers when you're not an admin. So a bit of rework was in order for my needs, and I got to experimenting...</p>
 					<p>The first thing I wanted to check was whether the Docker service was already running. That's fairly easy to do with PowerShell - you can filter the results of
 						<code>Get-Service</code>
@@ -222,7 +224,6 @@
             {
                 throw "Containers are running - stop them before running this script"
             }
-
           }
 
           Write-Host "Removing service" -ForegroundColor Green
@@ -330,11 +331,6 @@ EnsureDockerInPath $dockerInstallPath
 
 # Get docker service running
 EnsureDockerServiceRunning $serviceName
-
-# Aquire Compose v1
-DownloadFile "Compose" $composeEngineUrl $composeExe
-Unblock-File $composeExe
-Move-Item $composeExe $dockerInstallPath
 
 popd
 

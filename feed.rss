@@ -6,15 +6,15 @@
 		<description />
 		<copyright>2014-2022</copyright>
 		<managingEditor>Jeremy Davis</managingEditor>
-		<pubDate>Mon, 31 Jan 2022 14:26:37 GMT</pubDate>
-		<lastBuildDate>Mon, 31 Jan 2022 14:26:37 GMT</lastBuildDate>
+		<pubDate>Tue, 01 Feb 2022 11:29:01 GMT</pubDate>
+		<lastBuildDate>Tue, 01 Feb 2022 11:29:01 GMT</lastBuildDate>
 		<item>
 			<title>Docker without the desktop</title>
 			<link>https://blog.jermdavis.dev/posts/2022/docker-without-desktop</link>
 			<description>&lt;p&gt;If you're reading this soon after I post it then it's very nearly the end of the &amp;amp;quot;grace period&amp;amp;quot; where anyone can run Docker Desktop. As of 1st February &lt;a href="https://www.docker.com/pricing/faq#:~:text=Do%20I%20need%20to%20pay%20to%20continue%20to%20use%20Docker%20Desktop%3F" target="_blank" rel="noopener"&gt;if your business meets certain requirements you have to pay for each user&lt;/a&gt;. So what can us Sitecore devs do if we aren't in a position to pay that fee? Well the good news is you can run Docker without the Desktop bit, and it's not too tricky once you wrap your head around a few things...&lt;/p&gt;</description>
 			<author>Jeremy Davis</author>
 			<guid>https://blog.jermdavis.dev/posts/2022/docker-without-desktop</guid>
-			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<pubDate>Tue, 01 Feb 2022 00:00:00 GMT</pubDate>
 			<content:encoded>&lt;p&gt;If you're reading this soon after I post it then it's very nearly the end of the "grace period" where anyone can run Docker Desktop. As of 1st February &lt;a href="https://www.docker.com/pricing/faq#:~:text=Do%20I%20need%20to%20pay%20to%20continue%20to%20use%20Docker%20Desktop%3F" target="_blank" rel="noopener"&gt;if your business meets certain requirements you have to pay for each user&lt;/a&gt;. So what can us Sitecore devs do if we aren't in a position to pay that fee? Well the good news is you can run Docker without the Desktop bit, and it's not too tricky once you wrap your head around a few things...&lt;!--more--&gt;&lt;/p&gt;
 &lt;p&gt;I should note that I've been working this out on Windows 10 Professional. It's possible that this needs tweaking for Windows 11, but I've only had the chance to test the steps against Win 10 VMs in Azure as that's my use case.&lt;/p&gt;
 &lt;h2 id="first-prerequisites"&gt;First: Prerequisites&lt;/h2&gt;
@@ -55,7 +55,7 @@
 &lt;/pre&gt;
 &lt;p&gt;I toyed with the idea of using &lt;code&gt;Restart-Computer&lt;/code&gt; here to force a reboot, but ended up leaving it out. I'm not sure that's the best idea. But after this has run and a reboot has been performed (if needed) the machine should be in a state to install Docker.&lt;/p&gt;
 &lt;h2 id="second-the-docker-engine"&gt;Second: The Docker Engine&lt;/h2&gt;
-&lt;p&gt;It's not well advertised, but Docker does provide a simple download for just the Windows container engine. I found this via &lt;a href="https://lippertmarkus.com/2021/09/04/containers-without-docker-desktop/" target="_blank" rel="noopener"&gt;a helpful blog post&lt;/a&gt;, which has a very basic script for installing the Docker engine. It's interesting to note that this download is specifically for Windows containers though - unlike the Docker Desktop install, it doesn't appear to support switching over to Linux. The post highlights what you need to do in order to run in mixed-mode - but I was focused on Windows containers for this, so I've stuck with the simplest solution.&lt;/p&gt;
+&lt;p&gt;It's not well advertised, but Docker does provide a simple download for just the Windows container engine. I found this via &lt;a href="https://lippertmarkus.com/2021/09/04/containers-without-docker-desktop/" target="_blank" rel="noopener"&gt;a helpful blog post&lt;/a&gt;, which has a very basic script for installing the Docker engine. It's interesting to note that this download is specifically for Windows containers though - unlike the Docker Desktop install, it doesn't appear to support switching over to run Linux images. The post does highlight what you need to do in order to run in mixed-mode though, if you want to investigate that - but I was focused on Windows containers for this, so I've stuck with the simplest solution.&lt;/p&gt;
 &lt;p&gt;That blog post gave the basic outline for getting the Docker engine to run: Download and extract the zip file, add its location to the system path, and register the Docker service. But the script in the blog post doesn't deal with the idea that you might want to change versions, or address the issue of running containers when you're not an admin. So a bit of rework was in order for my needs, and I got to experimenting...&lt;/p&gt;
 &lt;p&gt;The first thing I wanted to check was whether the Docker service was already running. That's fairly easy to do with PowerShell - you can filter the results of &lt;code&gt;Get-Service&lt;/code&gt; by the known name of the Docker service that gets installed. If there are results then the service exists. The result is an object which gives you the name and state of that service, so you can tell if it's running or not. And if it is you can check if there are any active containers. I probably need a better way to handle this, but for a first pass the script throws an exception at that point - I didn't want to try and delete the service if it was working. But otherwise the service can be stopped and (since we know at this point that the Docker code must already be present) the command line to unregister it can be called:&lt;/p&gt;
 &lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function StopAndRemoveExistingService
@@ -82,7 +82,6 @@
             {
                 throw "Containers are running - stop them before running this script"
             }
-
           }
 
           Write-Host "Removing service" -ForegroundColor Green
@@ -180,11 +179,6 @@ EnsureDockerInPath $dockerInstallPath
 
 # Get docker service running
 EnsureDockerServiceRunning $serviceName
-
-# Aquire Compose v1
-DownloadFile "Compose" $composeEngineUrl $composeExe
-Unblock-File $composeExe
-Move-Item $composeExe $dockerInstallPath
 
 popd
 &lt;/pre&gt;
