@@ -4,6 +4,7 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-1-overall-plan">
 		<meta name="description" content="Recently I posted <a href=&quot;/posts/2014/what-did-i-need-to-deploy-again&quot; target=&quot;_blank&quot;>an idea for a PowerShell script to extract the set of changed items in TFS needing deployment</a> for a Sitecore project. I left the script at the stage where it gave a list of the files to package, but didn't actually give you a package definition.
 Having done a bit more thinking about how that might be achieved, I've decided that it's probably worth a series of posts as creating a sensible solution to the problem seems a bit too complex for a script and a single post.
 So for this first post, I'll sketch out the problem I want to solve and look at some of the basic code if will require. I'll flesh out the code an implementation over the rest of the posts – but I'm not sure how many there will be at this point... ">
@@ -13,7 +14,6 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
 		<title>Jeremy Davis - Automatic packages from TFS: #1 - Overall&nbsp;plan</title>
-		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/automatic-packages-from-tfs-1-overall-plan">
 		<meta name="robots" content="index, follow">
 		<link type="application/rss+xml" rel="alternate" href="/feed.rss">
 		<link type="application/atom+xml" rel="alternate" href="/feed.atom">
@@ -51,7 +51,7 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defers=""></script>
 		
-		<!-- 04/02/2022 20:30:27 -->
+		<!-- 11/02/2022 12:04:38 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -380,25 +380,25 @@ if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
 					<section>
 						<h3 class="bg-gray-300 p-2">Top Tags</h3>
 						<div class="bg-white p-2 flex flex-wrap">
-							<a href="/tags/sitecore" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
 								Sitecore (196)</a>
-							<a href="/tags/c" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
 								C# (45)</a>
-							<a href="/tags/powershell" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
 								PowerShell (31)</a>
-							<a href="/tags/installation" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
 								Installation (23)</a>
-							<a href="/tags/solr" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
 								Solr (15)</a>
-							<a href="/tags/ui" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
 								UI (14)</a>
-							<a href="/tags/general" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
 								General (13)</a>
-							<a href="/tags/docker" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
 								Docker (12)</a>
-							<a href="/tags/coveo" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
 								Coveo (12)</a>
-							<a href="/tags/visual-studio" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+							<a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
 								Visual Studio (11)</a>
 						</div>
 						<div class="bg-white mb-2 p-2">
