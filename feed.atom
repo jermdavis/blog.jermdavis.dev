@@ -7,7 +7,96 @@
 	</author>
 	<link rel="self" href="https://blog.jermdavis.dev/" />
 	<rights>2014-2022</rights>
-	<updated>2022-02-13T13:56:24Z</updated>
+	<updated>2022-02-14T07:44:08Z</updated>
+	<entry>
+		<id>https://blog.jermdavis.dev/posts/2022/fancy-paste-behaviour-wpf</id>
+		<title>Fancy paste behaviour in WPF</title>
+		<author>
+			<name>Jeremy Davis</name>
+		</author>
+		<link href="https://blog.jermdavis.dev/posts/2022/fancy-paste-behaviour-wpf" />
+		<updated>0001-01-01T00:00:00Z</updated>
+		<content>&lt;p&gt;I realised recently that I've become quite used to way many web forms let you paste image data straight into a text field. The behaviour of "upload the image data, and insert the correct mark-up for the image" is a really helpful shortcut when you're editing DevOps tickets, or Stack Overflow answers. So I started wondering how easy it would be to add that to the text editing tool I use for writing these blog posts. Turns out, not too hard, because WPF has some helpful extension patterns...&lt;!--more--&gt;&lt;/p&gt;
+&lt;h2 id="the-challenge"&gt;The challenge&lt;/h2&gt;
+&lt;p&gt;I'm typing this in a (very) simple WPF app I wrote. It's a basic text editor, which I've enhanced with a few helpful extras which make my writing process easier for me. I have shortcuts to insert common Markdown and HTML tags, just to save typing. It's got a "pick the right tags" dialog, which can look at my current blog posts and give me a pick list of tags I've used before. And it's able to fire up the Statiq generator to give me close-to-realtime previews of what I'm writing. The editor's code is pretty horrible right now - but it works for me.&lt;/p&gt;
+&lt;p&gt;Since Markdown is plain text, the bulk of the UI is a WPF &lt;code&gt;TextBox&lt;/code&gt; that I can type into. But if you put any sort of data that isn't text onto your clipboard and try to paste it into this textbox control it won't work. The context menu option for paste will disabled and shortcut keys will do nothing. For example, if I copy an image in Paint.Net I see a greyed-out context menu:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-PasteDenied.png"&gt;&lt;img alt="The context menu of a WPF textbox, with the paste option greyed out" src="https://blog.jermdavis.dev/img/2022/01-PasteDenied.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Which isn't surprising - why would a default textbox know what to do with anything that wasn't text? So the challenge is to work out how to extend this behaviour...&lt;/p&gt;
+&lt;h2 id="composition-for-the-win"&gt;Composition for the win&lt;/h2&gt;
+&lt;p&gt;One of the ways WPF improves upon old-style Windows Forms is that it favours a "composition before inheritance" model for adding customisations. It has a collection of extension points where you can provide composable helper objects which give new behaviour to a control. For example, in WPF we have "adorner" classes to change the way a component draws itself, rather than the old "override the &lt;code&gt;Paint()&lt;/code&gt; method that was required in Forms. Because they're composable, they are potentially reusable across multiple controls.&lt;/p&gt;
+&lt;p&gt;It happens that WPF has one of these extension points for logical behaviours too - so that's the place to start implementing this behaviour.&lt;/p&gt;
+&lt;h2 id="a-simple-example"&gt;A simple example&lt;/h2&gt;
+&lt;p&gt;To start with this, you need to add a Nuget package to your project: &lt;code&gt;Microsoft.Xaml.Behaviours.Wpf&lt;/code&gt;. That gives you the relevant types to implement your own reusable behaviours. You start with a class for your new behaviour:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class PasteBehaviour : Behaviour&amp;lt;TextBox&amp;gt;
+{
+}
+&lt;/pre&gt;
+&lt;p&gt;By making the generic parameter to &lt;code&gt;Behaviour&lt;/code&gt; a &lt;code&gt;TextBox&lt;/code&gt; here, we're saying that this behaviour expects to work on textboxes. But you could use more generic WPF UI types here, if your behaviour doesn't require such a specific type. And with that defined, you can attach it to any UI relevant component with some XAML. For example, on my textbox:&lt;/p&gt;
+&lt;pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"&gt;&amp;lt;TextBox&amp;gt;
+    &amp;lt;behaviour:Interaction.Behaviors&amp;gt;
+        &amp;lt;local:PasteBehavior/&amp;gt;
+    &amp;lt;/behaviour:Interaction.Behaviors&amp;gt;
+&amp;lt;/TextBox&amp;gt;
+&lt;/pre&gt;
+&lt;p&gt;Here the &lt;code&gt;behaviour&lt;/code&gt; namespace maps to that Nuget package's namespace: &lt;code&gt;http://schemas.microsoft.com/xaml/behaviors&lt;/code&gt; and &lt;code&gt;local&lt;/code&gt; is the namespace for where the custom behaviour class is declared.&lt;/p&gt;
+&lt;p&gt;To make the behaviour do custom pasting behaviour, it needs two key things. First is logic to attach and detach the custom code from the UI element. And the second is the logic for whatever the custom behaviour should actually do.&lt;/p&gt;
+&lt;p&gt;Attaching and detaching are pretty simple - there methods to overload in your behaviour. In those, you can attach and detach whatever event handlers you need:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;protected override void OnAttached()
+{
+    base.OnAttached();
+
+    CommandManager.AddPreviewExecutedHandler(AssociatedObject, onPreviewExecuted);
+    CommandManager.AddPreviewCanExecuteHandler(AssociatedObject, onPreviewCanExecute);
+}
+
+protected override void OnDetaching()
+{
+    base.OnDetaching();
+
+    CommandManager.RemovePreviewExecutedHandler(AssociatedObject, onPreviewExecuted);
+    CommandManager.RemovePreviewCanExecuteHandler(AssociatedObject, onPreviewCanExecute);
+}
+&lt;/pre&gt;
+&lt;p&gt;In this case, the key events to handle are ones that preview the "can execute" and "executed" events for some routed commands. A routed command is the way WPF binds actions like "button clicked" or "shortcut key pressed" to UI elements. So by previewing these we can spot pasting behaviour however it's triggered, and apply our custom logic. The &lt;code&gt;AssociatedObject&lt;/code&gt; here is whatever &lt;code&gt;TextBox&lt;/code&gt; this &lt;code&gt;Behaviour&amp;lt;&amp;gt;&lt;/code&gt; class has been bound to.&lt;/p&gt;
+&lt;p&gt;The logic for previewing the "can execute" event is fairly simple. If the command being previewed is "Paste" we need to override the logic for "can this control accept the clipboard data format that's present" and allow it to accept image data. (The default logic we're providing an extension for will already handle text here) We can do that with something like:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;private void onPreviewCanExecute(object sender, CanExecuteRoutedEventArgs e)
+{
+    if (e.Command == ApplicationCommands.Paste)
+    {
+        e.CanExecute = Clipboard.ContainsImage();
+        e.Handled = Clipboard.ContainsImage();
+    }
+}
+&lt;/pre&gt;
+&lt;p&gt;By setting the value of &lt;code&gt;CanExecute&lt;/code&gt; we're extending this "can the control accept the data" logic. And by setting &lt;code&gt;Handled&lt;/code&gt; we tell the runtime that we made a change. And with that in place, we should see that the context menu "paste" entry our textbox will not be greyed out if we have bitmap data on the clipboard.&lt;/p&gt;
+&lt;p&gt;Next the code needs to extend the actual "data is being pasted" event - which the attachment logic above is sending to a &lt;code&gt;onPreviewExecuted&lt;/code&gt; method in this behaviour object. As before, that needs to check that the command being processed is "paste" and that the clipboard data is an image. But if those tests pass, it can get on and perform its custom functions, before again setting &lt;code&gt;Handled&lt;/code&gt; true to show it did stuff with the event. And as noted above, the &lt;code&gt;AssociatedObject&lt;/code&gt; here (whatever we've bound this behaviour logic too) is a &lt;code&gt;TextBox&lt;/code&gt; so we can do operations on the text it contains:&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;private void onPreviewExecuted(object sender, ExecutedRoutedEventArgs e)
+{
+    if (e.Command == ApplicationCommands.Paste)
+    {
+        if (Clipboard.ContainsImage())
+        {
+            // work out a disk filename and web url for our new image
+            // save the image to disk
+
+            var markup = $"![Alt text here](/path-to-file/goes-here.png)";
+
+            AssociatedObject.Text = _AssociatedObject.Text.Insert(AssociatedObject.SelectionStart, markup);
+
+            e.Handled = true;
+        }
+    }
+}
+&lt;/pre&gt;
+&lt;p&gt;So the outcome of all of this is that the custom code written above "previews" the events sent to the textbox. We get to run the extra code before the default behaviour of the textbox runs, and hence we extend it. So now when I copy some image data from Paint.Net, I see this:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-PasteAllowed.png"&gt;&lt;img alt="The context menu of a WPF textbox, with the paste option enabled" src="https://blog.jermdavis.dev/img/2022/01-PasteAllowed.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;And if I click "Paste" or hit &lt;code&gt;Ctrl-V&lt;/code&gt; I now get my link inserted:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-PasteCompleted.png"&gt;&lt;img alt="" src="https://blog.jermdavis.dev/img/2022/01-PasteCompleted.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;I've skipped how the clipboard data ends up as an image file with a URL here. But that's not really relevant to the basic pattern for extending paste behaviour. (And saving images is fairly easily googleable) And what's above is pretty much all the code required to allow doing this a data conversion to paste something that's not text into a texbox.&lt;/p&gt;
+&lt;p&gt;If you'd like to fiddle with this yourself, there's a &lt;a target="_blank" href="https://blog.jermdavis.dev/files/PasteBehavior.zip"&gt;zip of the basic code above you can grab if you want&lt;/a&gt;...&lt;/p&gt;
+</content>
+		<summary>&lt;p&gt;I realised recently that I've become quite used to way many web forms let you paste image data straight into a text field. The behaviour of &amp;amp;quot;upload the image data, and insert the correct mark-up for the image&amp;amp;quot; is a really helpful shortcut when you're editing DevOps tickets, or Stack Overflow answers. So I started wondering how easy it would be to add that to the text editing tool I use for writing these blog posts. Turns out, not too hard, because WPF has some helpful extension patterns...&lt;/p&gt;</summary>
+	</entry>
 	<entry>
 		<id>https://blog.jermdavis.dev/posts/2022/docker-without-desktop</id>
 		<title>Docker without the desktop</title>
@@ -867,80 +956,5 @@ finally
 &lt;p&gt;Hopefully that means in the future my developers will know right away if they've hit a license expiry situation, and they can update their &lt;code&gt;.env&lt;/code&gt; file...&lt;/p&gt;
 </content>
 		<summary>&lt;p&gt;Sometimes you have a problem that you should absolutely have seen coming. The annual &amp;amp;quot;the company's Sitecore license has expired&amp;amp;quot; fun is very much one of those things. But I'd not thought about this in advance, and the license expired while I was on holiday this year. It caused my team a load of hassle... But I have a plan to avoid this pain in the future: &lt;/p&gt;</summary>
-	</entry>
-	<entry>
-		<id>https://blog.jermdavis.dev/posts/2021/using-itemservice-in-containers</id>
-		<title>Using ItemService in containers</title>
-		<author>
-			<name>Jeremy Davis</name>
-		</author>
-		<link href="https://blog.jermdavis.dev/posts/2021/using-itemservice-in-containers" />
-		<link rel="enclosure" type="image" href="https://blog.jermdavis.dev/" />
-		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;I was asked to enable Sitecore's ItemService endpoints on a containerised instance of Sitecore recently, and my first pass through this didn't work. Turns out there's a key bit of documentation that seems to be missing for this scenario. Hence a quick post to help get info into Google. So if you need to do this, read on: &lt;!--more--&gt;&lt;/p&gt;
-&lt;h2&gt;The issue&lt;/h2&gt;
-&lt;p&gt;Out-of-the-box, the &lt;a href="https://doc.sitecore.com/en/developers/90/sitecore-experience-manager/the-itemservice.html" rel="noopener" target="_blank"&gt;ItemService&lt;/a&gt; endpoints aren't available to external requests. The project I was working on needed this to be available to other apps from the CM role, to allow for some other work that was going on. So &lt;a href="https://doc.sitecore.com/en/developers/90/sitecore-experience-manager/sitecore-services-client-security.html#security-policies_body" rel="noopener" target="_blank"&gt;based on the existing documentation&lt;/a&gt; for this, I added a config patch to the solution:&lt;/p&gt;
-&lt;pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot;?&amp;gt;
-&amp;lt;configuration xmlns:patch=&amp;quot;http://www.sitecore.net/xmlconfig/&amp;quot; xmlns:role=&amp;quot;http://www.sitecore.net/xmlconfig/role/&amp;quot;&amp;gt;
-    &amp;lt;sitecore&amp;gt;
-        &amp;lt;settings&amp;gt;
-            &amp;lt;setting name=&amp;quot;Sitecore.Services.SecurityPolicy&amp;quot; role:require=&amp;quot;ContentManagement&amp;quot;&amp;gt;
-                &amp;lt;patch:attribute name=&amp;quot;value&amp;quot;&amp;gt;Sitecore.Services.Infrastructure.Web.Http.Security.ServicesOnPolicy, Sitecore.Services.Infrastructure&amp;lt;/patch:attribute&amp;gt;
-            &amp;lt;/setting&amp;gt;
-        &amp;lt;/settings&amp;gt;
-    &amp;lt;/sitecore&amp;gt;
-&amp;lt;/configuration&amp;gt;
-&lt;/pre&gt;
-&lt;p&gt;For most IaaS or PaaS deployments, that should be enough. But when you do that in a containerised deployment it doesn't work. If you make a call to the ItemService endpoint you'll get an error back when you try to authenicate. The key part of the response is the body:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;HTTPS is required
-&lt;/pre&gt;
-&lt;p&gt;So what's missing?&lt;/p&gt;
-&lt;h2&gt;The solution&lt;/h2&gt;
-&lt;p&gt;The reason for the error is that when Sitecore runs in the suggested container setup, HTTPS requests have their SSL terminated at the Ingress Controller. (Which is going to be &lt;a href="https://github.com/traefik/traefik" rel="noopener" target="_blank"&gt;Traefik&lt;/a&gt; or &lt;a href="https://www.nginx.com/products/nginx-ingress-controller/" rel="noopener" target="_blank"&gt;Nginx&lt;/a&gt; if you're following the defaults) So when your API request to the ItemService arrives at its controller it's using HTTP not and HTTPS.&lt;/p&gt;
-&lt;p&gt;The root cause of the error above comes from this bit of code in the &lt;code&gt;Sitecore.Services.Infrastructure.Web.Http.Filters&lt;/code&gt; namespace. It's a filter applied to all the endpoints for ItemService:&lt;/p&gt;
-&lt;pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;public class RequireHttpsFilter : AuthorizationFilterAttribute
-{
-	public override void OnAuthorization(HttpActionContext actionContext)
-	{
-		Assert.ArgumentNotNull(actionContext, &amp;quot;actionContext&amp;quot;);
-		HttpRequestMessage request = actionContext.get_Request();
-		if (!(request.get_RequestUri().Scheme == Uri.UriSchemeHttps) &amp;amp;&amp;amp; !_configurationSettings.get_AllowToLoginWithHttp())
-		{
-			if (request.get_Method().get_Method() == &amp;quot;GET&amp;quot;)
-			{
-				actionContext.set_Response(HttpRequestMessageExtensions.CreateResponse(request, HttpStatusCode.Found));
-				actionContext.get_Response().set_Content((HttpContent)new StringContent(&amp;quot;HTTPS is required&amp;quot;, Encoding.UTF8, &amp;quot;text/html&amp;quot;));
-				UriBuilder uriBuilder = new UriBuilder(request.get_RequestUri())
-				{
-					Scheme = Uri.UriSchemeHttps,
-					Port = 443
-				};
-				actionContext.get_Response().get_Headers().set_Location(uriBuilder.Uri);
-			}
-			else
-			{
-				actionContext.set_Response(HttpRequestMessageExtensions.CreateResponse(request, HttpStatusCode.NotFound));
-				actionContext.get_Response().set_Content((HttpContent)new StringContent(&amp;quot;HTTPS is required&amp;quot;, Encoding.UTF8, &amp;quot;text/html&amp;quot;));
-			}
-		}
-	}
-}
-&lt;/pre&gt;
-&lt;p&gt;And the answer to fixing this is hiding there in the highlighted line. There's a config setting you can supply to disable this &amp;quot;require HTTPS&amp;quot; behaviour.&lt;/p&gt;
-&lt;p&gt;Doing a bit of a search, it turns out that setting has its default set in the &lt;code&gt;Sitecore.Services.Client.config&lt;/code&gt; file. So a second bit of config patching will make all this work happily in the containers:&lt;/p&gt;
-&lt;pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot;?&amp;gt;
-&amp;lt;configuration xmlns:patch=&amp;quot;http://www.sitecore.net/xmlconfig/&amp;quot; xmlns:role=&amp;quot;http://www.sitecore.net/xmlconfig/role/&amp;quot;&amp;gt;
-    &amp;lt;sitecore&amp;gt;
-        &amp;lt;settings&amp;gt;
-            &amp;lt;setting name=&amp;quot;Sitecore.Services.AllowToLoginWithHttp&amp;quot; role:require=&amp;quot;ContentManagement&amp;quot;&amp;gt;
-                &amp;lt;patch:attribute name=&amp;quot;value&amp;quot;&amp;gt;true&amp;lt;/patch:attribute&amp;gt;
-            &amp;lt;/setting&amp;gt;
-        &amp;lt;/settings&amp;gt;
-    &amp;lt;/sitecore&amp;gt;
-&amp;lt;/configuration&amp;gt;
-&lt;/pre&gt;
-&lt;p&gt;Problem solved.&lt;/p&gt;
-</content>
-		<summary>&lt;p&gt;I was asked to enable Sitecore's ItemService endpoints on a containerised instance of Sitecore recently, and my first pass through this didn't work. Turns out there's a key bit of documentation that seems to be missing for this scenario. Hence a quick post to help get info into Google. So if you need to do this, read on: &lt;/p&gt;</summary>
 	</entry>
 </feed>
