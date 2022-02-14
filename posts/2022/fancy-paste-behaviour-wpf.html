@@ -47,7 +47,7 @@
 		<link href="/scss/site-theme.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
 		
-		<!-- 14/02/2022 07:45:00 -->
+		<!-- 14/02/2022 08:02:55 -->
 	</head>
 	<body class="max-w-7xl mx-auto">
 		<div class="relative bg-white" x-data="{ open: false }">
@@ -169,11 +169,11 @@
 }
 
 					</pre>
-					<p>By making the generic parameter to
+					<p>By making the type parameter to
 						<code>Behaviour</code>
 						a
 						<code>TextBox</code>
-						here, we're saying that this behaviour expects to work on textboxes. But you could use more generic WPF UI types here, if your behaviour doesn't require such a specific type. And with that defined, you can attach it to any UI relevant component with some XAML. For example, on my textbox:</p>
+						here, we're saying that this behaviour expects to work on textboxes. But you could use more generic WPF UI types here, if your behaviour doesn't require such a specific type. And with that defined, you can attach it to any relevant UI component with some XAML. For example, on my textbox:</p>
 					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;TextBox&gt;
     &lt;behaviour:Interaction.Behaviors&gt;
         &lt;local:PasteBehavior/&gt;
@@ -188,7 +188,7 @@
 						and
 						<code>local</code>
 						is the namespace for where the custom behaviour class is declared.</p>
-					<p>To make the behaviour do custom pasting behaviour, it needs two key things. First is logic to attach and detach the custom code from the UI element. And the second is the logic for whatever the custom behaviour should actually do.</p>
+					<p>To make this type do custom pasting behaviour, it needs two key things. First is logic to attach and detach the its code from the UI element. And the second is the logic for whatever the new behaviour should actually do.</p>
 					<p>Attaching and detaching are pretty simple - there methods to overload in your behaviour. In those, you can attach and detach whatever event handlers you need:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected override void OnAttached()
 {
@@ -214,7 +214,7 @@ protected override void OnDetaching()
 						this
 						<code>Behaviour&lt;&gt;</code>
 						class has been bound to.</p>
-					<p>The logic for previewing the "can execute" event is fairly simple. If the command being previewed is "Paste" we need to override the logic for "can this control accept the clipboard data format that's present" and allow it to accept image data. (The default logic we're providing an extension for will already handle text here) We can do that with something like:</p>
+					<p>The logic for previewing the "can execute" event is fairly simple. If the command being previewed is "Paste" we need to override the logic for "can this control accept the clipboard data format that's present" and allow it to accept image data. (The default control we're extending will already handle text here) We can do that with something like:</p>
 					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void onPreviewCanExecute(object sender, CanExecuteRoutedEventArgs e)
 {
     if (e.Command == ApplicationCommands.Paste)
@@ -248,9 +248,9 @@ protected override void OnDetaching()
             // work out a disk filename and web url for our new image
             // save the image to disk
 
-            var markup = $"![Alt text here](/path-to-file/goes-here.png)";
+            var markup = $"![Alt text here](/web-path-to-file/goes-here.png)";
 
-            AssociatedObject.Text = _AssociatedObject.Text.Insert(AssociatedObject.SelectionStart, markup);
+            AssociatedObject.Text = AssociatedObject.Text.Insert(AssociatedObject.SelectionStart, markup);
 
             e.Handled = true;
         }
@@ -258,7 +258,7 @@ protected override void OnDetaching()
 }
 
 					</pre>
-					<p>So the outcome of all of this is that the custom code written above "previews" the events sent to the textbox. We get to run the extra code before the default behaviour of the textbox runs, and hence we extend it. So now when I copy some image data from Paint.Net, I see this:</p>
+					<p>So the outcome of all of this is that the custom code written above "previews" the events sent to the textbox. We get to run the extra code before the default behaviour of the textbox runs, and hence we can extend its features. So now when I copy some image data from Paint.Net, I see this:</p>
 					<p>
 						<a target="_blank" href="/img/2022/01-PasteAllowed.png">
 							<img alt="The context menu of a WPF textbox, with the paste option enabled" src="/img/2022/01-PasteAllowed.png">
