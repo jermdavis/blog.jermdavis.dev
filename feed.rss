@@ -6,8 +6,74 @@
 		<description />
 		<copyright>2014-2022</copyright>
 		<managingEditor>Jeremy Davis</managingEditor>
-		<pubDate>Tue, 15 Mar 2022 18:18:28 GMT</pubDate>
-		<lastBuildDate>Tue, 15 Mar 2022 18:18:28 GMT</lastBuildDate>
+		<pubDate>Mon, 28 Mar 2022 07:25:40 GMT</pubDate>
+		<lastBuildDate>Mon, 28 Mar 2022 07:25:40 GMT</lastBuildDate>
+		<item>
+			<title>Challenges with Sitecore's GraphQL tooling</title>
+			<link>https://blog.jermdavis.dev/posts/2022/challenges-graphql-tooling</link>
+			<description>&lt;p&gt;I've started looking at the details of the Headless Services GraphQL endpoints in Sitecore recently. And as part of this research, I got a bit confused trying to test queries in the Sitecore UI. I've worked out what was up, but maybe others will find themselves in a similar situation, so: &lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<guid>https://blog.jermdavis.dev/posts/2022/challenges-graphql-tooling</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;I've started looking at the details of the Headless Services GraphQL endpoints in Sitecore recently. And as part of this research, I got a bit confused trying to test queries in the Sitecore UI. I've worked out what was up, but maybe others will find themselves in a similar situation, so: &lt;!--more--&gt;&lt;/p&gt;
+&lt;p&gt;When you look at at &lt;code&gt;Json Rendering&lt;/code&gt; in the content tree, one of the fields it has is for a custom GraphQL query to help you format its data. Helpfully, that includes a built-in query prototyping tool under the "Open xGraph Browser" link:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-JsonRenderingFields.png"&gt;&lt;img alt="The GraphQL field in a Json Rendering" src="https://blog.jermdavis.dev/img/2022/03-JsonRenderingFields.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;You can use this to tweak your queries and verify that they return the data you think they do. But if you're new to using GraphQL with Sitecore, there are a some small gotchas you might hit here. When you click the link shown in the field above, you get taken to the prototyping page. The code tries to pass across your query along with some context data, but currently it doesn't work very well.&lt;/p&gt;
+&lt;h2 id="big-queries-dont-get-passed"&gt;Big queries don't get passed&lt;/h2&gt;
+&lt;p&gt;After a certain size, the query in your Content Editor field won't be passed. If that happens you'll get a message in the editor to warn you:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;# Query was too long to transfer into editor.
+# Please copy and paste your integrated mode query here to execute it.
+{
+}
+&lt;/pre&gt;
+&lt;p&gt;As it says, if this happens you'll need to manually copy your query in.&lt;/p&gt;
+&lt;h2 id="other-context-data-doesnt-seem-to-get-passed-either"&gt;Other context data doesn't seem to get passed either&lt;/h2&gt;
+&lt;p&gt;When you click to open the prototyping page, the querystring appears to include a lot of useful data. If you decode the url, you'll get something like this:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;https://cm.jsstest.localhost/sitecore/api/graph/edge/ui?query=# Editing here does not save the query on the item; copy it back when done!
+
+query Test($contextItem: String!, $language: String!)
+{
+  item(path: $contextItem, language:$language) {
+      id
+      name
+    }
+}&amp;amp;variables={
+  "datasource": "",
+  "contextItem": "/sitecore/content/JssTest"
+}
+&amp;amp;sc_apikey={BDC711CC-8F6E-4B61-AF4B-27E39360CD85}
+&lt;/pre&gt;
+&lt;p&gt;But in the version I'm looking at, (Sitecore v10.2, JSS v19) only the query comes across into the prototyping UI. And that means you'll see some errors while you try to get your query to run. First up, hitting "play" in the middle of the window will get you a security error if your endpoint is secured:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-GraphQL-Security-Error.png"&gt;&lt;img alt="GraphQL playground complaining about lack of API key" src="https://blog.jermdavis.dev/img/2022/03-GraphQL-Security-Error.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;It says &lt;code&gt;Server cannot be reached&lt;/code&gt; in the query endpoint address field, and the response JSON includes the message &lt;code&gt;SSC API Key is required. Pass ith 'sc_apikey' query string or HTTP header.&lt;/code&gt; in its data.&lt;/p&gt;
+&lt;p&gt;Now the API key it needs is probably in page querystring, but for me it wasn't passed through to the GraphQL endpoint correctly. I needed to manually move it from the page's URL into the url used for the query endpoint:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-Move-GraphQL-API-Key.png"&gt;&lt;img alt="Moving the API key from the browser url to the endpoint url" src="https://blog.jermdavis.dev/img/2022/03-Move-GraphQL-API-Key.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;But having done that I hit a second error:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;{
+  "errors": [
+    {
+      "message": "GraphQL.ExecutionError: Variable '$contextItem' is invalid. Received a null input for a non-null field. ---&amp;gt; GraphQL.Execution.InvalidValueException: Variable '$contextItem' is invalid. Received a null input for a non-null field.\r\n   at GraphQL.Execution.ExecutionHelper.AssertValidValue(ISchema schema, IGraphType type, Object input, String fieldName)\r\n   at GraphQL.Execution.ExecutionHelper.GetVariableValue(Document document, ISchema schema, VariableDefinition variable, Object input)\r\n   at GraphQL.Execution.ExecutionHelper.GetVariableValues(Document document, ISchema schema, VariableDefinitions variableDefinitions, Inputs inputs)\r\n   at GraphQL.DocumentExecuter.BuildExecutionContext(ISchema schema, Object root, Document document, Operation operation, Inputs inputs, Object userContext, CancellationToken cancellationToken, Metrics metrics, IEnumerable`1 listeners, Boolean throwOnUnhandledException)\r\n   at GraphQL.DocumentExecuter.&amp;lt;ExecuteAsync&amp;gt;d__8.MoveNext()\r\n   --- End of inner exception stack trace ---",
+      "extensions": {
+        "code": "INVALID_VALUE"
+      }
+    }
+  ]
+}
+&lt;/pre&gt;
+&lt;p&gt;That's a complicated way of saying "you added a required variable called &lt;code&gt;$contextItem&lt;/code&gt; in your query, but you've not passed a value for it". But if you look back at the data we decoded from the URL before, that variable is there. So why can't the query see it?&lt;/p&gt;
+&lt;p&gt;It took me a while to work this out, because I couldn't understand where the UI was looking for the variable. But it was right under my nose the whole time, as it turns out that the parameters for your query should be under the "query variables" pane that's hiding at the bottom left of the page:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-Finding-GraphQL-Params.png"&gt;&lt;img alt="Location of the GraphQL parameters tab" src="https://blog.jermdavis.dev/img/2022/03-Finding-GraphQL-Params.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;It's minimised by default, so you need to click it or drag it up to see the contents. And I found that it was empty in this case - which would explain the error. So I tried copying in the data I'd decoded from the URL:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-Adding-GraphQL-Params.png"&gt;&lt;img alt="Adding data to the GraphQL parameters" src="https://blog.jermdavis.dev/img/2022/03-Adding-GraphQL-Params.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;And that's a step forward - the error has changed to say that it's the "language" variable which is missing now. Which is right - that wasn't in the URL data at all. But if I add it, everything works:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-Succesful-GraphQL-Query.png"&gt;&lt;img alt="A successful GraphQL query" src="https://blog.jermdavis.dev/img/2022/03-Succesful-GraphQL-Query.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Success!&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;i&gt;&lt;b&gt;Note:&lt;/b&gt;&lt;/i&gt; Having spoken to Sitecore Support, the failure to pass the API key and the standard parameters is confirmed as a bug. Speaking to &lt;a href="https://twitter.com/jflh" target="_blank" rel="noopener"&gt;Jeff L'Heureux&lt;/a&gt; at Sitecore, he pointed out that the tooling used for this GraphQL playground has been changed in a recent release - so the lack of wiring up of these parameters was probably caused by that change. If this is an issue for you, reference bug 523547 when you speak to support to raise its priority. But hopefully this will be fixed in a future release.
+&lt;/blockquote&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Diagnosing a packaging failure</title>
 			<link>https://blog.jermdavis.dev/posts/2022/diagnosing-packaging-failure</link>
@@ -758,76 +824,6 @@ Required license is missing: Sitecore.xDB.Base —&amp;gt; Sitecore.Nexus.Licens
 &lt;/pre&gt;
 &lt;p&gt;Hence the facepalming... This whole business was another "our company's license has expired" issue – &lt;a href="https://blog.jermdavis.dev/posts/2021/sitecore-containers-and-expired-licenses" target="_blank"&gt;like the Docker issues I saw recently&lt;/a&gt;. My colleagues had correctly updated the license file for the XM roles, but it seems they forgot to update xConnect's copy of the license file. Ooops.&lt;/p&gt;
 &lt;p&gt;But, problem solved, as everything sorted itself out when I updated that missed license file. So a big thank you to &lt;a href="https://twitter.com/AndrewWBurns/" rel="noopener" target="_blank"&gt;Andy Burns&lt;/a&gt; for the blog post that helped me here.&lt;/p&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Symposium's vision for SaaS</title>
-			<link>https://blog.jermdavis.dev/posts/2021/symposiums-vision-for-saas</link>
-			<description>&lt;p&gt;There was a lot of interesting information releases during &lt;a href="https://symposium.sitecore.com/" rel="noopener" target="_blank"&gt;Sitecore Symposium&lt;/a&gt; last week. Since I had to summarise this for a work event, I figured I should reuse those thoughts, and write up a brief summary of some of the announcements that caught my attention, and (importantly) Sitecore's vision their future SaaS product: &lt;/p&gt;</description>
-			<author>Jeremy Davis</author>
-			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
-			<guid>https://blog.jermdavis.dev/posts/2021/symposiums-vision-for-saas</guid>
-			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
-			<content:encoded>&lt;p&gt;There was a lot of interesting information releases during &lt;a href="https://symposium.sitecore.com/" rel="noopener" target="_blank"&gt;Sitecore Symposium&lt;/a&gt; last week. Since I had to summarise this for a work event, I figured I should reuse those thoughts, and write up a brief summary of some of the announcements that caught my attention, and (importantly) Sitecore's vision their future SaaS product: &lt;!--more--&gt;&lt;/p&gt;
-&lt;h2&gt;There's lots of stuff going on:&lt;/h2&gt;
-&lt;p&gt;Before I get into the SaaS business, it's worth noting it was a busy event for anouncements generally. Some highlights we heard:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;b&gt;Sitecore 10.2 will be released in November&lt;/b&gt;&lt;br&gt;
-Windows Server 2022 support. .Net Core upgraded to V3 for the relevant roles. Analytics reporting improvements. Ability to delete interaction data more easily. New CLI features like field exclusion for serialisation, resource file generation and search index rebuild. (The CLI improvements are also available for 10.1) Plus the usuall collection of bug fixes and performance tweaks.
-&lt;/li&gt;
-&lt;li&gt;
-&lt;b&gt;We now know the new branding for all the recent acquisitions&lt;/b&gt;&lt;br&gt;
-Instead of Boxever, Four51, MooSend and Reflektion, we now have: Sitecore CDP / Sitecore Personalise, Sitecore OrderCloud, Sitecore Send and Sitecore Search / Sitecore Discover. Names we'll be hearing about much more in the future, I suspect.
-&lt;/li&gt;
-&lt;li&gt;
-&lt;b&gt;Content Hub 4.1 in a month or so&lt;/b&gt;&lt;br&gt;
-New schema features for references between content items. More media types supported. Extensibility for media previews.
-&lt;/li&gt;
-&lt;li&gt;
-&lt;b&gt;New headless framework release&lt;/b&gt;&lt;br&gt;
-Updated to newer NextJS and Vue versions. Ability to publish markup from MVC components to headless services.
-&lt;/li&gt;
-&lt;li&gt;
-&lt;b&gt;Updates to SXA in 10.2&lt;/b&gt;&lt;br&gt;
-Scriban template improvements. Better data sharing for multi-site setups. Bootstrap 5 support.
-&lt;/li&gt;
-&lt;li&gt;
-&lt;b&gt;Updates to Horizon in 10.2&lt;/b&gt;&lt;br&gt;
-Improved editing experience for SXA components. Docker image supporting process isolation. UI improvements. New "content explorer" view listing all items.
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;On top of that, the SaaS vision is very interesting:&lt;/h2&gt;
-&lt;p&gt;But the real excitement is with the vision for Sitecore's future SaaS offering. While we've had Content Hub as a SaaS content tool for some time now, it's had some key weak spots compared to what we're used to with classic Sitecore: It's not great with trees of content, and it doesn't provide any way to compose UI components together into a page. Those caveats mean it's not the right choice for a variety of scenarios.&lt;/p&gt;
-&lt;p&gt;So Sitecore have started to talk about an alternative approach: offering a package built around the classic Sitecore XM product, but hosted via SaaS. The phrase Dave O'Flanagan used in his keynote was "The no-compromise CMS" – because it's trying to take the best bits of the traditional model and the best bits of the headless / JAMStack model, and blend them together.&lt;/p&gt;
-&lt;p&gt;The high-level picture he talked about looks like this:&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-10-saas-diagram.png" target="_blank"&gt;&lt;img alt="SaaS Diagram" src="https://blog.jermdavis.dev/img/2021/2021-10-saas-diagram.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;So what are all the boxes on this diagram going to do for us?&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;b&gt;Experience Manager Cloud&lt;/b&gt;&lt;br&gt;
-You'll need somewhere to store your content in this model, and the technology in play is based on the classic Sitecore XM platform. It will be wrapped up in some clever SaaS sauce, so instances are automagically managed for you – it will sort out databases and Solr. When you have customisations to deploy, you'll use a GitOps approach to deployment – push to a source control branch, and those changes get deployed to your instance. It will run headless services, which will be key to how it serves content because it will be CM-only, and this won't be exposed to the public internet. Which means it never needs to scale for load – keeping the implementation simpler.
-&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;Experience Edge&lt;/b&gt;&lt;br&gt;
-This isn't new (&lt;a href="https://doc.sitecore.com/en/developers/101/developer-tools/sitecore-experience-edge-for-xm.html" rel="noopener" target="_blank"&gt;you can play with it now, with your current JSS/Headless sites&lt;/a&gt;) but it's really fundamental for the new model. Edge is a cloud-scale cache for your Headless Services data. Your CM instance can publish its content, media and layout data to this service, so that your headless front-end code can read the data from here. It replaces the need for the CD servers the "old" JSS approach would have used to do this job. The magic here is that because it's a CDN-style edge cache, it scales to meet the needs of your front-end automatically. So you no longer need to provision content delivery servers.
-&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;Content Hub&lt;/b&gt;&lt;br&gt;
-There is a role for Content Hub here, alongside XM – as the DAM for selecting media from.
-&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;Symphony&lt;/b&gt;&lt;br&gt;
-This is the brand name they're giving to an enhanced, SaaS-hosted evolution of the Horizon editor. It gives you the full WYSIWYG editing experience for your JAMStack-style sites. It's also integrated with Personalise, to let you manage your personalisation work and examine its outcomes. Sitecore argue that this is an important differentiator for their offering, because it's bringing the editorial flexibility we've been used to with the classic CMS to the JAMStack site.
-&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;Personalise&lt;/b&gt;&lt;br&gt;
-Since XM doesn't include any of the old XConnect-powered personalisation, there needs to be something to provide those services in this new model. And the "Personalise" product is a cut-down set of tools from the Boxever suite. We don't know much about what the scope of this product's set of services will be yet, however. So it will be interesting to see what features are available here by default.
-&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;Vercel&lt;/b&gt;&lt;br&gt;
-The final thing you need for this system is somewhere to serve the front-end code for your website from. As mentioned, we don't have any CD servers in this world. Experience Cloud has a focus on Next.js for building your site UI, so Sitecore have chosen to partner with &lt;a href="https://vercel.com/" rel="noopener" target="_blank"&gt;Vercel&lt;/a&gt; to give you somewhere to host it. They provide a GitOps way to deploy your code quickly, and CDN-style scaling behaviour to help you cope with load without effort. But critically the infrastructure here understands the build process for your Next.js code – so it can automatically perform tasks like static site generation whenever your code gets update, or when Experience Edge triggers a webhook to signal new content has been published.
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;While the diagram doesn't show the other new systems Sitecore has aquired, it's clear that things like Search, OrderCloud and Send will be integratable with this model too.&lt;/p&gt;
-&lt;p&gt;An interesting point about the approach above, is that it's basically the next step on from what you could do with an XM 10.2 / Headless deployment in Managed Cloud. And Sitecore have said if you can migrate your site over to be able to run in that pattern, it will have a very simple migration path to the SaaS service once it's released.&lt;/p&gt;
-&lt;p&gt;We've got a bit to wait to see the details of this, however – Sitecore are saying we'll see initial releases in spring next year. But this is another driver for me to finally wrap my head around headless development for Sitecore. It seems like it's pretty certain to become the new normal for projects in the future. And it looks a flexible, powerful future too.&lt;/p&gt;
-&lt;p&gt;Exciting times...&lt;/p&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
