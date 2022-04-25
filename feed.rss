@@ -6,8 +6,68 @@
 		<description />
 		<copyright>2014-2022</copyright>
 		<managingEditor>Jeremy Davis</managingEditor>
-		<pubDate>Mon, 11 Apr 2022 10:05:40 GMT</pubDate>
-		<lastBuildDate>Mon, 11 Apr 2022 10:05:40 GMT</lastBuildDate>
+		<pubDate>Mon, 25 Apr 2022 07:55:41 GMT</pubDate>
+		<lastBuildDate>Mon, 25 Apr 2022 07:55:41 GMT</lastBuildDate>
+		<item>
+			<title>Pesky Paper for PDF Printers</title>
+			<link>https://blog.jermdavis.dev/posts/2022/windows-pdf-printer-paper-size</link>
+			<description>&lt;p&gt;Recently I needed to do an odd bit of printing. I needed to generate an A3 PDF for printing which had crop marks around it. That means it needs to be printed to &amp;quot;a bit larger than A3&amp;quot; size. In the past I'd used Foxit's PDF printer for this (where it just worked), but that no longer seems to be free. Turns out the default Windows PDF printer needs a bit of hackery to enable using odd-sized paper. I'm sure I'll find myself needing to do this again in the future, so this is a reminder for my future self.&lt;/p&gt;</description>
+			<author>Jeremy Davis</author>
+			<guid>https://blog.jermdavis.dev/posts/2022/windows-pdf-printer-paper-size</guid>
+			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
+			<content:encoded>&lt;p&gt;Recently I needed to do an odd bit of printing. I needed to generate an A3 PDF for printing which had crop marks around it. That means it needs to be printed to "a bit larger than A3" size. In the past I'd used Foxit's PDF printer for this (where it just worked), but that no longer seems to be free. Turns out the default Windows PDF printer needs a bit of hackery to enable using odd-sized paper. I'm sure I'll find myself needing to do this again in the future, so this is a reminder for my future self.&lt;!--more--&gt;&lt;/p&gt;
+&lt;h2 id="the-problem"&gt;The problem&lt;/h2&gt;
+&lt;p&gt;I've got a Photoshop drawing that's a "just over A3" sized. It's an A3 print with what printers call "bleed" - the extra bit of your design you have to leave around the edges of a print to ensure that once it's cropped to its right size, the printing goes all the way to the edges of the page. The print company I'm using needs a PDF with crop marks on the image so they can print that extra and trim then trim the artwork to the right size. But when I try to send image this to Microsoft's Windows 10 PDF printer, I can't select a custom paper size, and the choices don't include anything larger than A3:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-MissingPaperOptions.png"&gt;&lt;img alt="Print properties, with fixed set of sizes" src="https://blog.jermdavis.dev/img/2022/03-MissingPaperOptions.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Now in theory, you should be able to add new paper sizes to printers. There's a UI option in the "Printers &amp;amp; Scanners" page in settings, for "Print server properties":&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-PrintServerProperties.png"&gt;&lt;img alt="The 'Printers &amp;amp; scanners' dialog" src="https://blog.jermdavis.dev/img/2022/03-PrintServerProperties.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;And in there, you should be able to create new "custom" paper sizes:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-NewFormDialog.png"&gt;&lt;img alt="Adding a new paper size" src="https://blog.jermdavis.dev/img/2022/03-NewFormDialog.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;And those should then be able to show up in the paper choices. You can see the new option in some print drivers installed on my computer:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-NewPaperVisible.png"&gt;&lt;img alt="New paper size in a LaserJet driver" src="https://blog.jermdavis.dev/img/2022/03-NewPaperVisible.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;But it doesn't work with Microsoft's PDF Printer - the larger paper sizes I tried to add would never shows up there.&lt;/p&gt;
+&lt;h2 id="the-solution"&gt;The solution&lt;/h2&gt;
+&lt;p&gt;After a load of "standard Windows trouble-shooting" (you know: rebooting and reinstalling stuff) I did a pile of googling. That eventually &lt;a href="https://franklinheath.co.uk/2015/08/29/custom-page-sizes-for-microsoft-print-to-pdf/" target="_blank" rel="noopener"&gt;lead me to this blog post&lt;/a&gt; about adding custom paper sizes to the MS PDF printer.&lt;/p&gt;
+&lt;p&gt;The instructions there provided the outline of what I needed to do. Broadly that's:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Look in the registry to find some data about the PDF Printer driver&lt;/li&gt;
+&lt;li&gt;Use that data to find some special files on disk which describe the printer&lt;/li&gt;
+&lt;li&gt;Edit one of those files to add some extra data that enables custom paper sizes&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Sounds way more complex than it should be - but achievable. However, there were a couple of tricky points for me here.&lt;/p&gt;
+&lt;p&gt;First up was understanding how the registry data maps to the disk data. The key thing here is that there's actually two things to look at in the registry. First is under &lt;code&gt;HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\ CurrentVersion\Print\Printers\Microsoft Print to PDF&lt;/code&gt;. There's an entry here that tells you which folder to look in for the print driver data under &lt;code&gt;C:\Windows\System32\spool\V4Dirs&lt;/code&gt;. All the folders are named with GUIDs, so you need to know which one to open:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-FindingThePrintDriverFolder.png"&gt;&lt;img alt="Finding the right folder for the print driver files" src="https://blog.jermdavis.dev/img/2022/03-FindingThePrintDriverFolder.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;But then you need to look at a second bit of data under &lt;code&gt;...\Microsoft Print to PDF\PrinterDriverData&lt;/code&gt; in the registry, in order to find the name of the individual data file to edit. It's also given a fairly random looking name, so would be hard to guess. But the registry item, combined with the blog post saying it's a &lt;code&gt;gpd&lt;/code&gt; file gives you the info:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-FindingThePrintDriverFile.png"&gt;&lt;img alt="Finding the right file in the print driver folder" src="https://blog.jermdavis.dev/img/2022/03-FindingThePrintDriverFile.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Having worked that out, I was able to follow the instructions in the blog about editing the file I'd found. But it didn't work for me, and it took some time for me to work out why...&lt;/p&gt;
+&lt;p&gt;It turns out the issue is actually pretty simple. The article describes addings some extra markup to the printer definition, which allows the print driver to see the custom paper sizes defined in the "Print server properties" dialog from earlier. It suggests you add following text into the file immediately after the &lt;code&gt;*DefaultOption:&lt;/code&gt; entry:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-highlight="5" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;*Option: CUSTOMSIZE
+{
+*rcNameID: =USER_DEFINED_SIZE_DISPLAY
+*MinSize: PAIR(936000, 1332000)
+*MaxSize: PAIR(5346000, 7560000)
+*MaxPrintableWidth: 5346000
+}
+&lt;/pre&gt;
+&lt;p&gt;But, as highlighted, the mark-up defined here gives some bounds for the "size" of your printer.&lt;/p&gt;
+&lt;p&gt;What I missed initially is that you have to make sure that you set these to be &lt;em&gt;larger&lt;/em&gt; than your desired paper size. Otherwise the print driver will (sensibly) filter out the choices you've defined which "don't fit" on its maximum paper size. That doesn't really make sense for a "print to PDF" driver because it should have no physical limits. But it does make sense for the base abstraction all print drivers are built around, as that assumes that physical paper size is a key property of printers.&lt;/p&gt;
+&lt;p&gt;Now I should probably have &lt;a href="https://docs.microsoft.com/en-gb/windows-hardware/drivers/print/supporting-user-defined-paper-sizes" target="_blank" rel="noopener"&gt;taken the time to work out what the units above actually mean&lt;/a&gt;, but to be honest it all looked a bit complex, so I just hacked it. I increased the most significant digit of each of the width &amp;amp; height fields by one to make the maximum larger. And the after a bit more confusion where this sort-of worked but not quite, I realised that you also need to increase the MaxPrintableWidth property too:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-highlight="5,6" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;*Option: CUSTOMSIZE
+{
+*rcNameID: =USER_DEFINED_SIZE_DISPLAY
+*MinSize: PAIR(936000, 1332000)
+*MaxSize: PAIR(6346000, 8560000)
+*MaxPrintableWidth: 8560000
+}
+&lt;/pre&gt;
+&lt;p&gt;If you don't change that value to match the largest dimension of your paper, you end up with "unprintable" areas because the printer thinks it can't actually draw on that bit of the paper. That shows up as "hatched" areas in the print preview dialog.&lt;/p&gt;
+&lt;p&gt;But as soon as those changes are saved, the new size appears in my printer options:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-PaperSizeNowVisible.png"&gt;&lt;img alt="New paper size showing up in the PDF printer" src="https://blog.jermdavis.dev/img/2022/03-PaperSizeNowVisible.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;And I can generate my PDFs successfully, on "a bit bigger than A3" paper, to allow for cropping.&lt;/p&gt;
+&lt;p&gt;After all that I have to echo the writer of the blog post linked above - why don't Microsoft ship this extra config by default? Seems like "print to any sized PDF" would be a sensbible feature. And it would save us all the hacking above...&lt;/p&gt;
+</content:encoded>
+			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
+		</item>
 		<item>
 			<title>Is this the most important slide from SUGCON?</title>
 			<link>https://blog.jermdavis.dev/posts/2022/most-important-sugcon-slide</link>
@@ -688,80 +748,6 @@ Sitecore supports pulling the indexing role out to a separate server. That might
 &lt;p&gt;If you have this set to true, even if a CM server has all its index strategies set to "manual", it will still end up resetting the active alias to the "non rebuild" one each time the Sitecore process recycles. And that may well be the wrong one based on the current state of your public site...&lt;/p&gt;
 &lt;p&gt;So worth checking the state of that setting if you're seeing odd behaviour with indexes, but you thought you'd followed rules above.&lt;/p&gt;
 &lt;/blockquote&gt;
-</content:encoded>
-			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
-		</item>
-		<item>
-			<title>Shipping custom logs from your v10 containers</title>
-			<link>https://blog.jermdavis.dev/posts/2021/shipping-custom-logs-from-your-v10-containers</link>
-			<description>&lt;p&gt;My work on a container-based v10.0 project keeps raising interesting challenges – things that don’t work quite the same way in Docker or Kubernetes, compared to the old world of &amp;quot;bare metal&amp;quot; installs of Sitecore. Custom log files are an example here...&lt;/p&gt;</description>
-			<author>Jeremy Davis</author>
-			<enclosure url="https://blog.jermdavis.dev/" length="0" type="image" />
-			<guid>https://blog.jermdavis.dev/posts/2021/shipping-custom-logs-from-your-v10-containers</guid>
-			<pubDate>Mon, 01 Jan 0001 00:00:00 GMT</pubDate>
-			<content:encoded>&lt;p&gt;My work on a container-based v10.0 project keeps raising interesting challenges – things that don’t work quite the same way in Docker or Kubernetes, compared to the old world of "bare metal" installs of Sitecore. Custom log files are an example here...&lt;!--more--&gt;&lt;/p&gt;
-&lt;p&gt;I realised recently that we had some custom code in our solution, whose log data was not appearing in the Docker streamed logs. (And hence wasn’t visible in the Kubernetes container log output either) After a bit of digging I released this was because the developers had quite sensibly moved these log entries to a separate log file. Turns out that the log streaming does not pick up all logs – you have to be specific:&lt;/p&gt;
-&lt;h2&gt;How does it work?&lt;/h2&gt;
-&lt;p&gt;Inside your containers, a tool called &lt;code&gt;LogMonitor.exe&lt;/code&gt; is running. It uses disk monitoring (and other techniques, potentially) to monitor log data, and when it sees changes it streams these to “standard output".&lt;/p&gt;
-&lt;p&gt;Your container orchestrator is picking up that streamed data, and sending it to whatever console or log aggregation framework your using. That might be AppInsights or Prometheus from Kubernetes in production, and it might be the Visual Studio containers window or a console under Docker.&lt;/p&gt;
-&lt;p&gt;By default, this is set up to stream IIS logs and the main Sitecore log. So what do we do if we want other log files?&lt;/p&gt;
-&lt;h2&gt;Extending this&lt;/h2&gt;
-&lt;p&gt;If you look inside your Sitecore CM or CD containers, LogMonitor sits in a folder under the root:&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-10-logmonitor.png" target="_blank"&gt;&lt;img alt="Log Monitor" src="https://blog.jermdavis.dev/img/2021/2021-10-logmonitor.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;By default it’s started by the entrypoint script for the container, and it reads is configuration settings from that &lt;code&gt;json&lt;/code&gt; file sitting next to it.&lt;/p&gt;
-&lt;p&gt;It's default state is:&lt;/p&gt;
-&lt;pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;"&gt;{
-    "LogConfig": {
-      "sources": [
-        {
-          "type": "EventLog",
-          "startAtOldestRecord": false,
-          "eventFormatMultiLine": false,
-          "channels": [
-            {
-              "name": "system",
-              "level": "Error"
-            }
-          ]
-        },
-        {
-          "type": "File",
-          "directory": "c:\\inetpub\\logs",
-          "filter": "*.log",
-          "includeSubdirectories": true
-        },
-        {
-          "type": "File",
-          "directory": "c:\\inetpub\\wwwroot\\App_data\\logs",
-          "filter": "log.*.txt",
-          "includeSubdirectories": false
-        }
-      ]
-    }
-  }
-}
-&lt;/pre&gt;
-&lt;p&gt;So to add extra log files we can modify this. There’s some &lt;a href="https://github.com/microsoft/windows-container-tools/wiki/Authoring-a-Config-File" rel="noopener" target="_blank"&gt;documentation available on GitHub&lt;/a&gt; because it’s not just disk files you can process here. But I’m only interested in other Sitecore logs for the moment...&lt;/p&gt;
-&lt;p&gt;So we could change the existing pattern there to "&lt;code&gt;*.txt&lt;/code&gt;" to bring in everything from the logs folder. But I wanted to be a bit more subtle. I tried adding an extra source which would cover just the files I care about:&lt;/p&gt;
-&lt;pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;"&gt;{
-    "type": "File",
-    "directory": "c:\\inetpub\\wwwroot\\App_data\\logs",
-    "filter": "MyCustomFile.log.*.txt",
-    "includeSubdirectories": false
-}
-&lt;/pre&gt;
-&lt;p&gt;That block gets appended after the file source for the main Sitecore logs, as part of the array for "sources".&lt;/p&gt;
-&lt;p&gt;But to make this work, we need to get this into our container images. How do we manage that? Extending the base image build...&lt;/p&gt;
-&lt;p&gt;The &lt;a href="https://github.com/Sitecore/docker-examples/tree/develop/custom-images/docker/build/cm" rel="noopener" target="_blank"&gt;example container setup for Sitecore includes a DockerFile&lt;/a&gt; for extending the base CM container. (You may want to do this on other roles too, of course – similar patterns apply)&lt;/p&gt;
-&lt;p&gt;We can extend that file to overwrite the default config with out version. Use the VS container browser shown above to find the file and right-click "open" it to see the contents. You can then modify this, and save a copy of your changes in your docker image build folder.&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-10-dockerfile.png" target="_blank"&gt;&lt;img alt="DockerFile" src="https://blog.jermdavis.dev/img/2021/2021-10-dockerfile.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;You can then add a simple "copy" operation into your Dockerfile:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;# Update Log Monitor config
-COPY CustomLogMonitorConfig.json C:\LogMonitor\LogMonitorConfig.json
-&lt;/pre&gt;
-&lt;p&gt;That will ensure your modified file will end up in the container, ready to run on startup. Note that you will need to rebuild your container images for that to take effect.&lt;/p&gt;
-&lt;p&gt;But once that’s done, the extra data should appear in your streamed logs:&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2021/2021-10-extralogs.png" target="_blank"&gt;&lt;img alt="Extra Logs" src="https://blog.jermdavis.dev/img/2021/2021-10-extralogs.png"&gt;&lt;/a&gt;&lt;/p&gt;
 </content:encoded>
 			<comments xmlns="http://purl.org/rss/1.0/modules/slash/">0</comments>
 		</item>
