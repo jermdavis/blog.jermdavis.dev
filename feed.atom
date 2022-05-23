@@ -7,7 +7,75 @@
 	</author>
 	<link rel="self" href="https://blog.jermdavis.dev/" />
 	<rights>2014-2022</rights>
-	<updated>2022-05-15T16:46:25Z</updated>
+	<updated>2022-05-23T07:16:52Z</updated>
+	<entry>
+		<id>https://blog.jermdavis.dev/posts/2022/xref-recent-statiq</id>
+		<title>Xref links in recent Statiq versions</title>
+		<author>
+			<name>Jeremy Davis</name>
+		</author>
+		<link href="https://blog.jermdavis.dev/posts/2022/xref-recent-statiq" />
+		<updated>0001-01-01T00:00:00Z</updated>
+		<content>&lt;p&gt;I updated the build project for this blog recently, as &lt;a href="https://www.statiq.dev/" target="_blank" rel="noopener"&gt;the engine used to generate&lt;/a&gt; it was updated. But doing that caused an issue which I think others might bump into. So here's an explanation of what I saw and how to fix it:&lt;!--more--&gt;&lt;/p&gt;
+&lt;h2 id="the-issue"&gt;The issue&lt;/h2&gt;
+&lt;p&gt;In a couple of places in the theme for my blog I make use of &lt;code&gt;xref&lt;/code&gt; links. That's a way of writing a link in your source which doesn't directly care where the resulting page will end up. The publishing code will fix-up your link to the correct URL once it's worked out where the target page is.&lt;/p&gt;
+&lt;p&gt;One place I'm using these links is in the MVP widget on the right hand column. Clicking the image takes you to the relevant page. So in the &lt;code&gt;cshtml&lt;/code&gt; for the right column I have a link which says:&lt;/p&gt;
+&lt;pre data-enlighter-language="html" style="width:100%; overflow:scroll;"&gt;&amp;lt;a href="xref:mvp"&amp;gt;....&amp;lt;/a&amp;gt;
+&lt;/pre&gt;
+&lt;p&gt;and then elsewhere in the project I have a file called &lt;code&gt;mvp.md&lt;/code&gt; which defines that page. And that linking had been working fine up until I updated to beta 45. Having done that, I started to see errors:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-ErrorsFromStatiqBuild.png"&gt;&lt;img alt="A list of errors about xref resolution" src="https://blog.jermdavis.dev/img/2022/03-ErrorsFromStatiqBuild.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;There's basically one error here, but it's repeated a lot:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;[ERRO] Archives/PostProcess » ExecuteSwitch » RenderContentPostProcessTemplates » ResolveXrefs » 15 xref resolution failures:
+C:/Users/jeremy.davis/source/repos/blog.jermdavis.dev/StatiqGenerator/theme/input/posts.cshtml
+ - Multiple ambiguous matching documents found for xref "mvp"
+&lt;/pre&gt;
+&lt;p&gt;Every time the engine is trying to render any page which has the xref link to the mvp page, it gets this error. Something that changed in beta 45 means it can no longer resolve this link correctly.&lt;/p&gt;
+&lt;h2 id="working-out-the-cause"&gt;Working out the cause&lt;/h2&gt;
+&lt;p&gt;The best place to start with an issue like this is with &lt;a href="https://github.com/statiqdev/Statiq.Web/releases/tag/v1.0.0-beta.45" target="_blank" rel="noopener"&gt;the release notes for the new version&lt;/a&gt;. And looking through that, there is something interesting here:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Expanded xref lookup behavior to look in all relevant pipelines, not just the "content" pipeline 
+(exclusions can be customized using the XrefPipelines and AdditionalXrefPipelines settings).
+&lt;/pre&gt;
+&lt;p&gt;Looking through the git commits associated with this release, and thinking about that comment &lt;a href="https://github.com/statiqdev/Statiq.Web/blob/4c23f91bf2b7a1e4a91ec6c45ff22ef808f9d112/src/Statiq.Web/Bootstrapper/BootstrapperExtensions.cs#L158" target="_blank" rel="noopener"&gt;lead me to this extension method&lt;/a&gt;: (with some less relevant bits snipped out)&lt;/p&gt;
+&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;private static TBootstrapper AddDefaultWebSettings&amp;lt;TBootstrapper&amp;gt;(this TBootstrapper bootstrapper)
+            where TBootstrapper : IBootstrapper =&amp;gt;
+            bootstrapper
+                .AddSettingsIfNonExisting(new Dictionary&amp;lt;string, object&amp;gt;
+                {
+                    {
+                        WebKeys.XrefPipelines,
+                        new string[]
+                        {
+                            nameof(Pipelines.Content),
+                            nameof(Pipelines.Assets),
+                            nameof(Pipelines.Data),
+                            nameof(Pipelines.Archives),
+                            nameof(Pipelines.Feeds)
+                        }
+                    }
+                });
+&lt;/pre&gt;
+&lt;p&gt;The code is providing the value for a config setting as part of the bootstrap process for the Statiq engine. It's specifying a set of pipelines which are going to be processed to find potential &lt;code&gt;xref&lt;/code&gt; targets. I think in the previous version of the code it only looked at the Content pipeline, but now it looks at all the main ones.&lt;/p&gt;
+&lt;p&gt;So why might this break my site?&lt;/p&gt;
+&lt;p&gt;It took me a while to work this out. I tried a variety of changes to my theme and content before I realised what was up. But the answer turned out to be my tags. As well as having a markdown page titled "MVP" in the content, I also had a few posts which were tagged "MVP" too. The Archives pipeline generates pages for each tag to list all the posts which have that tag applied. So you end up with HTML files for both the MVP page and for the MVP tag listing.&lt;/p&gt;
+&lt;p&gt;And now that the outputs of the Archives pipeline are being considered as possible targets for an &lt;code&gt;xref&lt;/code&gt; link because of the code changes in this version. And so we have an issue - because as the error says, the code can no longer decide which of the two possible matches is the right one...&lt;/p&gt;
+&lt;h2 id="possible-answers"&gt;Possible answers&lt;/h2&gt;
+&lt;p&gt;I came up with ideas for how this might get sorted:&lt;/p&gt;
+&lt;p&gt;&lt;b&gt;Option 1 - change the content:&lt;/b&gt; Change the name of the MVP page, or the MVP tag.&lt;br&gt;
+Whatever they're called, as long as they both have different names, the problem will go away. Of course you'll have to remember not to accidentally cause the same issue again in the future with some other page/tag combination. So any matching combination will cause the error.&lt;/p&gt;
+&lt;p&gt;&lt;b&gt;Option 2 - change the config:&lt;/b&gt; Reconfigure the site to ignore the Archives pipeline.&lt;br&gt;
+Alternatively, do you want the xref processing to look at the output of the Archives pipeline? The config in the code above is a setting - which means it can be overridden in the Statiq config files. (Or in your code, if you're choosing to configure things that way) For example I tried adding the following to &lt;code&gt;appsettings.json&lt;/code&gt;:&lt;/p&gt;
+&lt;pre data-enlighter-language="json" style="width:100%; overflow:scroll;"&gt;{
+  "XrefPipelines": ["Content", "Assets", "Data", "Feeds"]
+}
+&lt;/pre&gt;
+&lt;p&gt;That specifies all of the pipelines except the Archives one - so the output file generated for the "MVP" tag will never be considered as a target of my &lt;code&gt;xref&lt;/code&gt;. The down side of this is that once you exclude the archive pipeline from this config, you can't use an &lt;code&gt;xref&lt;/code&gt; to refer to anything in the archives.&lt;/p&gt;
+&lt;p&gt;&lt;b&gt;Option 3 - change the links:&lt;/b&gt; Make your links without &lt;code&gt;xref&lt;/code&gt;.&lt;br&gt;
+You could go back to using normal HTML links instead of &lt;code&gt;xref&lt;/code&gt;. That would work fine - but it's sort of avoiding the problem.&lt;/p&gt;
+&lt;p&gt;(And I suppose technically option 4 is "stay on an older version of Statiq" - but that's not a good choice)&lt;/p&gt;
+&lt;p&gt;I've gone for option 2 here, and my site is generating without errors again.&lt;/p&gt;
+</content>
+		<summary>&lt;p&gt;I updated the build project for this blog recently, as &lt;a href="https://www.statiq.dev/" target="_blank" rel="noopener"&gt;the engine used to generate&lt;/a&gt; it was updated. But doing that caused an issue which I think others might bump into. So here's an explanation of what I saw and how to fix it:&lt;/p&gt;</summary>
+	</entry>
 	<entry>
 		<id>https://blog.jermdavis.dev/posts/2022/is-that-really-a-unicorn-issue</id>
 		<title>Is that really a Unicorn issue?</title>
@@ -690,60 +758,5 @@ Retail
 &lt;p&gt;And with that done, I was able to get back to the fun process of installing useful stuff onto these laptops, and testing out the new hardware with &lt;a rel="noopener" target="_blank" href="https://store.steampowered.com/app/846770/DYSMANTLE/"&gt;a bit of festive relaxation&lt;/a&gt;.&lt;/p&gt;
 </content>
 		<summary>&lt;p&gt;One of the things I've been doing over the festive period is reinstalling some laptops. While it's usually a slightly tedious job, something Microsoft have done to the Windows Installer of late has made picking the Windows version you want harder than it should be. So I'm leaving myself a note for next time I crash into this problem... &lt;/p&gt;</summary>
-	</entry>
-	<entry>
-		<id>https://blog.jermdavis.dev/posts/2021/blog-migration</id>
-		<title>A blog migration story</title>
-		<author>
-			<name>Jeremy Davis</name>
-		</author>
-		<link href="https://blog.jermdavis.dev/posts/2021/blog-migration" />
-		<link rel="enclosure" type="image" href="https://blog.jermdavis.dev/" />
-		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;It's been a while coming, but over the last couple of months I've finally gone throught the process of migrating my blog content off WordPress and onto a statically hosted site.  A few people have asked me why I'd go to the trouble of doing this, so while I'm having a festive break from proper Sitecore stuff, I thought I should write about my reasoning: &lt;!--more--&gt;&lt;/p&gt;
-&lt;h2 id="why-migrate"&gt;Why migrate?&lt;/h2&gt;
-&lt;p&gt;This isn't the first time I've changed providers. Back in 2014 when I first started writing, I tried &lt;a href="https://www.blogger.com/" target="_blank" rel="noopener"&gt;Blogger&lt;/a&gt; initially. That didn't last long though - I found formatting code samples to be such a pain there that it drove me to &lt;a href="https://wordpress.com/" target="_blank" rel="noopener"&gt;WordPress&lt;/a&gt; after a few months.&lt;/p&gt;
-&lt;p&gt;And WordPress has kept me mostly happy for the years since. But of late they've started &lt;a href="https://en.wikipedia.org/wiki/Who_Moved_My_Cheese%3F" target="_blank" rel="noopener"&gt;moving my cheese&lt;/a&gt; quite a bit. They're in the midst of rolling out a series of enhancements towards a more modern editing UI. But in doing that they've made the workflow I've been using harder - and it's started to get on my nerves. Basically I don't get on with the new block editor.&lt;/p&gt;
-&lt;p&gt;So about a year ago I started looking into the idea of moving. I toyed with a few other more recent blogging platforms, but didn't find one I liked. So I started looking at hosting it myself, in order to have more control...&lt;/p&gt;
-&lt;p&gt;I tried a collection of JavaScript-based site generation tools like &lt;a href="https://www.gatsbyjs.com/" target="_blank" rel="noopener"&gt;Gatsby&lt;/a&gt;, &lt;a href="https://nextjs.org/" target="_blank" rel="noopener"&gt;NextJS&lt;/a&gt; and &lt;a href="https://hexo.io/" target="_blank" rel="noopener"&gt;Hexo&lt;/a&gt;. I quite liked Hexo, and got fairly far with creating a site based on that - but kept bumping into how my lack of JavaScript knowledge would cause issues for customising it.&lt;/p&gt;
-&lt;p&gt;So I went back to the drawing board and looked for something .Net based. And after a while I came across &lt;a href="https://www.statiq.dev/" target="_blank" rel="noopener"&gt;Statiq&lt;/a&gt;. It's an ongoing project to build a modern SSG using .Net core - and it fit my skills better.&lt;/p&gt;
-&lt;p&gt;So moving away from Wordpress gives me:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Better performance&lt;/strong&gt;&lt;br&gt;
-Using an SSG is much better for &lt;a href="https://developers.google.com/web/tools/lighthouse" target="_blank" rel="noopener"&gt;lighthouse scores&lt;/a&gt;. Static files don't need runtime processing to render the content, so I can have pages that score very well:
-&lt;a target="__blank" rel="noopener" href="https://blog.jermdavis.dev/img/2021/2021-12-Lighthouse.png"&gt;&lt;img src="https://blog.jermdavis.dev/img/2021/2021-12-Lighthouse.png"&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Control over the layout and style&lt;/strong&gt;&lt;br&gt;
-There have been a few occasions over the years where I've wanted to be able to mess about with the blog theme more than the freebie WordPress behaviour lets you. Not an issue if I build the HTML myself. Though I'm sure my designer friends would say this freedom is bad for other reasons... ;-)&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Picking my own domain&lt;/strong&gt;&lt;br&gt;
-Again, something I could have done with paid WordPress - but is easier with a static site, and ensures I keep ownership and control over everything.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Reduced risk of the platform moving out from under me&lt;/strong&gt;&lt;br&gt;
-While Statiq might change in the future, it's open source, so I can always revert to a version which suits me. And while maybe one day I'll have to move hosting or DNS provider, neither of those are as big an issue as WordPress changing in ways I don't like.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;So I spent some time on hacking up my own site theme, and pulled together a migration tool to transfer content. And then spent far too long fiddling with the details...&lt;/p&gt;
-&lt;h2 id="what-is-the-tech-stack"&gt;What is the tech stack?&lt;/h2&gt;
-&lt;p&gt;As mentioned the SSG for the new site is Statiq. It's an open source project built on .Net Core. It takes a theme built on Razor Pages, and applies it to markdown files for all your pages and posts. Statiq is just a framework for running content creation pipelines, so you can compile it into whatever application you want.&lt;/p&gt;
-&lt;p&gt;It comes with pipelines which do all the common blog applications, and I found I didn't need to tweak very much of its out-of-the-box behaviour, outside of the razor files:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" rel="noopeners" href="https://blog.jermdavis.dev/img/2021/2021-12-Statiq.png"&gt;&lt;img src="https://blog.jermdavis.dev/img/2021/2021-12-Statiq.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;So I've got a .Net Core console app project (which happens to be running under .Net 6 - I was very pleased with how easy upgrading to that was) which generates all the mark-up, and handles the static files for the site. And I've made a couple of changes to the standard behaviour:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;I modified the default code-block formatting to use the &lt;a href="https://github.com/EnlighterJS/EnlighterJS" target="_blank" rel="noopener"&gt;Enlighter.js&lt;/a&gt; framework. That gives me pretty code blocks in a style that I like.&lt;/li&gt;
-&lt;li&gt;I added a pipleline to generate OpenGraph images for each post, based on &lt;a href="https://wellsb.com/csharp/aspnet/generate-images-statiq-imagesharp" target="_blank" rel="noopener"&gt;the example in this blog post&lt;/a&gt;. So social shares for any page get an image (along with other metadata) without any extra authoing effort.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Both of those were pretty easy changes to make thanks to the way Statiq works.&lt;/p&gt;
-&lt;p&gt;The theme then uses &lt;a href="https://tailwindcss.com/" target="_blank" rel="noopener"&gt;Tailwind CSS&lt;/a&gt; and &lt;a href="https://alpinejs.dev/" target="_blank" rel="noopener"&gt;Alpine.js&lt;/a&gt;. I've made a first pass at minimising Tailwind, but there's more to do there to get to "nice" styles.&lt;/p&gt;
-&lt;p&gt;The build process for Statiq isn't that fast with 260+ posts and all their images. But it works, and the output is easy to host. I'm pushing that to a &lt;a href="https://pages.github.com/" target="_blank" rel="noopener"&gt;GitHub pages&lt;/a&gt; site, with a bit of powershell to automate the build-and-commit task. While there are lots of different static file hosting solutions I could have used for this, that was just the simplest choice.&lt;/p&gt;
-&lt;p&gt;And finally, the DNS for the custom domain for the GitHub Pages site is handled by &lt;a href="https://www.cloudflare.com/" target="_blank" rel="noopener"&gt;Cloudflare&lt;/a&gt;. Nothing clever there - just a CNAME entry in the DNS that points to the relevant thing in GitHub.&lt;/p&gt;
-&lt;h2 id="whats-still-to-do"&gt;What's still to do?&lt;/h2&gt;
-&lt;p&gt;Plenty. Other than a few more years of writing every couple of weeks, I've got a bit of a backlog of work still to do:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;There are a few migration tasks left. There are some big files left on WordPress that I don't want to host in GitHub Pages. So they need a new home. And eventually I'll need to exclude the old site from Google too.&lt;/li&gt;
-&lt;li&gt;The styling is pretty hacky right now. While I've used the Tailwind CLI to minimise the default CSS file and got it fairly small, most of the UI still has lots of basic Tailwind classes applied. So eventually I'll need to work out how to put a better approach to styling in. Statiq does automatically compile sass into CSS - but I've not looked into how you can "include" other frameworks yet. So maybe I'll need to make use of a more traditional css build script. Similarly I'm pretty sure I could reduce the size of the JS being delivered with some more work.&lt;/li&gt;
-&lt;li&gt;There's some particular situation which can cause the initial start-up of the Statiq build/preview engine to fail. Sometimes a bit of data in their pipeline state appears to go wrong and it gets a lot of null-value exceptions as it processes your templates. Restarting it, or clearing out the current output and cache seems to resolve the issue. But I don't know why yet, and I'd like to understand that and (hopefully) fix it. So there's a debugging task there.&lt;/li&gt;
-&lt;li&gt;I'm not a fan of the current cookie banner code. Apart from not being convinced it's needed, it annoys me that it will still flash up briefly on page loads after it's been dismissed. I must be able to do better than that.&lt;/li&gt;
-&lt;li&gt;And I need to find a better markdown file editor - I need to do a bit of research into customisable editors, where I have have snippet insertion, so I don't have to keep looking up the right order for brackets in markdown links...&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;But despite those things that need sorting, the initial migration seems to be a success. I wonder how long it'll take me to finish all those remaining migration tasks?&lt;/p&gt;
-</content>
-		<summary>&lt;p&gt;It's been a while coming, but over the last couple of months I've finally gone throught the process of migrating my blog content off WordPress and onto a statically hosted site.  A few people have asked me why I'd go to the trouble of doing this, so while I'm having a festive break from proper Sitecore stuff, I thought I should write about my reasoning: &lt;/p&gt;</summary>
 	</entry>
 </feed>
