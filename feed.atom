@@ -7,7 +7,41 @@
 	</author>
 	<link rel="self" href="https://blog.jermdavis.dev/" />
 	<rights>2014-2022</rights>
-	<updated>2022-06-06T07:28:09Z</updated>
+	<updated>2022-06-20T07:00:50Z</updated>
+	<entry>
+		<id>https://blog.jermdavis.dev/posts/2022/windows-11-gotcha</id>
+		<title>Another Windows 11 Gotcha</title>
+		<author>
+			<name>Jeremy Davis</name>
+		</author>
+		<link href="https://blog.jermdavis.dev/posts/2022/windows-11-gotcha" />
+		<link rel="enclosure" type="image" href="https://blog.jermdavis.dev/" />
+		<updated>0001-01-01T00:00:00Z</updated>
+		<content>&lt;p&gt;For the moment &lt;a href="https://support.sitecore.com/kb?id=kb_article_view&amp;amp;sysparm_article=KB0087164" target="_blank" rel="noopener"&gt;Sitecore don't support Windows 11&lt;/a&gt; for installing XM or XP - but since Microsoft have a fairly agressive policy of rolling it out to machines currently running Windows 10 and installing it by default on new hardware, there are a fair few developers out there finding themselves having to work out how to get it to work...&lt;!--more--&gt;&lt;/p&gt;
+&lt;p&gt;One of my colleages tried to run a Sitecore Install Assistant (SIA) install of v10.2 on his laptop recently, and found that it failed. During the "start up all the services" phase, the Marketing Automation service would not come up. And in the logs for that service, this error (plus a bunch more stack trace) was repeated quite a few times:&lt;/p&gt;
+&lt;pre data-enlighter-highlight="6" data-enlighter-language="language=text" style="width:100%; overflow:scroll;"&gt;Starting Marketing Automation Engine...
+2022-06-08 15:51:29 ERR Error initializing XConnect client. System.AggregateException: One or more errors occurred. 
+   ---&amp;gt; Sitecore.XConnect.XdbCollectionUnavailableException: An error occurred while sending the request.
+   ---&amp;gt; System.Net.Http.HttpRequestException: An error occurred while sending the request. 
+   ---&amp;gt; System.Net.WebException: The underlying connection was closed: An unexpected error occurred on a receive. 
+   ---&amp;gt; System.ComponentModel.Win32Exception: The credentials supplied to the package were not recognized
+   at System.Net.Security.SslState.CheckThrow(Boolean authSuccessCheck, Boolean shutdownCheck)
+   at System.Net.Security.SslState.get_SecureStream()
+   at System.Net.TlsStream.EndRead(IAsyncResult asyncResult)
+   at System.Net.Connection.ReadCallback(IAsyncResult asyncResult)
+   --- End of inner exception stack trace ---
+&lt;/pre&gt;
+&lt;p&gt;(&lt;em&gt;Line-breaks added to make it easier to read&lt;/em&gt;)&lt;/p&gt;
+&lt;p&gt;And obviously the install can't complete at this point, so SIA fails...&lt;/p&gt;
+&lt;p&gt;I was answering questions about this issue remotely, and didn't immediately think to get on a screen share to investigate this. (my bad) So initially I didn't realise that Windows 11 was a factor here. Googling that error didn't give much in the way of useful hits at the time - mostly &lt;a href="https://stackoverflow.com/questions/7984945/the-credentials-supplied-to-the-package-were-not-recognized-error-when-authent" target="_blank" rel="noopener"&gt;Stack Overflow answers which did not refer to Sitecore&lt;/a&gt;. But they did seem to refer to SSL Certificates - which was a clue.&lt;/p&gt;
+&lt;p&gt;But once my colleague realised that Windows 11 might be a factor, the issue was fairly easy to resolve. A useful post from &lt;a href="https://twitter.com/maartenwillebr1" target="_blank" rel="noopener"&gt;Maarten Willebrands&lt;/a&gt; has a write-up of specific issues he'd seen with &lt;a href="https://www.maartenwillebrands.nl/2021/11/15/sitecore-running-sitecore-on-windows-11/" target="_blank" rel="noopener"&gt;Sitecore and Windows 11 which hits on the correct answer&lt;/a&gt;: The cause of the problem appears to be the default TLS settings in Win 11: TLS 1.3 is on by default in new IIS Sites, but xConnect does not work correctly with this enabled right now. Hence the errors we were seeing.&lt;/p&gt;
+&lt;p&gt;As Maarten points out in his post, disabling the use of TLS 1.3 in the IIS Site for xConnect will resolve the problem, and allow the Marketing Automation service to start:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-Win11SiteBinding.png"&gt;&lt;img alt="Site bindings dialog in Windows 11 - with TLS3 options" src="https://blog.jermdavis.dev/img/2022/06-Win11SiteBinding.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;So cheers to Maarten for the answer, and hopefully this post will add the alternative error message to Google for future people hitting this issue... Though I am hoping to see a fix from Sitecore with their next release, to either disable this setting automatically in the setup, or to make xConnect compatible.&lt;/p&gt;
+&lt;p&gt;*fingers crossed*&lt;/p&gt;
+</content>
+		<summary>&lt;p&gt;For the moment &lt;a href="https://support.sitecore.com/kb?id=kb_article_view&amp;amp;sysparm_article=KB0087164" target="_blank" rel="noopener"&gt;Sitecore don't support Windows 11&lt;/a&gt; for installing XM or XP - but since Microsoft have a fairly agressive policy of rolling it out to machines currently running Windows 10 and installing it by default on new hardware, there are a fair few developers out there finding themselves having to work out how to get it to work...&lt;/p&gt;</summary>
+	</entry>
 	<entry>
 		<id>https://blog.jermdavis.dev/posts/2022/regular-expressions-dotnet-7</id>
 		<title>Regular Expression improvements in .Net 7</title>
@@ -900,58 +934,5 @@ The virtual machine could not be started because a required feature is not insta
 &lt;p&gt;(And if this isn't the right approach for you, &lt;a href="https://matt-rickard.com/docker-desktop-alternatives/" target="_blank" rel="noopener"&gt;there are alternatives&lt;/a&gt;)&lt;/p&gt;
 </content>
 		<summary>&lt;p&gt;If you're reading this soon after I post it then it's very nearly the end of the &amp;quot;grace period&amp;quot; where anyone can run Docker Desktop. As of 1st February &lt;a href="https://www.docker.com/pricing/faq#:~:text=Do%20I%20need%20to%20pay%20to%20continue%20to%20use%20Docker%20Desktop%3F" target="_blank" rel="noopener"&gt;if your business meets certain requirements you have to pay for each user&lt;/a&gt;. So what can us Sitecore devs do if we aren't in a position to pay that fee? Well the good news is you can run Docker without the Desktop bit, and it's not too tricky once you wrap your head around a few things...&lt;/p&gt;</summary>
-	</entry>
-	<entry>
-		<id>https://blog.jermdavis.dev/posts/2022/docker-difficulties</id>
-		<title>A brief guide to Docker difficulties</title>
-		<author>
-			<name>Jeremy Davis</name>
-		</author>
-		<link href="https://blog.jermdavis.dev/posts/2022/docker-difficulties" />
-		<updated>2022-01-27T00:00:00Z</updated>
-		<content>&lt;p&gt;I spent some time working with a colleague who couldn't get his docker instance to start up happily this week. And it's reminded me that for all its positives, there are still some challenges with understanding the underlying issues when a developer container instance breaks. I realised I need a "go read this" post for the start of future discussions like this, so here are some problems you might see, and some diagnostic suggestions I wanted a convenient way to share: &lt;!--more--&gt;&lt;/p&gt;
-&lt;p&gt;Trying to start your development instance and seeing something like this can be frustrating:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-FailedDockerStart.png"&gt;&lt;img alt="A console window showing docker-compose has failed to start a traefik container" src="https://blog.jermdavis.dev/img/2022/01-FailedDockerStart.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;When something goes wrong at start-up, it's often not at all clear why. &lt;code&gt;docker-compose&lt;/code&gt; says nothing helpful. So what are some of the common issues, and how can they be mitigated?&lt;/p&gt;
-&lt;h2 id="do-you-have-a-ysod"&gt;Do you have a &lt;a href="https://en.wikipedia.org/wiki/Screen_of_death#:~:text=A%20Yellow%20Screen%20of%20Death%20occurs%20when%20an%20ASP.NET%20web%20app%20encounters%20a%20problem%20and%20crashes.%5B8%5D%5Bself%2Dpublished%20source%3F%5D" target="_blank" rel="noopener"&gt;YSOD&lt;/a&gt;?&lt;/h2&gt;
-&lt;p&gt;This is the problem my colleague was having. You can do &lt;code&gt;down&lt;/code&gt; and &lt;code&gt;up&lt;/code&gt; as many times as you like, but if something in your Sitecore website is throwing an unhandled exception which breaks ASP.Net, you're never going to get the site to start up in its default state.&lt;/p&gt;
-&lt;p&gt;The way &lt;a href="https://traefik.io/traefik/" target="_blank" rel="noopener"&gt;Traefik&lt;/a&gt; is configured means that it relies on a health monitor endpoint in your CM container. If that does not return HTTP 200 when it is called, Traefik will not start. That leads to a really annoying situation. You're working away, and you do something that causes a YSOD. Before you fix that issue, you get distracted and end up shutting docker down. And when you come back to work, you are unable to make Sitecore start up. That makes it way harder to fix your problem you had to start with...&lt;/p&gt;
-&lt;p&gt;So when you see the dreaded Traefik errors, your first response should be to work out &lt;i&gt;why&lt;/i&gt; it's failed. Some good diagnostic tactics are:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;b&gt;Is the CM container up?&lt;/b&gt;&lt;br&gt;
-The first thing to check is the state of your containers. That can give you a clue about which way your investigations should go. Traefik can fail if the CM container starts, but then goes down again. Or it can fail if it's up but returning errors serious enough to break the health endpoint. So make use of your favourite monitoring tool to check if the CM is actually running:
-&lt;a href="https://blog.jermdavis.dev/img/2022/01-ContainerState.png" target="_blank"&gt;&lt;img alt="The running containers dialog from Docker Desktop - showing the state of a set of Sitecore containers" src="https://blog.jermdavis.dev/img/2022/01-ContainerState.png"&gt;&lt;/a&gt;
-If the CM is down, you should look into the Service Monitor issue below, lack of memory / disk space, or similar technical issues that would prevent it from starting or from staying started. But if the CM is up you think about code and config bugs in your deployment and networking issues.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;b&gt;Check the container log&lt;/b&gt;&lt;br&gt;
-If it's up, it's worth checking what the logs say. Both the streamed Docker logs (which cover assorted outputs of your containers, and the Sitecore logs if they've been written) Log data might point you at the Service Monitor error below, or it might point you towards the health endpoint failing. So pick a tool to look at the streamed log data initially:
-&lt;a href="https://blog.jermdavis.dev/img/2022/01-CMLogsWith500.png" target="_blank" rel="noopener"&gt;&lt;img src="https://blog.jermdavis.dev/img/2022/01-CMLogsWith500.png" alt="The Visual Studio containers window, showing health monitor log errors for a Sitecore CM container"&gt;&lt;/a&gt;
-The image above is an example of the &lt;code&gt;/healthz/ready&lt;/code&gt; endpoint returning 500 - which Traefik will see as a reason not to start.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;b&gt;Skip past Traefik&lt;/b&gt;&lt;br&gt;
-Since Traefik is the reverse proxy for your containers, if it's down it can be difficult to see what (if any) messages are being returned if a web request fails. One trick for bypassing this issue is to make use of the fact that Docker containers are actually proper VMs - so you can connect directly to them and run other commands. That means we can fire up PowerShell inside our misbehaving CM container:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;docker exec -it &amp;lt;your-cm-container-name&amp;gt; powershell.exe
-&lt;/pre&gt;
-&lt;p&gt;When you type that, you should get a new powershell session inside your container. So you can use that to directly make an HTTP request to Sitecore, and see what (if any) error comes back:&lt;/p&gt;
-&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;Invoke-WebRequest http://localhost/ -UseBasicParsing
-&lt;/pre&gt;
-&lt;p&gt;Note that you need to use "localhost" and "http://" here - Traefik does SSL termination for you, so inside the container doesn't use HTTPS. And it also handles the DNS naming of your site - so inside the container the site is just localhost. The parameter &lt;code&gt;-UseBasicParsing&lt;/code&gt; there is required whenever you use &lt;code&gt;Invoke-WebRequest&lt;/code&gt; on a machine which doesn't have IE installed. Console-only instances of Windows Server like this don't have IE - so you'll get an error if you forget this parameter. If you're seeing 500s in the docker log stream above, chances are you're going to get a pile of red text here, indicating the real ASP.Net error. You'll likely need to scroll up a bit to see the start of the message:
-&lt;a href="https://blog.jermdavis.dev/img/2022/01-WebRequestError.png" target="_blank"&gt;&lt;img src="https://blog.jermdavis.dev/img/2022/01-WebRequestError.png" alt="A powershell session showing an error message returned by Invoke-Webrequest"&gt;&lt;/a&gt;
-Quite often, this is going to tell you what's wrong. (Though in some circumstances you may get more info from requesting the health endpoint url that's throwing 500s in the logs in the previous bullet) The example here (A DLL binding issue that prevented ASP.Net from starting up the Sitecore App) is pretty much what my colleague was suffering from.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Once you've found your issue and corrected it, remember that you probably don't have to go through the whole up/down rigmarole. Often you can stop/delete any containers which are causing an issue, fix your problem and run &lt;code&gt;docker-compose up&lt;/code&gt; again to start up your CM or Traefik containers. They'll happily make use of the Identity Server / Solr / SQL Server ones that were (probably) already running.&lt;/p&gt;
-&lt;p&gt;(Note, you also have the option to &lt;a href="https://t.co/xm31mbscmT" target="_blank" rel="noopener"&gt;disable the healthchecks that prevent you seeing the error outputs&lt;/a&gt; too. Depending on your situation, you may find that easier)&lt;/p&gt;
-&lt;h2 id="youve-got-a-networking-issue"&gt;You've got a networking issue?&lt;/h2&gt;
-&lt;p&gt;If you find that your CM tries to spin up, but keeps throwing "can't find my databases!" type SQL errors in the Sitecore log, then a common cause is any VPN software you might be running:&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2022/01-DockerSqlError.png"&gt;&lt;img alt="Log errors from SQL connections" src="https://blog.jermdavis.dev/img/2022/01-DockerSqlError.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;I've had this issue - if I start my office VPN client it aggressively routes all network traffic over to my corporate network. And annoyingly that includes it grabbing the "between container" network traffic that Docker is trying to use to allow  your containers to talk to each other... A good test for whether this is your issue is to disconnect the VPN, down your containers, restart Docker Desktop and then try bringing your containers back up without the VPN connected. If it works, chances are your VPN is at fault.&lt;/p&gt;
-&lt;p&gt;This can be a bit of a tricky one to solve. In my case, I had to persuade my IT Ops team to create a "&lt;a href="https://en.wikipedia.org/wiki/Split_tunneling" target="_blank" rel="noopener"&gt;split tunnel&lt;/a&gt;" configuration where only traffic for my clients and my office went over the VPN, and other (local) traffic was ignored. That allowed me to run Docker and have code in the containers access my client's networks. Great for me getting dev work done - but potentially less secure than the default VPN setup.&lt;/p&gt;
-&lt;p&gt;I've also found that it's better to start the VPN before Docker Desktop, as docker is not always happy with networking changes happening after it's started up...&lt;/p&gt;
-&lt;h2 id="service-monitor-on-older-containers"&gt;Service Monitor on older containers?&lt;/h2&gt;
-&lt;p&gt;I'm working on a v10.0 project right now, and probably the most common failure is that the CM container's Service Monitor process fails to start. &lt;a target="_blank" href="https://sitecore.stackexchange.com/a/28676"&gt;Sitecore have addressed this one in newer releases&lt;/a&gt; if you're lucky enough to be able to upgrade your project.&lt;/p&gt;
-&lt;p&gt;But if not, I've found it seems to be made worse by your custom project code and config. This error is transient, so often stopping and starting your containers can resolve it. I've also found the error seems less likely to happen if I remove my project files from the &lt;code&gt;docker\deploy\website&lt;/code&gt; folder, start up my containers, and then publish my code after vanilla Sitecore is running. Not sure if that's specific to my project or not though - but may be of help to others?&lt;/p&gt;
-</content>
-		<summary>&lt;p&gt;I spent some time working with a colleague who couldn't get his docker instance to start up happily this week. And it's reminded me that for all its positives, there are still some challenges with understanding the underlying issues when a developer container instance breaks. I realised I need a &amp;quot;go read this&amp;quot; post for the start of future discussions like this, so here are some problems you might see, and some diagnostic suggestions I wanted a convenient way to share: &lt;/p&gt;</summary>
 	</entry>
 </feed>
