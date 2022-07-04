@@ -7,7 +7,122 @@
 	</author>
 	<link rel="self" href="https://blog.jermdavis.dev/" />
 	<rights>2014-2022</rights>
-	<updated>2022-06-20T07:00:50Z</updated>
+	<updated>2022-07-04T09:25:32Z</updated>
+	<entry>
+		<id>https://blog.jermdavis.dev/posts/2022/solr-operator-kubernetes</id>
+		<title>Discovering Solr Operator</title>
+		<author>
+			<name>Jeremy Davis</name>
+		</author>
+		<link href="https://blog.jermdavis.dev/posts/2022/solr-operator-kubernetes" />
+		<updated>0001-01-01T00:00:00Z</updated>
+		<content>&lt;p&gt;One of the recurring themes of deploying Sitecore over the last few years has been "how do I deal with Solr?". It's a question with many valid answers... I've been doing some research for a client recently, because they wanted to run their own SolrCloud instances in Kubernetes - and I came across the Apache Foundation's "Solr Operator" project. It's an interesting shortcut to efficient containerised deployments of Solr, and it might help you too...&lt;!--more--&gt;&lt;/p&gt;
+&lt;h2 id="what-is-this"&gt;What is this?&lt;/h2&gt;
+&lt;p&gt;If you have decided you want to run your SolrCloud for Sitecore in container infrastructure that you host, then &lt;a href="https://solr.apache.org/operator/" target="_blank" rel="noopener"&gt;Solr Operator&lt;/a&gt; could be the helper project you've been looking for. It's a pre-packaged &lt;a href="https://kubernetes.io/" target="_blank" rel="noopener"&gt;Kubernetes&lt;/a&gt; setup tool that lets you quickly and easily provision new instances of &lt;a href="https://solr.apache.org/guide/8_8/solrcloud.html#:~:text=SolrCloud%20is%20flexible%20distributed%20search,be%20sent%20to%20any%20server." target="_blank" rel="noopener"&gt;SolrCloud&lt;/a&gt;. And while it provisions them it can configure in helpful ways too, with built in support for authentication settings, scaling, SSL, Ingress Controller config and backups.&lt;/p&gt;
+&lt;p&gt;It's provided as a set of Kubernetes config files and Helm Charts, which you can apply to your existing Kubernetes instances (and it doesn't care about where they're run) to set up as many Solr instances as you need.&lt;/p&gt;
+&lt;p&gt;What is a "&lt;a href="https://helm.sh/docs/topics/charts/" target="_blank" rel="noopener"&gt;Helm Chart&lt;/a&gt;"? Well it's a pre-packaged set of Kubernetes config files, which are templated. Think of Helm as a bit like a package manager for Kubernetes. You say "fetch the package called &amp;lt;something&amp;gt;" and it downloads an archive containing a set of templated config files. When you say "install the package called &amp;lt;something&amp;gt;" you're passing in a set of variables, and it's injecting them into the templates to generate the real config files for your deployment. Under the surface (for Operator at least) what that means is you're downloading all the Kubernetes &lt;a href="https://en.wikipedia.org/wiki/YAML" target="_blank" rel="noopener"&gt;YAML&lt;/a&gt; files to set up Solr, but they've been templated using &lt;a href="https://mustache.github.io/" target="_blank" rel="noopener"&gt;Mustache&lt;/a&gt;. So when Helm runs, it replaces all of the &lt;code&gt;{{variable}}&lt;/code&gt; entries in these files to generate the final YAML files which will install Solr using your preferred features, names and settings...&lt;/p&gt;
+&lt;p&gt;So once you've installed Operator, it can sit in your Kubernetes cluster and manage backups etc for you. And whenever you need to provision another instance of SolrCloud (say you're running multiple client projects in parallel perhaps) then you run a simple command, and it sorts out all of the config to add the new containers to your setup.&lt;/p&gt;
+&lt;p&gt;And it's massively simpler than trying to do this yourself...&lt;/p&gt;
+&lt;h2 id="an-example-setup"&gt;An example setup&lt;/h2&gt;
+&lt;p&gt;I decided to try this out on my laptop. I don't have Kubernetes installed, but it turns out that's a feature of &lt;a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener"&gt;Docker Desktop&lt;/a&gt;, so running an instance of this locally is pretty simple. The steps are as follows:&lt;/p&gt;
+&lt;h3 id="get-docker-running-kubernetes-for-you"&gt;1. Get Docker running Kubernetes for you&lt;/h3&gt;
+&lt;p&gt;If you're like me, and have been running Sitecore using Docker Desktop, then you probably have it set up in Windows Containers mode. So switch it back to Linux Containers by right-clicking the Whale icon in your system tray:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-SwitchToLinux.png"&gt;&lt;img alt="Docker Desktop Context Menu with Switch To Linux highlighted" src="https://blog.jermdavis.dev/img/2022/06-SwitchToLinux.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Once that restarts, you'll need to enable the Kubernetes features, because they're not on by default. So click the settings "cog" icon in the top blue bar of the Docker Desktop window, and turn it on from the config window:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-EnableKubernetes.png"&gt;&lt;img alt="The Docker Desktop settings window, with Kubernetes enabled" src="https://blog.jermdavis.dev/img/2022/06-EnableKubernetes.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Once you've ticked that, you'll need to click "Apply &amp;amp; Restart". It may warn you it needs to do some downloading and that you'll need to have your internet connection working:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-ConfirmKubernetesChanges.png"&gt;&lt;img alt="Dockers confirm dialog, for downloading Kubernetes" src="https://blog.jermdavis.dev/img/2022/06-ConfirmKubernetesChanges.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Once you click "install" it will think for a bit, before restarting with a new engine icon in the bottom of the Docker Desktop window:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-K8s-Icon.png"&gt;&lt;img alt="The K8s engine icon alongside the Docker engine one" src="https://blog.jermdavis.dev/img/2022/06-K8s-Icon.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id="make-sure-you-have-helm"&gt;2. Make sure you have Helm&lt;/h3&gt;
+&lt;p&gt;If you don't have it installed already, then you can &lt;a href="https://get.helm.sh/helm-v3.9.0-windows-amd64.zip" target="_blank" rel="noopener"&gt;download the Helm for Windows executable&lt;/a&gt; and unzip it into a suitable working directory. You can keep it in the current directory for experiments, or stick it somewhere central and add it to the path if you're going to use it for other tasks too.&lt;/p&gt;
+&lt;h3 id="prepare-helm-and-kubernetes-to-set-up-solr"&gt;3. Prepare Helm and Kubernetes to set up Solr&lt;/h3&gt;
+&lt;p&gt;You'll need an ingress controller. The default setup for that is simple:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud/deploy.yaml`
+&lt;/pre&gt;
+&lt;p&gt;And that will quickly set up all the relevant resources for &lt;a href="https://www.nginx.com/" target="_blank" rel="noopener"&gt;Nginx&lt;/a&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-IngressInstalled.png"&gt;&lt;img alt="" src="https://blog.jermdavis.dev/img/2022/06-IngressInstalled.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;In the real world you'll need some DNS entries provided for the resources you're creating - but for a quick local demo it's easiest to add host file entries. There are a few here, because your Solr cluster needs to have names for the overall cluster, plus each of the individual Solr instances in the cluster:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;127.0.0.1	default-example-solrcloud.ing.local.domain ing.local.domain default-example-solrcloud-0.ing.local.domain default-example-solrcloud-1.ing.local.domain default-example-solrcloud-2.ing.local.domain dinghy-ping.localhost
+&lt;/pre&gt;
+&lt;p&gt;And then you can get the Helm charts required for the setup, and make sure they're up to date:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;helm repo add apache-solr https://solr.apache.org/charts
+helm repo update
+&lt;/pre&gt;
+&lt;p&gt;The last step here is to install Operator itself. That requires two things. The first is some Custom Resource Definitions (CRDs) for Kubernetes, which can be installed via &lt;code&gt;kubectl&lt;/code&gt; and then the second is to use Helm to install the Operators:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;kubectl create -f https://solr.apache.org/operator/downloads/crds/v0.5.1/all-with-dependencies.yaml
+helm install solr-operator apache-solr/solr-operator --version 0.5.1
+&lt;/pre&gt;
+&lt;p&gt;The CRDs define common settings for things like Operator, SolrCloud, the extensions provided and backups. CRDs pull these together into custom resources in Kubernetes - which makes it easier for you to manage. They describe the config schema for these things to Kubernetes, so that when Operator creates instances of them, the correct data gets set up.&lt;/p&gt;
+&lt;p&gt;From the command line, they install themselves easily:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-OperatorInstalled.png"&gt;&lt;img alt="Console output from installing dependencies and Operator" src="https://blog.jermdavis.dev/img/2022/06-OperatorInstalled.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;And once they're run, you can see the containers for Nginx, and the Operator containers for both Solr and Zookeeper:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-RunningContainers.png"&gt;&lt;img alt="Containers for Operator and Ingress running in Docker Desktop" src="https://blog.jermdavis.dev/img/2022/06-RunningContainers.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id="provision-an-instance-of-solrcloud"&gt;3. Provision an instance of SolrCloud&lt;/h3&gt;
+&lt;p&gt;So once that's all in place, you're ready to fire up some Solr...&lt;/p&gt;
+&lt;p&gt;That's done by running the following &lt;code&gt;helm&lt;/code&gt; command:&lt;/p&gt;
+&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;helm install example-solr apache-solr/solr --version 0.5.1
+  --set image.tag=8.8.2
+  --set addressability.external.method=Ingress
+  --set addressability.external.domainName="ing.local.domain"
+  --set addressability.external.useExternalAddress="true"
+  --set ingressOptions.ingressClassName="nginx"
+&lt;/pre&gt;
+&lt;p&gt;(This should all be on one line, but it's easier to read with some line breaks for clarity)&lt;/p&gt;
+&lt;p&gt;Breaking it down, it's telling Helm to &lt;code&gt;install&lt;/code&gt; an SolrCloud instance named &lt;code&gt;example-solr&lt;/code&gt; using the &lt;code&gt;apache-solr/solr&lt;/code&gt; templates that got installed in the step 3 above. The &lt;code&gt;--version 0.5.1&lt;/code&gt; is specifying what version of the Operator templates are being used (and that's the latest version as I write this).&lt;/p&gt;
+&lt;p&gt;And then the rest of the options are setting parameters for the install itself. This is where you can do most of the customisising of the setup to suit your needs. Each of these parameters gets prefixed with the &lt;code&gt;--set&lt;/code&gt; command to tell Helm that you're providing a value for one of the custom settings.&lt;/p&gt;
+&lt;p&gt;The important one here for Sitecore users is the &lt;code&gt;image.tag&lt;/code&gt; wich specifies the version tag for which Solr you want installed - &lt;code&gt;8.8.2&lt;/code&gt; here is the right one for Sitecore 10. The other parameters give here are to do with how you access Solr via the ingress controller - but there are lots of options, &lt;a href="https://artifacthub.io/packages/helm/apache-solr/solr#chart-values" target="_blank" rel="noopener"&gt;documented with the chart&lt;/a&gt; and with some other explanations on the &lt;a href="https://apache.github.io/solr-operator/docs/solr-cloud/solr-cloud-crd.html" target="_blank" rel="noopener"&gt;Operator website&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;So in a "real" deployment you need to do a bit of thinking about these settings, but the defaults above will work for a demo. But when you run it, you get some status info:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-InstallingSolr.png"&gt;&lt;img alt="Output from the Solr Helm chart running" src="https://blog.jermdavis.dev/img/2022/06-InstallingSolr.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;And you can check the status of the deployment as it proceeds using &lt;code&gt;kubectl get solrclouds -w&lt;/code&gt; in order to wait for it to complete. Initially the "ReadyNodes" field will be smaller than the "DesiredNodes" one:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-Status.png"&gt;&lt;img alt="Kubernetes showing that the set of nodes is not yet ready" src="https://blog.jermdavis.dev/img/2022/06-Status.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Note how because of those custom resources installed above "solrclouds" is a resource type you can &lt;code&gt;get&lt;/code&gt; here - Operator has enhanced the behaviour of &lt;code&gt;kubectl&lt;/code&gt; to make life easier. And once it's finished (which can take a while the first time) those two fields will match:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-SuccessStatus.png"&gt;&lt;img alt="Kubernetes with its node deployments complete" src="https://blog.jermdavis.dev/img/2022/06-SuccessStatus.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;And you'll have lots of containers running - adding your three Zookeepers, three Solrs and other bits:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-ContainersForSolr.png"&gt;&lt;img alt="Docker UI showing all the containers for a SolrCloud instance" src="https://blog.jermdavis.dev/img/2022/06-ContainersForSolr.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Now at this point you should be able to browse the Solr UI at the URL &lt;code&gt;http://default-example-solrcloud.ing.local.domain/solr/&lt;/code&gt; but you may encounter an issue here...&lt;/p&gt;
+&lt;p&gt;If you get a 404 error from Nginx saying it can't see Solr, then you'll need to &lt;a href="https://github.com/apache/solr-operator/issues/424" target="_blank" rel="noopener"&gt;make a small tweak to the settings for the ingress controller&lt;/a&gt;. You can run &lt;code&gt;kubectl edit ingress example-solrcloud-common&lt;/code&gt; to get it to open an editor to modify the settings for your ingress controller resource. And you need to add this line into the file after the &lt;code&gt;annotations&lt;/code&gt; line:&lt;/p&gt;
+&lt;pre data-enlighter-highlight="9" data-enlighter-language="language=yaml" style="width:100%; overflow:scroll;"&gt;# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+  creationTimestamp: "2022-06-23T20:40:25Z"
+  generation: 1
+  labels:
+&lt;/pre&gt;
+&lt;p&gt;(Or you can make a patch file and use the &lt;code&gt;kubernetes patch&lt;/code&gt; file to apply it, if you prefer a more automated approach)&lt;/p&gt;
+&lt;p&gt;And the save the file to update the settings. And that should fix the &lt;code&gt;404&lt;/code&gt; issue, and you should get access to Solr:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-SolrRunning.png"&gt;&lt;img alt="The Solr UI running" src="https://blog.jermdavis.dev/img/2022/06-SolrRunning.png"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;And now you have a nice target for a Sitecore SolrCloud init container to set up all your collections...&lt;/p&gt;
+&lt;h2 id="but-what-about-more-production-ready-situations"&gt;But what about more production-ready situations?&lt;/h2&gt;
+&lt;p&gt;From what the documentation says, these scripts are designed for creating production setups. But there are a few things you need to make sure you think about, and pass the appropriate setup parameters for:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Persistent storage&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;By default, any data that gets stored by a Kubernetes container is temporary. Anything that gets written to a container is lost if that container gets stopped and a new instance started. So if you need services in your cluster to have permenant data, you have to configure it. There seem to be two broad approaches here:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;You can let Kubernetes sort it out, and just tell Operator you want to have persistent data, and how big the stores for each container you run should be. It can allocate its own storage and manage this for you. This is fairly easy to achieve, as you just need to apply the &lt;code&gt;--set datastorage.type="persistent"&lt;/code&gt; setting to enable it, and optionally &lt;a href="https://artifacthub.io/packages/helm/apache-solr/solr#data-storage-options" target="_blank" rel="noopener"&gt;set things like max size, reclamation policy or the particular disk resource type to use&lt;/a&gt;. But this means you don't own the lifetime of the resources provided.&lt;/li&gt;
+&lt;li&gt;Or I think you can provision your own cloud storage resources, and provide these to Kubernetes for its use. This is a bit more complex to achieve, as you need to customise the Kubernetes config a bit to provide your own &lt;code&gt;PersistentVolume&lt;/code&gt; resources for Solr to make claims against. But it should give you full control over the resources provisioned.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;TLS&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Out of the box, the SolrCloud instance provided by Operator is only available on Port 80. Inside a network you control, you might consider that acceptable. But if you're exposing these services outside of your private network, or you're dealing with data that you want to be encrypted in transit then you will need to add TLS settings to your config.&lt;/p&gt;
+&lt;p&gt;There are multiple choices to configure here. You can set up TLS for the individual Solr and Zookeeper nodes, so that all the traffic inside and out of the Kubernetes cluster uses SSL.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Authentication&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;It's not common requirement for the sort of "private" Solr instance you run inside your network for Sitecore, but you might want to apply security to your SolrCloud instance. By default instances set up using Operator are anonymously accessible, but there are &lt;a href="https://apache.github.io/solr-operator/docs/solr-cloud/solr-cloud-crd.html#authentication-and-authorization" target="_blank" rel="noopener"&gt;plenty of options for configuring security if you do need it&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="conclusions"&gt;Conclusions&lt;/h2&gt;
+&lt;p&gt;I think this is a really good addition to your infrastructure toolbox for Sitecore deployments. If you're choosing to run your own Solr in containers this is definitely the easiest setup approach I've discoverd so far. And since it's part of the Apache Foundation's projects you know it's going to do things right...&lt;/p&gt;
+</content>
+		<summary>&lt;p&gt;One of the recurring themes of deploying Sitecore over the last few years has been &amp;quot;how do I deal with Solr?&amp;quot;. It's a question with many valid answers... I've been doing some research for a client recently, because they wanted to run their own SolrCloud instances in Kubernetes - and I came across the Apache Foundation's &amp;quot;Solr Operator&amp;quot; project. It's an interesting shortcut to efficient containerised deployments of Solr, and it might help you too...&lt;/p&gt;</summary>
+	</entry>
 	<entry>
 		<id>https://blog.jermdavis.dev/posts/2022/windows-11-gotcha</id>
 		<title>Another Windows 11 Gotcha</title>
@@ -684,255 +799,5 @@ protected override void OnDetaching()
 &lt;p&gt;If you'd like to fiddle with this yourself, there's a &lt;a target="_blank" href="https://blog.jermdavis.dev/files/PasteBehavior.zip"&gt;zip of the basic code above you can grab if you want&lt;/a&gt;...&lt;/p&gt;
 </content>
 		<summary>&lt;p&gt;I realised recently that I've become quite used to way many web forms let you paste image data straight into a text field. The behaviour of &amp;quot;upload the image data, and insert the correct mark-up for the image&amp;quot; is a really helpful shortcut when you're editing DevOps tickets, or Stack Overflow answers. So I started wondering how easy it would be to add that to the text editing tool I use for writing these blog posts. Turns out, not too hard, because WPF has some helpful extension patterns...&lt;/p&gt;</summary>
-	</entry>
-	<entry>
-		<id>https://blog.jermdavis.dev/posts/2022/docker-without-desktop</id>
-		<title>Docker without the desktop</title>
-		<author>
-			<name>Jeremy Davis</name>
-		</author>
-		<link href="https://blog.jermdavis.dev/posts/2022/docker-without-desktop" />
-		<updated>2022-02-01T00:00:00Z</updated>
-		<content>&lt;p&gt;If you're reading this soon after I post it then it's very nearly the end of the "grace period" where anyone can run Docker Desktop. As of 1st February &lt;a href="https://www.docker.com/pricing/faq#:~:text=Do%20I%20need%20to%20pay%20to%20continue%20to%20use%20Docker%20Desktop%3F" target="_blank" rel="noopener"&gt;if your business meets certain requirements you have to pay for each user&lt;/a&gt;. So what can us Sitecore devs do if we aren't in a position to pay that fee? Well the good news is you can run Docker without the Desktop bit, and it's not too tricky once you wrap your head around a few things...&lt;!--more--&gt;&lt;/p&gt;
-&lt;p&gt;I should note that I've been working this out on Windows 10 Professional. It's possible that this needs tweaking for Windows 11, but I've only had the chance to test the steps against Win 10 VMs in Azure as that's my use case.&lt;/p&gt;
-&lt;h2 id="first-prerequisites"&gt;First: Prerequisites&lt;/h2&gt;
-&lt;p&gt;Microsoft provide two optional features for Windows which are needed for Docker to run. One is the Hyper-V virtualisation infrastructure that allows the Docker engine to run VMs, and the other is Microsoft's containers feature.&lt;/p&gt;
-&lt;p&gt;It's easy to verify and install optional features via PowerShell. You can call &lt;code&gt;Get-WindowsOptionalFeature&lt;/code&gt; to test if a feature has been installed, and &lt;code&gt;Enable-WindowsOptionalFeature&lt;/code&gt; if you need to add it. So I tried wrapping those up in a helper function to install a named feature:&lt;/p&gt;
-&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function VerifyWindowsFeature
-{
-	param(
-		[string]$featureName
-	)
-	
-	$hasFeature = (Get-WindowsOptionalFeature -FeatureName $featureName -Online | Select -ExpandProperty State) -eq "Enabled"
-	if(-not $hasFeature)
-	{
-		Write-Host "$featureName feature not currently installed - adding" -ForegroundColor Yellow
-		$result = Enable-WindowsOptionalFeature -Online -FeatureName $featureName -NoRestart -All
-
-		return $result.RestartNeeded
-	}
-	else
-	{
-		Write-Host "$featureName feature is already installed" -ForegroundColor Green
-		return $false
-	}
-}
-&lt;/pre&gt;
-&lt;p&gt;Installing features like this often requires a restart - but helpfully you can tell Windows "don't reboot please" and get a flag back saying whether a reboot is required. So this function can be called a couple of times to install the two features needed, and then we can test if a reboot is required:&lt;/p&gt;
-&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function EnsureWindowsFeatures
-{
-	$containersNeedsRestart = VerifyWindowsFeature "Containers"
-	$hyperVNeedsReboot = VerifyWindowsFeature "Microsoft-Hyper-V"
-
-	if($containersNeedsRestart -or $hyperVNeedsReboot)
-	{
-		throw "Restart required after adding Windows features"
-	}
-}
-&lt;/pre&gt;
-&lt;p&gt;I toyed with the idea of using &lt;code&gt;Restart-Computer&lt;/code&gt; here to force a reboot, but ended up leaving it out. I'm not sure that's the best idea. But after this has run and a reboot has been performed (if needed) the machine should be in a state to install Docker.&lt;/p&gt;
-&lt;h2 id="second-the-docker-engine"&gt;Second: The Docker Engine&lt;/h2&gt;
-&lt;p&gt;It's not well advertised, but Docker does provide a simple download for just the Windows container engine. I found this via &lt;a href="https://lippertmarkus.com/2021/09/04/containers-without-docker-desktop/" target="_blank" rel="noopener"&gt;a helpful blog post&lt;/a&gt;, which has a very basic script for installing the Docker engine. It's interesting to note that this download is specifically for Windows containers though - unlike the Docker Desktop install, it doesn't appear to support switching over to run Linux images. The post does highlight what you need to do in order to run in mixed-mode though, if you want to investigate that - but I was focused on Windows containers for this, so I've stuck with the simplest solution.&lt;/p&gt;
-&lt;p&gt;That blog post gave the basic outline for getting the Docker engine to run: Download and extract the zip file, add its location to the system path, and register the Docker service. But the script in the blog post doesn't deal with the idea that you might want to change versions, or address the issue of running containers when you're not an admin. So a bit of rework was in order for my needs, and I got to experimenting...&lt;/p&gt;
-&lt;p&gt;The first thing I wanted to check was whether the Docker service was already running. That's fairly easy to do with PowerShell - you can filter the results of &lt;code&gt;Get-Service&lt;/code&gt; by the known name of the Docker service that gets installed. If there are results then the service exists. The result is an object which gives you the name and state of that service, so you can tell if it's running or not. And if it is you can check if there are any active containers. I probably need a better way to handle this, but for a first pass the script throws an exception at that point - I didn't want to try and delete the service if it was working. But otherwise the service can be stopped and (since we know at this point that the Docker code must already be present) the command line to unregister it can be called:&lt;/p&gt;
-&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function StopAndRemoveExistingService
-{
-    param(
-        [string]$svcName
-    )
-    $service = Get-Service | where { $_.Name -eq $svcName }
-    if($service.length -eq 0)
-    {
-        Write-Host "No existing service for $svcName" -ForegroundColor Green
-    }
-    else
-    {
-        $service | % {
-          Write-Host "Service '$($_.DisplayName)' exists" -ForegroundColor Yellow
-          if($_.Status -eq "Running")
-          {
-            Write-Host "$($_.Name) service is running" -ForegroundColor Yellow
-
-            $items = docker ps -q
-
-            if($items -ne $null)
-            {
-                throw "Containers are running - stop them before running this script"
-            }
-          }
-
-          Write-Host "Removing service" -ForegroundColor Green
-          Stop-Service $_.Name
-          dockerd --unregister-service
-        }
-    }
-}
-&lt;/pre&gt;
-&lt;p&gt;So with the service stopped and unregistered (if it existed) the next job is to download the archive that Docker provide. Given I was running this code fairly often while I tested, I optimised it a bit by avoiding the download if the file already existed. The &lt;code&gt;$name&lt;/code&gt; variable here is just to make the debug output more readable, as I figured this function might be useful for more than one download in this bit of work: (Spoiler - it was...)&lt;/p&gt;
-&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function DownloadFile
-{
-    param(
-        [string]$name,
-        [string]$downloadUrl,
-        [string]$output
-    )
-
-    if(-not(Test-Path $output))
-    {
-        Write-Host "Downloading $name file" -ForegroundColor Green
-        Invoke-WebRequest -Uri $downloadUrl -OutFile $output
-    }
-    else
-    {
-        Write-Host "$name already exists" -ForegroundColor Yellow
-    }
-}
-&lt;/pre&gt;
-&lt;p&gt;Working out the newest &lt;code&gt;$downloadUrl&lt;/code&gt; here (for the latest version of Docker) is a project for another day - but for the moment it's easy enough to call this function with a fixed version string like &lt;code&gt;https://download.docker.com/win/static/stable/x86_64/docker-20.10.8.zip&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;With that zip downloaded, it can be extracted easily enough:&lt;/p&gt;
-&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;Expand-Archive $dockerZip -DestinationPath $dockerEnginePath -Force
-&lt;/pre&gt;
-&lt;p&gt;In order to be able to run the "register Docker as a service" command, the code needs to make sure that the folder which has been unzipped is in the system path. The easiest way to handle that is to check if the install folder is already in the path, and if not add it:&lt;/p&gt;
-&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function EnsureDockerInPath
-{
-    param(
-        [string]$installPath
-    )
-
-    $path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
-    if(-not($path.Contains($installPath)))
-    {
-        $newPath = "$($env:path);$($installPath)"
-        Write-Host "New path: $newPath" -ForegroundColor Green
-        [Environment]::SetEnvironmentVariable("Path", $newPath, [System.EnvironmentVariableTarget]::Machine)
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-    }
-    else
-    {
-        Write-Host "Path is already correct" -ForegroundColor Yellow
-    }
-}
-&lt;/pre&gt;
-&lt;p&gt;I suspect this isn't "right" as there are circumstances where the test might get the wrong answer, but it's good enough for a first pass.&lt;/p&gt;
-&lt;p&gt;And with that done, it's easy to install and start the service:&lt;/p&gt;
-&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function EnsureDockerServiceRunning
-{
-    param(
-        [string]$svcName
-    )
-	
-    Write-Host "Registering &amp;amp; starting $svcName service" -ForegroundColor Green
-    dockerd --register-service
-    Start-Service $svcName
-}
-&lt;/pre&gt;
-&lt;p&gt;Those functions are enough to get a basic install running. They can be combined together into a simple overall script:&lt;/p&gt;
-&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;#Requires -RunAsAdministrator
-param(
-    [string]$dockerEnginePath = "C:\",
-    [string]$dockerInstallPath = "C:\Docker",
-    [string]$dockerEngineUrl = "https://download.docker.com/win/static/stable/x86_64/docker-20.10.8.zip",
-    [string]$dockerZip = "docker.zip",
-
-    [string]$serviceName = "docker",
-)
-
-# Make sure Hyper-V etc is installed
-EnsureWindowsFeatures
-
-# Go to this user's downloads folder
-pushd $(New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path
-
-# stop &amp;amp; remove any running service if possible
-StopAndRemoveExistingService $serviceName
-
-# Fetch the docker engine and unzip it
-DownloadFile "Docker" $dockerEngineUrl $dockerZip
-Expand-Archive $dockerZip -DestinationPath $dockerEnginePath -Force
-Remove-Item $dockerZip
-
-# Make sure the docker folder is in the path
-EnsureDockerInPath $dockerInstallPath
-
-# Get docker service running
-EnsureDockerServiceRunning $serviceName
-
-popd
-&lt;/pre&gt;
-&lt;p&gt;After running that script and dealing with any reboots required you should be able to run a simple test container:&lt;/p&gt;
-&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;docker run hello-world
-&lt;/pre&gt;
-&lt;p&gt;But, you won't be able to run Sitecore yet...&lt;/p&gt;
-&lt;h2 id="third-docker-compose"&gt;Third: Docker Compose&lt;/h2&gt;
-&lt;p&gt;The current versions of the Docker engine include Docker Compose as a built-in command - but they have v2 built in to the command line tools. The Docker &lt;a href="https://github.com/sitecore/docker-examples" target="_blank" rel="noopener"&gt;Compose files provided by Sitecore for running developer instances&lt;/a&gt; require v1 at present, however. If you try to start these examples from the command line after running the install outlined above, you'd have to be running &lt;code&gt;docker compose up&lt;/code&gt;. Note the use of a space rather than a hyphen here. That's &lt;code&gt;docker compose&lt;/code&gt; rather than &lt;code&gt;docker-compose&lt;/code&gt; - a subtlety that tripped me up quite hard. The hyphened variant will give a "command not found" error at this point.&lt;/p&gt;
-&lt;p&gt;But running the version with the space also gets an error:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-IncorrectComposeVersion.png"&gt;&lt;img alt="A console showing an error message caused by the incorrect docker-compose version" src="https://blog.jermdavis.dev/img/2022/01-IncorrectComposeVersion.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;For Google's benefit, the important part of that message is:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Error response from daemon: 
-Unrecognised volume spec: file '\\.\pipe\docker_engine` cannot be mapped. 
-Only directories can be mapped on this platform.
-&lt;/pre&gt;
-&lt;p&gt;That looks like something tricky, but it's actually just this versioning issue. When you're running Docker Desktop there's a config setting for "stick with Compose V1", and that distratcted me for a while trying to find the option for doing this with the simple version that has been downloaded here. But that's entirely the wrong approach, it turns out. You're stuck with V2 for the built-in version here, but you can separately download a V1 release of the "docker-compose" command and use that instead.&lt;/p&gt;
-&lt;p&gt;The code for the separate &lt;code&gt;docker-compose&lt;/code&gt; command lives on GitHub, and you can find assorted versions &lt;a href="https://github.com/docker/compose/releases/" target="_blank" rel="noopener"&gt;in the releases there&lt;/a&gt;. So to get something that's compatible with the files we're working with, we need to take the most recent V1 release. There's no installation required here. The download is a plain &lt;code&gt;.exe&lt;/code&gt; file which can be copied to the Docker folder we created above, and run as-is.&lt;/p&gt;
-&lt;p&gt;The extra code to cope with that is fairly simple, and can be added into the base script above. It needs a couple of extra parameters to the overall script:&lt;/p&gt;
-&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;param(
-    [string]$composeEngineUrl = "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Windows-x86_64.exe",
-    [string]$composeExe = "docker-compose.exe"
-)
-&lt;/pre&gt;
-&lt;p&gt;And the download operation can be added to the script's logic&lt;/p&gt;
-&lt;pre data-enlighter-highlight="&amp;quot;4-6&amp;quot;" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;# Get docker service running
-EnsureDockerServiceRunning $serviceName
-
-DownloadFile "Compose" $composeEngineUrl $composeExe
-Unblock-File $composeExe
-Move-Item $composeExe $dockerInstallPath
-
-popd
-&lt;/pre&gt;
-&lt;p&gt;Adding that onto the basic script allows you to run an install which will be able to start an instance of Sitecore.&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2022/01-SuccessfulVersion.png"&gt;&lt;img alt="Installs script allowing 'docker version' to run" src="https://blog.jermdavis.dev/img/2022/01-SuccessfulVersion.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;(Note, if the path to Docker is added by this script, you may well need to open a new PowerShell window in order to run Docker. I thought I'd done the business necessary to refresh the session path, but it doesn't always work for me. Another issue to look into later. But starting a new PowerShell session does always seem to get the new path so the workaround is simple enough for the moment)&lt;/p&gt;
-&lt;h2 id="fourth-non-admin-users"&gt;Fourth: Non-admin users&lt;/h2&gt;
-&lt;p&gt;One thing that took me a while to work out was that the default installation only seems to work if you're running docker commands from an elevated console window. Users who don't have "adminsitrator" rights will get an error message that the Docker CLI commands can't access the named pipe used to talk to the engine even though the service is up and running.&lt;/p&gt;
-&lt;p&gt;That could be an issue for some users, so I did a bit more digging into how this might be resolved. I came across some google results explaining that you need to &lt;a href="https://github.com/tfenster/dockeraccesshelper" target="_blank" rel="noopener"&gt;explicity grant rights to non-admin&lt;/a&gt; users to allow them access to the Docker service. I didn't want to have an external dependency for this bit of script, so I pulled in the core behaviour there to a function:&lt;/p&gt;
-&lt;pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"&gt;function GrantRights
-{
-    param(
-        $domain,
-        $user
-    )
-
-    $account="$($domain)\$($user)"
-    $npipe = "\\.\pipe\docker_engine"                                                                                 
-    $dInfo = New-Object "System.IO.DirectoryInfo" -ArgumentList $npipe                                               
-    $dSec = $dInfo.GetAccessControl()                                                                                 
-    $fullControl =[System.Security.AccessControl.FileSystemRights]::FullControl                                       
-    $allow =[System.Security.AccessControl.AccessControlType]::Allow                                                  
-    $rule = New-Object "System.Security.AccessControl.FileSystemAccessRule" -ArgumentList $account,$fullControl,$allow
-    $dSec.AddAccessRule($rule)                                                                                        
-    $dInfo.SetAccessControl($dSec)
-}
-&lt;/pre&gt;
-&lt;p&gt;For the purposes of a simple install script you can call this passing &lt;code&gt;$env:userdomain&lt;/code&gt; and &lt;code&gt;$env:username&lt;/code&gt; for the user credentials. But in a more complex scenario you might want to use a group, or call it for multiple users.&lt;/p&gt;
-&lt;p&gt;It's worth nothing that this function seems to fail if you try to run it before a fresh install of Docker has actually run a container. So I chose to put it into a separate script for reuse.&lt;/p&gt;
-&lt;h2 id="winning"&gt;Winning!&lt;/h2&gt;
-&lt;p&gt;So with that in place, you can run &lt;code&gt;docker-compose up&lt;/code&gt; for a Sitecore install, and it will successfully start:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-SuccessfulCompose.png"&gt;&lt;img alt="A successful run of docker-compose starting Sitecore" src="https://blog.jermdavis.dev/img/2022/01-SuccessfulCompose.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;(If you get an error starting the Docker service and Event Viewer mentions &lt;code&gt;panic.log&lt;/code&gt;, try deleting the file from &lt;code&gt;C:\ProgramData\docker&lt;/code&gt;)&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;b&gt;&lt;i&gt;I learned an important thing while testing this:&lt;/i&gt;&lt;/b&gt; If you run up a VM in Azure to test Docker (or other virtualisation stuff) then you have to be careful which VM "size" you choose. If you pick a v1 or v2 VM you'll be able to run the script here without errors, but you'll get an error that looks like this when you try to start any container:
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Error response from daemon: 
-hcsshim::CreateComputeSystem 8459c6c816e764642634ce29cfee666d30834df0f2792fba9e411d11bd0c33f6: 
-The virtual machine could not be started because a required feature is not installed
-&lt;/pre&gt;
-&lt;p&gt;After some googling, &lt;a href="https://stackoverflow.com/a/50099965" target="_blank" rel="noopener"&gt;it turns out this is because only v3 and above Azure VMs have Nested Virtualisation enabled&lt;/a&gt;. And that's required to let Docker and Hyper-V run correctly inside an Azure VM. So make sure you're careful what you pick when creating your VMs:&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://blog.jermdavis.dev/img/2022/01-VM-size-choice.png"&gt;&lt;img alt="The Azure portal dropdown for picking VM size" src="https://blog.jermdavis.dev/img/2022/01-VM-size-choice.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;There's a pile more work to do here, I think, before this is a fully-fledged install script, but it's a start. There's &lt;a href="https://gist.github.com/jermdavis/6fb0a6e47d6f1342c089af4c04d29c35" target="_blank" rel="noopener"&gt;a gist of this if you fancy playing with the code yourself&lt;/a&gt; - but it's very much an experiment right now. But maybe it'll be of help to you...&lt;/p&gt;
-&lt;p&gt;(And if this isn't the right approach for you, &lt;a href="https://matt-rickard.com/docker-desktop-alternatives/" target="_blank" rel="noopener"&gt;there are alternatives&lt;/a&gt;)&lt;/p&gt;
-</content>
-		<summary>&lt;p&gt;If you're reading this soon after I post it then it's very nearly the end of the &amp;quot;grace period&amp;quot; where anyone can run Docker Desktop. As of 1st February &lt;a href="https://www.docker.com/pricing/faq#:~:text=Do%20I%20need%20to%20pay%20to%20continue%20to%20use%20Docker%20Desktop%3F" target="_blank" rel="noopener"&gt;if your business meets certain requirements you have to pay for each user&lt;/a&gt;. So what can us Sitecore devs do if we aren't in a position to pay that fee? Well the good news is you can run Docker without the Desktop bit, and it's not too tricky once you wrap your head around a few things...&lt;/p&gt;</summary>
 	</entry>
 </feed>
