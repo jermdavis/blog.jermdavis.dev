@@ -1,28 +1,31 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2018/spotting-common-challenges-when-youre-doing-performance-tracing">
-		<meta name="description" content="I find myself doing quite a lot of work on performance for Sitecore websites at the moment. Whenever I do a similar job for a group of clients, I start to spot patterns in the sites I'm working on – and it struck me that there are some common performance issues that can be spotted just from the overview graphs you see when you collect trace data.
-So to try and help you all improve the sites you ship, here are three that I've come across in a few projects recently:">
-		<meta property="og:description" content="I find myself doing quite a lot of work on performance for Sitecore websites at the moment. Whenever I do a similar job for a group of clients, I start to spot patterns in the sites I'm working on – and it struck me that there are some common performance issues that can be spotted just from the overview graphs you see when you collect trace data.
-So to try and help you all improve the sites you ship, here are three that I've come across in a few projects recently:">
-		<meta name="keywords" content="Performance, Sitecore">
-		<meta name="author" content="Jeremy Davis">
-		<meta name="copyright" content="Jeremy Davis">
-		<title>Jeremy Davis - Spotting common challenges when you're doing performance&nbsp;tracing</title>
-		<meta name="robots" content="index, follow">
-		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-		<meta name="application-name" content="Jeremy Davis">
-		<meta name="msapplication-tooltip" content="Jeremy Davis">
-		<meta name="msapplication-starturl" content="/">
-		<link rel="manifest" href="/manifest.webmanifest">
-		<meta property="og:title" content="Jeremy Davis - Spotting common challenges when you&amp;#x27;re doing performance&amp;#xA0;tracing">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/spotting-common-challenges-when-youre-doing-performance-tracing-social.jpg">
-		<script type="application/ld+json">
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2018/spotting-common-challenges-when-youre-doing-performance-tracing">
+        <meta name="description" content="I find myself doing quite a lot of work on performance for Sitecore websites at the moment. Whenever I do a similar job for a group of clients, I start to spot patterns in the sites I&amp;#x27;m working on &amp;#x2013; and it struck me that there are some common performance issues that can be spotted just from the overview graphs you see when you collect trace data.&amp;#xA;So to try and help you all improve the sites you ship, here are three that I&amp;#x27;ve come across in a few projects recently:">
+        <meta property="og:description" content="I find myself doing quite a lot of work on performance for Sitecore websites at the moment. Whenever I do a similar job for a group of clients, I start to spot patterns in the sites I&amp;#x27;m working on &amp;#x2013; and it struck me that there are some common performance issues that can be spotted just from the overview graphs you see when you collect trace data.&amp;#xA;So to try and help you all improve the sites you ship, here are three that I&amp;#x27;ve come across in a few projects recently:">
+            <meta name="keywords" content="Performance, Sitecore">
+        <meta name="author" content="Jeremy Davis">
+        <meta name="copyright" content="Jeremy Davis">
+
+    <title>Jeremy Davis - Spotting common challenges when you&#x27;re doing performance&#xA0;tracing</title> 
+
+        <meta name="robots" content="index, follow">
+
+            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+    <link rel="manifest" href="/manifest.webmanifest">
+
+    
+    <meta property="og:title" content="Jeremy Davis - Spotting common challenges when you&amp;#x27;re doing performance&amp;#xA0;tracing">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/spotting-common-challenges-when-youre-doing-performance-tracing-social.jpg">
+    <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -38,322 +41,252 @@ So to try and help you all improve the sites you ship, here are three that I've 
             "url": "https://jermdavis.dev/"
         }]
     }
-    
-		</script>
-		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/spotting-common-challenges-when-youre-doing-performance-tracing">
-		<meta property="og:type" content="website">
-		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-		<link href="/scss/tailwind.css" rel="stylesheet">
-		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-		<link href="/scss/site-theme.css" rel="stylesheet">
-		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-		
-		<!-- 04/07/2022 10:26:01 -->
-	</head>
-	<body class="max-w-7xl mx-auto">
-		<div class="relative bg-white" x-data="{ open: false }">
-			
-			<!-- desktop -->
-			<div class="px-4 lg:px-6 bg-gray-100">
-				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-					<div class="flex justify-start lg:w-0 flex-1">
-						<a href="/">
-							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-						</a>
-						<div class="mx-2">
-							<div class="text-3xl">Jeremy Davis</div>
-							<div class="text-lg">Sitecore, C# and web development</div>
-						</div>
-					</div>
-					<div class="nav -mr-2 -my-2 lg:hidden">
-						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-							<span class="sr-only">Open menu</span>
-							
-							<!-- Heroicon name: outline/menu -->
-							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-							</svg>
-						</button>
-					</div>
-					<nav class="nav hidden lg:flex space-x-10">
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-					</nav>
-				</div>
-			</div>
-			
-			<!--Mobile menu, show/hide based on mobile menu state.-->
-			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-					<div class="pt-5 pb-6 px-5">
-						<div class="flex items-center justify-between">
-							<div class="flex">
-								<a href="/">
-									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-								</a>
-								<div class="mx-2">
-									<div class="text-2xl">Jeremy Davis</div>
-									<div class="text-base">Sitecore, C# and web development</div>
-								</div>
-							</div>
-							<div class="nav -mr-2">
-								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-									<span class="sr-only">Close menu</span>
-									
-									<!-- Heroicon name: outline/x -->
-									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-									</svg>
-								</button>
-							</div>
-						</div>
-					</div>
-					<div class="nav py-6 px-5 pt-0">
-						<nav class=" gap-x-8">
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-						</nav>
-					</div>
-				</div>
-			</div>
-		</div>
-		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
-				<h1 class="text-5xl mb-4 pb-1">
-					Spotting common challenges when you're doing performance&nbsp;tracing
-				</h1>
-				<div class="meta">Published 05 February 2018</div>
-				<div class="meta">Updated 06 February 2018</div>
-				<div class="flex py-1">
-					<a href="/tags/performance/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Performance</a>
-					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
-			</div>
-		</header>
-		<div class="py-2 lg:pl-3">
-			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
-					<p>I find myself doing quite a lot of work on performance for Sitecore websites at the moment. Whenever I do a similar job for a group of clients, I start to spot patterns in the sites I'm working on – and it struck me that there are some common performance issues that can be spotted just from the overview graphs you see when you collect trace data.</p>
-					<p>So to try and help you all improve the sites you ship, here are three that I've come across in a few projects recently:
-						<!--more-->
-					</p>
-					<h2>1. The hard-working CPU</h2>
-					<p>
-						<a href="/img/2018/2018-01-workingcpu.png" target="_blank">
-							<img alt="Hard Working CPU" src="/img/2018/2018-01-workingcpu.png">
-						</a>
-					</p>
-					<p>
-						<b>What do you see:</b>
-						<br>
-						Wide, mostly solid rectangles on the CPU-time graph for your threads. Sometimes all the requests look similar, and sometimes you'll see some short ones and some long ones.</p>
-					<p>
-						<b>Why does it look like this?</b>
-						<br>
-						Simply put, you're working the CPU hard when a request looks like this. There are lots of potential reasons for this, but some common scenarios are:</p>
-					<ul>
-						<li>Poor queries against the Sitecore content APIs. Especially where a big chunk of data gets returned, and is then filtered by Linq-to-Objects in memory. For example, work hard to avoid queries that look like this:<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var results = Sitecore.Context.Item
-                .Axes("//*")
-                .Where(i =&gt; i.TemplateID == requiredTemplateID);
+    </script>
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/spotting-common-challenges-when-youre-doing-performance-tracing">
+<meta property="og:type" content="website">
 
-							</pre>
-							because it's a classic performance bottleneck – it can fetch a lot of items from the database (which is itself a problem due to query time and cache churn) but then it filters them in memory, using up lots more CPU time and discarding a chunk of the data that Sitecore worked hard to fetch.</li>
-						<li>Complicated algorithms. Where you're doing big calculations, organising lots of data or parsing big chunks of XML/JSON.</li>
-						<li>Slow rendering code. Building HTML through lots of string concatenations, doing a large number of single item lookups etc.</li>
-					</ul>
-					<p>
-						<b>What should you do about it?</b>
-						<br>
-						Use your profiling tool to look at what bits of code consume most CPU time, and use that information to optimise your code where you can.</p>
-					<p>Try to push effort off to the database server for data queries by including the best filter clauses you can into the query. Where possible, reduce the scope of API queries to reduce the numbers of items to process. Try to make best use of both Sitecore's data and HTML caches to reduce the CPU effort involved in rendering your pages. And maybe you could replace a big API query with a ContentSearch query instead? Or make use of custom fields in your search index to pre-compute (at index time) that complex lookup you need, and just index the answer?</p>
-					<h2>2. The memory ramp</h2>
-					<p>
-						<a href="/img/2018/2018-01-memoryramp.png" target="_blank">
-							<img alt="Memory Ramp" src="/img/2018/2018-01-memoryramp.png">
-						</a>
-					</p>
-					<p>
-						<b>What do you see:</b>
-						<br>
-						The graph of memory in use over time rises as long as the app keeps running. Garbage collection cycles may cause a brief drop, but overall the upward trend continues as the app runs.</p>
-					<p>
-						<b>Why does it look like this?</b>
-						<br>
-						The .Net runtime's Garbage Collector is good, but there are still ways for your app to leak (or appear to leak) memory. Something going on in your code is preventing the GC from taking back control of some of the memory you're using. In desktop applications this can be kind-of normal (If you keep adding more text and images to a Word document, Word has to keep asking for more memory...), but for web applications it's less common for that sort of state data to stick around in memory between requests. Some common scenarios that might lead to high memory usage are:</p>
-					<ul>
-						<li>Memory is being referenced by a static field, event or object. Statics don't get garbage collected, as they live for the entire duration of the app-pool's life. So if a static keeps a reference to some other objects, those objects can't be garbage collected either. Imagine a "cache" object in static scope which never removes any data due to age, but just adds new things as it sees them.</li>
-						<li>Your code is allocating lots of big chunks of memory. Single objects over 85kb in size go on the "large object heap", where
-							<a href="https://stackoverflow.com/a/8953503/847953" rel="noopener" target="_blank">garbage collection behaves a bit differently</a>. This heap is not usually compacted when memory is released, so while spaces are freed up, the total heap size allocated tends to grow more than the normal heap. That's because if an 86kb object is freed and then a 87kb object is allocated, the new one doesn't fit in the old space so more heap memory is required for the new allocation. You can spot this behaviour because the overall heap size grows, whilst the size of all your managed objects does not necessarily grow at the same rate.</li>
-						<li>Your code is doing interop with something unmanaged, and the external code relies on pointers to absolute memory locations in managed memory space. This requires objects to be "<a href="https://stackoverflow.com/a/2490933/847953" rel="noopener" target="_blank">pinned</a>" in place (so the GC cannot automatically compact them), which can lead to similar heap issues as large objects. Generally us web developers don't write code like this very much, but you might be using a 3rd party library which does. I've seen image manipulation libraries in native code cause this sort of issue in the past.</li>
-						<li>Failure to use IDisposable objects correctly. If code doesn't call
-							<code>Dispose()</code>
-							at an appropriate point, these objects can hang on to memory until the .Net runtime gets around to calling their finaliser method. You don't know how long it will be before that happens, so even if they're no longer held in memory by references, their heap space can still be occupied.</li>
-					</ul>
-					<p>
-						<b>What should you do about it?</b>
-						<br>
-						You can use your trace tool's memory usage recording to look and see what objects are causing the heap size to grow. Try and work out why the GC cannot release or compact them. Look for statics and the allocation of really big chunks of data, and try to refactor your code to reduce these issues. Look for objects that implement
-						<code>IDisposable</code>
-						and make sure they're
-						<a href="https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose" rel="noopener" target="_blank">implemented</a>
-						and
-						<a href="https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/using-objects" rel="noopener" target="_blank">used</a>
-						correctly.</p>
-					<p>Most memory profiling tools (<a href="https://msdn.microsoft.com/en-us/library/dn342825.aspx" rel="noopener" target="_blank">including Microsoft's</a>) have ways to help you find both how the number objects change over time, and why particular objects are staying in memory.</p>
-					<h2>3. The waiting-for-stuff sawtooth</h2>
-					<p>
-						<a href="/img/2018/2018-01-waitingsawtooth.png" target="_blank">
-							<img alt="Waiting Sawtooth" src="/img/2018/2018-01-waitingsawtooth.png">
-						</a>
-					</p>
-					<p>
-						<b>What do you see:</b>
-						<br>
-						The CPU-time trace for your request has a definite
-						<a href="https://www.google.co.uk/search?q=crenelation&amp;tbm=isch" rel="noopener" target="_blank">castle-crenelations</a>
-						look to it, where the thread goes from busy to quiet to busy again while it answers a single http request. This might be many short cycles, or fewer longer cycles.</p>
-					<p>
-						<b>Why does it look like this?</b>
-						<br>
-						This is usually down to threads waiting for locks or for some sort of IO operation. Locks might be accesses to thread-safe collections, or use of
-						<code>lock(){}</code>
-						blocks in your code. Waiting for IO will most likely be calls to blocking methods like
-						<code>Read()</code>
-						or async code which explicitly calls
-						<code>Await()</code>
-						to block until something completes.</p>
-					<p>
-						<b>What should you do about it?</b>
-						<br>
-						If your code includes locks, you'll need to consider if it's possible to refactor to remove or reduce the scope of these operations. Ideally, avoid code which needs to explicitly lock anything. If you have to have
-						<code>lock(){}</code>
-						blocks, try to ensure they wrap the smallest (and fastest) section code you possibly can. You should also be very careful of any code which needs to lock two things - this is classic "deadlock" territory, and they can be really hard to debug...</p>
-					<p>Where you're dealing with IO, the ideal scenario is to allow is to get rid of the need to block entirely. If you can refactor your code to allow operations to complete asynchronously in parallel with other operation then this is probably the best bet. C#'s
-						<code>async</code>
-						features can be very helpful for this. Otherwise, consider if you can reduce the effort involved in reads and writes - can you reduce the number of small operations by doing one big one, to increase efficiency? Or is it possible to cache data in memory and reduce the amount of I/O you're doing overall?</p>
-					<h2>Conclusions</h2>
-					<p>As with anything performance related, I'd repeat the key theme from
-						<a href="/posts/2017/measure-if-you-want-to-go-faster" target="_blank">my Manchester User Group talk</a>: Check your performance early and often. It's much easier (and hence cheaper) to change things early on in your project development cycle than later. An hopefully the comments above will help you spot some common problem patterns before they become a launch-day criss for you...</p>
-				</div>
-				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<section class="mvp">
-						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-						<div class="bg-white mb-2 p-2">
-							<a href="/mvp">
-								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Top Tags</h3>
-						<div class="bg-white p-2 flex flex-wrap">
-							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Sitecore (202)</a>
-							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								C# (47)</a>
-							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								PowerShell (31)</a>
-							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Installation (23)</a>
-							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Solr (15)</a>
-							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								General (14)</a>
-							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								UI (14)</a>
-							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Docker (12)</a>
-							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Coveo (12)</a>
-							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Packages (11)</a>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/tags" role="button">All Tags
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Recent Months</h3>
-						<div class="bg-white p-2">
-							<div>
-								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
-							</div>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/posts" role="button">All Posts
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Twitter</h3>
-						<div class="bg-white mb-2 p-2">
-							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-						</div>
-					</section>
-				</div>
-			</div>
-		</div>
-		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-			<div class="flex-1 lg:flex-1 text-center lg:text-left">
-				<div>©
-					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
-					2014-2022</div>
-			</div>
-			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
-				<br>
-			</div>
-			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-				<li class="inline-block">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-					</svg>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-				</li>
-			</ul>
-		</footer>
-		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-				<div class="w-full text-lg">
-					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-				</div>
-				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-			</div>
-		</div>
-		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-		<script type="text/javascript">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+
+    <link href="/scss/tailwind.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+
+    
+
+    
+    <!-- 06/07/2022 21:14:40 -->
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="nav -mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="nav hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="nav -mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-4 pb-1">
+        Spotting common challenges when you're doing performance tracing
+        </h1>
+            <div class="meta">Published 05 February 2018</div>
+                <div class="meta">Updated 06 February 2018</div>
+            <div class="flex py-1">
+                    <a href="/tags/performance/" class="p-1 mr-1 bg-gray-100 rounded-md"> Performance</a>
+                    <a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>I find myself doing quite a lot of work on performance for Sitecore websites at the moment. Whenever I do a similar job for a group of clients, I start to spot patterns in the sites I'm working on – and it struck me that there are some common performance issues that can be spotted just from the overview graphs you see when you collect trace data.</p>
+<p>So to try and help you all improve the sites you ship, here are three that I've come across in a few projects recently:<!--more--></p>
+<h2>1. The hard-working CPU</h2>
+<p><a href="/img/2018/2018-01-workingcpu.png" target="_blank"><img alt="Hard Working CPU" src="/img/2018/2018-01-workingcpu.png"></a></p>
+<p><b>What do you see:</b><br>
+Wide, mostly solid rectangles on the CPU-time graph for your threads. Sometimes all the requests look similar, and sometimes you'll see some short ones and some long ones.</p>
+<p><b>Why does it look like this?</b><br>
+Simply put, you're working the CPU hard when a request looks like this. There are lots of potential reasons for this, but some common scenarios are:</p>
+<ul>
+<li>Poor queries against the Sitecore content APIs. Especially where a big chunk of data gets returned, and is then filtered by Linq-to-Objects in memory. For example, work hard to avoid queries that look like this:
+<pre><code class="language-csharp">var results = Sitecore.Context.Item
+                .Axes(&quot;//*&quot;)
+                .Where(i =&gt; i.TemplateID == requiredTemplateID);
+</code></pre>
+because it's a classic performance bottleneck – it can fetch a lot of items from the database (which is itself a problem due to query time and cache churn) but then it filters them in memory, using up lots more CPU time and discarding a chunk of the data that Sitecore worked hard to fetch.</li>
+<li>Complicated algorithms. Where you're doing big calculations, organising lots of data or parsing big chunks of XML/JSON.</li>
+<li>Slow rendering code. Building HTML through lots of string concatenations, doing a large number of single item lookups etc.</li>
+</ul>
+<p><b>What should you do about it?</b><br>
+Use your profiling tool to look at what bits of code consume most CPU time, and use that information to optimise your code where you can.</p>
+<p>Try to push effort off to the database server for data queries by including the best filter clauses you can into the query. Where possible, reduce the scope of API queries to reduce the numbers of items to process. Try to make best use of both Sitecore's data and HTML caches to reduce the CPU effort involved in rendering your pages. And maybe you could replace a big API query with a ContentSearch query instead? Or make use of custom fields in your search index to pre-compute (at index time) that complex lookup you need, and just index the answer?</p>
+<h2>2. The memory ramp</h2>
+<p><a href="/img/2018/2018-01-memoryramp.png" target="_blank"><img alt="Memory Ramp" src="/img/2018/2018-01-memoryramp.png"></a></p>
+<p><b>What do you see:</b><br>
+The graph of memory in use over time rises as long as the app keeps running. Garbage collection cycles may cause a brief drop, but overall the upward trend continues as the app runs.</p>
+<p><b>Why does it look like this?</b><br>
+The .Net runtime's Garbage Collector is good, but there are still ways for your app to leak (or appear to leak) memory. Something going on in your code is preventing the GC from taking back control of some of the memory you're using. In desktop applications this can be kind-of normal (If you keep adding more text and images to a Word document, Word has to keep asking for more memory...), but for web applications it's less common for that sort of state data to stick around in memory between requests. Some common scenarios that might lead to high memory usage are:</p>
+<ul>
+<li>Memory is being referenced by a static field, event or object. Statics don't get garbage collected, as they live for the entire duration of the app-pool's life. So if a static keeps a reference to some other objects, those objects can't be garbage collected either. Imagine a &quot;cache&quot; object in static scope which never removes any data due to age, but just adds new things as it sees them.</li>
+<li>Your code is allocating lots of big chunks of memory. Single objects over 85kb in size go on the &quot;large object heap&quot;, where <a href="https://stackoverflow.com/a/8953503/847953" rel="noopener" target="_blank">garbage collection behaves a bit differently</a>. This heap is not usually compacted when memory is released, so while spaces are freed up, the total heap size allocated tends to grow more than the normal heap. That's because if an 86kb object is freed and then a 87kb object is allocated, the new one doesn't fit in the old space so more heap memory is required for the new allocation. You can spot this behaviour because the overall heap size grows, whilst the size of all your managed objects does not necessarily grow at the same rate.</li>
+<li>Your code is doing interop with something unmanaged, and the external code relies on pointers to absolute memory locations in managed memory space. This requires objects to be &quot;<a href="https://stackoverflow.com/a/2490933/847953" rel="noopener" target="_blank">pinned</a>&quot; in place (so the GC cannot automatically compact them), which can lead to similar heap issues as large objects. Generally us web developers don't write code like this very much, but you might be using a 3rd party library which does. I've seen image manipulation libraries in native code cause this sort of issue in the past.</li>
+<li>Failure to use IDisposable objects correctly. If code doesn't call <code>Dispose()</code> at an appropriate point, these objects can hang on to memory until the .Net runtime gets around to calling their finaliser method. You don't know how long it will be before that happens, so even if they're no longer held in memory by references, their heap space can still be occupied.</li>
+</ul>
+<p><b>What should you do about it?</b><br>
+You can use your trace tool's memory usage recording to look and see what objects are causing the heap size to grow. Try and work out why the GC cannot release or compact them. Look for statics and the allocation of really big chunks of data, and try to refactor your code to reduce these issues. Look for objects that implement <code>IDisposable</code> and make sure they're <a href="https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose" rel="noopener" target="_blank">implemented</a> and <a href="https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/using-objects" rel="noopener" target="_blank">used</a> correctly.</p>
+<p>Most memory profiling tools (<a href="https://msdn.microsoft.com/en-us/library/dn342825.aspx" rel="noopener" target="_blank">including Microsoft's</a>) have ways to help you find both how the number objects change over time, and why particular objects are staying in memory.</p>
+<h2>3. The waiting-for-stuff sawtooth</h2>
+<p><a href="/img/2018/2018-01-waitingsawtooth.png" target="_blank"><img alt="Waiting Sawtooth" src="/img/2018/2018-01-waitingsawtooth.png"></a></p>
+<p><b>What do you see:</b><br>
+The CPU-time trace for your request has a definite <a href="https://www.google.co.uk/search?q=crenelation&amp;tbm=isch" rel="noopener" target="_blank">castle-crenelations</a> look to it, where the thread goes from busy to quiet to busy again while it answers a single http request. This might be many short cycles, or fewer longer cycles.</p>
+<p><b>Why does it look like this?</b><br>
+This is usually down to threads waiting for locks or for some sort of IO operation. Locks might be accesses to thread-safe collections, or use of <code>lock(){}</code> blocks in your code. Waiting for IO will most likely be calls to blocking methods like <code>Read()</code> or async code which explicitly calls <code>Await()</code> to block until something completes.</p>
+<p><b>What should you do about it?</b><br>
+If your code includes locks, you'll need to consider if it's possible to refactor to remove or reduce the scope of these operations. Ideally, avoid code which needs to explicitly lock anything. If you have to have <code>lock(){}</code> blocks, try to ensure they wrap the smallest (and fastest) section code you possibly can. You should also be very careful of any code which needs to lock two things - this is classic &quot;deadlock&quot; territory, and they can be really hard to debug...</p>
+<p>Where you're dealing with IO, the ideal scenario is to allow is to get rid of the need to block entirely. If you can refactor your code to allow operations to complete asynchronously in parallel with other operation then this is probably the best bet. C#'s <code>async</code> features can be very helpful for this. Otherwise, consider if you can reduce the effort involved in reads and writes - can you reduce the number of small operations by doing one big one, to increase efficiency? Or is it possible to cache data in memory and reduce the amount of I/O you're doing overall?</p>
+<h2>Conclusions</h2>
+<p>As with anything performance related, I'd repeat the key theme from <a href="/posts/2017/measure-if-you-want-to-go-faster" target="_blank">my Manchester User Group talk</a>: Check your performance early and often. It's much easier (and hence cheaper) to change things early on in your project development cycle than later. An hopefully the comments above will help you spot some common problem patterns before they become a launch-day criss for you...</p>
+
+
+            </div>
+            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section class="mvp">
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (202)</a>
+                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
+                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
+                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
+                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
+                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
+                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
+                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
+                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
+    </div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
+    </div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">
+                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+            </div>
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -362,16 +295,21 @@ So to try and help you all improve the sites you ship, here are three that I've 
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
-		</script>
-		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-		<script>
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
     
-		</script>
-	</body>
-</html>
+
+    
+
+
+
+</body></html>

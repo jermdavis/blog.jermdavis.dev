@@ -1,28 +1,31 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-1">
-		<meta name="description" content="I've written before about approaches to <a href=&quot;/posts/2015/revisiting-install-scripting-for-newer-versions-of-sitecore&quot; target=&quot;_blank&quot;>automating the install of Sitecore instances via PowerShell</a>, but recently I've been working upgrading this process to set up entire servers. As part of this research I've been working on how to move the scripting over to <a href=&quot;https://technet.microsoft.com/en-us/library/dn249912.aspx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>PowerShell Desired State Configuration</a> – Microsoft's framework for automating the configuration of servers. Having got to a position where the scripts are working and I can turn a plain copy of Windows Server into a functioning Sitecore box, I thought I'd shared an explanation of the tools and how it can be used for Sitecore development environments.
-I'm going to break this up into a series of posts, as it's quite a big topic. This week is a bit of an introduction to DSC and my goals for it:">
-		<meta property="og:description" content="I've written before about approaches to <a href=&quot;/posts/2015/revisiting-install-scripting-for-newer-versions-of-sitecore&quot; target=&quot;_blank&quot;>automating the install of Sitecore instances via PowerShell</a>, but recently I've been working upgrading this process to set up entire servers. As part of this research I've been working on how to move the scripting over to <a href=&quot;https://technet.microsoft.com/en-us/library/dn249912.aspx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>PowerShell Desired State Configuration</a> – Microsoft's framework for automating the configuration of servers. Having got to a position where the scripts are working and I can turn a plain copy of Windows Server into a functioning Sitecore box, I thought I'd shared an explanation of the tools and how it can be used for Sitecore development environments.
-I'm going to break this up into a series of posts, as it's quite a big topic. This week is a bit of an introduction to DSC and my goals for it:">
-		<meta name="keywords" content="PowerShell, PowerShell DSC, Installation">
-		<meta name="author" content="Jeremy Davis">
-		<meta name="copyright" content="Jeremy Davis">
-		<title>Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;1</title>
-		<meta name="robots" content="index, follow">
-		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-		<meta name="application-name" content="Jeremy Davis">
-		<meta name="msapplication-tooltip" content="Jeremy Davis">
-		<meta name="msapplication-starturl" content="/">
-		<link rel="manifest" href="/manifest.webmanifest">
-		<meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC &amp;#x2013; Part&amp;#xA0;1">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-1-social.jpg">
-		<script type="application/ld+json">
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-1">
+        <meta name="description" content="I&amp;#x27;ve written before about approaches to &amp;lt;a href=&amp;quot;/posts/2015/revisiting-install-scripting-for-newer-versions-of-sitecore&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;automating the install of Sitecore instances via PowerShell&amp;lt;/a&amp;gt;, but recently I&amp;#x27;ve been working upgrading this process to set up entire servers. As part of this research I&amp;#x27;ve been working on how to move the scripting over to &amp;lt;a href=&amp;quot;https://technet.microsoft.com/en-us/library/dn249912.aspx&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;PowerShell Desired State Configuration&amp;lt;/a&amp;gt; &amp;#x2013; Microsoft&amp;#x27;s framework for automating the configuration of servers. Having got to a position where the scripts are working and I can turn a plain copy of Windows Server into a functioning Sitecore box, I thought I&amp;#x27;d shared an explanation of the tools and how it can be used for Sitecore development environments.&amp;#xA;I&amp;#x27;m going to break this up into a series of posts, as it&amp;#x27;s quite a big topic. This week is a bit of an introduction to DSC and my goals for it:">
+        <meta property="og:description" content="I&amp;#x27;ve written before about approaches to &amp;lt;a href=&amp;quot;/posts/2015/revisiting-install-scripting-for-newer-versions-of-sitecore&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;automating the install of Sitecore instances via PowerShell&amp;lt;/a&amp;gt;, but recently I&amp;#x27;ve been working upgrading this process to set up entire servers. As part of this research I&amp;#x27;ve been working on how to move the scripting over to &amp;lt;a href=&amp;quot;https://technet.microsoft.com/en-us/library/dn249912.aspx&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;PowerShell Desired State Configuration&amp;lt;/a&amp;gt; &amp;#x2013; Microsoft&amp;#x27;s framework for automating the configuration of servers. Having got to a position where the scripts are working and I can turn a plain copy of Windows Server into a functioning Sitecore box, I thought I&amp;#x27;d shared an explanation of the tools and how it can be used for Sitecore development environments.&amp;#xA;I&amp;#x27;m going to break this up into a series of posts, as it&amp;#x27;s quite a big topic. This week is a bit of an introduction to DSC and my goals for it:">
+            <meta name="keywords" content="PowerShell, PowerShell DSC, Installation">
+        <meta name="author" content="Jeremy Davis">
+        <meta name="copyright" content="Jeremy Davis">
+
+    <title>Jeremy Davis - Development environments with PowerShell DSC &#x2013; Part&#xA0;1</title> 
+
+        <meta name="robots" content="index, follow">
+
+            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+    <link rel="manifest" href="/manifest.webmanifest">
+
+    
+    <meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC &amp;#x2013; Part&amp;#xA0;1">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-1-social.jpg">
+    <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -38,411 +41,298 @@ I'm going to break this up into a series of posts, as it's quite a big topic. Th
             "url": "https://jermdavis.dev/"
         }]
     }
+    </script>
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-1">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+
+    <link href="/scss/tailwind.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+
     
-		</script>
-		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-1">
-		<meta property="og:type" content="website">
-		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-		<link href="/scss/tailwind.css" rel="stylesheet">
-		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-		<link href="/scss/site-theme.css" rel="stylesheet">
-		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-		
-		<!-- 04/07/2022 10:26:34 -->
-	</head>
-	<body class="max-w-7xl mx-auto">
-		<div class="relative bg-white" x-data="{ open: false }">
-			
-			<!-- desktop -->
-			<div class="px-4 lg:px-6 bg-gray-100">
-				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-					<div class="flex justify-start lg:w-0 flex-1">
-						<a href="/">
-							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-						</a>
-						<div class="mx-2">
-							<div class="text-3xl">Jeremy Davis</div>
-							<div class="text-lg">Sitecore, C# and web development</div>
-						</div>
-					</div>
-					<div class="nav -mr-2 -my-2 lg:hidden">
-						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-							<span class="sr-only">Open menu</span>
-							
-							<!-- Heroicon name: outline/menu -->
-							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-							</svg>
-						</button>
-					</div>
-					<nav class="nav hidden lg:flex space-x-10">
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-					</nav>
-				</div>
-			</div>
-			
-			<!--Mobile menu, show/hide based on mobile menu state.-->
-			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-					<div class="pt-5 pb-6 px-5">
-						<div class="flex items-center justify-between">
-							<div class="flex">
-								<a href="/">
-									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-								</a>
-								<div class="mx-2">
-									<div class="text-2xl">Jeremy Davis</div>
-									<div class="text-base">Sitecore, C# and web development</div>
-								</div>
-							</div>
-							<div class="nav -mr-2">
-								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-									<span class="sr-only">Close menu</span>
-									
-									<!-- Heroicon name: outline/x -->
-									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-									</svg>
-								</button>
-							</div>
-						</div>
-					</div>
-					<div class="nav py-6 px-5 pt-0">
-						<nav class=" gap-x-8">
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-						</nav>
-					</div>
-				</div>
-			</div>
-		</div>
-		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
-				<h1 class="text-5xl mb-4 pb-1">
-					Development environments with PowerShell DSC – Part&nbsp;1
-				</h1>
-				<div class="meta">Published 12 October 2015</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/powershell/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell</a>
-					<a href="/tags/powershell-dsc/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						PowerShell DSC</a>
-					<a href="/tags/installation/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Installation</a>
-				</div>
-			</div>
-		</header>
-		<div class="py-2 lg:pl-3">
-			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
-					<p>I've written before about approaches to
-						<a href="/posts/2015/revisiting-install-scripting-for-newer-versions-of-sitecore" target="_blank">automating the install of Sitecore instances via PowerShell</a>, but recently I've been working upgrading this process to set up entire servers. As part of this research I've been working on how to move the scripting over to
-						<a href="https://technet.microsoft.com/en-us/library/dn249912.aspx" target="_blank" rel="noopener noreferrer">PowerShell Desired State Configuration</a>
-						– Microsoft's framework for automating the configuration of servers. Having got to a position where the scripts are working and I can turn a plain copy of Windows Server into a functioning Sitecore box, I thought I'd shared an explanation of the tools and how it can be used for Sitecore development environments.</p>
-					<p>I'm going to break this up into a series of posts, as it's quite a big topic. This week is a bit of an introduction to DSC and my goals for it:
-						<!--more-->
-					</p>
-					<p>
-						<i>(<b>Edited to add:</b>
-							Links to all posts in this series: 1:Introduction to DSC –
-							<a href="/posts/2015/development-environments-with-powershell-dsc-part-2" target="_blank">2:Windows Features</a>
-							–
-							<a href="/posts/2015/development-environments-with-powershell-dsc-part-3" target="_blank">3:Mongo DB</a>
-							–
-							<a href="/posts/2015/development-environments-with-powershell-dsc-part-4" target="_blank">4:SQL Server</a>
-							–
-							<a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">5:Sitecore</a>
-							–
-							<a href="/posts/2015/development-environments-with-powershell-dsc-part-6" target="_blank">6:Coveo CES</a>
-							–
-							<a href="/posts/2015/development-environments-with-powershell-dsc-part-7" target="_blank">7:Coveo REST API &amp; Coveo for Sitecore</a>)</i>
-					</p>
-					<h2>What is PowerShell DSC?</h2>
-					<p>It's a scripting framework for automating the configuration and setup of servers. If you've ever used
-						<a href="https://www.chef.io/" target="_blank" rel="noopener noreferrer">Chef</a>
-						or
-						<a href="http://saltstack.com/" target="_blank" rel="noopener noreferrer">Salt</a>
-						then this is basically Microsoft's equivalent. If you haven't then DSC is an extension to PowerShell v4 and above that gives you two extra things:</p>
-					<ul>
-						<li>Firstly: A domain-specific language for you to express the state you want your servers to end up in. Hence the "desired state" but of the name.</li>
-						<li>Secondly: A runtime based on the Windows Management infrastructure that can process your descriptions and do all the hard work of getting the server into the state you described</li>
-					</ul>
-					<p>DSC is designed to support the DevOps concepts of automating infrastructure tasks and having executable code for describing server state which can also be seen as documentation of the state you require. It allows you to move towards the idea of having servers being disposable – since the process of building them is automated, creating and destroying them is easy. You can get to a state where you click a button in the management tools for Hyper-V (or your preferred Virtualisation framework) to spin up a new virtual machine and it automatically pulls the right configuration from a central location and configures itself to meet your requirements.</p>
-					<h2>What does a basic script look like?</h2>
-					<p>Here's a very basic script, which can be used to install IIS onto a machine:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIIS
+
+    
+    <!-- 06/07/2022 21:14:48 -->
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="nav -mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="nav hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="nav -mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-4 pb-1">
+        Development environments with PowerShell DSC – Part 1
+        </h1>
+            <div class="meta">Published 12 October 2015</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/powershell/" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
+                    <a href="/tags/powershell-dsc/" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell DSC</a>
+                    <a href="/tags/installation/" class="p-1 mr-1 bg-gray-100 rounded-md"> Installation</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>I've written before about approaches to <a href="/posts/2015/revisiting-install-scripting-for-newer-versions-of-sitecore" target="_blank">automating the install of Sitecore instances via PowerShell</a>, but recently I've been working upgrading this process to set up entire servers. As part of this research I've been working on how to move the scripting over to <a href="https://technet.microsoft.com/en-us/library/dn249912.aspx" target="_blank" rel="noopener noreferrer">PowerShell Desired State Configuration</a> – Microsoft's framework for automating the configuration of servers. Having got to a position where the scripts are working and I can turn a plain copy of Windows Server into a functioning Sitecore box, I thought I'd shared an explanation of the tools and how it can be used for Sitecore development environments.</p>
+<p>I'm going to break this up into a series of posts, as it's quite a big topic. This week is a bit of an introduction to DSC and my goals for it:<!--more--></p>
+<p><i>(<b>Edited to add:</b> Links to all posts in this series: 1:Introduction to DSC – <a href="/posts/2015/development-environments-with-powershell-dsc-part-2" target="_blank">2:Windows Features</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-3" target="_blank">3:Mongo DB</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-4" target="_blank">4:SQL Server</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">5:Sitecore</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-6" target="_blank">6:Coveo CES</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-7" target="_blank">7:Coveo REST API &amp; Coveo for Sitecore</a>)</i></p>
+<h2>What is PowerShell DSC?</h2>
+<p>It's a scripting framework for automating the configuration and setup of servers. If you've ever used <a href="https://www.chef.io/" target="_blank" rel="noopener noreferrer">Chef</a> or <a href="http://saltstack.com/" target="_blank" rel="noopener noreferrer">Salt</a> then this is basically Microsoft's equivalent. If you haven't then DSC is an extension to PowerShell v4 and above that gives you two extra things:</p>
+<ul>
+<li>Firstly: A domain-specific language for you to express the state you want your servers to end up in. Hence the "desired state" but of the name.</li>
+<li>Secondly: A runtime based on the Windows Management infrastructure that can process your descriptions and do all the hard work of getting the server into the state you described</li>
+</ul>
+<p>DSC is designed to support the DevOps concepts of automating infrastructure tasks and having executable code for describing server state which can also be seen as documentation of the state you require. It allows you to move towards the idea of having servers being disposable – since the process of building them is automated, creating and destroying them is easy. You can get to a state where you click a button in the management tools for Hyper-V (or your preferred Virtualisation framework) to spin up a new virtual machine and it automatically pulls the right configuration from a central location and configures itself to meet your requirements.</p>
+<h2>What does a basic script look like?</h2>
+<p>Here's a very basic script, which can be used to install IIS onto a machine:</p>
+<pre><code class="language-text">Configuration EnableIIS
 {
-    Node “WebSvr001"
+    Node “WebSvr001&quot;
     {
         WindowsFeature WebServer
         {
-            Name = "Web-Server"
-            Ensure = "Present"
+            Name = &quot;Web-Server&quot;
+            Ensure = &quot;Present&quot;
         }
     }
 }
 EnableIIS 
-
-					</pre>
-					<p>The outer block declares a
-						<code>Configuration</code>. That's basically naming the DSC script. Any valid PowerShell identifier can be used here. The name is important because (under the surface) what you're declaring here is kind of like a special CommandLet – hence we need the name so we can execute it later.</p>
-					<p>The second block declares a
-						<code>Node</code>. Nodes describe the name of a server (or servers) to which the script is relevant. Here it's hard coded to a machine named "WebSvr001", but commonly it's declared as an expression so that one Configuration can be applied to many servers. You can also declare multiple Nodes inside one Configuration, for example to declare a script for a cluster of servers.</p>
-					<p>The inner block describes a "resource" – which is what DSC calls the instructions for a particular bit of state you want to affect. In this case we have a
-						<code>WindowsFeature</code>
-						resource, which knows how to install a feature of Windows. Again these need a name, and the names of resources are used to allow us to specify dependencies in more complex scripts. Usually a script will have many resources, describing the set of configuration changes required. Resources also take parameters, and here we're specifying the
-						<code>Name</code>
-						of the feature to install ("Web-Server" is the feature name for IIS) and with
-						<code>Ensure</code>
-						we're saying that DSC should make sure that this feature is present. One of the benefits of DSC is that it is state-aware, so if IIS was already installed this script would do nothing. And (obviously) you could also construct a resource whose job was to remove a windows feature if you wanted.</p>
-					<p>In effect, the script describes the same process as logging on to a server, firing up the
-						<a href="http://blogs.technet.com/b/askcore/archive/2012/11/04/introducing-server-manager-in-windows-server-2012.aspx" target="_blank" rel="noopener noreferrer">Server Manager and using its UI for Roles &amp; Features to install IIS</a>.</p>
-					<p>There are lots of resource types available as part of DSC. You can unzip archives, install programs, control services, create files and directories, copy files and directories, add users to Active Directory and run raw PowerShell by default. But you can also extend DSC with your own specialised resources – and there are lots available on the Internet to make use of as well.</p>
-					<h2>What happens when we run the script?</h2>
-					<p>The final line of the script above uses the name of our
-						<code>Configuration</code>
-						to invoke the script. So what happens when we run this? Well interestingly, it doesn't actually change the state of any servers. Two things happen:</p>
-					<p>Firstly, the PowerShell DSC framework parses your script and does a syntax check. If you've made any errors then you get an error explaining what it thinks is wrong.</p>
-					<p>Secondly, the script is translated. The Windows Management framework can't read the PowerShell DSC scripts directly. It works on a cross-platform standard for describing server state called the "<a href="https://msdn.microsoft.com/en-us/library/aa823192(v=vs.85).aspx" target="_blank" rel="noopener noreferrer">Managed Object Format</a>". So DSC translates your script into the appropriate
-						<code>.MOF</code>
-						files – one for each server you described in your
-						<code>Node</code>
-						blocks. It saves these files into a folder named for your
-						<code>Configuration</code>.</p>
-					<p>These files contain basically the same data as your DSC script, just in a format that's more focused on machine readability than the original PowerShell DSC code. And since it's cross platform, it's possible to generate these files to be run on UNIX-style servers if you're working in a mixed environment. (And you can use native tools on those servers to generate
-						<code>.MOF</code>
-						files for Windows too if you wish)</p>
-					<h2>Making a machine change state</h2>
-					<p>Now we have our
-						<code>.MOF</code>
-						file, what do we do with it? Well DSC provides a new PowerShell CommandLet called
-						<code>Start-DSCConfiguration</code>
-						which is used to pass the
-						<code>.MOF</code>
-						files to the underlying management infrastructure and run them. In a test environment, you run something like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Start-DSCConfiguration -Path .\EnableIIS -Verbose -Wait -Force 
-
-					</pre>
-					<p>The
-						<code>Path</code>
-						parameter tells PowerShell where to look for
-						<code>.MOF</code>
-						files to process. The
-						<code>Verbose</code>
-						flag tells the runtime to display debug information so that we can see what's happening, and the
-						<code>Wait</code>
-						flag tells it to run synchronously so we can see what's happening. Finally the
-						<code>Force</code>
-						flag tells DSC that we're pushing a specific configuration, rather than expecting it to pull down appropriate configuration from a central server.</p>
-					<p>If we run that, we see something like this:</p>
-					<p>
-						<a href="/img/2015/2015-10-picture1.png" target="_blank">
-							<img alt="DSC Processing" src="/img/2015/2015-10-picture1.png">
-						</a>
-					</p>
-					<p>The debug output is saying that it's examined the server and discovered that IIS is already installed – so in this case it's done nothing.</p>
-					<h2>Making scripts more generic</h2>
-					<p>So far, however, our script has been specific to a single server. That's nice for an example, but it's not very practical for the real world. You'd end up maintaining a separate script for each of the servers you manage and that would be a pain to keep everything up to date. Ideally we'd like to be able to write scripts which describe the state needed for a particular class of server (e.g. "Sitecore Content Deployment Webserver" or "SQL Server") and then just map those configurations to the appropriate server names for any given environment. How can we express our installation requirements in a more generic way to make them reusable?</p>
-					<p>It's actually pretty simple – we can pass configuration data into our DSC Scripts, and generalise the script to process the data. DSC expects you to pass in a dictionary object containing a tree of name-value pairs that describe your config data. For example, expanding on the IIS example above, we might pass in the following configuration data:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
-    AllNodes = @(
-        @{
-            NodeName = "WebSvr001"
-            Role = "IIS, SQL"
-            TempFolder = "c:\dsc"
-            InstallPath = "C:\Program Files\My Application"
-            SQL = @{
-                InstallConfig = "SqlConfigurationFile.ini"
-                SQLPassword = "p@55w0rd"
+</code></pre>
+<p>The outer block declares a <code>Configuration</code>. That's basically naming the DSC script. Any valid PowerShell identifier can be used here. The name is important because (under the surface) what you're declaring here is kind of like a special CommandLet – hence we need the name so we can execute it later.</p>
+<p>The second block declares a <code>Node</code>. Nodes describe the name of a server (or servers) to which the script is relevant. Here it's hard coded to a machine named &quot;WebSvr001&quot;, but commonly it's declared as an expression so that one Configuration can be applied to many servers. You can also declare multiple Nodes inside one Configuration, for example to declare a script for a cluster of servers.</p>
+<p>The inner block describes a &quot;resource&quot; – which is what DSC calls the instructions for a particular bit of state you want to affect. In this case we have a <code>WindowsFeature</code> resource, which knows how to install a feature of Windows. Again these need a name, and the names of resources are used to allow us to specify dependencies in more complex scripts. Usually a script will have many resources, describing the set of configuration changes required. Resources also take parameters, and here we're specifying the <code>Name</code> of the feature to install (&quot;Web-Server&quot; is the feature name for IIS) and with <code>Ensure</code> we're saying that DSC should make sure that this feature is present. One of the benefits of DSC is that it is state-aware, so if IIS was already installed this script would do nothing. And (obviously) you could also construct a resource whose job was to remove a windows feature if you wanted.</p>
+<p>In effect, the script describes the same process as logging on to a server, firing up the <a href="http://blogs.technet.com/b/askcore/archive/2012/11/04/introducing-server-manager-in-windows-server-2012.aspx" target="_blank" rel="noopener noreferrer">Server Manager and using its UI for Roles &amp; Features to install IIS</a>.</p>
+<p>There are lots of resource types available as part of DSC. You can unzip archives, install programs, control services, create files and directories, copy files and directories, add users to Active Directory and run raw PowerShell by default. But you can also extend DSC with your own specialised resources – and there are lots available on the Internet to make use of as well.</p>
+<h2>What happens when we run the script?</h2>
+<p>The final line of the script above uses the name of our <code>Configuration</code> to invoke the script. So what happens when we run this? Well interestingly, it doesn't actually change the state of any servers. Two things happen:</p>
+<p>Firstly, the PowerShell DSC framework parses your script and does a syntax check. If you've made any errors then you get an error explaining what it thinks is wrong.</p>
+<p>Secondly, the script is translated. The Windows Management framework can't read the PowerShell DSC scripts directly. It works on a cross-platform standard for describing server state called the &quot;<a href="https://msdn.microsoft.com/en-us/library/aa823192(v=vs.85).aspx" target="_blank" rel="noopener noreferrer">Managed Object Format</a>&quot;. So DSC translates your script into the appropriate <code>.MOF</code> files – one for each server you described in your <code>Node</code> blocks. It saves these files into a folder named for your <code>Configuration</code>.</p>
+<p>These files contain basically the same data as your DSC script, just in a format that's more focused on machine readability than the original PowerShell DSC code. And since it's cross platform, it's possible to generate these files to be run on UNIX-style servers if you're working in a mixed environment. (And you can use native tools on those servers to generate <code>.MOF</code> files for Windows too if you wish)</p>
+<h2>Making a machine change state</h2>
+<p>Now we have our <code>.MOF</code> file, what do we do with it? Well DSC provides a new PowerShell CommandLet called <code>Start-DSCConfiguration</code> which is used to pass the <code>.MOF</code> files to the underlying management infrastructure and run them. In a test environment, you run something like:</p>
+<pre><code class="language-powershell">Start-DSCConfiguration -Path .\EnableIIS -Verbose -Wait -Force 
+</code></pre>
+<p>The <code>Path</code> parameter tells PowerShell where to look for <code>.MOF</code> files to process. The <code>Verbose</code> flag tells the runtime to display debug information so that we can see what's happening, and the <code>Wait</code> flag tells it to run synchronously so we can see what's happening. Finally the <code>Force</code> flag tells DSC that we're pushing a specific configuration, rather than expecting it to pull down appropriate configuration from a central server.</p>
+<p>If we run that, we see something like this:</p>
+<p><a href="/img/2015/2015-10-picture1.png" target="_blank"><img alt="DSC Processing" src="/img/2015/2015-10-picture1.png"></a></p>
+<p>The debug output is saying that it's examined the server and discovered that IIS is already installed – so in this case it's done nothing.</p>
+<h2>Making scripts more generic</h2>
+<p>So far, however, our script has been specific to a single server. That's nice for an example, but it's not very practical for the real world. You'd end up maintaining a separate script for each of the servers you manage and that would be a pain to keep everything up to date. Ideally we'd like to be able to write scripts which describe the state needed for a particular class of server (e.g. &quot;Sitecore Content Deployment Webserver&quot; or &quot;SQL Server&quot;) and then just map those configurations to the appropriate server names for any given environment. How can we express our installation requirements in a more generic way to make them reusable?</p>
+<p>It's actually pretty simple – we can pass configuration data into our DSC Scripts, and generalise the script to process the data. DSC expects you to pass in a dictionary object containing a tree of name-value pairs that describe your config data. For example, expanding on the IIS example above, we might pass in the following configuration data:</p>
+<pre><code class="language-text">&#64;{
+    AllNodes = &#64;(
+        &#64;{
+            NodeName = &quot;WebSvr001&quot;
+            Role = &quot;IIS, SQL&quot;
+            TempFolder = &quot;c:\dsc&quot;
+            InstallPath = &quot;C:\Program Files\My Application&quot;
+            SQL = &#64;{
+                InstallConfig = &quot;SqlConfigurationFile.ini&quot;
+                SQLPassword = &quot;p&#64;55w0rd&quot;
             }
          }
     );
 }
-
-					</pre>
-					<p>It looks a bit cryptic, but it's just PowerShell's way of describing a tree of dictionary/array objects containing some data. (So it's basically PowerShell's equivalent of writing your config as
-						<a href="https://en.wikipedia.org/wiki/JSON" target="_blank" rel="noopener noreferrer">JSON</a>
-						in a JavaScript application)</p>
-					<p>The
-						<code>AllNodes</code>
-						collection is an array of bits of data for individual Nodes in your DSC scripts. You can declare one entry in that collection per server that you want to configure. Each of these array elements needs the
-						<code>NodeName</code>
-						attribute (to give the name of the server this data is for) and the
-						<code>Role</code>
-						attribute to give the set of things which are going to be deployed to that machine. All of the rest of the data is up to you, and can be set up to meet whatever your needs are. For the purposes of an example here I've declared a couple of simple string properties for
-						<code>TempFolder</code>
-						and
-						<code>InstallPath</code>
-						and a dictionary of string properties for
-						<code>SQL</code>. (I wrote a bit about
-						<a href="/posts/2015/config-variables-in-powershell-dsc-can-confuse" target="_blank">accessing these nested config variables</a>
-						in a previous post)</p>
-					<p>You then need to modify your DSC Scripts to process the relevant bits of this data. The script for adding IIS doesn't actually need much of this information, but you might it to look like this:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3,12" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIIS
+</code></pre>
+<p>It looks a bit cryptic, but it's just PowerShell's way of describing a tree of dictionary/array objects containing some data. (So it's basically PowerShell's equivalent of writing your config as <a href="https://en.wikipedia.org/wiki/JSON" target="_blank" rel="noopener noreferrer">JSON</a> in a JavaScript application)</p>
+<p>The <code>AllNodes</code> collection is an array of bits of data for individual Nodes in your DSC scripts. You can declare one entry in that collection per server that you want to configure. Each of these array elements needs the <code>NodeName</code> attribute (to give the name of the server this data is for) and the <code>Role</code> attribute to give the set of things which are going to be deployed to that machine. All of the rest of the data is up to you, and can be set up to meet whatever your needs are. For the purposes of an example here I've declared a couple of simple string properties for <code>TempFolder</code> and <code>InstallPath</code> and a dictionary of string properties for <code>SQL</code>. (I wrote a bit about <a href="/posts/2015/config-variables-in-powershell-dsc-can-confuse" target="_blank">accessing these nested config variables</a> in a previous post)</p>
+<p>You then need to modify your DSC Scripts to process the relevant bits of this data. The script for adding IIS doesn't actually need much of this information, but you might it to look like this:</p>
+<pre><code class="language-text">Configuration EnableIIS
 {
-    Node $AllNodes.where{ $_.Role.Contains(“IIS") }.NodeName 
+    Node $AllNodes.where{ $_.Role.Contains(“IIS&quot;) }.NodeName 
     {
         WindowsFeature WebServer
         {
-            Name = "Web-Server"
-            Ensure = "Present"
+            Name = &quot;Web-Server&quot;
+            Ensure = &quot;Present&quot;
         }
     }
 }
-EnableIIS -ConfigurationData ".\configData.psd1"
+EnableIIS -ConfigurationData &quot;.\configData.psd1&quot;
+</code></pre>
+<p>There are two key changes here. The first is the declaration of the <code>Node</code> block. Instead of specifying the name of the server to apply this script to, it has changed to an expression. The code looks at all the elements in the <code>AllNodes</code> data we declared above, and returns the <code>NodeName</code> for any entry where the Role attribute contains &quot;IIS&quot;. So our config data can describe a set of servers for databases, web servers etc. and this bit of DSC Script will only affect those servers which should have IIS installed.</p>
+<p>The second change is that when we invoke our <code>Configuration</code>, we're now passing in a parameter called <code>ConfigurationData</code> that specifies the path to finding the config data above. This is how DSC knows where the config is when it processes your script to generate the <code>.MOF</code> files. Hence you can have multiple configuration files, and run a DSC script against each of them to (for example) generate <code>.MOF</code> files for development servers in different clusters.</p>
+<p>As you'll see later in the series, you can also have custom parameters to pass in to <code>Configuration</code>s, in much the same way you can pass parameters in to CommandLets you've written in script.</p>
+<h2>So what are we going to do with all of this?</h2>
+<p><a href="http://tech.simplybusiness.co.uk/content/images/2013/Feb/things.png" target="_blank" rel="noopener noreferrer">Install all the things!</a> My goal over the next few posts is to write up how we can use the basic concepts above to construct DSC scripts to take a Windows server from its basic post-install state to running Sitecore 8.x for development. I plan to cover the following aspects of that:</p>
+<ul>
+<li>The configuration data required for the various scripts</li>
+<li>Basic configuration of the server with Windows features and settings</li>
+<li>Installing SQL Server</li>
+<li>Installing MongoDB</li>
+<li>Installing Sitecore</li>
+<li>Configuring Sitecore with Packages</li>
+<li>Using PowerShell Extensions remoting</li>
+</ul>
+<p>I'm not sure how many posts this will end up with, but I'll go through the assorted bits of script, and explain how they work for each of the key steps described above.</p>
 
-					</pre>
-					<p>There are two key changes here. The first is the declaration of the
-						<code>Node</code>
-						block. Instead of specifying the name of the server to apply this script to, it has changed to an expression. The code looks at all the elements in the
-						<code>AllNodes</code>
-						data we declared above, and returns the
-						<code>NodeName</code>
-						for any entry where the Role attribute contains "IIS". So our config data can describe a set of servers for databases, web servers etc. and this bit of DSC Script will only affect those servers which should have IIS installed.</p>
-					<p>The second change is that when we invoke our
-						<code>Configuration</code>, we're now passing in a parameter called
-						<code>ConfigurationData</code>
-						that specifies the path to finding the config data above. This is how DSC knows where the config is when it processes your script to generate the
-						<code>.MOF</code>
-						files. Hence you can have multiple configuration files, and run a DSC script against each of them to (for example) generate
-						<code>.MOF</code>
-						files for development servers in different clusters.</p>
-					<p>As you'll see later in the series, you can also have custom parameters to pass in to
-						<code>Configuration</code>s, in much the same way you can pass parameters in to CommandLets you've written in script.</p>
-					<h2>So what are we going to do with all of this?</h2>
-					<p>
-						<a href="http://tech.simplybusiness.co.uk/content/images/2013/Feb/things.png" target="_blank" rel="noopener noreferrer">Install all the things!</a>
-						My goal over the next few posts is to write up how we can use the basic concepts above to construct DSC scripts to take a Windows server from its basic post-install state to running Sitecore 8.x for development. I plan to cover the following aspects of that:</p>
-					<ul>
-						<li>The configuration data required for the various scripts</li>
-						<li>Basic configuration of the server with Windows features and settings</li>
-						<li>Installing SQL Server</li>
-						<li>Installing MongoDB</li>
-						<li>Installing Sitecore</li>
-						<li>Configuring Sitecore with Packages</li>
-						<li>Using PowerShell Extensions remoting</li>
-					</ul>
-					<p>I'm not sure how many posts this will end up with, but I'll go through the assorted bits of script, and explain how they work for each of the key steps described above.</p>
-				</div>
-				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<section class="mvp">
-						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-						<div class="bg-white mb-2 p-2">
-							<a href="/mvp">
-								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Top Tags</h3>
-						<div class="bg-white p-2 flex flex-wrap">
-							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Sitecore (202)</a>
-							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								C# (47)</a>
-							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								PowerShell (31)</a>
-							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Installation (23)</a>
-							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Solr (15)</a>
-							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								General (14)</a>
-							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								UI (14)</a>
-							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Docker (12)</a>
-							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Coveo (12)</a>
-							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Packages (11)</a>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/tags" role="button">All Tags
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Recent Months</h3>
-						<div class="bg-white p-2">
-							<div>
-								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
-							</div>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/posts" role="button">All Posts
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Twitter</h3>
-						<div class="bg-white mb-2 p-2">
-							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-						</div>
-					</section>
-				</div>
-			</div>
-		</div>
-		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-			<div class="flex-1 lg:flex-1 text-center lg:text-left">
-				<div>©
-					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
-					2014-2022</div>
-			</div>
-			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
-				<br>
-			</div>
-			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-				<li class="inline-block">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-					</svg>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-				</li>
-			</ul>
-		</footer>
-		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-				<div class="w-full text-lg">
-					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-				</div>
-				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-			</div>
-		</div>
-		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-		<script type="text/javascript">
+
+            </div>
+            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section class="mvp">
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (202)</a>
+                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
+                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
+                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
+                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
+                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
+                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
+                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
+                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
+    </div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
+    </div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">
+                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+            </div>
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -451,16 +341,21 @@ EnableIIS -ConfigurationData ".\configData.psd1"
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
-		</script>
-		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-		<script>
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
     
-		</script>
-	</body>
-</html>
+
+    
+
+
+
+</body></html>

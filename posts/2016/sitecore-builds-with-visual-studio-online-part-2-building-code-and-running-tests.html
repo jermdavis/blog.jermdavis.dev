@@ -1,26 +1,31 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2016/sitecore-builds-with-visual-studio-online-part-2-building-code-and-running-tests">
-		<meta name="description" content="Following on from last week's &quot;<a href=&quot;/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds&quot; target=&quot;_blank&quot;>how to host private NuGet feeds in Visual Studio Online</a>&quot;, this week we'll build on that to get some code to compile and some <a href=&quot;https://github.com/sergeyshushlyapin/Sitecore.FakeDb&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Sitecore.FakeDB</a> tests to run and <a href=&quot;http://www.teamdevelopmentforsitecore.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Hedgehog TDS</a> to generate a deployment package in the cloud build. ">
-		<meta property="og:description" content="Following on from last week's &quot;<a href=&quot;/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds&quot; target=&quot;_blank&quot;>how to host private NuGet feeds in Visual Studio Online</a>&quot;, this week we'll build on that to get some code to compile and some <a href=&quot;https://github.com/sergeyshushlyapin/Sitecore.FakeDb&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Sitecore.FakeDB</a> tests to run and <a href=&quot;http://www.teamdevelopmentforsitecore.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Hedgehog TDS</a> to generate a deployment package in the cloud build. ">
-		<meta name="keywords" content="Sitecore, Visual Studio Online">
-		<meta name="author" content="Jeremy Davis">
-		<meta name="copyright" content="Jeremy Davis">
-		<title>Jeremy Davis - Sitecore builds with Visual Studio Online – Part 2: Building code and running&nbsp;tests</title>
-		<meta name="robots" content="index, follow">
-		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-		<meta name="application-name" content="Jeremy Davis">
-		<meta name="msapplication-tooltip" content="Jeremy Davis">
-		<meta name="msapplication-starturl" content="/">
-		<link rel="manifest" href="/manifest.webmanifest">
-		<meta property="og:title" content="Jeremy Davis - Sitecore builds with Visual Studio Online &amp;#x2013; Part 2: Building code and running&amp;#xA0;tests">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/sitecore-builds-with-visual-studio-online-part-2-building-code-and-running-tests-social.jpg">
-		<script type="application/ld+json">
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2016/sitecore-builds-with-visual-studio-online-part-2-building-code-and-running-tests">
+        <meta name="description" content="Following on from last week&amp;#x27;s &amp;amp;quot;&amp;lt;a href=&amp;quot;/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;how to host private NuGet feeds in Visual Studio Online&amp;lt;/a&amp;gt;&amp;amp;quot;, this week we&amp;#x27;ll build on that to get some code to compile and some &amp;lt;a href=&amp;quot;https://github.com/sergeyshushlyapin/Sitecore.FakeDb&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;Sitecore.FakeDB&amp;lt;/a&amp;gt; tests to run and &amp;lt;a href=&amp;quot;http://www.teamdevelopmentforsitecore.com/&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;Hedgehog TDS&amp;lt;/a&amp;gt; to generate a deployment package in the cloud build. ">
+        <meta property="og:description" content="Following on from last week&amp;#x27;s &amp;amp;quot;&amp;lt;a href=&amp;quot;/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;how to host private NuGet feeds in Visual Studio Online&amp;lt;/a&amp;gt;&amp;amp;quot;, this week we&amp;#x27;ll build on that to get some code to compile and some &amp;lt;a href=&amp;quot;https://github.com/sergeyshushlyapin/Sitecore.FakeDb&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;Sitecore.FakeDB&amp;lt;/a&amp;gt; tests to run and &amp;lt;a href=&amp;quot;http://www.teamdevelopmentforsitecore.com/&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;Hedgehog TDS&amp;lt;/a&amp;gt; to generate a deployment package in the cloud build. ">
+            <meta name="keywords" content="Sitecore, Visual Studio Online">
+        <meta name="author" content="Jeremy Davis">
+        <meta name="copyright" content="Jeremy Davis">
+
+    <title>Jeremy Davis - Sitecore builds with Visual Studio Online &#x2013; Part 2: Building code and running&#xA0;tests</title> 
+
+        <meta name="robots" content="index, follow">
+
+            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+    <link rel="manifest" href="/manifest.webmanifest">
+
+    
+    <meta property="og:title" content="Jeremy Davis - Sitecore builds with Visual Studio Online &amp;#x2013; Part 2: Building code and running&amp;#xA0;tests">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/sitecore-builds-with-visual-studio-online-part-2-building-code-and-running-tests-social.jpg">
+    <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -36,218 +41,172 @@
             "url": "https://jermdavis.dev/"
         }]
     }
+    </script>
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/sitecore-builds-with-visual-studio-online-part-2-building-code-and-running-tests">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+
+    <link href="/scss/tailwind.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+
     
-		</script>
-		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2016/sitecore-builds-with-visual-studio-online-part-2-building-code-and-running-tests">
-		<meta property="og:type" content="website">
-		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-		<link href="/scss/tailwind.css" rel="stylesheet">
-		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-		<link href="/scss/site-theme.css" rel="stylesheet">
-		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-		
-		<!-- 04/07/2022 10:26:01 -->
-	</head>
-	<body class="max-w-7xl mx-auto">
-		<div class="relative bg-white" x-data="{ open: false }">
-			
-			<!-- desktop -->
-			<div class="px-4 lg:px-6 bg-gray-100">
-				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-					<div class="flex justify-start lg:w-0 flex-1">
-						<a href="/">
-							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-						</a>
-						<div class="mx-2">
-							<div class="text-3xl">Jeremy Davis</div>
-							<div class="text-lg">Sitecore, C# and web development</div>
-						</div>
-					</div>
-					<div class="nav -mr-2 -my-2 lg:hidden">
-						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-							<span class="sr-only">Open menu</span>
-							
-							<!-- Heroicon name: outline/menu -->
-							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-							</svg>
-						</button>
-					</div>
-					<nav class="nav hidden lg:flex space-x-10">
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-					</nav>
-				</div>
-			</div>
-			
-			<!--Mobile menu, show/hide based on mobile menu state.-->
-			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-					<div class="pt-5 pb-6 px-5">
-						<div class="flex items-center justify-between">
-							<div class="flex">
-								<a href="/">
-									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-								</a>
-								<div class="mx-2">
-									<div class="text-2xl">Jeremy Davis</div>
-									<div class="text-base">Sitecore, C# and web development</div>
-								</div>
-							</div>
-							<div class="nav -mr-2">
-								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-									<span class="sr-only">Close menu</span>
-									
-									<!-- Heroicon name: outline/x -->
-									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-									</svg>
-								</button>
-							</div>
-						</div>
-					</div>
-					<div class="nav py-6 px-5 pt-0">
-						<nav class=" gap-x-8">
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-						</nav>
-					</div>
-				</div>
-			</div>
-		</div>
-		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
-				<h1 class="text-5xl mb-4 pb-1">
-					Sitecore builds with Visual Studio Online – Part 2: Building code and running&nbsp;tests
-				</h1>
-				<div class="meta">Published 22 August 2016</div>
-				<div class="meta">Updated 04 September 2020</div>
-				<div class="flex py-1">
-					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/visual-studio-online/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Visual Studio Online</a>
-				</div>
-			</div>
-		</header>
-		<div class="py-2 lg:pl-3">
-			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
-					<p>Following on from last week's "<a href="/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds" target="_blank">how to host private NuGet feeds in Visual Studio Online</a>", this week we'll build on that to get some code to compile and some
-						<a href="https://github.com/sergeyshushlyapin/Sitecore.FakeDb" target="_blank" rel="noopener noreferrer">Sitecore.FakeDB</a>
-						tests to run and
-						<a href="http://www.teamdevelopmentforsitecore.com/" target="_blank" rel="noopener noreferrer">Hedgehog TDS</a>
-						to generate a deployment package in the cloud build. 
-						<!--more-->
-					</p>
-					<blockquote>
-						<b>Edited to add:</b>
-						I've made the example solution I was using to test the hosted builds available at
-						<a href="https://github.com/jermdavis/SitemapGenerator" rel="nofollow">https://github.com/jermdavis/SitemapGenerator</a>
-						on Github. You'll need to provide your own source for the TDS and FakeDB License file NuGet packages (which I have in a private feed) if you want to build it, however. But I figured it might be of interest to some people
-					</blockquote>
-					<p>Getting code, TDS and FakeDB to run together needs a minimum of three projects in your solution. (Though you can always have more if necessary) Obviously you'll need at least one project with your code in it. That doesn't need anything special other than access to whatever NuGet packages are required to compile the code. But the TDS and Test projects for the rest of the solution need a bit of tweaking to work in both a local and hosted build scenario. So here's how I made it work:</p>
-					<h2>Making TDS work in the cloud</h2>
-					<p>There are basically three changes you have to make to your standard TDS project so it works with both local and cloud builds, and they're
-						<a href="http://hedgehogdevelopment.github.io/tds/chapter5.html#tds-builds-using-cloud-servers" target="_blank" rel="noopener noreferrer">documented on the TDS site</a>:</p>
-					<ol>
-						<li>You need to make your references to the TDS MSBuild extensions via a NuGet package rather than assuming that they were installed by the TDS `.msi` file. You can't run an `.msi` installer on a hosted build server.</li>
-						<li>You need to ensure your project file has been modified to point to the local (installed by NuGet) copy of the MSBuild `.targets` file rather than the centralised one from the `.msi` file.</li>
-						<li>You need to make sure TDS can find its license data for validation.</li>
-					</ol>
-					<p>The
-						<a href="http://www.teamdevelopmentforsitecore.com/Download" target="_blank" rel="noopener noreferrer">download from the TDS website</a>
-						that gives you the
-						<code>.msi</code>
-						file to install TDS also includes the NuGet package file you need here. So you can
-						<a href="/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds" target="_blank">follow the instructions from last week's post</a>
-						to upload this package to your (Private!) NuGet repository.</p>
-					<p>Once you've added this reference to your TDS project, you need to unload the project and edit the path to the TDS build
-						<code>.targets</code>
-						file, as per the instructions.</p>
-					<p>The final thing you need is to ensure that the TDS binaries can find their license. That's easy in a local build: If you've installed TDS on the machine then the license has already been captured when you went through the wizard. But that hasn't happened for a cloud build. You can put an XML file into your source tree that contains the data, but license data is something you don't want to accidentally make public via source control. So I think it's better to put the data into the build variables. In VSO, you can do that by editing your build and selecting the "Variables" tab and adding your license data there.</p>
-					<p>But since we've not got to the buit about creating a build yet, we'll come back to that step later in this post.</p>
-					<p>When that is done, whatever settings you put in the properties of your TDS project will be obeyed by the hosted build. Remember to set up the "build a package" properties in the TDS project for the right Build Target.</p>
-					<h2>Getting FakeDB to test in the cloud</h2>
-					<p>You'll have added the NuGet package for FakeDB anyway, in order to test locally, but the challenge for cloud tests is making sure that you can have the Sitecore DLLs FakeDB needs alongside your Sitecore license file. Now both of these are things that you don't really want to commit to source control (Especially if your code is going to end up in a public repository). So what you need here is some NuGet magic.</p>
-					<p>The Sitecore DLLs bit is fairly simple. You may be able to use the same NuGet package that you're using for the Sitecore references in your source code project. Or, if that's not suitable for some reason, you can
-						<a href="/posts/2014/using-nuget-for-your-references-to-sitecore-dlls" target="_blank">create a specialised package</a>
-						with just
-						<a target="_blank" rel="noopener noreferrer" href="https://github.com/sergeyshushlyapin/Sitecore.FakeDb/wiki/Installation">the right files</a>
-						and push that to your private feed.</p>
-					<p>But the license is a bit more complicated. You don't want to commit that to a public source repository for obvious reasons, and you can't use build variables here. So what to do instead?</p>
-					<p>The first thing that came to my mind was another NuGet package in your private feed. But it turns out it's not quite as simple as you might want. FakeDB expects its license file to be found in the root folder of your test project. You can put it somewhere else, but that involves changing the
-						<code>.config</code>
-						file - and of course that means you have to manually fix that up every time you update FakeDB, which isn't ideal. So what you really want is a NuGet package which puts the license file into the right place for you automatically.</p>
-					<p>The "simple" answer here would be to put the license file into the "content" bit of the NuGet package. That would mean the file would get added to your project in the right place. But it also gets added to source control, so you also need to add it to your
-						<code>.gitignore</code>
-						file to prevent that. (Or the appropriate "files to ignore" data for whatever other source control system you use) This is all fine and dandy on the machine you initially set up the project on, but later when you clone the repository somewhere else it won't build. When the NuGet restore is run (to pull down the packages for your solution) it will not re-copy the license file into the project, because it assumes the file should already be there. (Which is pretty obvious if you think about it – you might modify content files from packages, and you wouldn't want that overwritten every time NuGet ran a restore)</p>
-					<p>So after some thought, my solution to this problem is a combination of PowerShell and MSBuild. When a package gets installed for the first time, a script called
-						<code>Init.ps1</code>
-						can be run if you've put it in the right place in the package. I wrote a quick bit of script that makes sure you have a
-						<code>.gitignore</code>
-						entry for the license file:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param($installPath, $toolsPath, $package, $project)
 
-$ignoreFile = $installPath + "..\..\..\.gitignore"
+    
+    <!-- 06/07/2022 21:14:40 -->
+</head>
 
-Write-Host "Looking for git ignore file at: $ignoreFile"
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="nav -mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="nav hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="nav -mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-4 pb-1">
+        Sitecore builds with Visual Studio Online – Part 2: Building code and running tests
+        </h1>
+            <div class="meta">Published 22 August 2016</div>
+                <div class="meta">Updated 04 September 2020</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/visual-studio-online/" class="p-1 mr-1 bg-gray-100 rounded-md"> Visual Studio Online</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>Following on from last week's &quot;<a href="/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds" target="_blank">how to host private NuGet feeds in Visual Studio Online</a>&quot;, this week we'll build on that to get some code to compile and some <a href="https://github.com/sergeyshushlyapin/Sitecore.FakeDb" target="_blank" rel="noopener noreferrer">Sitecore.FakeDB</a> tests to run and <a href="http://www.teamdevelopmentforsitecore.com/" target="_blank" rel="noopener noreferrer">Hedgehog TDS</a> to generate a deployment package in the cloud build. <!--more--></p>
+<blockquote>
+<b>Edited to add:</b> I've made the example solution I was using to test the hosted builds available at <a href="https://github.com/jermdavis/SitemapGenerator" rel="nofollow">https://github.com/jermdavis/SitemapGenerator</a> on Github. You'll need to provide your own source for the TDS and FakeDB License file NuGet packages (which I have in a private feed) if you want to build it, however. But I figured it might be of interest to some people
+</blockquote>
+<p>Getting code, TDS and FakeDB to run together needs a minimum of three projects in your solution. (Though you can always have more if necessary) Obviously you'll need at least one project with your code in it. That doesn't need anything special other than access to whatever NuGet packages are required to compile the code. But the TDS and Test projects for the rest of the solution need a bit of tweaking to work in both a local and hosted build scenario. So here's how I made it work:</p>
+<h2>Making TDS work in the cloud</h2>
+<p>There are basically three changes you have to make to your standard TDS project so it works with both local and cloud builds, and they're <a href="http://hedgehogdevelopment.github.io/tds/chapter5.html#tds-builds-using-cloud-servers" target="_blank" rel="noopener noreferrer">documented on the TDS site</a>:</p>
+<ol>
+<li>You need to make your references to the TDS MSBuild extensions via a NuGet package rather than assuming that they were installed by the TDS `.msi` file. You can't run an `.msi` installer on a hosted build server.</li>
+<li>You need to ensure your project file has been modified to point to the local (installed by NuGet) copy of the MSBuild `.targets` file rather than the centralised one from the `.msi` file.</li>
+<li>You need to make sure TDS can find its license data for validation.</li>
+</ol>
+<p>The <a href="http://www.teamdevelopmentforsitecore.com/Download" target="_blank" rel="noopener noreferrer">download from the TDS website</a> that gives you the <code>.msi</code> file to install TDS also includes the NuGet package file you need here. So you can <a href="/posts/2016/sitecore-builds-with-visual-studio-online-part-1-private-nuget-feeds" target="_blank">follow the instructions from last week's post</a> to upload this package to your (Private!) NuGet repository.</p>
+<p>Once you've added this reference to your TDS project, you need to unload the project and edit the path to the TDS build <code>.targets</code> file, as per the instructions.</p>
+<p>The final thing you need is to ensure that the TDS binaries can find their license. That's easy in a local build: If you've installed TDS on the machine then the license has already been captured when you went through the wizard. But that hasn't happened for a cloud build. You can put an XML file into your source tree that contains the data, but license data is something you don't want to accidentally make public via source control. So I think it's better to put the data into the build variables. In VSO, you can do that by editing your build and selecting the &quot;Variables&quot; tab and adding your license data there.</p>
+<p>But since we've not got to the buit about creating a build yet, we'll come back to that step later in this post.</p>
+<p>When that is done, whatever settings you put in the properties of your TDS project will be obeyed by the hosted build. Remember to set up the &quot;build a package&quot; properties in the TDS project for the right Build Target.</p>
+<h2>Getting FakeDB to test in the cloud</h2>
+<p>You'll have added the NuGet package for FakeDB anyway, in order to test locally, but the challenge for cloud tests is making sure that you can have the Sitecore DLLs FakeDB needs alongside your Sitecore license file. Now both of these are things that you don't really want to commit to source control (Especially if your code is going to end up in a public repository). So what you need here is some NuGet magic.</p>
+<p>The Sitecore DLLs bit is fairly simple. You may be able to use the same NuGet package that you're using for the Sitecore references in your source code project. Or, if that's not suitable for some reason, you can <a href="/posts/2014/using-nuget-for-your-references-to-sitecore-dlls" target="_blank">create a specialised package</a> with just <a target="_blank" rel="noopener noreferrer" href="https://github.com/sergeyshushlyapin/Sitecore.FakeDb/wiki/Installation">the right files</a> and push that to your private feed.</p>
+<p>But the license is a bit more complicated. You don't want to commit that to a public source repository for obvious reasons, and you can't use build variables here. So what to do instead?</p>
+<p>The first thing that came to my mind was another NuGet package in your private feed. But it turns out it's not quite as simple as you might want. FakeDB expects its license file to be found in the root folder of your test project. You can put it somewhere else, but that involves changing the <code>.config</code> file - and of course that means you have to manually fix that up every time you update FakeDB, which isn't ideal. So what you really want is a NuGet package which puts the license file into the right place for you automatically.</p>
+<p>The &quot;simple&quot; answer here would be to put the license file into the &quot;content&quot; bit of the NuGet package. That would mean the file would get added to your project in the right place. But it also gets added to source control, so you also need to add it to your <code>.gitignore</code> file to prevent that. (Or the appropriate &quot;files to ignore&quot; data for whatever other source control system you use) This is all fine and dandy on the machine you initially set up the project on, but later when you clone the repository somewhere else it won't build. When the NuGet restore is run (to pull down the packages for your solution) it will not re-copy the license file into the project, because it assumes the file should already be there. (Which is pretty obvious if you think about it – you might modify content files from packages, and you wouldn't want that overwritten every time NuGet ran a restore)</p>
+<p>So after some thought, my solution to this problem is a combination of PowerShell and MSBuild. When a package gets installed for the first time, a script called <code>Init.ps1</code> can be run if you've put it in the right place in the package. I wrote a quick bit of script that makes sure you have a <code>.gitignore</code> entry for the license file:</p>
+<pre><code class="language-powershell">param($installPath, $toolsPath, $package, $project)
+
+$ignoreFile = $installPath + &quot;..\..\..\.gitignore&quot;
+
+Write-Host &quot;Looking for git ignore file at: $ignoreFile&quot;
 
 $content = Get-Content $ignoreFile -Raw
 
 if( $content -like '*`*`*/`[Ll`]icense.xml*' ) {
-    Write-Host ".gitignore contains line for License.xml - nothing to do."
+    Write-Host &quot;.gitignore contains line for License.xml - nothing to do.&quot;
 }
 else
 {
-    $content = $content + `r`n# Sitecore.FakeDB.Licensing nuget package`r`n**/[Ll]icense.xml`r`n"
+    $content = $content + `r`n# Sitecore.FakeDB.Licensing nuget package`r`n**/[Ll]icense.xml`r`n&quot;
     $content | Out-File -FilePath $ignoreFile -Encoding ascii
 
-    Write-Host ".gitignore missing line for License.xml - added it to end of file."
+    Write-Host &quot;.gitignore missing line for License.xml - added it to end of file.&quot;
 }
-
-					</pre>
-					<p>Currently this code assumes you have a
-						<code>.gitignore</code>
-						file already. I feel like that's a pretty safe assumption for most people, but maybe a quick "only do this if the file exists" test might be sensible too.</p>
-					<p>Other than the character-escaping gymnastics required to correctly escape the regular expression and comment in the
-						<code>.gitignore</code>
-						file, it's pretty simple. Just remember that the ``` (back-tick) character is kind of the equivalent of a
-						<code>\</code>
-						in C# – meaning the next character is a literal. For special characters like
-						<code>*` it means "treat this as a literal asterisk, not a wildcard", and before a normal character like
-						</code>r` it means "this is a control code" – carriage return in this case.</p>
-					<p>The second thing I created was an MSBuild
-						<code>.targets</code>
-						file which includes a step to copy the license file from the NuGet package folder it gets restored to, into the root of the current project:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003"&gt;
-  &lt;Target Name="BeforeBuild"&gt;
-    &lt;Message Text="Copying license from $(MSBuildThisFileDirectory) to $(MSBuildProjectDirectory)" Importance="high"/&gt;
-    &lt;Copy SourceFiles="$(MSBuildThisFileDirectory)license.xml" DestinationFolder="$(MSBuildProjectDirectory)" /&gt;
+</code></pre>
+<p>Currently this code assumes you have a <code>.gitignore</code> file already. I feel like that's a pretty safe assumption for most people, but maybe a quick &quot;only do this if the file exists&quot; test might be sensible too.</p>
+<p>Other than the character-escaping gymnastics required to correctly escape the regular expression and comment in the <code>.gitignore</code> file, it's pretty simple. Just remember that the ``` (back-tick) character is kind of the equivalent of a <code>\</code> in C# – meaning the next character is a literal. For special characters like <code>*` it means &quot;treat this as a literal asterisk, not a wildcard&quot;, and before a normal character like </code>r` it means &quot;this is a control code&quot; – carriage return in this case.</p>
+<p>The second thing I created was an MSBuild <code>.targets</code> file which includes a step to copy the license file from the NuGet package folder it gets restored to, into the root of the current project:</p>
+<pre><code class="language-xml">&lt;Project ToolsVersion=&quot;4.0&quot; xmlns=&quot;http://schemas.microsoft.com/developer/msbuild/2003&quot;&gt;
+  &lt;Target Name=&quot;BeforeBuild&quot;&gt;
+    &lt;Message Text=&quot;Copying license from $(MSBuildThisFileDirectory) to $(MSBuildProjectDirectory)&quot; Importance=&quot;high&quot;/&gt;
+    &lt;Copy SourceFiles=&quot;$(MSBuildThisFileDirectory)license.xml&quot; DestinationFolder=&quot;$(MSBuildProjectDirectory)&quot; /&gt;
   &lt;/Target&gt;
 &lt;/Project&gt;
-
-					</pre>
-					<p>The
-						<code>.targets</code>
-						file doesn't get copied out of the NuGet Package folder – the changes made to your Project file reference it in that location. Hence the
-						<code>$(MSBuildThisFileDirectory)</code>
-						variable gives you an easy shortcut for the source of the copy.</p>
-					<p>Now, the glue for all of this is your
-						<code>.nuspec</code>
-						file. By putting these two files in the right places in your NuGet package, you can have it magically run your script and install the
-						<code>.targets</code>
-						file into your project. In this case I used:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8"?&gt;
-&lt;package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"&gt;
+</code></pre>
+<p>The <code>.targets</code> file doesn't get copied out of the NuGet Package folder – the changes made to your Project file reference it in that location. Hence the <code>$(MSBuildThisFileDirectory)</code> variable gives you an easy shortcut for the source of the copy.</p>
+<p>Now, the glue for all of this is your <code>.nuspec</code> file. By putting these two files in the right places in your NuGet package, you can have it magically run your script and install the <code>.targets</code> file into your project. In this case I used:</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;package xmlns=&quot;http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd&quot;&gt;
   &lt;metadata&gt;
     &lt;id&gt;Sitecore.FakeDB.Licensing&lt;/id&gt;
     &lt;version&gt;1.2016.0&lt;/version&gt;
@@ -257,176 +216,121 @@ else
     &lt;description&gt;The license file required for FakeDB to run unit tests. Also updates your .gitignore file to avoid committing the license to source control.&lt;/description&gt;
   &lt;/metadata&gt;
   &lt;files&gt;
-    &lt;file src="lib-licensing\license.xml" target="build\" /&gt;
-    &lt;file src="lib-licensing\Sitecore.FakeDB.Licensing.targets" target="build\" /&gt;
-    &lt;file src="lib-licensing\Init.ps1" target="tools\" /&gt;
+    &lt;file src=&quot;lib-licensing\license.xml&quot; target=&quot;build\&quot; /&gt;
+    &lt;file src=&quot;lib-licensing\Sitecore.FakeDB.Licensing.targets&quot; target=&quot;build\&quot; /&gt;
+    &lt;file src=&quot;lib-licensing\Init.ps1&quot; target=&quot;tools\&quot; /&gt;
   &lt;/files&gt;
 &lt;/package&gt;
+</code></pre>
+<p>Adding the <code>.targets</code> file to the <code>build</code> folder in the package is all you need to install it. Ditto for adding the script to the <code>tools</code> folder. There's no special behaviour for <code>.xml</code> files, so putting that into the <code>build</code> folder just means it will sit there ready to process.</p>
+<h2>And now you can pull it all together</h2>
+<p>At this point, you should be able to write code, test it, and build TDS packages locally. The last step for getting the TFS build to work is to configure a build definition. Now that Microsoft have finally moved on from the (frankly painful) XAML build definitions that TFS used in the past, this is pleasingly simple.</p>
+<p>First, create yourself a new build:</p>
+<p><a href="/img/2016/2016-08-newbuild.png" target="_blank"><img alt="New Build" src="/img/2016/2016-08-newbuild.png"></a></p>
+<p>When you accept this dialog you'll get asked which repository and branch you want to build from. Fill that in to match whatever your source control setup is. When it's been created, click the carefully concealed &quot;Edit&quot; link:</p>
+<p><a href="/img/2016/2016-08-editbuild.png" target="_blank"><img alt="Edit Build" src="/img/2016/2016-08-editbuild.png"></a></p>
+<p>And you can see the default set of build operations:</p>
+<p><a href="/img/2016/2016-08-defaultbuild.png" target="_blank"><img alt="Default Build" src="/img/2016/2016-08-defaultbuild.png"></a></p>
+<p>The &quot;NuGet Restore&quot;, &quot;Build Solution&quot; and &quot;Test Assemblies&quot; tasks should work as-is if you've got your NuGet package setup right. You may or may not want the &quot;Publish Symbols&quot; task – that depends on what you're doing with your publishing and support processes. You can remove it if you don't want it. (It can always be added back later) For TDS builds, I think you can simplify the last two steps however. You can remove the &quot;Copy Files&quot; task, and re-configure the &quot;Publish Artifact&quot; task to find your generated package(s) directly from the TDS build outputs:</p>
+<p><a href="/img/2016/2016-08-dropoptions.png" target="_blank"><img alt="Drop Options" src="/img/2016/2016-08-dropoptions.png"></a></p>
+<p>Obviously you need to make the settings match your particular projects.</p>
+<p>Now earlier, we skipped over the step for configuring the TDS license data. Now we have a hosted build set up, we can add that data to its properies with these names:</p>
+<p><a href="/img/2016/2016-08-buildvars1.png" target="_blank"><img alt="Build Variables" src="/img/2016/2016-08-buildvars1.png"></a></p>
+<p>Note that for both of these items it makes sense to clear the &quot;Allow at queue time&quot; checkbox. That means that the license variables aren't shown on the &quot;set your variables&quot; dialog when you queue a build. That stops people accidentally messing them up and breaking a build.</p>
+<p>With that done, your solution should build:</p>
+<p><a href="/img/2016/2016-08-buildsuccess.png" target="_blank"><img alt="Build Success" src="/img/2016/2016-08-buildsuccess.png"></a></p>
+<p>You can download the generated package by clicking the &quot;Artifacts&quot; tab...</p>
+<p>Next step is to connect this process up to an automated package deployment to Sitecore on an Azure VM – but that's a task for another day...</p>
 
-					</pre>
-					<p>Adding the
-						<code>.targets</code>
-						file to the
-						<code>build</code>
-						folder in the package is all you need to install it. Ditto for adding the script to the
-						<code>tools</code>
-						folder. There's no special behaviour for
-						<code>.xml</code>
-						files, so putting that into the
-						<code>build</code>
-						folder just means it will sit there ready to process.</p>
-					<h2>And now you can pull it all together</h2>
-					<p>At this point, you should be able to write code, test it, and build TDS packages locally. The last step for getting the TFS build to work is to configure a build definition. Now that Microsoft have finally moved on from the (frankly painful) XAML build definitions that TFS used in the past, this is pleasingly simple.</p>
-					<p>First, create yourself a new build:</p>
-					<p>
-						<a href="/img/2016/2016-08-newbuild.png" target="_blank">
-							<img alt="New Build" src="/img/2016/2016-08-newbuild.png">
-						</a>
-					</p>
-					<p>When you accept this dialog you'll get asked which repository and branch you want to build from. Fill that in to match whatever your source control setup is. When it's been created, click the carefully concealed "Edit" link:</p>
-					<p>
-						<a href="/img/2016/2016-08-editbuild.png" target="_blank">
-							<img alt="Edit Build" src="/img/2016/2016-08-editbuild.png">
-						</a>
-					</p>
-					<p>And you can see the default set of build operations:</p>
-					<p>
-						<a href="/img/2016/2016-08-defaultbuild.png" target="_blank">
-							<img alt="Default Build" src="/img/2016/2016-08-defaultbuild.png">
-						</a>
-					</p>
-					<p>The "NuGet Restore", "Build Solution" and "Test Assemblies" tasks should work as-is if you've got your NuGet package setup right. You may or may not want the "Publish Symbols" task – that depends on what you're doing with your publishing and support processes. You can remove it if you don't want it. (It can always be added back later) For TDS builds, I think you can simplify the last two steps however. You can remove the "Copy Files" task, and re-configure the "Publish Artifact" task to find your generated package(s) directly from the TDS build outputs:</p>
-					<p>
-						<a href="/img/2016/2016-08-dropoptions.png" target="_blank">
-							<img alt="Drop Options" src="/img/2016/2016-08-dropoptions.png">
-						</a>
-					</p>
-					<p>Obviously you need to make the settings match your particular projects.</p>
-					<p>Now earlier, we skipped over the step for configuring the TDS license data. Now we have a hosted build set up, we can add that data to its properies with these names:</p>
-					<p>
-						<a href="/img/2016/2016-08-buildvars1.png" target="_blank">
-							<img alt="Build Variables" src="/img/2016/2016-08-buildvars1.png">
-						</a>
-					</p>
-					<p>Note that for both of these items it makes sense to clear the "Allow at queue time" checkbox. That means that the license variables aren't shown on the "set your variables" dialog when you queue a build. That stops people accidentally messing them up and breaking a build.</p>
-					<p>With that done, your solution should build:</p>
-					<p>
-						<a href="/img/2016/2016-08-buildsuccess.png" target="_blank">
-							<img alt="Build Success" src="/img/2016/2016-08-buildsuccess.png">
-						</a>
-					</p>
-					<p>You can download the generated package by clicking the "Artifacts" tab...</p>
-					<p>Next step is to connect this process up to an automated package deployment to Sitecore on an Azure VM – but that's a task for another day...</p>
-				</div>
-				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<section class="mvp">
-						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-						<div class="bg-white mb-2 p-2">
-							<a href="/mvp">
-								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Top Tags</h3>
-						<div class="bg-white p-2 flex flex-wrap">
-							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Sitecore (202)</a>
-							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								C# (47)</a>
-							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								PowerShell (31)</a>
-							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Installation (23)</a>
-							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Solr (15)</a>
-							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								General (14)</a>
-							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								UI (14)</a>
-							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Docker (12)</a>
-							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Coveo (12)</a>
-							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Packages (11)</a>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/tags" role="button">All Tags
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Recent Months</h3>
-						<div class="bg-white p-2">
-							<div>
-								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
-							</div>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/posts" role="button">All Posts
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Twitter</h3>
-						<div class="bg-white mb-2 p-2">
-							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-						</div>
-					</section>
-				</div>
-			</div>
-		</div>
-		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-			<div class="flex-1 lg:flex-1 text-center lg:text-left">
-				<div>©
-					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
-					2014-2022</div>
-			</div>
-			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
-				<br>
-			</div>
-			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-				<li class="inline-block">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-					</svg>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-				</li>
-			</ul>
-		</footer>
-		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-				<div class="w-full text-lg">
-					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-				</div>
-				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-			</div>
-		</div>
-		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-		<script type="text/javascript">
+
+            </div>
+            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section class="mvp">
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (202)</a>
+                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
+                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
+                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
+                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
+                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
+                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
+                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
+                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
+    </div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
+    </div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">
+                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+            </div>
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -435,16 +339,21 @@ else
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
-		</script>
-		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-		<script>
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
     
-		</script>
-	</body>
-</html>
+
+    
+
+
+
+</body></html>

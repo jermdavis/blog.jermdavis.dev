@@ -1,26 +1,31 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/a-second-pass-at-async-pipelines">
-		<meta name="description" content="<a href=&quot;/posts/2021/pipelines-and-async&quot; target=&quot;_blank&quot;>Last time out I was looking at applying async/await patterns to some pipeline patterns for C#</a>. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...">
-		<meta property="og:description" content="<a href=&quot;/posts/2021/pipelines-and-async&quot; target=&quot;_blank&quot;>Last time out I was looking at applying async/await patterns to some pipeline patterns for C#</a>. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...">
-		<meta name="keywords" content="C#">
-		<meta name="author" content="Jeremy Davis">
-		<meta name="copyright" content="Jeremy Davis">
-		<title>Jeremy Davis - A second pass at async&nbsp;pipelines</title>
-		<meta name="robots" content="index, follow">
-		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-		<meta name="application-name" content="Jeremy Davis">
-		<meta name="msapplication-tooltip" content="Jeremy Davis">
-		<meta name="msapplication-starturl" content="/">
-		<link rel="manifest" href="/manifest.webmanifest">
-		<meta property="og:title" content="Jeremy Davis - A second pass at async&amp;#xA0;pipelines">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-second-pass-at-async-pipelines-social.jpg">
-		<script type="application/ld+json">
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/a-second-pass-at-async-pipelines">
+        <meta name="description" content="&amp;lt;a href=&amp;quot;/posts/2021/pipelines-and-async&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;Last time out I was looking at applying async/await patterns to some pipeline patterns for C#&amp;lt;/a&amp;gt;. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...">
+        <meta property="og:description" content="&amp;lt;a href=&amp;quot;/posts/2021/pipelines-and-async&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;Last time out I was looking at applying async/await patterns to some pipeline patterns for C#&amp;lt;/a&amp;gt;. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...">
+            <meta name="keywords" content="C#">
+        <meta name="author" content="Jeremy Davis">
+        <meta name="copyright" content="Jeremy Davis">
+
+    <title>Jeremy Davis - A second pass at async&#xA0;pipelines</title> 
+
+        <meta name="robots" content="index, follow">
+
+            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+    <link rel="manifest" href="/manifest.webmanifest">
+
+    
+    <meta property="og:title" content="Jeremy Davis - A second pass at async&amp;#xA0;pipelines">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/a-second-pass-at-async-pipelines-social.jpg">
+    <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -35,117 +40,117 @@
             "url": "https://jermdavis.dev/"
         }]
     }
+    </script>
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/a-second-pass-at-async-pipelines">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+
+    <link href="/scss/tailwind.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+
     
-		</script>
-		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/a-second-pass-at-async-pipelines">
-		<meta property="og:type" content="website">
-		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-		<link href="/scss/tailwind.css" rel="stylesheet">
-		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-		<link href="/scss/site-theme.css" rel="stylesheet">
-		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-		
-		<!-- 04/07/2022 10:26:49 -->
-	</head>
-	<body class="max-w-7xl mx-auto">
-		<div class="relative bg-white" x-data="{ open: false }">
-			
-			<!-- desktop -->
-			<div class="px-4 lg:px-6 bg-gray-100">
-				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-					<div class="flex justify-start lg:w-0 flex-1">
-						<a href="/">
-							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-						</a>
-						<div class="mx-2">
-							<div class="text-3xl">Jeremy Davis</div>
-							<div class="text-lg">Sitecore, C# and web development</div>
-						</div>
-					</div>
-					<div class="nav -mr-2 -my-2 lg:hidden">
-						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-							<span class="sr-only">Open menu</span>
-							
-							<!-- Heroicon name: outline/menu -->
-							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-							</svg>
-						</button>
-					</div>
-					<nav class="nav hidden lg:flex space-x-10">
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-					</nav>
-				</div>
-			</div>
-			
-			<!--Mobile menu, show/hide based on mobile menu state.-->
-			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-					<div class="pt-5 pb-6 px-5">
-						<div class="flex items-center justify-between">
-							<div class="flex">
-								<a href="/">
-									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-								</a>
-								<div class="mx-2">
-									<div class="text-2xl">Jeremy Davis</div>
-									<div class="text-base">Sitecore, C# and web development</div>
-								</div>
-							</div>
-							<div class="nav -mr-2">
-								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-									<span class="sr-only">Close menu</span>
-									
-									<!-- Heroicon name: outline/x -->
-									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-									</svg>
-								</button>
-							</div>
-						</div>
-					</div>
-					<div class="nav py-6 px-5 pt-0">
-						<nav class=" gap-x-8">
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-						</nav>
-					</div>
-				</div>
-			</div>
-		</div>
-		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
-				<h1 class="text-5xl mb-4 pb-1">
-					A second pass at async&nbsp;pipelines
-				</h1>
-				<div class="meta">Published 21 June 2021</div>
-				<div class="flex py-1">
-					<a href="/tags/c/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-				</div>
-			</div>
-		</header>
-		<div class="py-2 lg:pl-3">
-			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
-					<p>
-						<a href="/posts/2021/pipelines-and-async" target="_blank">Last time out I was looking at applying async/await patterns to some pipeline patterns for C#</a>. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...
-						<!--more-->
-					</p>
-					<h2>Execution ordering and async</h2>
-					<p>Writing code that uses the
-						<code>async</code>/<code>await</code>
-						patterns from the previous post can have some interesting effects on the order of execution for some of the code. An example to demonstrate that is fairly simple to construct. Expanding on the example code I started last time, consider a pipeline with three steps:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt;
+
+    
+    <!-- 06/07/2022 21:14:53 -->
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="nav -mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="nav hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="nav -mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-4 pb-1">
+        A second pass at async pipelines
+        </h1>
+            <div class="meta">Published 21 June 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/c/" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p><a href="/posts/2021/pipelines-and-async" target="_blank">Last time out I was looking at applying async/await patterns to some pipeline patterns for C#</a>. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...<!--more--></p>
+<h2>Execution ordering and async</h2>
+<p>Writing code that uses the <code>async</code>/<code>await</code> patterns from the previous post can have some interesting effects on the order of execution for some of the code. An example to demonstrate that is fairly simple to construct. Expanding on the example code I started last time, consider a pipeline with three steps:</p>
+<pre><code class="language-csharp">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt;
 {
 	public ExampleAsyncPipeline()
 	{
@@ -156,72 +161,66 @@
 
 	}
 }
-
-					</pre>
-					<p>As the steps say: Grab some data, modify the data, and write it to disk somewhere. And we'll add in some debug output. The first step does the fetch. It outputs some debug data on entry, after the
-						<code>await</code>
-						returns for the input data, and then just before returning.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt;
+</code></pre>
+<p>As the steps say: Grab some data, modify the data, and write it to disk somewhere. And we'll add in some debug output. The first step does the fetch. It outputs some debug data on entry, after the <code>await</code> returns for the input data, and then just before returning.</p>
+<pre><code class="language-csharp">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt;
 {
 	private static readonly HttpClient _client = new HttpClient();
 
 	public async Task&lt;string&gt; ProcessAsync(Task&lt;Uri&gt; Input)
 	{
-		Console.WriteLine("Entering HttpFetchAsyncStep #1");
+		Console.WriteLine(&quot;Entering HttpFetchAsyncStep #1&quot;);
 		
 		var uri = await Input;
-		Console.WriteLine("Have Input HttpFetchAsyncStep #1");
+		Console.WriteLine(&quot;Have Input HttpFetchAsyncStep #1&quot;);
 		
-		Console.WriteLine("Leaving HttpFetchAsyncStep #1");
+		Console.WriteLine(&quot;Leaving HttpFetchAsyncStep #1&quot;);
 		
 		return await _client.GetStringAsync(uri);
 	}
 }
-
-					</pre>
-					<p>The second step just does a simple text replacement to show it did something. And it also outputs debug data at the same points in its execution.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ModifyTextAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
+</code></pre>
+<p>The second step just does a simple text replacement to show it did something. And it also outputs debug data at the same points in its execution.</p>
+<pre><code class="language-csharp">public class ModifyTextAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
 	public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input)
 	{
-		Console.WriteLine("Entering ModifyTextAsyncStep #2");
+		Console.WriteLine(&quot;Entering ModifyTextAsyncStep #2&quot;);
 
 		var txt = await Input;
-		Console.WriteLine("Have Input ModifyTextAsyncStep #2");
+		Console.WriteLine(&quot;Have Input ModifyTextAsyncStep #2&quot;);
 
-		var output = txt.Replace("BBC", "Not the BBC");
+		var output = txt.Replace(&quot;BBC&quot;, &quot;Not the BBC&quot;);
 
-		Console.WriteLine("Leaving ModifyTextAsyncStep #2");
+		Console.WriteLine(&quot;Leaving ModifyTextAsyncStep #2&quot;);
 
 		return output;
 	}
 }
-
-					</pre>
-					<p>And finally, with the same debug output pattern, the third step works out where the desktop folder is and writes the data it receives to that folder.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
+</code></pre>
+<p>And finally, with the same debug output pattern, the third step works out where the desktop folder is and writes the data it receives to that folder.</p>
+<pre><code class="language-csharp">public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
 	public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input)
 	{
-		Console.WriteLine("Entering DiskWriteAsyncStep #3");
+		Console.WriteLine(&quot;Entering DiskWriteAsyncStep #3&quot;);
 		
 		var data = await Input;
-		Console.WriteLine("Have Input DiskWriteAsyncStep #3");
+		Console.WriteLine(&quot;Have Input DiskWriteAsyncStep #3&quot;);
 		
 		var desktopFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-		var fileName =  System.IO.Path.Combine(desktopFolder, "test.txt");
+		var fileName =  System.IO.Path.Combine(desktopFolder, &quot;test.txt&quot;);
 
 		await System.IO.File.WriteAllTextAsync(fileName, data);
 
-		Console.WriteLine("Leaving DiskWriteAsyncStep #3");
+		Console.WriteLine(&quot;Leaving DiskWriteAsyncStep #3&quot;);
 
 		return fileName;
 	}
 }
-
-					</pre>
-					<p>So if we run that pipeline, passing in a valid url, then the debug output looks interesting:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="4,5,6,7" data-enlighter-language="text" style="width:100%; overflow:scroll;">Entering HttpFetchAsyncStep #1
+</code></pre>
+<p>So if we run that pipeline, passing in a valid url, then the debug output looks interesting:</p>
+<pre><code class="language-text">Entering HttpFetchAsyncStep #1
 Have Input HttpFetchAsyncStep #1
 Leaving HttpFetchAsyncStep #1
 Entering ModifyTextAsyncStep #2
@@ -230,25 +229,16 @@ Have Input ModifyTextAsyncStep #2
 Leaving ModifyTextAsyncStep #2
 Have Input DiskWriteAsyncStep #3
 Leaving DiskWriteAsyncStep #3
-
-					</pre>
-					<p>The first step proceeds as we'd expect – entering, getting data, and returning. But then the second step enters, and then immediately the third step enters. Then the second step gets its input and leaves before the third step does the same...</p>
-					<p>Initially that seems wrong – why would parts of step two and three appear to happen out of order? But I think this is actually a side-effect of how async code works. A statement which awaits a task is going to do one of two things. Either the task is complete and the value is returned immediately, or the task is not complete and the code tries to find something else to do in order to fill its time. In our case, the first step's
-						<code>await</code>
-						is of the first case - the input task already has its value, because the source uri was provided at the start of the pipeline. So that just runs through linearly that code without any distractions.</p>
-					<p>But when we get to step two, its input is the task to read from the remote website. The code enters that step as usual, but the
-						<code>await</code>
-						cannot immediately resolve into downloaded html. So the compiler's clever rewriting takes over. This bit of code gets "parked" while it waits for the promise-of-future-data to resolve, and the flow of execution moves on to something else that can be run. In this case, it tries to start the third step, and prints its debug data because that doesn't depend on anything else. But once it gets to awaiting step three's input, the execution has to stall again because that
-						<code>await</code>
-						depends on step two's output. So now the flow of execution has nothing else to do but wait for step two's input to resolve, so it can then finish that step, and then finish step three.</p>
-					<p>And that's what we're seeing in the output above...</p>
-					<h2>Here be dragons!</h2>
-					<p>Now broadly that's not an issue – the code does end up doing all its work in the right order.</p>
-					<p>But after I sat and thought about this a bit harder, I realised that it would be possible to cause some really interesting bugs with this approach. Any code that runs before the
-						<code>await</code>
-						in a pipeline step might happen some undefined amount of time before the remainder of the code.</p>
-					<p>Imagine if the code took a lock on a database table, awaited the input of a really long-running network operation, and then carried on to write something to the database. That code would almost certainly run ok on a developer's computer. But under load in the real world, you could end up with some horrible performance issues where nobody else can do anything to the database table while this bit of code sits and waits for async operations to complete. In broad strokes:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CauseAnIssueAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
+</code></pre>
+<p>The first step proceeds as we'd expect – entering, getting data, and returning. But then the second step enters, and then immediately the third step enters. Then the second step gets its input and leaves before the third step does the same...</p>
+<p>Initially that seems wrong – why would parts of step two and three appear to happen out of order? But I think this is actually a side-effect of how async code works. A statement which awaits a task is going to do one of two things. Either the task is complete and the value is returned immediately, or the task is not complete and the code tries to find something else to do in order to fill its time. In our case, the first step's <code>await</code> is of the first case - the input task already has its value, because the source uri was provided at the start of the pipeline. So that just runs through linearly that code without any distractions.</p>
+<p>But when we get to step two, its input is the task to read from the remote website. The code enters that step as usual, but the <code>await</code> cannot immediately resolve into downloaded html. So the compiler's clever rewriting takes over. This bit of code gets &quot;parked&quot; while it waits for the promise-of-future-data to resolve, and the flow of execution moves on to something else that can be run. In this case, it tries to start the third step, and prints its debug data because that doesn't depend on anything else. But once it gets to awaiting step three's input, the execution has to stall again because that <code>await</code> depends on step two's output. So now the flow of execution has nothing else to do but wait for step two's input to resolve, so it can then finish that step, and then finish step three.</p>
+<p>And that's what we're seeing in the output above...</p>
+<h2>Here be dragons!</h2>
+<p>Now broadly that's not an issue – the code does end up doing all its work in the right order.</p>
+<p>But after I sat and thought about this a bit harder, I realised that it would be possible to cause some really interesting bugs with this approach. Any code that runs before the <code>await</code> in a pipeline step might happen some undefined amount of time before the remainder of the code.</p>
+<p>Imagine if the code took a lock on a database table, awaited the input of a really long-running network operation, and then carried on to write something to the database. That code would almost certainly run ok on a developer's computer. But under load in the real world, you could end up with some horrible performance issues where nobody else can do anything to the database table while this bit of code sits and waits for async operations to complete. In broad strokes:</p>
+<pre><code class="language-csharp">public class CauseAnIssueAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
     public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input)
     {
@@ -263,34 +253,20 @@ Leaving DiskWriteAsyncStep #3
         return result;
     }
 }
-
-					</pre>
-					<p>And with just the right "wrong code" happening before that initial await I'm pretty sure it would be possible to cause deadlocks, and really mess up your day.</p>
-					<p>Clearly this code pattern is not great. So how can we resolve this issue?</p>
-					<h2>Tweaking the pattern to address that</h2>
-					<p>Having sat and thought about all this, I realised there was a better way to express all of this. If the code changes so that the
-						<code>await</code>
-						behaviour for the
-						<code>Task</code>
-						is moved out of the individual pipeline steps then it's not possible for people writing steps to make a mistake with this.</p>
-					<p>I've tried a couple of attempts at this. My first pass worked on the basis that you could have an abstract base type for pipeline steps which dealt with the awaiting of the inputs. But I didn't want to restrict the pipeline steps to inheriting a base class – that didn't look quite right to me. so I tried a second attempt.</p>
-					<p>The basic pipleline component interface goes back to having a
-						<code>TIn</code>
-						and a
-						<code>Task&lt;T&gt;</code>
-						result:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;TIn, TOut&gt;
+</code></pre>
+<p>And with just the right &quot;wrong code&quot; happening before that initial await I'm pretty sure it would be possible to cause deadlocks, and really mess up your day.</p>
+<p>Clearly this code pattern is not great. So how can we resolve this issue?</p>
+<h2>Tweaking the pattern to address that</h2>
+<p>Having sat and thought about all this, I realised there was a better way to express all of this. If the code changes so that the <code>await</code> behaviour for the <code>Task</code> is moved out of the individual pipeline steps then it's not possible for people writing steps to make a mistake with this.</p>
+<p>I've tried a couple of attempts at this. My first pass worked on the basis that you could have an abstract base type for pipeline steps which dealt with the awaiting of the inputs. But I didn't want to restrict the pipeline steps to inheriting a base class – that didn't look quite right to me. so I tried a second attempt.</p>
+<p>The basic pipleline component interface goes back to having a <code>TIn</code> and a <code>Task&lt;T&gt;</code> result:</p>
+<pre><code class="language-csharp">public interface IAsyncPipelineStep&lt;TIn, TOut&gt;
 {
 	Task&lt;TOut&gt; ProcessAsync(TIn Input);
 }
-
-					</pre>
-					<p>And the type for the overall pipeline keeps a
-						<code>Func&lt;TIn, Task&gt;</code>
-						for the steps, and exposes the
-						<code>Task ProcessAsync(TIn Input)</code>
-						method for executing the complete pipeline:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
+</code></pre>
+<p>And the type for the overall pipeline keeps a <code>Func&lt;TIn, Task&gt;</code> for the steps, and exposes the <code>Task ProcessAsync(TIn Input)</code> method for executing the complete pipeline:</p>
+<pre><code class="language-csharp">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
 {
 	public Func&lt;TIn, Task&lt;TOut&gt;&gt; _pipelineSteps { get; protected set; }
 
@@ -299,14 +275,9 @@ Leaving DiskWriteAsyncStep #3
 		return _pipelineSteps(Input);
 	}
 }
-
-					</pre>
-					<p>The extension class for composing the steps needs two methods now. One takes a
-						<code>TIn</code>
-						input, and runs the step on it directly. And the other takes a
-						<code>Task</code>
-						and awaits the result before running the step over this value:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class AsyncPipelineStepExtensions
+</code></pre>
+<p>The extension class for composing the steps needs two methods now. One takes a <code>TIn</code> input, and runs the step on it directly. And the other takes a <code>Task</code> and awaits the result before running the step over this value:</p>
+<pre><code class="language-csharp">public static class AsyncPipelineStepExtensions
 {
 	public async static Task&lt;TOut&gt; Step&lt;TIn, TOut&gt;(this Task&lt;TIn&gt; Input, IAsyncPipelineStep&lt;TIn, TOut&gt; Step)
 	{
@@ -319,20 +290,17 @@ Leaving DiskWriteAsyncStep #3
 		return await Step.ProcessAsync(Input);
 	}
 }
-
-					</pre>
-					<p>With all those changes, the three example steps look largely the same. But now theydon't need to
-						<code>await</code>
-						their input now, because that bit of boilerplate has been abstracted away:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt;
+</code></pre>
+<p>With all those changes, the three example steps look largely the same. But now theydon't need to <code>await</code> their input now, because that bit of boilerplate has been abstracted away:</p>
+<pre><code class="language-csharp">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt;
 {
 	private static readonly HttpClient _client = new HttpClient();
 
 	public async Task&lt;string&gt; ProcessAsync(Uri Input)
 	{
-		Console.WriteLine("Entering HttpFetchAsyncStep #1");
+		Console.WriteLine(&quot;Entering HttpFetchAsyncStep #1&quot;);
 		
-		Console.WriteLine("Leaving HttpFetchAsyncStep #1");
+		Console.WriteLine(&quot;Leaving HttpFetchAsyncStep #1&quot;);
 		
 		return await _client.GetStringAsync(Input);
 	}
@@ -342,11 +310,11 @@ public class ModifyTextAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
 	public async Task&lt;string&gt; ProcessAsync(string Input)
 	{
-		Console.WriteLine("Entering ModifyTextAsyncStep #2");
+		Console.WriteLine(&quot;Entering ModifyTextAsyncStep #2&quot;);
 
-		var output = Input.Replace("BBC", "Not the BBC");
+		var output = Input.Replace(&quot;BBC&quot;, &quot;Not the BBC&quot;);
 
-		Console.WriteLine("Leaving ModifyTextAsyncStep #2");
+		Console.WriteLine(&quot;Leaving ModifyTextAsyncStep #2&quot;);
 
 		return output;
 	}
@@ -356,22 +324,21 @@ public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
 	public async Task&lt;string&gt; ProcessAsync(string Input)
 	{
-		Console.WriteLine("Entering DiskWriteAsyncStep #3");
+		Console.WriteLine(&quot;Entering DiskWriteAsyncStep #3&quot;);
 		
 		var desktopFolder = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-		var fileName =  System.IO.Path.Combine(desktopFolder, "test.txt");
+		var fileName =  System.IO.Path.Combine(desktopFolder, &quot;test.txt&quot;);
 
 		await System.IO.File.WriteAllTextAsync(fileName, Input);
 
-		Console.WriteLine("Leaving DiskWriteAsyncStep #3");
+		Console.WriteLine(&quot;Leaving DiskWriteAsyncStep #3&quot;);
 
 		return fileName;
 	}
 }
-
-					</pre>
-					<p>The definition of the overall pipeline doesn't change, despite the changes to the underlying types:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt;
+</code></pre>
+<p>The definition of the overall pipeline doesn't change, despite the changes to the underlying types:</p>
+<pre><code class="language-csharp">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt;
 {
 	public ExampleAsyncPipeline()
 	{
@@ -382,128 +349,101 @@ public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 
 	}
 }
+</code></pre>
+<p>To my eye, that approach looks better. It's only a small change really, but it's taken away the ability to make a mistake, without changing the core of how it works.</p>
+<p>And running it produces the output we'd expect:</p>
+<p><a href="/img/2021/2021-06-executionorder.png" target="_blank"><img alt="Pipeline results" src="/img/2021/2021-06-executionorder.png"></a></p>
+<p>As before, <a href="https://gist.github.com/jermdavis/49ecd692a16b10899eb2ee2b50770499" rel="noopener" target="_blank">this version of the code is available as a gist</a> if you want to play with it.</p>
 
-					</pre>
-					<p>To my eye, that approach looks better. It's only a small change really, but it's taken away the ability to make a mistake, without changing the core of how it works.</p>
-					<p>And running it produces the output we'd expect:</p>
-					<p>
-						<a href="/img/2021/2021-06-executionorder.png" target="_blank">
-							<img alt="Pipeline results" src="/img/2021/2021-06-executionorder.png">
-						</a>
-					</p>
-					<p>As before,
-						<a href="https://gist.github.com/jermdavis/49ecd692a16b10899eb2ee2b50770499" rel="noopener" target="_blank">this version of the code is available as a gist</a>
-						if you want to play with it.</p>
-				</div>
-				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<section class="mvp">
-						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-						<div class="bg-white mb-2 p-2">
-							<a href="/mvp">
-								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Top Tags</h3>
-						<div class="bg-white p-2 flex flex-wrap">
-							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Sitecore (202)</a>
-							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								C# (47)</a>
-							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								PowerShell (31)</a>
-							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Installation (23)</a>
-							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Solr (15)</a>
-							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								General (14)</a>
-							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								UI (14)</a>
-							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Docker (12)</a>
-							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Coveo (12)</a>
-							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Packages (11)</a>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/tags" role="button">All Tags
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Recent Months</h3>
-						<div class="bg-white p-2">
-							<div>
-								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
-							</div>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/posts" role="button">All Posts
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Twitter</h3>
-						<div class="bg-white mb-2 p-2">
-							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-						</div>
-					</section>
-				</div>
-			</div>
-		</div>
-		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-			<div class="flex-1 lg:flex-1 text-center lg:text-left">
-				<div>©
-					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
-					2014-2022</div>
-			</div>
-			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
-				<br>
-			</div>
-			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-				<li class="inline-block">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-					</svg>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-				</li>
-			</ul>
-		</footer>
-		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-				<div class="w-full text-lg">
-					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-				</div>
-				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-			</div>
-		</div>
-		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-		<script type="text/javascript">
+
+            </div>
+            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section class="mvp">
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (202)</a>
+                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
+                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
+                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
+                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
+                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
+                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
+                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
+                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
+    </div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
+    </div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">
+                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+            </div>
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -512,16 +452,21 @@ public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
-		</script>
-		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-		<script>
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
     
-		</script>
-	</body>
-</html>
+
+    
+
+
+
+</body></html>

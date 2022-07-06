@@ -1,26 +1,31 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2019/caching-when-you-have-duplicate-container-components">
-		<meta name="description" content="In theory, the magic of Dynamic Placeholders lets us have a container component placed onto your page more than once. That didn't work in the old world of &quot;static&quot; placeholders, because the rendering engine didn't like two placeholders with the same name. But despite it's benefits, the dynamic implementation has an annoying edge case – you may not be able to enable caching for your container component. I had a client bump into this issue recently, so I spent some time considering approaches that might help them address this issue. ">
-		<meta property="og:description" content="In theory, the magic of Dynamic Placeholders lets us have a container component placed onto your page more than once. That didn't work in the old world of &quot;static&quot; placeholders, because the rendering engine didn't like two placeholders with the same name. But despite it's benefits, the dynamic implementation has an annoying edge case – you may not be able to enable caching for your container component. I had a client bump into this issue recently, so I spent some time considering approaches that might help them address this issue. ">
-		<meta name="keywords" content="Caching, Sitecore">
-		<meta name="author" content="Jeremy Davis">
-		<meta name="copyright" content="Jeremy Davis">
-		<title>Jeremy Davis - Caching when you have duplicate container&nbsp;components</title>
-		<meta name="robots" content="index, follow">
-		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-		<meta name="application-name" content="Jeremy Davis">
-		<meta name="msapplication-tooltip" content="Jeremy Davis">
-		<meta name="msapplication-starturl" content="/">
-		<link rel="manifest" href="/manifest.webmanifest">
-		<meta property="og:title" content="Jeremy Davis - Caching when you have duplicate container&amp;#xA0;components">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/caching-when-you-have-duplicate-container-components-social.jpg">
-		<script type="application/ld+json">
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2019/caching-when-you-have-duplicate-container-components">
+        <meta name="description" content="In theory, the magic of Dynamic Placeholders lets us have a container component placed onto your page more than once. That didn&amp;#x27;t work in the old world of &amp;amp;quot;static&amp;amp;quot; placeholders, because the rendering engine didn&amp;#x27;t like two placeholders with the same name. But despite it&amp;#x27;s benefits, the dynamic implementation has an annoying edge case &amp;#x2013; you may not be able to enable caching for your container component. I had a client bump into this issue recently, so I spent some time considering approaches that might help them address this issue. ">
+        <meta property="og:description" content="In theory, the magic of Dynamic Placeholders lets us have a container component placed onto your page more than once. That didn&amp;#x27;t work in the old world of &amp;amp;quot;static&amp;amp;quot; placeholders, because the rendering engine didn&amp;#x27;t like two placeholders with the same name. But despite it&amp;#x27;s benefits, the dynamic implementation has an annoying edge case &amp;#x2013; you may not be able to enable caching for your container component. I had a client bump into this issue recently, so I spent some time considering approaches that might help them address this issue. ">
+            <meta name="keywords" content="Caching, Sitecore">
+        <meta name="author" content="Jeremy Davis">
+        <meta name="copyright" content="Jeremy Davis">
+
+    <title>Jeremy Davis - Caching when you have duplicate container&#xA0;components</title> 
+
+        <meta name="robots" content="index, follow">
+
+            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+    <link rel="manifest" href="/manifest.webmanifest">
+
+    
+    <meta property="og:title" content="Jeremy Davis - Caching when you have duplicate container&amp;#xA0;components">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/caching-when-you-have-duplicate-container-components-social.jpg">
+    <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -35,327 +40,274 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    
-		</script>
-		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/caching-when-you-have-duplicate-container-components">
-		<meta property="og:type" content="website">
-		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-		<link href="/scss/tailwind.css" rel="stylesheet">
-		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-		<link href="/scss/site-theme.css" rel="stylesheet">
-		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-		
-		<!-- 04/07/2022 10:26:37 -->
-	</head>
-	<body class="max-w-7xl mx-auto">
-		<div class="relative bg-white" x-data="{ open: false }">
-			
-			<!-- desktop -->
-			<div class="px-4 lg:px-6 bg-gray-100">
-				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-					<div class="flex justify-start lg:w-0 flex-1">
-						<a href="/">
-							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-						</a>
-						<div class="mx-2">
-							<div class="text-3xl">Jeremy Davis</div>
-							<div class="text-lg">Sitecore, C# and web development</div>
-						</div>
-					</div>
-					<div class="nav -mr-2 -my-2 lg:hidden">
-						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-							<span class="sr-only">Open menu</span>
-							
-							<!-- Heroicon name: outline/menu -->
-							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-							</svg>
-						</button>
-					</div>
-					<nav class="nav hidden lg:flex space-x-10">
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-					</nav>
-				</div>
-			</div>
-			
-			<!--Mobile menu, show/hide based on mobile menu state.-->
-			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-					<div class="pt-5 pb-6 px-5">
-						<div class="flex items-center justify-between">
-							<div class="flex">
-								<a href="/">
-									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-								</a>
-								<div class="mx-2">
-									<div class="text-2xl">Jeremy Davis</div>
-									<div class="text-base">Sitecore, C# and web development</div>
-								</div>
-							</div>
-							<div class="nav -mr-2">
-								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-									<span class="sr-only">Close menu</span>
-									
-									<!-- Heroicon name: outline/x -->
-									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-									</svg>
-								</button>
-							</div>
-						</div>
-					</div>
-					<div class="nav py-6 px-5 pt-0">
-						<nav class=" gap-x-8">
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-						</nav>
-					</div>
-				</div>
-			</div>
-		</div>
-		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
-				<h1 class="text-5xl mb-4 pb-1">
-					Caching when you have duplicate container&nbsp;components
-				</h1>
-				<div class="meta">Published 16 September 2019</div>
-				<div class="flex py-1">
-					<a href="/tags/caching/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Caching</a>
-					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-				</div>
-			</div>
-		</header>
-		<div class="py-2 lg:pl-3">
-			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
-					<p>In theory, the magic of Dynamic Placeholders lets us have a container component placed onto your page more than once. That didn't work in the old world of "static" placeholders, because the rendering engine didn't like two placeholders with the same name. But despite it's benefits, the dynamic implementation has an annoying edge case – you may not be able to enable caching for your container component. I had a client bump into this issue recently, so I spent some time considering approaches that might help them address this issue. 
-						<!--more-->
-					</p>
-					<h2>The issue</h2>
-					<p>Imagine you have a container component. A very simple one will do fine – all it really needs to contain is a Dynamic Placeholder:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">@using Sitecore.Mvc
-&lt;div style="border:2px solid red; margin-top:10px; padding:10px;"&gt;
-    &lt;div&gt;Dynamic Container&lt;/div&gt;
-    @Html.Sitecore().DynamicPlaceholder("container")
-&lt;/div&gt;
+    </script>
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2019/caching-when-you-have-duplicate-container-components">
+<meta property="og:type" content="website">
 
-					</pre>
-					<p>If you build up a page using two instances of that component, with some child components inside each of the placeholders it will look fine in Experience Editor:</p>
-					<p>
-						<a href="/img/2019/2019-09-creatingcontainers.png" target="_blank">
-							<img alt="Creating Containers" src="/img/2019/2019-09-creatingcontainers.png">
-						</a>
-					</p>
-					<p>But if the container components have caching enabled, it won't look right on the public site:</p>
-					<p>
-						<a href="/img/2019/2019-09-wrongui.png" target="_blank">
-							<img alt="Wrong UI" src="/img/2019/2019-09-wrongui.png">
-						</a>
-					</p>
-					<p>That's because the code renders the first container and caches the result. Then it starts to render the second one, but gets a cache hit, and so returns the cached data for the first one. In the cache you see:</p>
-					<p>
-						<a href="/img/2019/2019-09-incorrectcaches.png" target="_blank">
-							<img alt="Incorrect Caches" src="/img/2019/2019-09-incorrectcaches.png">
-						</a>
-					</p>
-					<p>There's no cache variant that works for "this component varies by its children" – so only the first instance of the container ever gets rendered and cached.</p>
-					<p>My interest in this came about because I got handed a bug report on a client site that said "our page is wrong!" and it turned out to be because of this issue. I think there are three main ways that the issue could be resolved to make the client happy:</p>
-					<h2>Solution one: Just disable caching</h2>
-					<p>If you turn the cache settings off for the container component, all will look right.</p>
-					<p>That's probably fine if your container has few children, or it's not used very much. The performance difference in that scenario is likely to be small – especially if you are able to enable caching for the child components inside your container.</p>
-					<p>That's a fix developers can roll out easily (it's just undoing the cache settings on the rendering item) and it doesn't affect editors at all.</p>
-					<h2>Solution two: Use a fake data source</h2>
-					<p>You could configure the container component with the "vary by datasource" cache setting instead of turning caching off. If the component doesn't really need a data source, the code will just ignore what ever item the datasource setting points to, other than for caching. And that can allow the normal caching framework to work here.</p>
-					<p>No deployment is required for this, which is a bonus. But it might be confusing for editors to need to add a data source where it's not really needed. Plus this doesn't work if your container does need a datasource, and you have two on a page that need the same datasource but different children.</p>
-					<p>So this might not be a great answer.</p>
-					<h3>Solution three: Vary the cache by rendering id</h3>
-					<p>Finally, it turns out it's not actually that hard to extend Sitecore's caching model to allow for the idea of "cache this specific rendering instance". You could write some code that looked at the actual children of a component and generated a cache key based on that. Maybe by hashing some data from the Rendering XML? But it struck me that it's faster and easier (and probably much the same outcome) to just make use of the unique ID that every instance of a rendering gets by default...</p>
-					<p>To do this, you need to create a new data template to store your "cache by rendering's unique id" flag:</p>
-					<p>
-						<a href="/img/2019/2019-09-newcacheflag.png" target="_blank">
-							<img alt="New Cache Flag" src="/img/2019/2019-09-newcacheflag.png">
-						</a>
-					</p>
-					<p>And then add that to the inheritance tree of the standard caching flags item:</p>
-					<p>
-						<a href="/img/2019/2019-09-extendcachingflags-1.png" target="_blank">
-							<img alt="Extend Caching Flags" src="/img/2019/2019-09-extendcachingflags-1.png">
-						</a>
-					</p>
-					<p>And that lets you set a caching flag on your container rendering:</p>
-					<p>
-						<a href="/img/2019/2019-09-cachesetting.png" target="_blank">
-							<img alt="Cache Setting" src="/img/2019/2019-09-cachesetting.png">
-						</a>
-					</p>
-					<p>To act on that new flag, you need to deploy a simple bit of code to extend the rendering pipeline:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class VaryByUniqueIdCacheKey : Sitecore.Mvc.Pipelines.Response.RenderRendering.GenerateCacheKey
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+
+    <link href="/scss/tailwind.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+
+    
+
+    
+    <!-- 06/07/2022 21:14:50 -->
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="nav -mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="nav hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="nav -mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-4 pb-1">
+        Caching when you have duplicate container components
+        </h1>
+            <div class="meta">Published 16 September 2019</div>
+            <div class="flex py-1">
+                    <a href="/tags/caching/" class="p-1 mr-1 bg-gray-100 rounded-md"> Caching</a>
+                    <a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>In theory, the magic of Dynamic Placeholders lets us have a container component placed onto your page more than once. That didn't work in the old world of &quot;static&quot; placeholders, because the rendering engine didn't like two placeholders with the same name. But despite it's benefits, the dynamic implementation has an annoying edge case – you may not be able to enable caching for your container component. I had a client bump into this issue recently, so I spent some time considering approaches that might help them address this issue. <!--more--></p>
+<h2>The issue</h2>
+<p>Imagine you have a container component. A very simple one will do fine – all it really needs to contain is a Dynamic Placeholder:</p>
+<pre><code class="language-xml">&#64;using Sitecore.Mvc
+&lt;div style=&quot;border:2px solid red; margin-top:10px; padding:10px;&quot;&gt;
+    &lt;div&gt;Dynamic Container&lt;/div&gt;
+    &#64;Html.Sitecore().DynamicPlaceholder(&quot;container&quot;)
+&lt;/div&gt;
+</code></pre>
+<p>If you build up a page using two instances of that component, with some child components inside each of the placeholders it will look fine in Experience Editor:</p>
+<p><a href="/img/2019/2019-09-creatingcontainers.png" target="_blank"><img alt="Creating Containers" src="/img/2019/2019-09-creatingcontainers.png"></a></p>
+<p>But if the container components have caching enabled, it won't look right on the public site:</p>
+<p><a href="/img/2019/2019-09-wrongui.png" target="_blank"><img alt="Wrong UI" src="/img/2019/2019-09-wrongui.png"></a></p>
+<p>That's because the code renders the first container and caches the result. Then it starts to render the second one, but gets a cache hit, and so returns the cached data for the first one. In the cache you see:</p>
+<p><a href="/img/2019/2019-09-incorrectcaches.png" target="_blank"><img alt="Incorrect Caches" src="/img/2019/2019-09-incorrectcaches.png"></a></p>
+<p>There's no cache variant that works for &quot;this component varies by its children&quot; – so only the first instance of the container ever gets rendered and cached.</p>
+<p>My interest in this came about because I got handed a bug report on a client site that said &quot;our page is wrong!&quot; and it turned out to be because of this issue. I think there are three main ways that the issue could be resolved to make the client happy:</p>
+<h2>Solution one: Just disable caching</h2>
+<p>If you turn the cache settings off for the container component, all will look right.</p>
+<p>That's probably fine if your container has few children, or it's not used very much. The performance difference in that scenario is likely to be small – especially if you are able to enable caching for the child components inside your container.</p>
+<p>That's a fix developers can roll out easily (it's just undoing the cache settings on the rendering item) and it doesn't affect editors at all.</p>
+<h2>Solution two: Use a fake data source</h2>
+<p>You could configure the container component with the &quot;vary by datasource&quot; cache setting instead of turning caching off. If the component doesn't really need a data source, the code will just ignore what ever item the datasource setting points to, other than for caching. And that can allow the normal caching framework to work here.</p>
+<p>No deployment is required for this, which is a bonus. But it might be confusing for editors to need to add a data source where it's not really needed. Plus this doesn't work if your container does need a datasource, and you have two on a page that need the same datasource but different children.</p>
+<p>So this might not be a great answer.</p>
+<h3>Solution three: Vary the cache by rendering id</h3>
+<p>Finally, it turns out it's not actually that hard to extend Sitecore's caching model to allow for the idea of &quot;cache this specific rendering instance&quot;. You could write some code that looked at the actual children of a component and generated a cache key based on that. Maybe by hashing some data from the Rendering XML? But it struck me that it's faster and easier (and probably much the same outcome) to just make use of the unique ID that every instance of a rendering gets by default...</p>
+<p>To do this, you need to create a new data template to store your &quot;cache by rendering's unique id&quot; flag:</p>
+<p><a href="/img/2019/2019-09-newcacheflag.png" target="_blank"><img alt="New Cache Flag" src="/img/2019/2019-09-newcacheflag.png"></a></p>
+<p>And then add that to the inheritance tree of the standard caching flags item:</p>
+<p><a href="/img/2019/2019-09-extendcachingflags-1.png" target="_blank"><img alt="Extend Caching Flags" src="/img/2019/2019-09-extendcachingflags-1.png"></a></p>
+<p>And that lets you set a caching flag on your container rendering:</p>
+<p><a href="/img/2019/2019-09-cachesetting.png" target="_blank"><img alt="Cache Setting" src="/img/2019/2019-09-cachesetting.png"></a></p>
+<p>To act on that new flag, you need to deploy a simple bit of code to extend the rendering pipeline:</p>
+<pre><code class="language-csharp">public class VaryByUniqueIdCacheKey : Sitecore.Mvc.Pipelines.Response.RenderRendering.GenerateCacheKey
 {
     protected override string GenerateKey(Rendering rendering, RenderRenderingArgs args)
     {
         var cacheKey = base.GenerateKey(rendering, args);
 
-        var cacheField = (CheckboxField)rendering.RenderingItem.InnerItem.Fields["VaryByUniqueId"];
+        var cacheField = (CheckboxField)rendering.RenderingItem.InnerItem.Fields[&quot;VaryByUniqueId&quot;];
             
         if (cacheField.Checked)
         {
-            cacheKey += "_#uniqueId:" + rendering.UniqueId.ToString();
+            cacheKey += &quot;_#uniqueId:&quot; + rendering.UniqueId.ToString();
         }
 
         return cacheKey;
     }
 }
-
-					</pre>
-					<p>That looks for the extra cache variant flag on the item being rendered, and if it exists the cache key is extended with the unique ID for this rendering instance.</p>
-					<p>And you can patch that into your config via:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8" ?&gt;
-&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+</code></pre>
+<p>That looks for the extra cache variant flag on the item being rendered, and if it exists the cache key is extended with the unique ID for this rendering instance.</p>
+<p>And you can patch that into your config via:</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
+&lt;configuration xmlns:patch=&quot;http://www.sitecore.net/xmlconfig/&quot;&gt;
   &lt;sitecore&gt;
     &lt;pipelines&gt;
       &lt;mvc.renderRendering&gt;
-        &lt;processor patch:instead="processor[@type='Sitecore.Mvc.Pipelines.Response.RenderRendering.GenerateCacheKey, Sitecore.Mvc']" type="Caching.VaryByUniqueIdCacheKey, Caching" /&gt;
+        &lt;processor patch:instead=&quot;processor[&#64;type='Sitecore.Mvc.Pipelines.Response.RenderRendering.GenerateCacheKey, Sitecore.Mvc']&quot; type=&quot;Caching.VaryByUniqueIdCacheKey, Caching&quot; /&gt;
       &lt;/mvc.renderRendering&gt;
     &lt;/pipelines&gt;
   &lt;/sitecore&gt;
 &lt;/configuration&gt;
+</code></pre>
+<p>Once that's done, you'll get a separate cache entry for each instance of your container component:</p>
+<p><a href="/img/2019/2019-09-correctcache.png" target="_blank"><img alt="Correct Cache" src="/img/2019/2019-09-correctcache.png"></a></p>
+<p>And the published version of the site will look correct:</p>
+<p><a href="/img/2019/2019-09-correctoutput-1.png" target="_blank"><img alt="Correct Output" src="/img/2019/2019-09-correctoutput-1.png"></a></p>
+<p>Whether that solution is &quot;better&quot; for you than just disabling caching probably depends on the effort involved in rendering each of your containers. If they have one or two items in them, chances are it's not worth it. But if your container had a larger number of items, the &quot;memory usage vs processing time&quot; trade-off might be worth it.</p>
+<p>It's an option for you...</p>
 
-					</pre>
-					<p>Once that's done, you'll get a separate cache entry for each instance of your container component:</p>
-					<p>
-						<a href="/img/2019/2019-09-correctcache.png" target="_blank">
-							<img alt="Correct Cache" src="/img/2019/2019-09-correctcache.png">
-						</a>
-					</p>
-					<p>And the published version of the site will look correct:</p>
-					<p>
-						<a href="/img/2019/2019-09-correctoutput-1.png" target="_blank">
-							<img alt="Correct Output" src="/img/2019/2019-09-correctoutput-1.png">
-						</a>
-					</p>
-					<p>Whether that solution is "better" for you than just disabling caching probably depends on the effort involved in rendering each of your containers. If they have one or two items in them, chances are it's not worth it. But if your container had a larger number of items, the "memory usage vs processing time" trade-off might be worth it.</p>
-					<p>It's an option for you...</p>
-				</div>
-				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<section class="mvp">
-						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-						<div class="bg-white mb-2 p-2">
-							<a href="/mvp">
-								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Top Tags</h3>
-						<div class="bg-white p-2 flex flex-wrap">
-							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Sitecore (202)</a>
-							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								C# (47)</a>
-							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								PowerShell (31)</a>
-							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Installation (23)</a>
-							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Solr (15)</a>
-							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								General (14)</a>
-							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								UI (14)</a>
-							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Docker (12)</a>
-							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Coveo (12)</a>
-							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Packages (11)</a>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/tags" role="button">All Tags
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Recent Months</h3>
-						<div class="bg-white p-2">
-							<div>
-								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
-							</div>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/posts" role="button">All Posts
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Twitter</h3>
-						<div class="bg-white mb-2 p-2">
-							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-						</div>
-					</section>
-				</div>
-			</div>
-		</div>
-		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-			<div class="flex-1 lg:flex-1 text-center lg:text-left">
-				<div>©
-					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
-					2014-2022</div>
-			</div>
-			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
-				<br>
-			</div>
-			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-				<li class="inline-block">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-					</svg>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-				</li>
-			</ul>
-		</footer>
-		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-				<div class="w-full text-lg">
-					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-				</div>
-				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-			</div>
-		</div>
-		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-		<script type="text/javascript">
+
+            </div>
+            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section class="mvp">
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (202)</a>
+                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
+                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
+                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
+                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
+                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
+                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
+                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
+                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
+    </div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
+    </div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">
+                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+            </div>
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -364,16 +316,21 @@
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
-		</script>
-		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-		<script>
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
     
-		</script>
-	</body>
-</html>
+
+    
+
+
+
+</body></html>

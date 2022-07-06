@@ -1,26 +1,31 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/faceted-search-in-sitecore-6-6">
-		<meta name="description" content="Last week I spoke at the London Sitecore Technical User Group, and discussed my experiences working on a project that had to provide a Faceted Search UI in Sitecore 6.6. As part of my example, I talked about how you can build Facets using Lucene when you don't have access to the newer search APIs available in Sitecore 7.x, and about how you can make your search UI configurable by editors to improve their user experience. And I said I'd post my example code and explanation. So here goes:">
-		<meta property="og:description" content="Last week I spoke at the London Sitecore Technical User Group, and discussed my experiences working on a project that had to provide a Faceted Search UI in Sitecore 6.6. As part of my example, I talked about how you can build Facets using Lucene when you don't have access to the newer search APIs available in Sitecore 7.x, and about how you can make your search UI configurable by editors to improve their user experience. And I said I'd post my example code and explanation. So here goes:">
-		<meta name="keywords" content="C#, Lucene, Sitecore, UI">
-		<meta name="author" content="Jeremy Davis">
-		<meta name="copyright" content="Jeremy Davis">
-		<title>Jeremy Davis - Faceted Search in Sitecore&nbsp;6.6</title>
-		<meta name="robots" content="index, follow">
-		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-		<meta name="application-name" content="Jeremy Davis">
-		<meta name="msapplication-tooltip" content="Jeremy Davis">
-		<meta name="msapplication-starturl" content="/">
-		<link rel="manifest" href="/manifest.webmanifest">
-		<meta property="og:title" content="Jeremy Davis - Faceted Search in Sitecore&amp;#xA0;6.6">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/faceted-search-in-sitecore-6-6-social.jpg">
-		<script type="application/ld+json">
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/faceted-search-in-sitecore-6-6">
+        <meta name="description" content="Last week I spoke at the London Sitecore Technical User Group, and discussed my experiences working on a project that had to provide a Faceted Search UI in Sitecore 6.6. As part of my example, I talked about how you can build Facets using Lucene when you don&amp;#x27;t have access to the newer search APIs available in Sitecore 7.x, and about how you can make your search UI configurable by editors to improve their user experience. And I said I&amp;#x27;d post my example code and explanation. So here goes:">
+        <meta property="og:description" content="Last week I spoke at the London Sitecore Technical User Group, and discussed my experiences working on a project that had to provide a Faceted Search UI in Sitecore 6.6. As part of my example, I talked about how you can build Facets using Lucene when you don&amp;#x27;t have access to the newer search APIs available in Sitecore 7.x, and about how you can make your search UI configurable by editors to improve their user experience. And I said I&amp;#x27;d post my example code and explanation. So here goes:">
+            <meta name="keywords" content="C#, Lucene, Sitecore, UI">
+        <meta name="author" content="Jeremy Davis">
+        <meta name="copyright" content="Jeremy Davis">
+
+    <title>Jeremy Davis - Faceted Search in Sitecore&#xA0;6.6</title> 
+
+        <meta name="robots" content="index, follow">
+
+            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+    <link rel="manifest" href="/manifest.webmanifest">
+
+    
+    <meta property="og:title" content="Jeremy Davis - Faceted Search in Sitecore&amp;#xA0;6.6">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/faceted-search-in-sitecore-6-6-social.jpg">
+    <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -36,176 +41,151 @@
             "url": "https://jermdavis.dev/"
         }]
     }
+    </script>
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/faceted-search-in-sitecore-6-6">
+<meta property="og:type" content="website">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+
+    <link href="/scss/tailwind.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+
     
-		</script>
-		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/faceted-search-in-sitecore-6-6">
-		<meta property="og:type" content="website">
-		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-		<link href="/scss/tailwind.css" rel="stylesheet">
-		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-		<link href="/scss/site-theme.css" rel="stylesheet">
-		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-		
-		<!-- 04/07/2022 10:26:29 -->
-	</head>
-	<body class="max-w-7xl mx-auto">
-		<div class="relative bg-white" x-data="{ open: false }">
-			
-			<!-- desktop -->
-			<div class="px-4 lg:px-6 bg-gray-100">
-				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-					<div class="flex justify-start lg:w-0 flex-1">
-						<a href="/">
-							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-						</a>
-						<div class="mx-2">
-							<div class="text-3xl">Jeremy Davis</div>
-							<div class="text-lg">Sitecore, C# and web development</div>
-						</div>
-					</div>
-					<div class="nav -mr-2 -my-2 lg:hidden">
-						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-							<span class="sr-only">Open menu</span>
-							
-							<!-- Heroicon name: outline/menu -->
-							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-							</svg>
-						</button>
-					</div>
-					<nav class="nav hidden lg:flex space-x-10">
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-					</nav>
-				</div>
-			</div>
-			
-			<!--Mobile menu, show/hide based on mobile menu state.-->
-			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-					<div class="pt-5 pb-6 px-5">
-						<div class="flex items-center justify-between">
-							<div class="flex">
-								<a href="/">
-									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-								</a>
-								<div class="mx-2">
-									<div class="text-2xl">Jeremy Davis</div>
-									<div class="text-base">Sitecore, C# and web development</div>
-								</div>
-							</div>
-							<div class="nav -mr-2">
-								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-									<span class="sr-only">Close menu</span>
-									
-									<!-- Heroicon name: outline/x -->
-									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-									</svg>
-								</button>
-							</div>
-						</div>
-					</div>
-					<div class="nav py-6 px-5 pt-0">
-						<nav class=" gap-x-8">
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-						</nav>
-					</div>
-				</div>
-			</div>
-		</div>
-		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
-				<h1 class="text-5xl mb-4 pb-1">
-					Faceted Search in Sitecore&nbsp;6.6
-				</h1>
-				<div class="meta">Published 09 June 2014</div>
-				<div class="meta">Updated 25 August 2016</div>
-				<div class="flex py-1">
-					<a href="/tags/c/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						C#</a>
-					<a href="/tags/lucene/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Lucene</a>
-					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/ui/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						UI</a>
-				</div>
-			</div>
-		</header>
-		<div class="py-2 lg:pl-3">
-			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
-					<p>Last week I spoke at the London Sitecore Technical User Group, and discussed my experiences working on a project that had to provide a Faceted Search UI in Sitecore 6.6. As part of my example, I talked about how you can build Facets using Lucene when you don't have access to the newer search APIs available in Sitecore 7.x, and about how you can make your search UI configurable by editors to improve their user experience. And I said I'd post my example code and explanation. So here goes:
-						<!--more-->
-					</p>
-					<p>Imagine you want to sell t-shirts from your Sitecore website. To help people find the t-shirt they want on your site, you want to provide a search interface where they can filter your products using aspects of your metadata – say Size and Colour. And you want to allow your content editors to control the Facet UI that lets people filter your products. How might you go about that?</p>
-					<h2>Data templates</h2>
-					<p>The first step in filtering t-shirts, is that you need a data template to represent a t-shirt. We can set up a simple template like so:</p>
-					<p>
-						<a href="/img/2014/2014-06-tshirt-template.png" target="_blank">
-							<img alt="T-shirt Template" src="/img/2014/2014-06-tshirt-template.png">
-						</a>
-					</p>
-					<p>There are two sets of fields here. The Content Data region has the normal rich text and images for displaying the t-shirt. The Facet Metadata region has the metadata that we'll use for the filtering. I've created two fields here to represent colour and size – and set them up as Multilists so that editors can pick the appropriate values. The values they can choose from are set up as items elsewhere in the content tree.</p>
-					<p>
-						<a href="/img/2014/2014-06-tshirt-meta.png" target="_blank">
-							<img alt="T-shirt Metadata" src="/img/2014/2014-06-tshirt-meta.png">
-						</a>
-					</p>
-					<p>A series of values have been set up for size and colour so editors can pick from them, as well as a set of example t-shirt items for us to search over with the following code. And with that test data in place, we can think about how to search them.</p>
-					<p>If we want to allow editors to modify the set of facet filters available in a particular search, then we need a way to represent a facet inside Sitecore. Hence another data template:</p>
-					<p>
-						<a href="/img/2014/2014-06-facet1.png" target="_blank">
-							<img alt="Facet Template" src="/img/2014/2014-06-facet1.png">
-						</a>
-					</p>
-					<p>For this simple example we need only one field here. It will contain the name of the Sitecore field that we want to build a facet from. With that template we can then set up example facet definition items for each of the Colour and Size metadata fields we defined earlier. For example, the "Colours Facet" item needs the value "Colour" in its "SearchIndexField" field.</p>
-					<p>By describing facets in this way you will be able to create new facets later without needing to change the code. In a real-world example you would have other fields on these items. Things like display text for the name of the facet, or data to describe the rendering or sorting strategies for this particular facet would be common examples.</p>
-					<p>With those set up, the next thing you need is a data template to describe the set of facets to use in a particular search:</p>
-					<p>
-						<a href="/img/2014/2014-06-query.png" target="_blank">
-							<img alt="Query Template" src="/img/2014/2014-06-query.png">
-						</a>
-					</p>
-					<p>For our simple example we need only one field – a multilist to let editors pick from the set of facet definition items we defined above. We can create an example query definition item from this template, and select both our Colour and Size facet definitions. This "TShirtsQuery" item will be the data source of our UI control for the searching.</p>
-					<p>For this example, the UI control is a simple Sublayout, with an ASP.Net User Control that we'll see code for later. The sublayout can be be bound to a page and have its data source set to the item above.</p>
-					<h2>Search Index</h2>
-					<p>In order to run a search, you need a Lucene index to query against. For Sitecore 6.6 projects a helpful shortcut to setting up an easy to configure index is to nip over to GitHub and
-						<a href="https://github.com/sitecorian/SitecoreSearchContrib" target="_blank" rel="noopener noreferrer">grab yourself a copy of the Sitecore SearchContrib project</a>. This includes a load of useful code for speeding up search work, but for the purposes of this demo, all we need is the
-						<a href="https://github.com/sitecorian/SitecoreSearchContrib/tree/master/scSearchContrib.Crawler" target="_blank" rel="noopener noreferrer">scSearchContrib.Crawler</a>
-						part of the code. Grab this code, build it against your particular versions of Sitecore and Lucene. You can then drop the binaries into your website's bin folder and
-						<a href="https://github.com/sitecorian/SitecoreSearchContrib/blob/master/scSearchContrib.Crawler/App_Config/Include/scSearchContrib.Crawler.config" target="_blank" rel="noopener noreferrer">grab yourself a copy of the example search configuration file</a>
-						that is included in this project and drop it into your website's config include folder.</p>
-					<p>The example config is mostly fine for this example. You need to note that it creates an index named "demo". But it requires one change to be made. You need to find the data that defines how the Multilist fields are indexed, and change the "StorageType" attribute to "Yes":</p>
-					<p>
-						<a href="/img/2014/2014-06-index.png" target="_blank">
-							<img alt="Index" src="/img/2014/2014-06-index.png">
-						</a>
-					</p>
-					<p>Why do you need to make this change? Well when the default configuration of Lucene here builds an index it sets up a collection of complex data structures that it uses for efficient searching. But while the index remembers the Sitecore IDs of items, it doesn't remember any of the other data it's been processing. For "normal" searches that's fine – you just use the Sitecore APIs to load the items your search index matches in order to do further processing.</p>
-					<p>But here, building facets, we need to process lots of items that we won't end up showing in our on-screen results in order to get all the facet values. (You'll see this in the code later on) That would be very inefficient via the Sitecore APIs. Item loading is much slower than reading information from the Lucene index. So to get around that problem we change "StorageType" so that Lucene does remember the values of Multilist fields when it indexes them.</p>
-					<p>That lets us trade off a slightly larger index size against those extra Sitecore API calls for better performance.</p>
-					<p>With that config change made, you can build an index to search later...</p>
-					<h2>Code</h2>
-					<p>For the purposes of this simple example, the UI code is a normal ASP.Net User Control. (With the usual caveat of skipping over good patterns like error handling, Glass etc) However other approaches to building the UI are fine too – there's nothing stopping you from building an equivalent to this using MVC UI or your favourite patterns.</p>
-					<p>The code for the UI control needs to do a series of simple operations for this to work. It needs to load the configuration, build a search query, run it, generate the data for our facets, render the facets and then render the results. Lets walk through those in turn:</p>
-					<p>Earlier I said that the configuration was going to be passed to the control via its data source. Hence we can load the configuration item like so:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string[] loadConfig()
+
+    
+    <!-- 06/07/2022 21:14:47 -->
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="nav -mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="nav hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="nav -mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-4 pb-1">
+        Faceted Search in Sitecore 6.6
+        </h1>
+            <div class="meta">Published 09 June 2014</div>
+                <div class="meta">Updated 25 August 2016</div>
+            <div class="flex py-1">
+                    <a href="/tags/c/" class="p-1 mr-1 bg-gray-100 rounded-md"> C#</a>
+                    <a href="/tags/lucene/" class="p-1 mr-1 bg-gray-100 rounded-md"> Lucene</a>
+                    <a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/ui/" class="p-1 mr-1 bg-gray-100 rounded-md"> UI</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>Last week I spoke at the London Sitecore Technical User Group, and discussed my experiences working on a project that had to provide a Faceted Search UI in Sitecore 6.6. As part of my example, I talked about how you can build Facets using Lucene when you don't have access to the newer search APIs available in Sitecore 7.x, and about how you can make your search UI configurable by editors to improve their user experience. And I said I'd post my example code and explanation. So here goes:<!--more--></p>
+<p>Imagine you want to sell t-shirts from your Sitecore website. To help people find the t-shirt they want on your site, you want to provide a search interface where they can filter your products using aspects of your metadata – say Size and Colour. And you want to allow your content editors to control the Facet UI that lets people filter your products. How might you go about that?</p>
+<h2>Data templates</h2>
+<p>The first step in filtering t-shirts, is that you need a data template to represent a t-shirt. We can set up a simple template like so:</p>
+<p><a href="/img/2014/2014-06-tshirt-template.png" target="_blank"><img alt="T-shirt Template" src="/img/2014/2014-06-tshirt-template.png"></a></p>
+<p>There are two sets of fields here. The Content Data region has the normal rich text and images for displaying the t-shirt. The Facet Metadata region has the metadata that we'll use for the filtering. I've created two fields here to represent colour and size – and set them up as Multilists so that editors can pick the appropriate values. The values they can choose from are set up as items elsewhere in the content tree.</p>
+<p><a href="/img/2014/2014-06-tshirt-meta.png" target="_blank"><img alt="T-shirt Metadata" src="/img/2014/2014-06-tshirt-meta.png"></a></p>
+<p>A series of values have been set up for size and colour so editors can pick from them, as well as a set of example t-shirt items for us to search over with the following code. And with that test data in place, we can think about how to search them.</p>
+<p>If we want to allow editors to modify the set of facet filters available in a particular search, then we need a way to represent a facet inside Sitecore. Hence another data template:</p>
+<p><a href="/img/2014/2014-06-facet1.png" target="_blank"><img alt="Facet Template" src="/img/2014/2014-06-facet1.png"></a></p>
+<p>For this simple example we need only one field here. It will contain the name of the Sitecore field that we want to build a facet from. With that template we can then set up example facet definition items for each of the Colour and Size metadata fields we defined earlier. For example, the &quot;Colours Facet&quot; item needs the value &quot;Colour&quot; in its &quot;SearchIndexField&quot; field.</p>
+<p>By describing facets in this way you will be able to create new facets later without needing to change the code. In a real-world example you would have other fields on these items. Things like display text for the name of the facet, or data to describe the rendering or sorting strategies for this particular facet would be common examples.</p>
+<p>With those set up, the next thing you need is a data template to describe the set of facets to use in a particular search:</p>
+<p><a href="/img/2014/2014-06-query.png" target="_blank"><img alt="Query Template" src="/img/2014/2014-06-query.png"></a></p>
+<p>For our simple example we need only one field – a multilist to let editors pick from the set of facet definition items we defined above. We can create an example query definition item from this template, and select both our Colour and Size facet definitions. This &quot;TShirtsQuery&quot; item will be the data source of our UI control for the searching.</p>
+<p>For this example, the UI control is a simple Sublayout, with an ASP.Net User Control that we'll see code for later. The sublayout can be be bound to a page and have its data source set to the item above.</p>
+<h2>Search Index</h2>
+<p>In order to run a search, you need a Lucene index to query against. For Sitecore 6.6 projects a helpful shortcut to setting up an easy to configure index is to nip over to GitHub and <a href="https://github.com/sitecorian/SitecoreSearchContrib" target="_blank" rel="noopener noreferrer">grab yourself a copy of the Sitecore SearchContrib project</a>. This includes a load of useful code for speeding up search work, but for the purposes of this demo, all we need is the <a href="https://github.com/sitecorian/SitecoreSearchContrib/tree/master/scSearchContrib.Crawler" target="_blank" rel="noopener noreferrer">scSearchContrib.Crawler</a> part of the code. Grab this code, build it against your particular versions of Sitecore and Lucene. You can then drop the binaries into your website's bin folder and <a href="https://github.com/sitecorian/SitecoreSearchContrib/blob/master/scSearchContrib.Crawler/App_Config/Include/scSearchContrib.Crawler.config" target="_blank" rel="noopener noreferrer">grab yourself a copy of the example search configuration file</a> that is included in this project and drop it into your website's config include folder.</p>
+<p>The example config is mostly fine for this example. You need to note that it creates an index named &quot;demo&quot;. But it requires one change to be made. You need to find the data that defines how the Multilist fields are indexed, and change the &quot;StorageType&quot; attribute to &quot;Yes&quot;:</p>
+<p><a href="/img/2014/2014-06-index.png" target="_blank"><img alt="Index" src="/img/2014/2014-06-index.png"></a></p>
+<p>Why do you need to make this change? Well when the default configuration of Lucene here builds an index it sets up a collection of complex data structures that it uses for efficient searching. But while the index remembers the Sitecore IDs of items, it doesn't remember any of the other data it's been processing. For &quot;normal&quot; searches that's fine – you just use the Sitecore APIs to load the items your search index matches in order to do further processing.</p>
+<p>But here, building facets, we need to process lots of items that we won't end up showing in our on-screen results in order to get all the facet values. (You'll see this in the code later on) That would be very inefficient via the Sitecore APIs. Item loading is much slower than reading information from the Lucene index. So to get around that problem we change &quot;StorageType&quot; so that Lucene does remember the values of Multilist fields when it indexes them.</p>
+<p>That lets us trade off a slightly larger index size against those extra Sitecore API calls for better performance.</p>
+<p>With that config change made, you can build an index to search later...</p>
+<h2>Code</h2>
+<p>For the purposes of this simple example, the UI code is a normal ASP.Net User Control. (With the usual caveat of skipping over good patterns like error handling, Glass etc) However other approaches to building the UI are fine too – there's nothing stopping you from building an equivalent to this using MVC UI or your favourite patterns.</p>
+<p>The code for the UI control needs to do a series of simple operations for this to work. It needs to load the configuration, build a search query, run it, generate the data for our facets, render the facets and then render the results. Lets walk through those in turn:</p>
+<p>Earlier I said that the configuration was going to be passed to the control via its data source. Hence we can load the configuration item like so:</p>
+<pre><code class="language-csharp">private string[] loadConfig()
 {
     string cfgItem = (this.Parent as Sublayout).DataSource;
     Item cfg = Sitecore.Context.Database.GetItem(cfgItem);
 
-    string facets = cfg.Fields["Facets"].Value;
+    string facets = cfg.Fields[&quot;Facets&quot;].Value;
 
     string[] config = null;
 
@@ -213,31 +193,28 @@
     {
         config = facets.Split('|')
             .Select(id =&gt; Sitecore.Context.Database.GetItem(id))
-            .Select(itm =&gt; itm.Fields["SearchIndexField"].Value)
+            .Select(itm =&gt; itm.Fields[&quot;SearchIndexField&quot;].Value)
             .Select(f =&gt; f.ToLowerInvariant())
             .ToArray();
     }
 
     return config;
 }
-
-					</pre>
-					<p>The data source item contains one field, so we extract its value. It's a multilist, so the value is a string of GUIDs separated with pipe characters. So to transform this data into something more usable we can use a Linq expression to process it. (You don't have to use Linq in your code – you can use whatever way of writing this you prefer – and if you used an ORM like Glass you'd find a lot of this method was done for you) We break it using the pipe character, and then project each of those IDs into Sitecore items via the API. Each of those items will be one of our Facet definitions – so we can extract the one field that contains from the item, leaving us with a set of field names we can build facets from. Finally these field names get transformed into lowercase, since Lucene works in lowercase most of the time.</p>
-					<p>And at the end of that we have an array containing the names of the fields we want to make facets from.</p>
-					<p>Next is building a query. To do that we need to construct a Lucene expression tree to represent the search we're going to run. We start from a
-						<code>BooleanQuery</code>
-						object and we add a set of required terms to that:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private readonly Guid _template = new Guid("{C5537201-AF56-473B-A614-E5DA9FB5079E}");
+</code></pre>
+<p>The data source item contains one field, so we extract its value. It's a multilist, so the value is a string of GUIDs separated with pipe characters. So to transform this data into something more usable we can use a Linq expression to process it. (You don't have to use Linq in your code – you can use whatever way of writing this you prefer – and if you used an ORM like Glass you'd find a lot of this method was done for you) We break it using the pipe character, and then project each of those IDs into Sitecore items via the API. Each of those items will be one of our Facet definitions – so we can extract the one field that contains from the item, leaving us with a set of field names we can build facets from. Finally these field names get transformed into lowercase, since Lucene works in lowercase most of the time.</p>
+<p>And at the end of that we have an array containing the names of the fields we want to make facets from.</p>
+<p>Next is building a query. To do that we need to construct a Lucene expression tree to represent the search we're going to run. We start from a <code>BooleanQuery</code> object and we add a set of required terms to that:</p>
+<pre><code class="language-csharp">private readonly Guid _template = new Guid(&quot;{C5537201-AF56-473B-A614-E5DA9FB5079E}&quot;);
 
 private BooleanQuery buildQuery(string[] facets)
 {
     BooleanQuery query = new BooleanQuery();
 
-    query.Add(new TermQuery(new Term("_template", ShortID.Encode(_template).ToLowerInvariant())), BooleanClause.Occur.MUST);
+    query.Add(new TermQuery(new Term(&quot;_template&quot;, ShortID.Encode(_template).ToLowerInvariant())), BooleanClause.Occur.MUST);
 
     foreach (string facet in facets)
     {
-        string key = Request.Form.AllKeys.Where(k =&gt; k.EndsWith("$" + facet)).FirstOrDefault();
+        string key = Request.Form.AllKeys.Where(k =&gt; k.EndsWith(&quot;$&quot; + facet)).FirstOrDefault();
         if (!string.IsNullOrWhiteSpace(key))
         {
             string value = Request.Form[key];
@@ -250,18 +227,15 @@ private BooleanQuery buildQuery(string[] facets)
 
     return query;
 }
-
-					</pre>
-					<p>The first term(s) to add are those which will restrict the overall set of results we're working on. Here we've added a search term to make sure we only ever return items whose template is our T-shirt template. In real code you'd probably add things like language or path terms here as well.</p>
-					<p>The template's ID is defined in the code. Note how we encode the ID of the template as a
-						<code>ShortID</code>
-						to pass it to Lucene. Lucene represents IDs as ShortIDs (basically a GUID with the hyphens and braces removed) so we need to make sure we pass them in that format (and in lowercase) to make sure we get the matches we want.</p>
-					<p>The rest of this method iterates our configuration array and considers whether to add a term for each of the facets defined.</p>
-					<p>When we run this bit of code we have no UI controls defined to get selected values from. Hence we have to look in the HTML form's postback data directly. Later on we'll make sure the form elements have their IDs set to the names of our facets – so here we look to see if we can find an item whose name matches our current facet. If we find one, and if that ID has a value in the postback data then we add a term to our search. If we don't find the name or a value, we skip over it as the user is not restricting results by this facet.</p>
-					<p>And once we've been through all of the config we have a search query to run. That can be done with the following method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SearchResultCollection runQuery(BooleanQuery query)
+</code></pre>
+<p>The first term(s) to add are those which will restrict the overall set of results we're working on. Here we've added a search term to make sure we only ever return items whose template is our T-shirt template. In real code you'd probably add things like language or path terms here as well.</p>
+<p>The template's ID is defined in the code. Note how we encode the ID of the template as a <code>ShortID</code> to pass it to Lucene. Lucene represents IDs as ShortIDs (basically a GUID with the hyphens and braces removed) so we need to make sure we pass them in that format (and in lowercase) to make sure we get the matches we want.</p>
+<p>The rest of this method iterates our configuration array and considers whether to add a term for each of the facets defined.</p>
+<p>When we run this bit of code we have no UI controls defined to get selected values from. Hence we have to look in the HTML form's postback data directly. Later on we'll make sure the form elements have their IDs set to the names of our facets – so here we look to see if we can find an item whose name matches our current facet. If we find one, and if that ID has a value in the postback data then we add a term to our search. If we don't find the name or a value, we skip over it as the user is not restricting results by this facet.</p>
+<p>And once we've been through all of the config we have a search query to run. That can be done with the following method:</p>
+<pre><code class="language-csharp">private SearchResultCollection runQuery(BooleanQuery query)
 {
-    Index index = Sitecore.Search.SearchManager.GetIndex("demo");
+    Index index = Sitecore.Search.SearchManager.GetIndex(&quot;demo&quot;);
 
     using (IndexSearchContext isc = index.CreateSearchContext())
     {
@@ -269,16 +243,11 @@ private BooleanQuery buildQuery(string[] facets)
         return hits.FetchResults(0, 10000);
     }
 }
-
-					</pre>
-					<p>First we ask Sitecore to give us the index named "demo" (remember the name from the config file earlier?) and from that we create a context for searching. We use that context to run our query and give us back a set of "hits". Note the second parameter to the
-						<code>Search()</code>
-						method - it's a number for how many results Lucene will look at before it gives up the search. To generate the right set of facets you must ensure what ever you set this to is bigger than the maximum number of results you might have. If Lucene discards any matching results then your set of facets might be wrong....</p>
-					<p>You can then transform your hits into proper results. The two integer parameters of
-						<code>FetchResults()</code>
-						are usually used for paginating your results. However here we need all the results - so these parameters must also be set to return everything.</p>
-					<p>From the results returned we can now build the data for the facets we'll display. To make the code a bit simpler we'll define a quick helper data type here to contain the data for each facet:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FacetData
+</code></pre>
+<p>First we ask Sitecore to give us the index named &quot;demo&quot; (remember the name from the config file earlier?) and from that we create a context for searching. We use that context to run our query and give us back a set of &quot;hits&quot;. Note the second parameter to the <code>Search()</code> method - it's a number for how many results Lucene will look at before it gives up the search. To generate the right set of facets you must ensure what ever you set this to is bigger than the maximum number of results you might have. If Lucene discards any matching results then your set of facets might be wrong....</p>
+<p>You can then transform your hits into proper results. The two integer parameters of <code>FetchResults()</code> are usually used for paginating your results. However here we need all the results - so these parameters must also be set to return everything.</p>
+<p>From the results returned we can now build the data for the facets we'll display. To make the code a bit simpler we'll define a quick helper data type here to contain the data for each facet:</p>
+<pre><code class="language-csharp">public class FacetData
 {
     public string Name { get; private set; }
     public IEnumerable&lt;ListItem&gt; Values { get; private set; }
@@ -289,13 +258,10 @@ private BooleanQuery buildQuery(string[] facets)
         Values = values;
     }
 }
-
-					</pre>
-					<p>Each of our facets will have a name, and a list of items to display. We're using .Net's standard
-						<code>ListItem</code>
-						class to represent each facet value as we'll bind these to a Dropdown list later.</p>
-					<p>So, to build our fact data we need to process the search results with:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable&lt;FacetData&gt; buildFilterData(string[] facets, SearchResultCollection results)
+</code></pre>
+<p>Each of our facets will have a name, and a list of items to display. We're using .Net's standard <code>ListItem</code> class to represent each facet value as we'll bind these to a Dropdown list later.</p>
+<p>So, to build our fact data we need to process the search results with:</p>
+<pre><code class="language-csharp">private IEnumerable&lt;FacetData&gt; buildFilterData(string[] facets, SearchResultCollection results)
 {
     List&lt;FacetData&gt; filters = new List&lt;FacetData&gt;();
 
@@ -317,88 +283,63 @@ private BooleanQuery buildQuery(string[] facets)
 
     return filters;
 }
-
-					</pre>
-					<p>We iterate the set of facets in our configuration. For each one we use a Linq expression to process the search results into a set of facet data. For each Sitecore field name in our configuration we ask Lucene to give us back all the values it found in the results for that column. This call to
-						<code>GetValues()</code>
-						is the reason for the StorageType config change earlier. If you forget that update, then this method call will return nothing.    But for us it's going to return a collection of values. It's a collection for each search result because Lucene gives you back the value of the multilist fields already split by the pipe character. So we discard any empty ones (The editor may not have applied any metadata to this field for this item) and we then call
-						<code>SelectMany()</code>. That's a Linq method that will flatten the
-						<code>IEnumerable&lt;IEnumerable&lt;string&gt;&gt;</code>
-						into the easier to process
-						<code>IEnumerable&lt;string&gt;. And then we can call Distinct()</code>
-						to ensure we have each ID only once.</p>
-					<p>Then we project the IDs into Items again - to get a set of the Size or Colour metadata items we defined earlier. And the we can project each of these into a
-						<code>ListItem</code>
-						with a sensible display name from the item, and the value set to the item's ID transformed into another lowercase ShortID. And finally we sort the items into alphabetical order.</p>
-					<p>With that data we can set up an instance of our
-						<code>FacetData</code>
-						with these values, and go around to process the next one.</p>
-					<p>And we end up with an
-						<code>IEnumerable&lt;FacetData&gt;</code>
-						that we can bind to our UI.</p>
-					<p>To display the facets we need some UI to bind the data to:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;h2&gt;Filters&lt;/h2&gt;
-&lt;asp:Repeater runat="server" ID="filterRepeater"&gt;
+</code></pre>
+<p>We iterate the set of facets in our configuration. For each one we use a Linq expression to process the search results into a set of facet data. For each Sitecore field name in our configuration we ask Lucene to give us back all the values it found in the results for that column. This call to <code>GetValues()</code> is the reason for the StorageType config change earlier. If you forget that update, then this method call will return nothing.    But for us it's going to return a collection of values. It's a collection for each search result because Lucene gives you back the value of the multilist fields already split by the pipe character. So we discard any empty ones (The editor may not have applied any metadata to this field for this item) and we then call <code>SelectMany()</code>. That's a Linq method that will flatten the <code>IEnumerable&lt;IEnumerable&lt;string&gt;&gt;</code> into the easier to process <code>IEnumerable&lt;string&gt;. And then we can call Distinct()</code> to ensure we have each ID only once.</p>
+<p>Then we project the IDs into Items again - to get a set of the Size or Colour metadata items we defined earlier. And the we can project each of these into a <code>ListItem</code> with a sensible display name from the item, and the value set to the item's ID transformed into another lowercase ShortID. And finally we sort the items into alphabetical order.</p>
+<p>With that data we can set up an instance of our <code>FacetData</code> with these values, and go around to process the next one.</p>
+<p>And we end up with an <code>IEnumerable&lt;FacetData&gt;</code> that we can bind to our UI.</p>
+<p>To display the facets we need some UI to bind the data to:</p>
+<pre><code class="language-xml">&lt;h2&gt;Filters&lt;/h2&gt;
+&lt;asp:Repeater runat=&quot;server&quot; ID=&quot;filterRepeater&quot;&gt;
     &lt;ItemTemplate&gt;
         &lt;div&gt;
-            &lt;asp:DropDownList runat="server" ID="filter" AutoPostBack="true" /&gt;
+            &lt;asp:DropDownList runat=&quot;server&quot; ID=&quot;filter&quot; AutoPostBack=&quot;true&quot; /&gt;
         &lt;/div&gt;
     &lt;/ItemTemplate&gt;
 &lt;/asp:Repeater&gt;
-
-					</pre>
-					<p>Here we have a simple repeater to create a set of dropdown lists with auto-postback set to true. We set up a standard data binding for them, and for each item we run the following code to do the bind:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void filterRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
+</code></pre>
+<p>Here we have a simple repeater to create a set of dropdown lists with auto-postback set to true. We set up a standard data binding for them, and for each item we run the following code to do the bind:</p>
+<pre><code class="language-csharp">private void filterRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
 {
     if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
     {
         FacetData data = e.Item.DataItem as FacetData;
 
-        DropDownList ddl = e.Item.FindControl("filter") as DropDownList;
+        DropDownList ddl = e.Item.FindControl(&quot;filter&quot;) as DropDownList;
         ddl.ID = data.Name;
 
         var vals = new List&lt;ListItem&gt;();
-        vals.Add(new ListItem("-- All " + data.Name + " --", string.Empty));
+        vals.Add(new ListItem(&quot;-- All &quot; + data.Name + &quot; --&quot;, string.Empty));
         vals.AddRange(data.Values);
 
         ddl.DataSource = vals;
-        ddl.DataTextField = "Text";
-        ddl.DataValueField = "Value";
+        ddl.DataTextField = &quot;Text&quot;;
+        ddl.DataValueField = &quot;Value&quot;;
         ddl.DataBind();
     }
 }
-
-					</pre>
-					<p>Two things of note here. First is that when we find the
-						<code>DropDownList</code>
-						we set its ID to match the name of the current facet so we can find it in the query definition above. The second is that the data we generated for our facet includes all the real values, but id doesn't include a "don't filter by this" option. So we add a few lines to add this to the top of our list before we do the data bind.</p>
-					<p>Now next you'd probably want to paginate your results. I skipped over that in my demo to save time, but you could use Linq's
-						<code>Skip()</code>
-						and
-						<code>Take()</code>
-						operations, or you could refactor your code to be able to call the
-						<code>FetchResults()</code>
-						method on your search hits again instead.</p>
-					<p>And with your page of results sorted out, you can bind that to your UI. I created the following HTML in order display the items:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;h2&gt;Results&lt;/h2&gt;
-&lt;asp:Repeater runat="server" ID="resultRepeater"&gt;
+</code></pre>
+<p>Two things of note here. First is that when we find the <code>DropDownList</code> we set its ID to match the name of the current facet so we can find it in the query definition above. The second is that the data we generated for our facet includes all the real values, but id doesn't include a &quot;don't filter by this&quot; option. So we add a few lines to add this to the top of our list before we do the data bind.</p>
+<p>Now next you'd probably want to paginate your results. I skipped over that in my demo to save time, but you could use Linq's <code>Skip()</code> and <code>Take()</code> operations, or you could refactor your code to be able to call the <code>FetchResults()</code> method on your search hits again instead.</p>
+<p>And with your page of results sorted out, you can bind that to your UI. I created the following HTML in order display the items:</p>
+<pre><code class="language-xml">&lt;h2&gt;Results&lt;/h2&gt;
+&lt;asp:Repeater runat=&quot;server&quot; ID=&quot;resultRepeater&quot;&gt;
     &lt;HeaderTemplate&gt;&lt;ul&gt;&lt;/HeaderTemplate&gt;
     &lt;ItemTemplate&gt;
         &lt;li&gt;
-            &lt;sc:Image runat="server" id="image" MaxWidth="50" Field="Image" style="display:inline-block;" /&gt;
-            &lt;div style="display:inline-block"&gt;
-                &lt;sc:Text runat="server" id="title" Field="Title" /&gt;
+            &lt;sc:Image runat=&quot;server&quot; id=&quot;image&quot; MaxWidth=&quot;50&quot; Field=&quot;Image&quot; style=&quot;display:inline-block;&quot; /&gt;
+            &lt;div style=&quot;display:inline-block&quot;&gt;
+                &lt;sc:Text runat=&quot;server&quot; id=&quot;title&quot; Field=&quot;Title&quot; /&gt;
                 &lt;br /&gt;
-                &lt;sc:Text runat="server" id="description" Field="Description" /&gt;
+                &lt;sc:Text runat=&quot;server&quot; id=&quot;description&quot; Field=&quot;Description&quot; /&gt;
             &lt;/div&gt;
         &lt;/li&gt;
     &lt;/ItemTemplate&gt;
     &lt;FooterTemplate&gt;&lt;/ul&gt;&lt;/FooterTemplate&gt;
 &lt;/asp:Repeater&gt;
-
-					</pre>
-					<p>And the code to do the binding is fairly simple:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void resultRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
+</code></pre>
+<p>And the code to do the binding is fairly simple:</p>
+<pre><code class="language-csharp">private void resultRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
 {
     if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
     {
@@ -406,20 +347,19 @@ private BooleanQuery buildQuery(string[] facets)
 
         Item itm = sr.GetObject&lt;Item&gt;();
 
-        var image = e.Item.FindControl("image") as Sitecore.Web.UI.WebControls.Image;
-        var title = e.Item.FindControl("title") as Sitecore.Web.UI.WebControls.Text;
-        var description = e.Item.FindControl("description") as Sitecore.Web.UI.WebControls.Text;
+        var image = e.Item.FindControl(&quot;image&quot;) as Sitecore.Web.UI.WebControls.Image;
+        var title = e.Item.FindControl(&quot;title&quot;) as Sitecore.Web.UI.WebControls.Text;
+        var description = e.Item.FindControl(&quot;description&quot;) as Sitecore.Web.UI.WebControls.Text;
 
         image.Item = itm;
         title.Item = itm;
         description.Item = itm;
     }
 }
-
-					</pre>
-					<p>Whilst earlier in the code we use the SortageType config to be able to get data back via Lucene rather than loading items, that approach doesn't work so well here. The data Lucene gives you back has been parsed and had some of the noise discarded. Hence can discard markup in your rich text - so it's better to load the items for the set of results you're going to show on the page.</p>
-					<p>So to wrap it up, the code that binds all these methods together is as follows:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Page_Load(object sender, EventArgs e)
+</code></pre>
+<p>Whilst earlier in the code we use the SortageType config to be able to get data back via Lucene rather than loading items, that approach doesn't work so well here. The data Lucene gives you back has been parsed and had some of the noise discarded. Hence can discard markup in your rich text - so it's better to load the items for the set of results you're going to show on the page.</p>
+<p>So to wrap it up, the code that binds all these methods together is as follows:</p>
+<pre><code class="language-csharp">protected void Page_Load(object sender, EventArgs e)
 {
     string[] facets = loadConfig();
 
@@ -441,130 +381,102 @@ private BooleanQuery buildQuery(string[] facets)
     resultRepeater.ItemDataBound += resultRepeater_ItemDataBound;
     resultRepeater.DataBind();
 }
+</code></pre>
+<p>And you can compile this code, and run it to get the configurable faceted UI:</p>
+<p><a href="/img/2014/2014-06-ui.png" target="_blank"><img alt="UI" src="/img/2014/2014-06-ui.png"></a></p>
+<p>There are dropdowns for each facet defined in the configuration, and they contain all the valid metadata options for the current results. Hence no matter what you choose, you can't get zero results. Then we're displaying the Lucene query for debug purposes - and here it has a term for the template and for each of our facets. And finally we show only the results that the set of facets match...</p>
+<h2>Downloads</h2>
+<p>If you want to grab a copy of this to play with then you can <a href="/files/FacetedSearch-Package.zip" target="_blank">download the Sitecore content items</a> (Add your own UI component and page to display it all) and <a href="/files/FacetedSearch-Code.zip" target="_blank">download the C# to build yourself</a>, combine with the SearchContrib code described above and experiment on your own test instance of Sitecore.</p>
 
-					</pre>
-					<p>And you can compile this code, and run it to get the configurable faceted UI:</p>
-					<p>
-						<a href="/img/2014/2014-06-ui.png" target="_blank">
-							<img alt="UI" src="/img/2014/2014-06-ui.png">
-						</a>
-					</p>
-					<p>There are dropdowns for each facet defined in the configuration, and they contain all the valid metadata options for the current results. Hence no matter what you choose, you can't get zero results. Then we're displaying the Lucene query for debug purposes - and here it has a term for the template and for each of our facets. And finally we show only the results that the set of facets match...</p>
-					<h2>Downloads</h2>
-					<p>If you want to grab a copy of this to play with then you can
-						<a href="/files/FacetedSearch-Package.zip" target="_blank">download the Sitecore content items</a>
-						(Add your own UI component and page to display it all) and
-						<a href="/files/FacetedSearch-Code.zip" target="_blank">download the C# to build yourself</a>, combine with the SearchContrib code described above and experiment on your own test instance of Sitecore.</p>
-				</div>
-				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<section class="mvp">
-						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-						<div class="bg-white mb-2 p-2">
-							<a href="/mvp">
-								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Top Tags</h3>
-						<div class="bg-white p-2 flex flex-wrap">
-							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Sitecore (202)</a>
-							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								C# (47)</a>
-							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								PowerShell (31)</a>
-							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Installation (23)</a>
-							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Solr (15)</a>
-							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								General (14)</a>
-							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								UI (14)</a>
-							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Docker (12)</a>
-							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Coveo (12)</a>
-							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Packages (11)</a>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/tags" role="button">All Tags
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Recent Months</h3>
-						<div class="bg-white p-2">
-							<div>
-								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
-							</div>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/posts" role="button">All Posts
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Twitter</h3>
-						<div class="bg-white mb-2 p-2">
-							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-						</div>
-					</section>
-				</div>
-			</div>
-		</div>
-		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-			<div class="flex-1 lg:flex-1 text-center lg:text-left">
-				<div>©
-					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
-					2014-2022</div>
-			</div>
-			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
-				<br>
-			</div>
-			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-				<li class="inline-block">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-					</svg>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-				</li>
-			</ul>
-		</footer>
-		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-				<div class="w-full text-lg">
-					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-				</div>
-				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-			</div>
-		</div>
-		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-		<script type="text/javascript">
+
+            </div>
+            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section class="mvp">
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (202)</a>
+                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
+                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
+                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
+                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
+                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
+                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
+                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
+                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
+    </div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
+    </div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">
+                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+            </div>
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -573,16 +485,21 @@ private BooleanQuery buildQuery(string[] facets)
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
-		</script>
-		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-		<script>
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
     
-		</script>
-	</body>
-</html>
+
+    
+
+
+
+</body></html>

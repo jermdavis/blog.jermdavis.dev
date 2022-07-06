@@ -1,26 +1,31 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/v10-1s-new-database-update-strategy">
-		<meta name="description" content="One of the interesting things that's arrived with Sitecore v10.1 is a new approach to how items get updated when you change versions. This change is aimed at containerised deployments, and I'm in the middle of a containerised project. So I figured I should take a look...">
-		<meta property="og:description" content="One of the interesting things that's arrived with Sitecore v10.1 is a new approach to how items get updated when you change versions. This change is aimed at containerised deployments, and I'm in the middle of a containerised project. So I figured I should take a look...">
-		<meta name="keywords" content="Sitecore, Upgrade">
-		<meta name="author" content="Jeremy Davis">
-		<meta name="copyright" content="Jeremy Davis">
-		<title>Jeremy Davis - v10.1's new database update&nbsp;strategy</title>
-		<meta name="robots" content="index, follow">
-		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-		<meta name="application-name" content="Jeremy Davis">
-		<meta name="msapplication-tooltip" content="Jeremy Davis">
-		<meta name="msapplication-starturl" content="/">
-		<link rel="manifest" href="/manifest.webmanifest">
-		<meta property="og:title" content="Jeremy Davis - v10.1&amp;#x27;s new database update&amp;#xA0;strategy">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/v10-1s-new-database-update-strategy-social.jpg">
-		<script type="application/ld+json">
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2021/v10-1s-new-database-update-strategy">
+        <meta name="description" content="One of the interesting things that&amp;#x27;s arrived with Sitecore v10.1 is a new approach to how items get updated when you change versions. This change is aimed at containerised deployments, and I&amp;#x27;m in the middle of a containerised project. So I figured I should take a look...">
+        <meta property="og:description" content="One of the interesting things that&amp;#x27;s arrived with Sitecore v10.1 is a new approach to how items get updated when you change versions. This change is aimed at containerised deployments, and I&amp;#x27;m in the middle of a containerised project. So I figured I should take a look...">
+            <meta name="keywords" content="Sitecore, Upgrade">
+        <meta name="author" content="Jeremy Davis">
+        <meta name="copyright" content="Jeremy Davis">
+
+    <title>Jeremy Davis - v10.1&#x27;s new database update&#xA0;strategy</title> 
+
+        <meta name="robots" content="index, follow">
+
+            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+
+    <meta name="application-name" content="Jeremy Davis">
+    <meta name="msapplication-tooltip" content="Jeremy Davis">
+    <meta name="msapplication-starturl" content="/">
+    <link rel="manifest" href="/manifest.webmanifest">
+
+    
+    <meta property="og:title" content="Jeremy Davis - v10.1&amp;#x27;s new database update&amp;#xA0;strategy">
+        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/v10-1s-new-database-update-strategy-social.jpg">
+    <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -35,148 +40,137 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    
-		</script>
-		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/v10-1s-new-database-update-strategy">
-		<meta property="og:type" content="website">
-		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-		<link href="/scss/tailwind.css" rel="stylesheet">
-		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-		<link href="/scss/site-theme.css" rel="stylesheet">
-		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-		
-		<!-- 04/07/2022 10:25:52 -->
-	</head>
-	<body class="max-w-7xl mx-auto">
-		<div class="relative bg-white" x-data="{ open: false }">
-			
-			<!-- desktop -->
-			<div class="px-4 lg:px-6 bg-gray-100">
-				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-					<div class="flex justify-start lg:w-0 flex-1">
-						<a href="/">
-							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-						</a>
-						<div class="mx-2">
-							<div class="text-3xl">Jeremy Davis</div>
-							<div class="text-lg">Sitecore, C# and web development</div>
-						</div>
-					</div>
-					<div class="nav -mr-2 -my-2 lg:hidden">
-						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-							<span class="sr-only">Open menu</span>
-							
-							<!-- Heroicon name: outline/menu -->
-							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-							</svg>
-						</button>
-					</div>
-					<nav class="nav hidden lg:flex space-x-10">
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-					</nav>
-				</div>
-			</div>
-			
-			<!--Mobile menu, show/hide based on mobile menu state.-->
-			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-					<div class="pt-5 pb-6 px-5">
-						<div class="flex items-center justify-between">
-							<div class="flex">
-								<a href="/">
-									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-								</a>
-								<div class="mx-2">
-									<div class="text-2xl">Jeremy Davis</div>
-									<div class="text-base">Sitecore, C# and web development</div>
-								</div>
-							</div>
-							<div class="nav -mr-2">
-								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-									<span class="sr-only">Close menu</span>
-									
-									<!-- Heroicon name: outline/x -->
-									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-									</svg>
-								</button>
-							</div>
-						</div>
-					</div>
-					<div class="nav py-6 px-5 pt-0">
-						<nav class=" gap-x-8">
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
-							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
-						</nav>
-					</div>
-				</div>
-			</div>
-		</div>
-		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-			<div class="post-heading">
-				<h1 class="text-5xl mb-4 pb-1">
-					v10.1's new database update&nbsp;strategy
-				</h1>
-				<div class="meta">Published 01 March 2021</div>
-				<div class="flex py-1">
-					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
-					<a href="/tags/upgrade/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Upgrade</a>
-				</div>
-			</div>
-		</header>
-		<div class="py-2 lg:pl-3">
-			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
-					<p>One of the interesting things that's arrived with Sitecore v10.1 is a new approach to how items get updated when you change versions. This change is aimed at containerised deployments, and I'm in the middle of a containerised project. So I figured I should take a look...
-						<!--more-->
-					</p>
-					<h2>What's new?</h2>
-					<p>If you fire up a copy of Sitecore v10.1 and look in its SQL content databases, you won't see quite what you're used to. Try connecting SQL Management Studio to the master database and selecting the item rows with a query like this:</p>
-					<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">SELECT * FROM [Sitecore.Master].[dbo].[Items]
+    </script>
+<meta property="og:url" content="https://blog.jermdavis.dev/posts/2021/v10-1s-new-database-update-strategy">
+<meta property="og:type" content="website">
 
-					</pre>
-					<p>You'll see a surprisingly small result set:</p>
-					<p>
-						<a href="/img/2021/2021-02-rows.png" target="_blank">
-							<img alt="Database Rows" src="/img/2021/2021-02-rows.png">
-						</a>
-					</p>
-					<p>Two rows? What happened to all the items records? Because when you look in the content tree, it all looks pretty normal:</p>
-					<p>
-						<a href="/img/2021/2021-02-contenteditor.png" target="_blank">
-							<img alt="Content Editor" src="/img/2021/2021-02-contenteditor.png">
-						</a>
-					</p>
-					<p>There's certainly more than two items there, so what's going on? How come there appear to be items in the content tree, when the database looks empty?</p>
-					<h2>So what's going on?</h2>
-					<p>What's you're seeing here is actually a clever approach Sitecore are taking to improving the process for upgrades. And it may also make packaging your custom modules into containerised projects in the future. The reason the database looks empty is because we now have a new "hybrid" data provider for our databases. When you look at Content Editor, you're actually seeing a merge of two things: the rows that actually exist in the database, and serialised items which are read from data files on disk.</p>
-					<p>In a vanilla copy of Sitecore v10.1 you'll find the following new folders and files in the website:</p>
-					<p>
-						<a href="/img/2021/2021-02-files.png" target="_blank">
-							<img alt="Files" src="/img/2021/2021-02-files.png">
-						</a>
-					</p>
-					<p>And if you look into the config for this release, you'll see that your database definitions have changed a bit. For example, the master database's configuration now includes this:</p>
-					<pre data-enlighter-highlight="5" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;database id="master" singleInstance="true" type="Sitecore.Data.DefaultDatabase, Sitecore.Kernel" role:require="Standalone or Reporting or Processing or ContentManagement"&gt;
-  &lt;param desc="name"&gt;$(id)&lt;/param&gt;
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+
+    <link href="/scss/tailwind.css" rel="stylesheet">
+
+    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+    <link href="/scss/site-theme.css" rel="stylesheet">
+
+
+    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+
+    
+
+    
+    <!-- 06/07/2022 21:14:37 -->
+</head>
+
+<body class="max-w-7xl mx-auto">
+    <div class="relative bg-white" x-data="{ open: false }">
+
+    <!-- desktop -->
+    <div class="px-4 lg:px-6 bg-gray-100">
+        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+
+            <div class="flex justify-start lg:w-0 flex-1">
+                <a href="/">
+                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                </a>
+                <div class="mx-2">
+                    <div class="text-3xl">Jeremy Davis</div>
+                    <div class="text-lg">Sitecore, C# and web development</div>
+                </div>
+            </div>
+
+            <div class="nav -mr-2 -my-2 lg:hidden">
+                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <span class="sr-only">Open menu</span>
+                    <!-- Heroicon name: outline/menu -->
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="nav hidden lg:flex space-x-10">
+<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
+
+        </div>
+    </div>
+
+    <!--Mobile menu, show/hide based on mobile menu state.-->
+    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+
+        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+            <div class="pt-5 pb-6 px-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex">
+                        <a href="/">
+                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+                        </a>
+                        <div class="mx-2">
+                            <div class="text-2xl">Jeremy Davis</div>
+                            <div class="text-base">Sitecore, C# and web development</div>
+                        </div>
+                    </div>
+
+                    <div class="nav -mr-2">
+                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                            <span class="sr-only">Close menu</span>
+                            <!-- Heroicon name: outline/x -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav py-6 px-5 pt-0">
+                <nav class=" gap-x-8">
+<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+    <div class="post-heading">
+        <h1 class="text-5xl mb-4 pb-1">
+        v10.1's new database update strategy
+        </h1>
+            <div class="meta">Published 01 March 2021</div>
+            <div class="flex py-1">
+                    <a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
+                    <a href="/tags/upgrade/" class="p-1 mr-1 bg-gray-100 rounded-md"> Upgrade</a>
+            </div>
+    </div>
+</header>
+
+    <div class="py-2 lg:pl-3">
+        <div class="lg:flex">
+            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
+                <p>One of the interesting things that's arrived with Sitecore v10.1 is a new approach to how items get updated when you change versions. This change is aimed at containerised deployments, and I'm in the middle of a containerised project. So I figured I should take a look...<!--more--></p>
+<h2>What's new?</h2>
+<p>If you fire up a copy of Sitecore v10.1 and look in its SQL content databases, you won't see quite what you're used to. Try connecting SQL Management Studio to the master database and selecting the item rows with a query like this:</p>
+<pre><code class="language-sql">SELECT * FROM [Sitecore.Master].[dbo].[Items]
+</code></pre>
+<p>You'll see a surprisingly small result set:</p>
+<p><a href="/img/2021/2021-02-rows.png" target="_blank"><img alt="Database Rows" src="/img/2021/2021-02-rows.png"></a></p>
+<p>Two rows? What happened to all the items records? Because when you look in the content tree, it all looks pretty normal:</p>
+<p><a href="/img/2021/2021-02-contenteditor.png" target="_blank"><img alt="Content Editor" src="/img/2021/2021-02-contenteditor.png"></a></p>
+<p>There's certainly more than two items there, so what's going on? How come there appear to be items in the content tree, when the database looks empty?</p>
+<h2>So what's going on?</h2>
+<p>What's you're seeing here is actually a clever approach Sitecore are taking to improving the process for upgrades. And it may also make packaging your custom modules into containerised projects in the future. The reason the database looks empty is because we now have a new &quot;hybrid&quot; data provider for our databases. When you look at Content Editor, you're actually seeing a merge of two things: the rows that actually exist in the database, and serialised items which are read from data files on disk.</p>
+<p>In a vanilla copy of Sitecore v10.1 you'll find the following new folders and files in the website:</p>
+<p><a href="/img/2021/2021-02-files.png" target="_blank"><img alt="Files" src="/img/2021/2021-02-files.png"></a></p>
+<p>And if you look into the config for this release, you'll see that your database definitions have changed a bit. For example, the master database's configuration now includes this:</p>
+<pre><code class="language-xml">&lt;database id=&quot;master&quot; singleInstance=&quot;true&quot; type=&quot;Sitecore.Data.DefaultDatabase, Sitecore.Kernel&quot; role:require=&quot;Standalone or Reporting or Processing or ContentManagement&quot;&gt;
+  &lt;param desc=&quot;name&quot;&gt;$(id)&lt;/param&gt;
   ...
-  &lt;dataProviders hint="list:AddDataProvider"&gt;
-    &lt;dataProvider type="Sitecore.Data.DataProviders.CompositeDataProvider, Sitecore.Kernel"&gt;
-      &lt;param desc="readOnlyDataProviders" hint="list"&gt;
-        &lt;protobufItems type="Sitecore.Data.DataProviders.ReadOnly.Protobuf.ProtobufDataProvider, Sitecore.Kernel"&gt;
-          &lt;filePaths hint="list"&gt;
+  &lt;dataProviders hint=&quot;list:AddDataProvider&quot;&gt;
+    &lt;dataProvider type=&quot;Sitecore.Data.DataProviders.CompositeDataProvider, Sitecore.Kernel&quot;&gt;
+      &lt;param desc=&quot;readOnlyDataProviders&quot; hint=&quot;list&quot;&gt;
+        &lt;protobufItems type=&quot;Sitecore.Data.DataProviders.ReadOnly.Protobuf.ProtobufDataProvider, Sitecore.Kernel&quot;&gt;
+          &lt;filePaths hint=&quot;list&quot;&gt;
             &lt;filePath&gt;$(dataFolder)/items/$(id)&lt;/filePath&gt;
           &lt;/filePaths&gt;
         &lt;/protobufItems&gt;
@@ -185,33 +179,16 @@
   &lt;/dataProviders&gt;
   ...
 &lt;/database&gt;
-
-					</pre>
-					<p>The database has a new data provider type –
-						<code>CompositeDataProvider</code>. It's job is to provide a merge between what's in those disk files and what's in the database. You can see that under the
-						<code>&lt;dataProvider/&gt;</code>
-						element that there is some xml describing where to look for the files, based on the id of the database.</p>
-					<p>The key reason for a merge operation is that if you edit an item that's stored on disk, the resulting changes will get saved in the database. And from then on it's the database item that gets presented back to you in the UI. So the database takes priority. As an example, if I got to
-						<code>/sitecore/content</code>
-						and click the "unprotect" button in the UI, that item gets updated, and hence appears in the database because of this change:</p>
-					<p>
-						<a href="/img/2021/2021-02-edit.png" target="_blank">
-							<img alt="Edit" src="/img/2021/2021-02-edit.png">
-						</a>
-					</p>
-					<p>
-						<strong>Edited to add</strong>: As brought up in the comments, the other side-effect of this model is that you cannot delete items which exist in resource files. You get (an amusingly typo'd) error dialog saying "Some of selected items are in resources and cannot be deleted".</p>
-					<h2>Peeking under the hood</h2>
-					<p>The files on disk are binary-serialised item data. As implied by the config above the data is serialised using
-						<a href="https://developers.google.com/protocol-buffers" rel="noopener" target="_blank">Google's ProtoBuf specification</a>
-						– in this case using the
-						<a href="https://www.nuget.org/packages/protobuf-net/2.0.0.668" rel="noopener" target="_blank">ProtoBuf.Net</a>
-						library for .Net.</p>
-					<p>In fact, you can have a peek inside these files if you fancy. As a very simple experiment, I tried extracting the tree-structure of what's inside the "web" file. Starting from a .Net v4.8 Console App project, I added the nuget package for Sitecore.Kernel v10.1 – that gives you both the ProtoBuf.Net library and some internal types for representing the data.</p>
-					<p>The code starts by taking the path of one of the binary files, opening it as a simple stream and then running the ProtoBuf deserialiser over it. The top level type for this data is the new
-						<code>Sitecore.Data.DataProviders.ReadOnly.Protobuf.Data.ItemsData</code>
-						class, which is specified as the type parameter to the deserialiser. And once we've got that data, we can look for an item who's parent is the empty guid. That will be the root of the tree, and we can start processing the data for display from there:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Process(string filePath)
+</code></pre>
+<p>The database has a new data provider type – <code>CompositeDataProvider</code>. It's job is to provide a merge between what's in those disk files and what's in the database. You can see that under the <code>&lt;dataProvider/&gt;</code> element that there is some xml describing where to look for the files, based on the id of the database.</p>
+<p>The key reason for a merge operation is that if you edit an item that's stored on disk, the resulting changes will get saved in the database. And from then on it's the database item that gets presented back to you in the UI. So the database takes priority. As an example, if I got to <code>/sitecore/content</code> and click the &quot;unprotect&quot; button in the UI, that item gets updated, and hence appears in the database because of this change:</p>
+<p><a href="/img/2021/2021-02-edit.png" target="_blank"><img alt="Edit" src="/img/2021/2021-02-edit.png"></a></p>
+<p><strong>Edited to add</strong>: As brought up in the comments, the other side-effect of this model is that you cannot delete items which exist in resource files. You get (an amusingly typo'd) error dialog saying &quot;Some of selected items are in resources and cannot be deleted&quot;.</p>
+<h2>Peeking under the hood</h2>
+<p>The files on disk are binary-serialised item data. As implied by the config above the data is serialised using <a href="https://developers.google.com/protocol-buffers" rel="noopener" target="_blank">Google's ProtoBuf specification</a> – in this case using the <a href="https://www.nuget.org/packages/protobuf-net/2.0.0.668" rel="noopener" target="_blank">ProtoBuf.Net</a> library for .Net.</p>
+<p>In fact, you can have a peek inside these files if you fancy. As a very simple experiment, I tried extracting the tree-structure of what's inside the &quot;web&quot; file. Starting from a .Net v4.8 Console App project, I added the nuget package for Sitecore.Kernel v10.1 – that gives you both the ProtoBuf.Net library and some internal types for representing the data.</p>
+<p>The code starts by taking the path of one of the binary files, opening it as a simple stream and then running the ProtoBuf deserialiser over it. The top level type for this data is the new <code>Sitecore.Data.DataProviders.ReadOnly.Protobuf.Data.ItemsData</code> class, which is specified as the type parameter to the deserialiser. And once we've got that data, we can look for an item who's parent is the empty guid. That will be the root of the tree, and we can start processing the data for display from there:</p>
+<pre><code class="language-csharp">public void Process(string filePath)
 {
     using (var fs = File.OpenRead(filePath))
     {
@@ -222,12 +199,9 @@
         Process(root);
     }
 }
-
-					</pre>
-					<p>There are a few fields in that
-						<code>ItemsData</code>
-						class, and you can see it's decorated with serialisation attributes to control how the ProtoBuf encoding works:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[ProtoContract]
+</code></pre>
+<p>There are a few fields in that <code>ItemsData</code> class, and you can see it's decorated with serialisation attributes to control how the ProtoBuf encoding works:</p>
+<pre><code class="language-csharp">[ProtoContract]
 public class ItemsData
 {
     [ProtoMember(1)]
@@ -237,10 +211,9 @@ public class ItemsData
     [ProtoMember(3)]
     public ItemsLanguagesData LanguageData { get; set; }
 }
-
-					</pre>
-					<p>And from there you can recursively look down the tree by following the ParentID pointers:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Process(ItemRecord item, int indent = 0)
+</code></pre>
+<p>And from there you can recursively look down the tree by following the ParentID pointers:</p>
+<pre><code class="language-csharp">public void Process(ItemRecord item, int indent = 0)
 {
     var space = new string(' ', indent);
     Console.WriteLine(space + item.Name);
@@ -251,148 +224,115 @@ public class ItemsData
         Process(child, indent + 1);
     }
 }
+</code></pre>
+<p>For each item, print it's name with the right number of leading spaces for the current indent level, and then process each of it's children. If we wrap those methods up in a class and run that against one of the disk files:</p>
+<pre><code class="language-csharp">var v = new Viewer();
+v.Process(&#64;&quot;D:\myfolder\app_data\items\web\items.web.dat&quot;);
+</code></pre>
+<p>Then we see something that looks like the content tree:</p>
+<p><a href="/img/2021/2021-02-contents.png" target="_blank"><img alt="Contents" src="/img/2021/2021-02-contents.png"></a></p>
+<p>And with some more effort (and decoding the logic via <a href="https://github.com/icsharpcode/ILSpy" rel="noopener" target="_blank">ILSpy</a>) we could extract item versions and field values from this data too:</p>
+<p><a href="/img/2021/2021-02-fields.png" target="_blank"><img alt="Fields" src="/img/2021/2021-02-fields.png"></a></p>
+<h2>So how does this help us</h2>
+<p>In the past whenever we did an upgrade between Sitecore versions there would be a &quot;.update&quot; file we needed to install. It would apply item changes to the Sitecore content tree, and disk file changes. (plus some, but often not all) of the required content changes. That was an ok (if sometimes frustrating) approach when we were dealing with traditional deployments to VMs or PaaS App Services.</p>
+<p>But in the world of containers we no longer need a package to give us the code and config changes for new Sitecore versions – those all come wrapped up into Sitecore's Docker Images. And we layer our custom code and config on top of these for release. But in container world, we do still need to do something else to apply the database changes.</p>
+<p>That could be a &quot;job&quot; image. When you run these images they do a task and then stop – so you could put the database upgrade tasks into an image like this and let it run once against your SQL databases. That's pretty much the approach that is provided for initial setup of Solr and your databases with V10.0. So you could use this tactic to do upgrades too.</p>
+<p>But Sitecore are trying a different tactic for the upgrade process now. Rather than having to make arrangements to run a job image once for each upgrade, they've moved these items into disk files which are automatically changed when you deploy the new Sitecore images. So any upgrade-related changes are magically merged into your content tree just by changing to the newer CM/CD images.</p>
+<p>And there's the potential for another advantage here. The logic that loads up the data from the disk files has a &quot;merge&quot; operation built in. So you could have multiple files in your &quot;master&quot; or &quot;web&quot; folders which all get loaded up on start-up. And that makes for an interesting approach to delivering modules. Historically we've always had to install packages (or deserialise items) to push the content items for our modules into a deployment. But if we serialise them into ProtoBuf files the item data could be merged into our Docker images without needing to touch databases. That fits really well with the patterns for building custom images for deployments – you could get a &quot;Sitecore PowerShell&quot; image which contains the code, config and ProtoBuf data to add the software to a basic Sitecore image, and your custom image build just has to use that image as a source and copy in the files.</p>
+<p>So this approach looks like it could help us a lot in the future, and I find myself wondering if it might be a replacement for the TDS / Unicorn aspects of client builds eventually...</p>
+<blockquote>
+<strong>Edited to add</strong>: On Twitter, <a href="https://twitter.com/jammykam" rel="noopener" target="_blank">Kamruz Jaman</a> points out something I'd entirely missed from the description above: Since we suddenly have many fewer rows in our content databases, publishing operations are much faster. There's no need to ever publish an item that's in the ProtoBuf data – because that's on both your CM and CD boxes. So publish only has to read the database rows that are left. Hence a "republish all" operation now has vastly less data to process – and is going to finish much faster.
+</blockquote>
 
-					</pre>
-					<p>For each item, print it's name with the right number of leading spaces for the current indent level, and then process each of it's children. If we wrap those methods up in a class and run that against one of the disk files:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var v = new Viewer();
-v.Process(@"D:\myfolder\app_data\items\web\items.web.dat");
 
-					</pre>
-					<p>Then we see something that looks like the content tree:</p>
-					<p>
-						<a href="/img/2021/2021-02-contents.png" target="_blank">
-							<img alt="Contents" src="/img/2021/2021-02-contents.png">
-						</a>
-					</p>
-					<p>And with some more effort (and decoding the logic via
-						<a href="https://github.com/icsharpcode/ILSpy" rel="noopener" target="_blank">ILSpy</a>) we could extract item versions and field values from this data too:</p>
-					<p>
-						<a href="/img/2021/2021-02-fields.png" target="_blank">
-							<img alt="Fields" src="/img/2021/2021-02-fields.png">
-						</a>
-					</p>
-					<h2>So how does this help us</h2>
-					<p>In the past whenever we did an upgrade between Sitecore versions there would be a ".update" file we needed to install. It would apply item changes to the Sitecore content tree, and disk file changes. (plus some, but often not all) of the required content changes. That was an ok (if sometimes frustrating) approach when we were dealing with traditional deployments to VMs or PaaS App Services.</p>
-					<p>But in the world of containers we no longer need a package to give us the code and config changes for new Sitecore versions – those all come wrapped up into Sitecore's Docker Images. And we layer our custom code and config on top of these for release. But in container world, we do still need to do something else to apply the database changes.</p>
-					<p>That could be a "job" image. When you run these images they do a task and then stop – so you could put the database upgrade tasks into an image like this and let it run once against your SQL databases. That's pretty much the approach that is provided for initial setup of Solr and your databases with V10.0. So you could use this tactic to do upgrades too.</p>
-					<p>But Sitecore are trying a different tactic for the upgrade process now. Rather than having to make arrangements to run a job image once for each upgrade, they've moved these items into disk files which are automatically changed when you deploy the new Sitecore images. So any upgrade-related changes are magically merged into your content tree just by changing to the newer CM/CD images.</p>
-					<p>And there's the potential for another advantage here. The logic that loads up the data from the disk files has a "merge" operation built in. So you could have multiple files in your "master" or "web" folders which all get loaded up on start-up. And that makes for an interesting approach to delivering modules. Historically we've always had to install packages (or deserialise items) to push the content items for our modules into a deployment. But if we serialise them into ProtoBuf files the item data could be merged into our Docker images without needing to touch databases. That fits really well with the patterns for building custom images for deployments – you could get a "Sitecore PowerShell" image which contains the code, config and ProtoBuf data to add the software to a basic Sitecore image, and your custom image build just has to use that image as a source and copy in the files.</p>
-					<p>So this approach looks like it could help us a lot in the future, and I find myself wondering if it might be a replacement for the TDS / Unicorn aspects of client builds eventually...</p>
-					<blockquote>
-						<strong>Edited to add</strong>: On Twitter,
-						<a href="https://twitter.com/jammykam" rel="noopener" target="_blank">Kamruz Jaman</a>
-						points out something I'd entirely missed from the description above: Since we suddenly have many fewer rows in our content databases, publishing operations are much faster. There's no need to ever publish an item that's in the ProtoBuf data – because that's on both your CM and CD boxes. So publish only has to read the database rows that are left. Hence a "republish all" operation now has vastly less data to process – and is going to finish much faster.
-					</blockquote>
-				</div>
-				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<section class="mvp">
-						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-						<div class="bg-white mb-2 p-2">
-							<a href="/mvp">
-								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Top Tags</h3>
-						<div class="bg-white p-2 flex flex-wrap">
-							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Sitecore (202)</a>
-							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								C# (47)</a>
-							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								PowerShell (31)</a>
-							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Installation (23)</a>
-							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Solr (15)</a>
-							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								General (14)</a>
-							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								UI (14)</a>
-							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Docker (12)</a>
-							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Coveo (12)</a>
-							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-								Packages (11)</a>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/tags" role="button">All Tags
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Recent Months</h3>
-						<div class="bg-white p-2">
-							<div>
-								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
-							</div>
-							<div>
-								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
-							</div>
-						</div>
-						<div class="bg-white mb-2 p-2">
-							<a class="" href="/posts" role="button">All Posts
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-						</div>
-					</section>
-					<section>
-						<h3 class="bg-gray-300 p-2">Twitter</h3>
-						<div class="bg-white mb-2 p-2">
-							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-						</div>
-					</section>
-				</div>
-			</div>
-		</div>
-		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-			<div class="flex-1 lg:flex-1 text-center lg:text-left">
-				<div>©
-					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
-					2014-2022</div>
-			</div>
-			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
-				<br>
-			</div>
-			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-				<li class="inline-block">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-					</svg>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-				</li>
-			</ul>
-		</footer>
-		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-				<div class="w-full text-lg">
-					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-				</div>
-				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-			</div>
-		</div>
-		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-		<script type="text/javascript">
+            </div>
+            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <section class="mvp">
+    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Top Tags</h3>
+    <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (202)</a>
+                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
+                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
+                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
+                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
+                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
+                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
+                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
+                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Recent Months</h3>
+    <div class="bg-white p-2">
+                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
+                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
+                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
+                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
+                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
+    </div>
+    <div class="bg-white mb-2 p-2">
+        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
+    </div>
+</section>
+
+<section>
+    <h3 class="bg-gray-300 p-2">Twitter</h3>
+    <div class="bg-white mb-2 p-2">
+        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">
+        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
+    </div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
+    </div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">
+                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+            </div>
+            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+    
+    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+
+    <script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -401,16 +341,21 @@ v.Process(@"D:\myfolder\app_data\items\web\items.web.dat");
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
-		</script>
-		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-		<script>
+    </script>
+
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
     
-		</script>
-	</body>
-</html>
+
+    
+
+
+
+</body></html>
