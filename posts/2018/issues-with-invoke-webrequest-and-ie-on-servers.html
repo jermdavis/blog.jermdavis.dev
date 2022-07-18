@@ -1,31 +1,26 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2018/issues-with-invoke-webrequest-and-ie-on-servers">
-        <meta name="description" content="I&amp;#x27;ve been doing some work with &amp;lt;a href=&amp;quot;https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/release/what-is-release-management&amp;quot; rel=&amp;quot;noopener&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;Release Management in Visual Studio Online&amp;lt;/a&amp;gt; recently. Overall it&amp;#x27;s been a pretty positive experience, but there was one face-palm inducing moment I came across which needs writing down so I don&amp;#x27;t fall into the same trap next time I have to do this. When you&amp;#x27;re working with local release agents, you mustn&amp;#x27;t forget the security settings that your agent&amp;#x27;s server is configured with...">
-        <meta property="og:description" content="I&amp;#x27;ve been doing some work with &amp;lt;a href=&amp;quot;https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/release/what-is-release-management&amp;quot; rel=&amp;quot;noopener&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;Release Management in Visual Studio Online&amp;lt;/a&amp;gt; recently. Overall it&amp;#x27;s been a pretty positive experience, but there was one face-palm inducing moment I came across which needs writing down so I don&amp;#x27;t fall into the same trap next time I have to do this. When you&amp;#x27;re working with local release agents, you mustn&amp;#x27;t forget the security settings that your agent&amp;#x27;s server is configured with...">
-            <meta name="keywords" content="PowerShell">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Issues with Invoke-Webrequest and IE on&#xA0;servers</title> 
-
-        <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.webmanifest">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Issues with Invoke-Webrequest and IE on&amp;#xA0;servers">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/issues-with-invoke-webrequest-and-ie-on-servers-social.jpg">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2018/issues-with-invoke-webrequest-and-ie-on-servers">
+		<meta name="description" content="I've been doing some work with <a href=&quot;https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/release/what-is-release-management&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;>Release Management in Visual Studio Online</a> recently. Overall it's been a pretty positive experience, but there was one face-palm inducing moment I came across which needs writing down so I don't fall into the same trap next time I have to do this. When you're working with local release agents, you mustn't forget the security settings that your agent's server is configured with...">
+		<meta property="og:description" content="I've been doing some work with <a href=&quot;https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/release/what-is-release-management&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;>Release Management in Visual Studio Online</a> recently. Overall it's been a pretty positive experience, but there was one face-palm inducing moment I came across which needs writing down so I don't fall into the same trap next time I have to do this. When you're working with local release agents, you mustn't forget the security settings that your agent's server is configured with...">
+		<meta name="keywords" content="PowerShell">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Issues with Invoke-Webrequest and IE on&nbsp;servers</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Issues with Invoke-Webrequest and IE on&amp;#xA0;servers">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/issues-with-invoke-webrequest-and-ie-on-servers-social.jpg">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -40,237 +35,289 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/issues-with-invoke-webrequest-and-ie-on-servers">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-
     
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2018/issues-with-invoke-webrequest-and-ie-on-servers">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		
+		<!-- 18/07/2022 08:16:52 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2018/issues-with-invoke-webrequest-and-ie-on-servers</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Issues with Invoke-Webrequest and IE on&nbsp;servers
+				</h1>
+				<div class="meta">Published 08 January 2018</div>
+				<div class="flex py-1">
+					<a href="/tags/powershell/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						PowerShell</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I've been doing some work with
+						<a href="https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/release/what-is-release-management" rel="noopener" target="_blank">Release Management in Visual Studio Online</a>
+						recently. Overall it's been a pretty positive experience, but there was one face-palm inducing moment I came across which needs writing down so I don't fall into the same trap next time I have to do this. When you're working with local release agents, you mustn't forget the security settings that your agent's server is configured with...
+						<!--more-->
+					</p>
+					<h2>The scenario</h2>
+					<p>I'd created a release which did a variety of deployment tasks before it tried to start up the instance of Sitecore it had just updated. Initially I set this up with a PowerShell script that just used a web request:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Invoke-WebRequest https://$(Website.HostName)/sitecore
 
-    
-    <!-- 18/07/2022 07:56:04 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="nav -mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="nav hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="nav -mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="nav py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <div class="url p-1 bg-gray-100 rounded-md">Article printed from: <tt>https://blog.jermdavis.dev/posts/2018/issues-with-invoke-webrequest-and-ie-on-servers</tt></div>
-        <h1 class="text-5xl mb-4 pb-1">
-        Issues with Invoke-Webrequest and IE on servers
-        </h1>
-            <div class="meta">Published 08 January 2018</div>
-            <div class="flex py-1">
-                    <a href="/tags/powershell/" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>I've been doing some work with <a href="https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/release/what-is-release-management" rel="noopener" target="_blank">Release Management in Visual Studio Online</a> recently. Overall it's been a pretty positive experience, but there was one face-palm inducing moment I came across which needs writing down so I don't fall into the same trap next time I have to do this. When you're working with local release agents, you mustn't forget the security settings that your agent's server is configured with...<!--more--></p>
-<h2>The scenario</h2>
-<p>I'd created a release which did a variety of deployment tasks before it tried to start up the instance of Sitecore it had just updated. Initially I set this up with a PowerShell script that just used a web request:</p>
-<pre><code class="language-powershell">Invoke-WebRequest https://$(Website.HostName)/sitecore
-</code></pre>
-<p>I've used that commandlet in lots of scripts on my laptop before, so didn't think anything of adding it to my deployment task.</p>
-<p>However, when I ran the deployment, it didn't complete as I expected – the UI showed that it got to my &quot;warm up the site&quot; step and then sat there neither returning an error or moving to the next step.</p>
-<p>Retrying the deployment failed at the first step, which tried to download the deployment artefacts to my server, with an error saying that it could not write to the agent's working folder.</p>
-<p>I scratched my head over this for some time. I ended up looking at the tasks running on the server, and the directories and files they had locks on. My tool of choice for this is <a href="https://docs.microsoft.com/en-us/sysinternals/downloads/process-explorer" rel="noopener" target="_blank">SysInternals Process Explorer</a>. With that you can search for a fragment of a path, and it will tell you which processes have handles referring to those paths:</p>
-<p><a href="/img/2018/2018-01-processexplorer.png" target="_blank"><img alt="Process Explorer" src="/img/2018/2018-01-processexplorer.png"></a></p>
-<p>The result I got on my server was an instance of Internet Explorer running in the background holding a handle to the agent's working folder.</p>
-<p>Ending that process allowed a new deployment to start successfully, but again it stopped at the &quot;warm site&quot; task...</p>
-<h2>The issue a hand</h2>
-<p>Having scratched my head and looked for issues being reported about the release management system, I tried running the script above on my server myself. And that gave a big clue about what the issue was:</p>
-<p><a href="/img/2017/2017-12-dialog.png" target="_blank"><img alt="Script Warning Dialog" src="/img/2017/2017-12-dialog.png"></a></p>
-<p>Under the surface, <code>Invoke-WebRequest</code> makes use of Internet Explorer DLLs, and hence has to follow the same security model that IE uses. On a normal copy of Windows that's not much of an issue (hence me not thinking twice about using the commandlet), but most servers have IE's Enhanced Security mode enabled – which causes the warning dialog above.</p>
-<p>When the script was run by the deployment agent, the same dialog was being generated – but because the deployment agent is a service running in the background, no UI was being displayed. So the deployment would hang waiting for someone to click &quot;Close&quot; on a dialog that couldn't be seen...</p>
-<h2>Fixing it...</h2>
-<p>There is always the option to just disable the Enhanced Security setup for IE. While that will certainly address the issue, I'd not recommend this for two reasons: Firstly lowering security to deal with an issue is never a great idea, and secondly going down that road requires you to remember to make the same change on every server which you choose to deploy to – and you're bound to forget at some point...</p>
-<p>The right way to deal with the issue is to fix your script:</p>
-<p>The <code>Invoke-WebRequest</code> commandlet has a switch <code>-UseBasicParsing</code> which is supposed to bypass the use of IE code during requests. While this worked for me on my desktop test, I still had some issues with it via release management. However I've been unable to pin down why. So while that switch should fix it, you may find you need to go back to basics and use the standard <code>System.Net.WebClient</code>:</p>
-<pre><code class="language-powershell">$url = &quot;https://$(Website.HostName)/sitecore&quot;
+					</pre>
+					<p>I've used that commandlet in lots of scripts on my laptop before, so didn't think anything of adding it to my deployment task.</p>
+					<p>However, when I ran the deployment, it didn't complete as I expected – the UI showed that it got to my "warm up the site" step and then sat there neither returning an error or moving to the next step.</p>
+					<p>Retrying the deployment failed at the first step, which tried to download the deployment artefacts to my server, with an error saying that it could not write to the agent's working folder.</p>
+					<p>I scratched my head over this for some time. I ended up looking at the tasks running on the server, and the directories and files they had locks on. My tool of choice for this is
+						<a href="https://docs.microsoft.com/en-us/sysinternals/downloads/process-explorer" rel="noopener" target="_blank">SysInternals Process Explorer</a>. With that you can search for a fragment of a path, and it will tell you which processes have handles referring to those paths:</p>
+					<p>
+						<a href="/img/2018/2018-01-processexplorer.png" target="_blank">
+							<img alt="Process Explorer" src="/img/2018/2018-01-processexplorer.png">
+						</a>
+					</p>
+					<p>The result I got on my server was an instance of Internet Explorer running in the background holding a handle to the agent's working folder.</p>
+					<p>Ending that process allowed a new deployment to start successfully, but again it stopped at the "warm site" task...</p>
+					<h2>The issue a hand</h2>
+					<p>Having scratched my head and looked for issues being reported about the release management system, I tried running the script above on my server myself. And that gave a big clue about what the issue was:</p>
+					<p>
+						<a href="/img/2017/2017-12-dialog.png" target="_blank">
+							<img alt="Script Warning Dialog" src="/img/2017/2017-12-dialog.png">
+						</a>
+					</p>
+					<p>Under the surface,
+						<code>Invoke-WebRequest</code>
+						makes use of Internet Explorer DLLs, and hence has to follow the same security model that IE uses. On a normal copy of Windows that's not much of an issue (hence me not thinking twice about using the commandlet), but most servers have IE's Enhanced Security mode enabled – which causes the warning dialog above.</p>
+					<p>When the script was run by the deployment agent, the same dialog was being generated – but because the deployment agent is a service running in the background, no UI was being displayed. So the deployment would hang waiting for someone to click "Close" on a dialog that couldn't be seen...</p>
+					<h2>Fixing it...</h2>
+					<p>There is always the option to just disable the Enhanced Security setup for IE. While that will certainly address the issue, I'd not recommend this for two reasons: Firstly lowering security to deal with an issue is never a great idea, and secondly going down that road requires you to remember to make the same change on every server which you choose to deploy to – and you're bound to forget at some point...</p>
+					<p>The right way to deal with the issue is to fix your script:</p>
+					<p>The
+						<code>Invoke-WebRequest</code>
+						commandlet has a switch
+						<code>-UseBasicParsing</code>
+						which is supposed to bypass the use of IE code during requests. While this worked for me on my desktop test, I still had some issues with it via release management. However I've been unable to pin down why. So while that switch should fix it, you may find you need to go back to basics and use the standard
+						<code>System.Net.WebClient</code>:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$url = "https://$(Website.HostName)/sitecore"
 $wc = New-Object System.Net.WebClient
 $result = $wc.DownloadString($url)
-</code></pre>
-<p>(<a href="https://twitter.com/vandsh">Steve Vandenbush</a> has a <a href="https://vandsh.github.io/powershell/2018/01/08/webclient-with-timeout.html">useful blog post</a> if you want to be able to have a timeout here)</p>
-<p>One of those two should solve the problem if you encounter it...</p>
-<blockquote>
-<b>Updated to add:</b> As pointed out by <a href="https://twitter.com/jraps20" rel="noopener" target="_blank">John Rappel</a> on Twitter – if all else fails, you can always make use of other technologies to achieve the same effect – <a href="https://en.wikipedia.org/wiki/CURL" rel="noopener" target="_blank">curl</a> being a good example here
-</blockquote>
-<blockquote>
-<b>Further updated to add:</b> Following on from that, <a href="https://twitter.com/jammykam" rel="noopener" target="_blank">Kamruz Jaman</a> points out that in PowerShell v5 "curl" is configured as an alias for Invoke-Webrequest – so <a href="http://thesociablegeek.com/azure/using-curl-in-powershell/" rel="noopener" target="_blank">you need to take care what it is you're actually running</a> if you want to fall back to curl.
-</blockquote>
 
-
-            </div>
-            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (203)</a>
-                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
-                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
-                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
-                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
-                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
-                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
-                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
-                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+					</pre>
+					<p>(<a href="https://twitter.com/vandsh">Steve Vandenbush</a>
+						has a
+						<a href="https://vandsh.github.io/powershell/2018/01/08/webclient-with-timeout.html">useful blog post</a>
+						if you want to be able to have a timeout here)</p>
+					<p>One of those two should solve the problem if you encounter it...</p>
+					<blockquote>
+						<b>Updated to add:</b>
+						As pointed out by
+						<a href="https://twitter.com/jraps20" rel="noopener" target="_blank">John Rappel</a>
+						on Twitter – if all else fails, you can always make use of other technologies to achieve the same effect –
+						<a href="https://en.wikipedia.org/wiki/CURL" rel="noopener" target="_blank">curl</a>
+						being a good example here
+					</blockquote>
+					<blockquote>
+						<b>Further updated to add:</b>
+						Following on from that,
+						<a href="https://twitter.com/jammykam" rel="noopener" target="_blank">Kamruz Jaman</a>
+						points out that in PowerShell v5 "curl" is configured as an alias for Invoke-Webrequest – so
+						<a href="http://thesociablegeek.com/azure/using-curl-in-powershell/" rel="noopener" target="_blank">you need to take care what it is you're actually running</a>
+						if you want to fall back to curl.
+					</blockquote>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (203)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (47)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (12)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Packages (11)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -279,21 +326,16 @@ $result = $wc.DownloadString($url)
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

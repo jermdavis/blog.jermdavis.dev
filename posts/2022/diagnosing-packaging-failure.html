@@ -1,31 +1,26 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2022/diagnosing-packaging-failure">
-        <meta name="description" content="An explanation of an interesting error message from Sitecore, whilst trying to build a content package.">
-        <meta property="og:description" content="An explanation of an interesting error message from Sitecore, whilst trying to build a content package.">
-            <meta name="keywords" content="Sitecore, Data Templates, Errors, Packages">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Diagnosing a packaging failure</title> 
-
-        <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.webmanifest">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Diagnosing a packaging failure">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/diagnosing-packaging-failure-social.jpg">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2022/diagnosing-packaging-failure">
+		<meta name="description" content="An explanation of an interesting error message from Sitecore, whilst trying to build a content package.">
+		<meta property="og:description" content="An explanation of an interesting error message from Sitecore, whilst trying to build a content package.">
+		<meta name="keywords" content="Sitecore, Data Templates, Errors, Packages">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Diagnosing a packaging failure</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Diagnosing a packaging failure">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/diagnosing-packaging-failure-social.jpg">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -40,128 +35,142 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2022/diagnosing-packaging-failure">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-
     
-
-    
-    <!-- 18/07/2022 07:56:16 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="nav -mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="nav hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="nav -mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="nav py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center">
-    <div class="post-heading">
-        <div class="url p-1 bg-gray-100 rounded-md">Article printed from: <tt>https://blog.jermdavis.dev/posts/2022/diagnosing-packaging-failure</tt></div>
-        <h1 class="text-5xl mb-4 pb-1">
-        Diagnosing a packaging failure
-        </h1>
-        <h2 class="text-2xl">Finding the cause of very old issue...</h2>
-            <div class="meta">Published 14 March 2022</div>
-            <div class="flex py-1">
-                    <a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-                    <a href="/tags/data-templates/" class="p-1 mr-1 bg-gray-100 rounded-md"> Data Templates</a>
-                    <a href="/tags/errors/" class="p-1 mr-1 bg-gray-100 rounded-md"> Errors</a>
-                    <a href="/tags/packages/" class="p-1 mr-1 bg-gray-100 rounded-md"> Packages</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>I came across an interesting issue generating a Sitecore Package recently. Googling the issue didn't give me the whole answer, so it's time to enhance the internet again with a explanation of what I saw and why I think it happened...<!--more--></p>
-<h2 id="the-issue">The issue</h2>
-<p>I was building a package as a backup before making some changes to a client's site. I added a series of &quot;sources&quot; to the package for some sets of items, but one final bit of the site did not work. The dialog accepted my choice of items and their children, but when I tried to close the dialog for adding a new source:</p>
-<p><a target="_blank" href="/img/2022/01-CloseTheDialog.png"><img alt="The close button on the add-new-source dialog for a Sitecore package" src="/img/2022/01-CloseTheDialog.png"></a></p>
-<p>I got an error back instead of success:</p>
-<p><a target="_blank" href="/img/2022/01-InitialErrorDialog.png"><img alt="" src="/img/2022/01-InitialErrorDialog.png"></a></p>
-<p>Clicking the &quot;details&quot; button there got me a YSOD:</p>
-<p><a target="_blank" href="/img/2022/01-DetailedErrorDialog.png"><img alt="" src="/img/2022/01-DetailedErrorDialog.png"></a></p>
-<p>For Google's benefit, the interesting part of the stack trace for this was:</p>
-<pre><code class="language-text">[ArgumentOutOfRangeException: startIndex cannot be larger than length of string.
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2022/diagnosing-packaging-failure">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		
+		<!-- 18/07/2022 08:17:01 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2022/diagnosing-packaging-failure</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Diagnosing a packaging failure
+				</h1>
+				<h2 class="text-2xl">Finding the cause of very old issue...</h2>
+				<div class="meta">Published 14 March 2022</div>
+				<div class="flex py-1">
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/data-templates/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Data Templates</a>
+					<a href="/tags/errors/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Errors</a>
+					<a href="/tags/packages/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Packages</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I came across an interesting issue generating a Sitecore Package recently. Googling the issue didn't give me the whole answer, so it's time to enhance the internet again with a explanation of what I saw and why I think it happened...
+						<!--more-->
+					</p>
+					<h2 id="the-issue">The issue</h2>
+					<p>I was building a package as a backup before making some changes to a client's site. I added a series of "sources" to the package for some sets of items, but one final bit of the site did not work. The dialog accepted my choice of items and their children, but when I tried to close the dialog for adding a new source:</p>
+					<p>
+						<a target="_blank" href="/img/2022/01-CloseTheDialog.png">
+							<img alt="The close button on the add-new-source dialog for a Sitecore package" src="/img/2022/01-CloseTheDialog.png">
+						</a>
+					</p>
+					<p>I got an error back instead of success:</p>
+					<p>
+						<a target="_blank" href="/img/2022/01-InitialErrorDialog.png">
+							<img alt="" src="/img/2022/01-InitialErrorDialog.png">
+						</a>
+					</p>
+					<p>Clicking the "details" button there got me a YSOD:</p>
+					<p>
+						<a target="_blank" href="/img/2022/01-DetailedErrorDialog.png">
+							<img alt="" src="/img/2022/01-DetailedErrorDialog.png">
+						</a>
+					</p>
+					<p>For Google's benefit, the interesting part of the stack trace for this was:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">[ArgumentOutOfRangeException: startIndex cannot be larger than length of string.
 Parameter name: startIndex]
    System.String.InternalSubStringWithChecks(Int32 startIndex, Int32 length, Boolean fAlwaysCopy)
    System.String.Substring(Int32 startIndex) +19
@@ -169,113 +178,150 @@ Parameter name: startIndex]
    Sitecore.Install.Items.ItemToEntryConverter.InternalConvert(Item item, IProcessingContext context)
    Sitecore.Install.Framework.BaseConverter`1.Convert(T entry, IProcessingContext context) +69
    Sitecore.Install.Framework.InternalSink.Put(T entry) +97
-</code></pre>
-<p>As a good developer I tried searching for that issue, and came up with only <a href="https://www.sitecore-cms.de/2013/09/startindex-cannot-be-larger-than-length.html" target="_blank" rel="noopener">one interesting hit, in a pretty old blog post</a>. That dates back to 2013 (!) and describes the same error I saw, but said that Sitecore Support said &quot;this is your problem&quot; when asked about it.</p>
-<p>So useful to see that someone else saw the problem - but didn't help me specifically...</p>
-<h2 id="the-underlying-crash">The underlying crash</h2>
-<p>Given the stack trace didn't say much of help, the next step was to find out what the code was doing when the exception occurred. Breaking out <a href="https://github.com/icsharpcode/ILSpy" target="_blank" rel="noopener">ILSpy</a>, the method being called there is this:</p>
-<p><a target="_blank" href="/img/2022/01-CodeForError.png"><img alt="Decompiled code for the stack trace above" src="/img/2022/01-CodeForError.png"></a></p>
-<p>That code is going through all the fields on an item to make a pipe-separate list, and then finally it tries to remove the first pipe in order to return the list as a string. Maybe not the best way of achieving that behaviour, but we'll work with what we've got...</p>
-<p>The obvious failure path here is &quot;what happens if the item has no fields&quot;? No data would be added to the <code>StringBuilder</code> and hence an exception occurs when you try to skip the first character of the resultant empty string.</p>
-<h2 id="finding-the-cause">Finding the cause</h2>
-<p>Next question then, is why do we have an item with no fields? Surely all items have some fields? They all inherit from the standard Sitecore base item, right? Well I did some snooping through the content tree to try and work out what was broken. Since the issue appeared making packages, I tried adding different subtrees of the content until I found the specific place in the tree which caused the issue:</p>
-<p><a target="_blank" href="/img/2022/01-ItemWithNoFields.png"><img alt="The item with no fields" src="/img/2022/01-ItemWithNoFields.png"></a></p>
-<p>That does indeed have no visible fields, but it doesn't show any obvious error. So the next logical thing to check is the template:</p>
-<p><a target="_blank" href="/img/2022/01-AMissingTemplate.png"><img alt="" src="/img/2022/01-AMissingTemplate.png"></a></p>
-<p>And there we have the issue - the template this item uses inherits from something that's missing! And that's where all the fields went, which in turn caused the crash.</p>
-<p>I suspect something like this was the underlying cause of the bug in the blog post I found before, but it can be hard to find the dodgy item in a big content tree. Particularly because the issue only really revealed itself in the specific situation of packaging.</p>
-<p>I'd recommend using a sort of &quot;binary search&quot; approach here. If packaging a specific item breaks, go down to its children and try to make packages of just each child. Work out which one (or ones) fail and which succeed. Doing that until you're confident which items fail, and which items succeed will help you to work out what item (or template used by items) is broken.</p>
-<p>Those data templates - they're important...</p>
 
-
-            </div>
-            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (203)</a>
-                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
-                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
-                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
-                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
-                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
-                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
-                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
-                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+					</pre>
+					<p>As a good developer I tried searching for that issue, and came up with only
+						<a href="https://www.sitecore-cms.de/2013/09/startindex-cannot-be-larger-than-length.html" target="_blank" rel="noopener">one interesting hit, in a pretty old blog post</a>. That dates back to 2013 (!) and describes the same error I saw, but said that Sitecore Support said "this is your problem" when asked about it.</p>
+					<p>So useful to see that someone else saw the problem - but didn't help me specifically...</p>
+					<h2 id="the-underlying-crash">The underlying crash</h2>
+					<p>Given the stack trace didn't say much of help, the next step was to find out what the code was doing when the exception occurred. Breaking out
+						<a href="https://github.com/icsharpcode/ILSpy" target="_blank" rel="noopener">ILSpy</a>, the method being called there is this:</p>
+					<p>
+						<a target="_blank" href="/img/2022/01-CodeForError.png">
+							<img alt="Decompiled code for the stack trace above" src="/img/2022/01-CodeForError.png">
+						</a>
+					</p>
+					<p>That code is going through all the fields on an item to make a pipe-separate list, and then finally it tries to remove the first pipe in order to return the list as a string. Maybe not the best way of achieving that behaviour, but we'll work with what we've got...</p>
+					<p>The obvious failure path here is "what happens if the item has no fields"? No data would be added to the
+						<code>StringBuilder</code>
+						and hence an exception occurs when you try to skip the first character of the resultant empty string.</p>
+					<h2 id="finding-the-cause">Finding the cause</h2>
+					<p>Next question then, is why do we have an item with no fields? Surely all items have some fields? They all inherit from the standard Sitecore base item, right? Well I did some snooping through the content tree to try and work out what was broken. Since the issue appeared making packages, I tried adding different subtrees of the content until I found the specific place in the tree which caused the issue:</p>
+					<p>
+						<a target="_blank" href="/img/2022/01-ItemWithNoFields.png">
+							<img alt="The item with no fields" src="/img/2022/01-ItemWithNoFields.png">
+						</a>
+					</p>
+					<p>That does indeed have no visible fields, but it doesn't show any obvious error. So the next logical thing to check is the template:</p>
+					<p>
+						<a target="_blank" href="/img/2022/01-AMissingTemplate.png">
+							<img alt="" src="/img/2022/01-AMissingTemplate.png">
+						</a>
+					</p>
+					<p>And there we have the issue - the template this item uses inherits from something that's missing! And that's where all the fields went, which in turn caused the crash.</p>
+					<p>I suspect something like this was the underlying cause of the bug in the blog post I found before, but it can be hard to find the dodgy item in a big content tree. Particularly because the issue only really revealed itself in the specific situation of packaging.</p>
+					<p>I'd recommend using a sort of "binary search" approach here. If packaging a specific item breaks, go down to its children and try to make packages of just each child. Work out which one (or ones) fail and which succeed. Doing that until you're confident which items fail, and which items succeed will help you to work out what item (or template used by items) is broken.</p>
+					<p>Those data templates - they're important...</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (203)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (47)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (12)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Packages (11)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -284,21 +330,16 @@ Parameter name: startIndex]
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

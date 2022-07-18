@@ -1,31 +1,26 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-6">
-        <meta name="description" content="Getting back to the the issue of installing things for a Sitecore development environment, this week I&amp;#x27;m going to start tackling how you can add &amp;amp;quot;&amp;lt;a href=&amp;quot;http://www.coveo.com/en/solutions/coveo-for-sitecore&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;Coveo for Sitecore&amp;lt;/a&amp;gt;&amp;amp;quot; to a machine. While Coveo have provided some documentation on how this can be achieved, (for &amp;lt;a href=&amp;quot;https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_ces_silently.htm&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;CES&amp;lt;/a&amp;gt; and &amp;lt;a href=&amp;quot;https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_the_coveo_search_api.htm&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;REST APIs&amp;lt;/a&amp;gt;) they make they point that they don&amp;#x27;t offer support for this approach to installation. So this may not be right for everyone. But in case it&amp;#x27;s of use to you, here&amp;#x27;s the first part of my attempt at the automation: ">
-        <meta property="og:description" content="Getting back to the the issue of installing things for a Sitecore development environment, this week I&amp;#x27;m going to start tackling how you can add &amp;amp;quot;&amp;lt;a href=&amp;quot;http://www.coveo.com/en/solutions/coveo-for-sitecore&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;Coveo for Sitecore&amp;lt;/a&amp;gt;&amp;amp;quot; to a machine. While Coveo have provided some documentation on how this can be achieved, (for &amp;lt;a href=&amp;quot;https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_ces_silently.htm&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;CES&amp;lt;/a&amp;gt; and &amp;lt;a href=&amp;quot;https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_the_coveo_search_api.htm&amp;quot; target=&amp;quot;_blank&amp;quot; rel=&amp;quot;noopener noreferrer&amp;quot;&amp;gt;REST APIs&amp;lt;/a&amp;gt;) they make they point that they don&amp;#x27;t offer support for this approach to installation. So this may not be right for everyone. But in case it&amp;#x27;s of use to you, here&amp;#x27;s the first part of my attempt at the automation: ">
-            <meta name="keywords" content="Coveo, PowerShell DSC, PowerShell, Installation">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Development environments with PowerShell DSC &#x2013; Part&#xA0;6</title> 
-
-        <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.webmanifest">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC &amp;#x2013; Part&amp;#xA0;6">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-6-social.jpg">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-6">
+		<meta name="description" content="Getting back to the the issue of installing things for a Sitecore development environment, this week I'm going to start tackling how you can add &quot;<a href=&quot;http://www.coveo.com/en/solutions/coveo-for-sitecore&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Coveo for Sitecore</a>&quot; to a machine. While Coveo have provided some documentation on how this can be achieved, (for <a href=&quot;https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_ces_silently.htm&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>CES</a> and <a href=&quot;https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_the_coveo_search_api.htm&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>REST APIs</a>) they make they point that they don't offer support for this approach to installation. So this may not be right for everyone. But in case it's of use to you, here's the first part of my attempt at the automation: ">
+		<meta property="og:description" content="Getting back to the the issue of installing things for a Sitecore development environment, this week I'm going to start tackling how you can add &quot;<a href=&quot;http://www.coveo.com/en/solutions/coveo-for-sitecore&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Coveo for Sitecore</a>&quot; to a machine. While Coveo have provided some documentation on how this can be achieved, (for <a href=&quot;https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_ces_silently.htm&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>CES</a> and <a href=&quot;https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_the_coveo_search_api.htm&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>REST APIs</a>) they make they point that they don't offer support for this approach to installation. So this may not be right for everyone. But in case it's of use to you, here's the first part of my attempt at the automation: ">
+		<meta name="keywords" content="Coveo, PowerShell DSC, PowerShell, Installation">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;6</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC &amp;#x2013; Part&amp;#xA0;6">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-6-social.jpg">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -41,125 +36,146 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-6">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-
     
-
-    
-    <!-- 18/07/2022 07:56:13 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="nav -mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="nav hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="nav -mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="nav py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <div class="url p-1 bg-gray-100 rounded-md">Article printed from: <tt>https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-6</tt></div>
-        <h1 class="text-5xl mb-4 pb-1">
-        Development environments with PowerShell DSC – Part 6
-        </h1>
-            <div class="meta">Published 30 November 2015</div>
-                <div class="meta">Updated 25 August 2016</div>
-            <div class="flex py-1">
-                    <a href="/tags/coveo/" class="p-1 mr-1 bg-gray-100 rounded-md"> Coveo</a>
-                    <a href="/tags/powershell-dsc/" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell DSC</a>
-                    <a href="/tags/powershell/" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
-                    <a href="/tags/installation/" class="p-1 mr-1 bg-gray-100 rounded-md"> Installation</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>Getting back to the the issue of installing things for a Sitecore development environment, this week I'm going to start tackling how you can add &quot;<a href="http://www.coveo.com/en/solutions/coveo-for-sitecore" target="_blank" rel="noopener noreferrer">Coveo for Sitecore</a>&quot; to a machine. While Coveo have provided some documentation on how this can be achieved, (for <a href="https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_ces_silently.htm" target="_blank" rel="noopener noreferrer">CES</a> and <a href="https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_the_coveo_search_api.htm" target="_blank" rel="noopener noreferrer">REST APIs</a>) they make they point that they don't offer support for this approach to installation. So this may not be right for everyone. But in case it's of use to you, here's the first part of my attempt at the automation: <!--more--></p>
-<p><i>(<b>Edited to add:</b> Links to all posts in this series: <a href="/posts/2015/development-environments-with-powershell-dsc-part-1" target="_blank">1:Introduction to DSC</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-2" target="_blank">2:Windows Features</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-3" target="_blank">3:Mongo DB</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-4" target="_blank">4:SQL Server</a> – <a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">5:Sitecore</a> – 6:Coveo CES – <a href="/posts/2015/development-environments-with-powershell-dsc-part-7" target="_blank">7:Coveo REST API &amp; Coveo for Sitecore</a>)</i></p>
-<blockquote>
-<i>Before I get going, couple of notes about the examples I'm including in this series of posts: They all have a call to `Start-DSCConfiguration` using the "-Force" flag to make DSC run this configuration immediately in "push" mode. However, the `Configuration` blocks declared should all work in pull configurations. Writing the scripts this way just makes them easier for people to try out without any other setup effort. Also the examples are all pretty much self-contained, so the overall configuration of a server using them would rely on many separate scripts. You don't necessarily need to have as many as I'm showing here. It's more to keep the examples clear and usable than to represent the "right" architecture. You're free to merge things together, or even break them apart further if that suits you.</i>
-</blockquote>
-<p>As we'll see in a bit, we need to run some of this process as another user. So <a href="/posts/2015/wait-who-is-dsc-running-as-again" target="_blank">as discussed in my previous post about DSC impersonation</a>, we need to modify the basics of the script to allow for passing in credentials. For the purposes of a simple example, I'm just using the local administrator account here, but you may choose to use a more constrained account, and put more effort into <a href="https://msdn.microsoft.com/en-us/PowerShell/DSC/secureMOF" target="_blank" rel="noopener noreferrer">securing the credentials</a>:</p>
-<pre><code class="language-text">Configuration CoveoInstall
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-6">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		
+		<!-- 18/07/2022 08:17:02 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-6</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Development environments with PowerShell DSC – Part&nbsp;6
+				</h1>
+				<div class="meta">Published 30 November 2015</div>
+				<div class="meta">Updated 25 August 2016</div>
+				<div class="flex py-1">
+					<a href="/tags/coveo/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Coveo</a>
+					<a href="/tags/powershell-dsc/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						PowerShell DSC</a>
+					<a href="/tags/powershell/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						PowerShell</a>
+					<a href="/tags/installation/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Installation</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>Getting back to the the issue of installing things for a Sitecore development environment, this week I'm going to start tackling how you can add "<a href="http://www.coveo.com/en/solutions/coveo-for-sitecore" target="_blank" rel="noopener noreferrer">Coveo for Sitecore</a>" to a machine. While Coveo have provided some documentation on how this can be achieved, (for
+						<a href="https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_ces_silently.htm" target="_blank" rel="noopener noreferrer">CES</a>
+						and
+						<a href="https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_the_coveo_search_api.htm" target="_blank" rel="noopener noreferrer">REST APIs</a>) they make they point that they don't offer support for this approach to installation. So this may not be right for everyone. But in case it's of use to you, here's the first part of my attempt at the automation: 
+						<!--more-->
+					</p>
+					<p>
+						<i>(<b>Edited to add:</b>
+							Links to all posts in this series:
+							<a href="/posts/2015/development-environments-with-powershell-dsc-part-1" target="_blank">1:Introduction to DSC</a>
+							–
+							<a href="/posts/2015/development-environments-with-powershell-dsc-part-2" target="_blank">2:Windows Features</a>
+							–
+							<a href="/posts/2015/development-environments-with-powershell-dsc-part-3" target="_blank">3:Mongo DB</a>
+							–
+							<a href="/posts/2015/development-environments-with-powershell-dsc-part-4" target="_blank">4:SQL Server</a>
+							–
+							<a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">5:Sitecore</a>
+							– 6:Coveo CES –
+							<a href="/posts/2015/development-environments-with-powershell-dsc-part-7" target="_blank">7:Coveo REST API &amp; Coveo for Sitecore</a>)</i>
+					</p>
+					<blockquote>
+						<i>Before I get going, couple of notes about the examples I'm including in this series of posts: They all have a call to `Start-DSCConfiguration` using the "-Force" flag to make DSC run this configuration immediately in "push" mode. However, the `Configuration` blocks declared should all work in pull configurations. Writing the scripts this way just makes them easier for people to try out without any other setup effort. Also the examples are all pretty much self-contained, so the overall configuration of a server using them would rely on many separate scripts. You don't necessarily need to have as many as I'm showing here. It's more to keep the examples clear and usable than to represent the "right" architecture. You're free to merge things together, or even break them apart further if that suits you.</i>
+					</blockquote>
+					<p>As we'll see in a bit, we need to run some of this process as another user. So
+						<a href="/posts/2015/wait-who-is-dsc-running-as-again" target="_blank">as discussed in my previous post about DSC impersonation</a>, we need to modify the basics of the script to allow for passing in credentials. For the purposes of a simple example, I'm just using the local administrator account here, but you may choose to use a more constrained account, and put more effort into
+						<a href="https://msdn.microsoft.com/en-us/PowerShell/DSC/secureMOF" target="_blank" rel="noopener noreferrer">securing the credentials</a>:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration CoveoInstall
 {
     param (
         [Parameter(Mandatory=$true)]
@@ -173,7 +189,7 @@
         $Cred
     )
  
-    Node $AllNodes.where{ $_.Role.Contains(&quot;Coveo&quot;) }.NodeName
+    Node $AllNodes.where{ $_.Role.Contains("Coveo") }.NodeName
     {
         #
         # Resources go here
@@ -181,303 +197,373 @@
     }
 }
 
-$username = &quot;$Env:ComputerName\administrator&quot; 
-$password = ConvertTo-SecureString &quot;p&#64;55w0rd&quot; -Force -AsPlainText 
+$username = "$Env:ComputerName\administrator" 
+$password = ConvertTo-SecureString "p@55w0rd" -Force -AsPlainText 
 $credential = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $password
 
-CoveoInstall -ConfigurationData &quot;configData.psd1&quot; -PackagePath &quot;\\vboxsvr\dsc\Coveo&quot; -Cred $credential
+CoveoInstall -ConfigurationData "configData.psd1" -PackagePath "\\vboxsvr\dsc\Coveo" -Cred $credential
 Start-DscConfiguration -Path .\CoveoInstall -Wait -Force -Verbose 
-</code></pre>
-<p>We're also going to require some extra configuration data for this install. Extending the config data used in the previous installs, we'll add in some stuff specific to Coveo and it's dependencies, and a bit more to the Sitecore section:</p>
-<pre><code class="language-text">&#64;{
+
+					</pre>
+					<p>We're also going to require some extra configuration data for this install. Extending the config data used in the previous installs, we'll add in some stuff specific to Coveo and it's dependencies, and a bit more to the Sitecore section:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
     
-    AllNodes = &#64;(
-        &#64;{
-            NodeName = &quot;*&quot;
+    AllNodes = @(
+        @{
+            NodeName = "*"
             PSDscAllowPlainTextPassword = $true
         }
-        &#64;{
-            NodeName = &quot;WIN-AQEKG7L9SE8&quot;
+        @{
+            NodeName = "WIN-AQEKG7L9SE8"
 
-            Role = &quot;Setup, WindowsFeatures, IE, SqlServer, MongoDB, Sitecore, Coveo&quot;
+            Role = "Setup, WindowsFeatures, IE, SqlServer, MongoDB, Sitecore, Coveo"
             
-            TempFolder = &quot;c:\dsc&quot;
+            TempFolder = "c:\dsc"
 
-            WWWRoot = &quot;C:\inetpub\wwwroot&quot;
+            WWWRoot = "C:\inetpub\wwwroot"
 
             #
             # Mongo / SQL / etc configuration goes here
             #
 
-            Sitecore = &#64;{
+            Sitecore = @{
                 #
                 # Rest of Sitecore configuration goes here
                 #
 
-                PowerShellExtensions = &quot;Sitecore PowerShell Extensions-3.3 for Sitecore 8.zip&quot;
-                PowerShellRemoting = &quot;SPE Remoting-3.3.zip&quot;
+                PowerShellExtensions = "Sitecore PowerShell Extensions-3.3 for Sitecore 8.zip"
+                PowerShellRemoting = "SPE Remoting-3.3.zip"
             }
 
-            Coveo = &#64;{
-                ZipFolder = &quot;7z&quot;
-                ZipTool = &quot;7z.exe&quot;
-                MSChart = &quot;MSChart.exe&quot;
-                MSXml = &quot;msxml6_x64.msi&quot;
-                VCRedist = &quot;vcredist_x64.exe&quot;
-                CESInstaller = &quot;Coveo Enterprise Search 7.0 x64 (7914).exe&quot;
+            Coveo = @{
+                ZipFolder = "7z"
+                ZipTool = "7z.exe"
+                MSChart = "MSChart.exe"
+                MSXml = "msxml6_x64.msi"
+                VCRedist = "vcredist_x64.exe"
+                CESInstaller = "Coveo Enterprise Search 7.0 x64 (7914).exe"
 
-                SvcAccount = &quot;administrator&quot;
-                SvcPassword = &quot;p&#64;55w0rd&quot;
+                SvcAccount = "administrator"
+                SvcPassword = "p@55w0rd"
 
-                CESAPIInstaller = &quot;Coveo Search API 8.0.885.exe&quot;
-                AppSecret = &quot;ThisIsTheAppSecret&quot;
-                CoveoForSitecore = &quot;Coveo for Sitecore 80 3.0 (1123).zip&quot;
+                CESAPIInstaller = "Coveo Search API 8.0.885.exe"
+                AppSecret = "ThisIsTheAppSecret"
+                CoveoForSitecore = "Coveo for Sitecore 80 3.0 (1123).zip"
             }
          }
     );
 
 }
-</code></pre>
-<p>(Some of this is required for the next, post dealing with the REST API and the Coveo for Sitecore package)</p>
-<h2>Coveo's prerequisites</h2>
-<p>The Coveo Enterprise Search service needs a collection of things installed before it can run. Based on the <a href="https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_ces_silently.htm" target="_blank" rel="noopener noreferrer">documentation from Coveo</a>, you can use the following DSC resources to provide them.</p>
-<p>First, they ask for all of .Net framework 4 and 3.5:</p>
-<pre><code class="language-text">WindowsFeature NetFramework35Core
+
+					</pre>
+					<p>(Some of this is required for the next, post dealing with the REST API and the Coveo for Sitecore package)</p>
+					<h2>Coveo's prerequisites</h2>
+					<p>The Coveo Enterprise Search service needs a collection of things installed before it can run. Based on the
+						<a href="https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_ces_silently.htm" target="_blank" rel="noopener noreferrer">documentation from Coveo</a>, you can use the following DSC resources to provide them.</p>
+					<p>First, they ask for all of .Net framework 4 and 3.5:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">WindowsFeature NetFramework35Core
 {
-    Name = &quot;NET-Framework-Core&quot;
-    IncludeAllSubFeature = &quot;True&quot;
-    Ensure = &quot;Present&quot;
+    Name = "NET-Framework-Core"
+    IncludeAllSubFeature = "True"
+    Ensure = "Present"
 }
  
 WindowsFeature NetFramework45Core
 {
-    Name = &quot;NET-Framework-45-Core&quot;
-    IncludeAllSubFeature = &quot;True&quot;
-    Ensure = &quot;Present&quot;
+    Name = "NET-Framework-45-Core"
+    IncludeAllSubFeature = "True"
+    Ensure = "Present"
 }
-</code></pre>
-<p>They also ask for all of IIS:</p>
-<pre><code class="language-text">WindowsFeature IIS
+
+					</pre>
+					<p>They also ask for all of IIS:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">WindowsFeature IIS
 {
-    Name = &quot;Web-Server&quot;
-    IncludeAllSubFeature = &quot;True&quot;
-    Ensure = &quot;Present&quot;
+    Name = "Web-Server"
+    IncludeAllSubFeature = "True"
+    Ensure = "Present"
 }
-</code></pre>
-<p>Then they ask for the MS Chart library. You can download the version required by the documentation, and add it to the packages folder for your script. The file name has been added as a configuration property named <code>MSChart</code> in the config extract above. So you can then copy it over to your target machine and use the <code>Package</code> resource to install it without any UI:</p>
-<pre><code class="language-text">File CopyMSChart
+
+					</pre>
+					<p>Then they ask for the MS Chart library. You can download the version required by the documentation, and add it to the packages folder for your script. The file name has been added as a configuration property named
+						<code>MSChart</code>
+						in the config extract above. So you can then copy it over to your target machine and use the
+						<code>Package</code>
+						resource to install it without any UI:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyMSChart
 {
-    SourcePath = &quot;$PackagePath\$($Node.Coveo.MSChart)&quot;
-    DestinationPath = &quot;$($Node.TempFolder)\$($Node.Coveo.MSChart)&quot;
+    SourcePath = "$PackagePath\$($Node.Coveo.MSChart)"
+    DestinationPath = "$($Node.TempFolder)\$($Node.Coveo.MSChart)"
 }
 
 Package InstallMSChart
 {
-    Name = &quot;Microsoft Chart Controls for Microsoft .Net Framework 3.5&quot;
-    Path = &quot;$($Node.TempFolder)\$($Node.Coveo.MSChart)&quot;
-    ProductID = &quot;&quot;
-    Arguments = &quot;/passive&quot;
+    Name = "Microsoft Chart Controls for Microsoft .Net Framework 3.5"
+    Path = "$($Node.TempFolder)\$($Node.Coveo.MSChart)"
+    ProductID = ""
+    Arguments = "/passive"
 }
-</code></pre>
-<p>Next is the MSXML framework. This can also be installed with a similar pattern - though for this one, the <code>Package</code> resource isn't as much help so it's using the <code>Script</code> resource to call <code>msiexec.exe</code> for the install instead:</p>
-<pre><code class="language-text">File CopyMSXml
+
+					</pre>
+					<p>Next is the MSXML framework. This can also be installed with a similar pattern - though for this one, the
+						<code>Package</code>
+						resource isn't as much help so it's using the
+						<code>Script</code>
+						resource to call
+						<code>msiexec.exe</code>
+						for the install instead:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyMSXml
 {
-    SourcePath = &quot;$PackagePath\$($Node.Coveo.MSXml)&quot;
-    DestinationPath = &quot;$($Node.TempFolder)\$($Node.Coveo.MSXml)&quot;
+    SourcePath = "$PackagePath\$($Node.Coveo.MSXml)"
+    DestinationPath = "$($Node.TempFolder)\$($Node.Coveo.MSXml)"
 }
 
 Script InstallMSXml
 {
-    DependsOn = &quot;[file]CopyMSXml&quot;
+    DependsOn = "[file]CopyMSXml"
     GetScript = { 
-        &#64;{ Feature = &quot;Install MSXml library&quot; }
+        @{ Feature = "Install MSXml library" }
     }
     TestScript = { $False }
     SetScript = {
-        $pkg = &quot;$($using:Node.TempFolder)\$($using:Node.Coveo.MSXml)&quot;
+        $pkg = "$($using:Node.TempFolder)\$($using:Node.Coveo.MSXml)"
 
-        msiexec.exe /qn /i &quot;$pkg&quot; | out-null
+        msiexec.exe /qn /i "$pkg" | out-null
     }
 }
-</code></pre>
-<p>Next up is the Visual C Runtime re-distributable. This one doesn't come as an MSI, but the installer allows a silent install by passing a flag to the executable:</p>
-<pre><code class="language-text">File CopyVCRedist
+
+					</pre>
+					<p>Next up is the Visual C Runtime re-distributable. This one doesn't come as an MSI, but the installer allows a silent install by passing a flag to the executable:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyVCRedist
 {
-    SourcePath = &quot;$PackagePath\$($Node.Coveo.VCRedist)&quot;
-    DestinationPath = &quot;$($Node.TempFolder)\$($Node.Coveo.VCRedist)&quot;
+    SourcePath = "$PackagePath\$($Node.Coveo.VCRedist)"
+    DestinationPath = "$($Node.TempFolder)\$($Node.Coveo.VCRedist)"
 }
 
 Script InstallVCRedist
 {
-    DependsOn = &quot;[file]CopyVCRedist&quot;
+    DependsOn = "[file]CopyVCRedist"
     GetScript = { 
-        &#64;{ Feature = &quot;Install VC Redist library&quot; }
+        @{ Feature = "Install VC Redist library" }
     }
     TestScript = { $False }
     SetScript = {
-        $redist = &quot;$($using:Node.TempFolder)\$($using:Node.Coveo.VCRedist)&quot;
+        $redist = "$($using:Node.TempFolder)\$($using:Node.Coveo.VCRedist)"
 
         &amp;$redist /q | out-null
     }
 }
-</code></pre>
-<p>For both this and the MSXML <code>Script</code> there'll be some registry keys created which could be tested in the <code>GetScript</code> to avoid re-installing when not necessary - but I've not had time to find those yet. A tool like <a href="https://technet.microsoft.com/en-us/sysinternals/processmonitor.aspx" target="_blank" rel="noopener noreferrer">Process Monitor</a> would allow watching for registry writes during the install to find an appropriate key.</p>
-<h2>Installing the Coveo Entrprise Search service</h2>
-<p>The standard installer that Coveo provide for the core of their software can't be automated directly, <a href="https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_ces_silently.htm" target="_blank" rel="noopener noreferrer">according to Coveo's documents</a>. Hence it's necessary to extract the files and automate the <code>.MSI</code> file. Rather than <a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">the approach used for Sitecore previously</a>, the installer doesn't seem to offer an extract feature itself – so we need to unzip it manually. The zip-handling in Windows can't cope with this format of this file, so we need a 3rd party tool to achieve this. I happened to have the command line version of <a href="http://www.7-zip.org/" target="_blank" rel="noopener noreferrer">7zip</a> available, but you can use others if you prefer.</p>
-<p>First up, we need to copy over the command-line zip tool. In this case the exe and it's DLL have been put in a folder under the package path. This folder can then be transferred over to the target machine:</p>
-<pre><code class="language-text">File CopyZip
+
+					</pre>
+					<p>For both this and the MSXML
+						<code>Script</code>
+						there'll be some registry keys created which could be tested in the
+						<code>GetScript</code>
+						to avoid re-installing when not necessary - but I've not had time to find those yet. A tool like
+						<a href="https://technet.microsoft.com/en-us/sysinternals/processmonitor.aspx" target="_blank" rel="noopener noreferrer">Process Monitor</a>
+						would allow watching for registry writes during the install to find an appropriate key.</p>
+					<h2>Installing the Coveo Entrprise Search service</h2>
+					<p>The standard installer that Coveo provide for the core of their software can't be automated directly,
+						<a href="https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_ces_silently.htm" target="_blank" rel="noopener noreferrer">according to Coveo's documents</a>. Hence it's necessary to extract the files and automate the
+						<code>.MSI</code>
+						file. Rather than
+						<a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">the approach used for Sitecore previously</a>, the installer doesn't seem to offer an extract feature itself – so we need to unzip it manually. The zip-handling in Windows can't cope with this format of this file, so we need a 3rd party tool to achieve this. I happened to have the command line version of
+						<a href="http://www.7-zip.org/" target="_blank" rel="noopener noreferrer">7zip</a>
+						available, but you can use others if you prefer.</p>
+					<p>First up, we need to copy over the command-line zip tool. In this case the exe and it's DLL have been put in a folder under the package path. This folder can then be transferred over to the target machine:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyZip
 {
-    SourcePath = &quot;$PackagePath\$($Node.Coveo.ZipFolder)&quot;
-    DestinationPath = &quot;$($Node.TempFolder)\&quot;
-    Type = &quot;Directory&quot;
-    Ensure = &quot;Present&quot;
-    Recurse = &quot;true&quot;
+    SourcePath = "$PackagePath\$($Node.Coveo.ZipFolder)"
+    DestinationPath = "$($Node.TempFolder)\"
+    Type = "Directory"
+    Ensure = "Present"
+    Recurse = "true"
 }
-</code></pre>
-<p>Then we need to copy over the CES installer itself:</p>
-<pre><code class="language-text">File CopyCoveo
+
+					</pre>
+					<p>Then we need to copy over the CES installer itself:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyCoveo
 {
-    SourcePath = &quot;$PackagePath\$($Node.Coveo.CESInstaller)&quot;
-    DestinationPath = &quot;$($Node.TempFolder)\$($Node.Coveo.CESInstaller)&quot;
-    Ensure = &quot;Present&quot;
+    SourcePath = "$PackagePath\$($Node.Coveo.CESInstaller)"
+    DestinationPath = "$($Node.TempFolder)\$($Node.Coveo.CESInstaller)"
+    Ensure = "Present"
 }
-</code></pre>
-<p>And then we can use the zip to to decompress it with a <code>Script</code> resource:</p>
-<pre><code class="language-text">Script UnzipCoveo
+
+					</pre>
+					<p>And then we can use the zip to to decompress it with a
+						<code>Script</code>
+						resource:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script UnzipCoveo
 {
-    DependsOn = &quot;[file]CopyCoveo&quot;, &quot;[file]CopyZip&quot;
+    DependsOn = "[file]CopyCoveo", "[file]CopyZip"
     GetScript = { 
-        &#64;{ Feature = &quot;Unzip the Coveo installer&quot; }
+        @{ Feature = "Unzip the Coveo installer" }
     }
     TestScript = { $False }
     SetScript = {
-        $zipTool = &quot;$($using:Node.TempFolder)\$($using:Node.Coveo.ZipTool)&quot;
-        $file = &quot;$($using:Node.TempFolder)\$($using:Node.Coveo.CESInstaller)&quot;
-        $target = &quot;$($using:Node.TempFolder)&quot;
+        $zipTool = "$($using:Node.TempFolder)\$($using:Node.Coveo.ZipTool)"
+        $file = "$($using:Node.TempFolder)\$($using:Node.Coveo.CESInstaller)"
+        $target = "$($using:Node.TempFolder)"
 
         Push-Location $target
 
-        &amp;$zipTool x -oCoveo -y &quot;$file&quot; | write-verbose
+        &amp;$zipTool x -oCoveo -y "$file" | write-verbose
 
         Pop-Location
     }
 }
-</code></pre>
-<p>The script changes directory to the temp folder and then calls the zip tool to extract the file into a sub-folder called &quot;Coveo&quot;.</p>
-<p>With this done, a further <code>script</code> resource can perform the job of installing CES:</p>
-<pre><code class="language-text">Script InstallCoveo
+
+					</pre>
+					<p>The script changes directory to the temp folder and then calls the zip tool to extract the file into a sub-folder called "Coveo".</p>
+					<p>With this done, a further
+						<code>script</code>
+						resource can perform the job of installing CES:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script InstallCoveo
 {
     Credential = $cred
-    DependsOn = &quot;[script]UnzipCoveo&quot;
+    DependsOn = "[script]UnzipCoveo"
     GetScript = { 
-        &#64;{ Feature = &quot;Install the CES sevice&quot; }
+        @{ Feature = "Install the CES sevice" }
     }
     TestScript = { $False }
     SetScript = {
-        $tmp = &quot;$($using:Node.TempFolder)&quot;
-        $msiFile = [System.IO.Path]::ChangeExtension($using:Node.Coveo.CESInstaller,&quot;.msi&quot;)
-        $msiPath = &quot;$($using:Node.TempFolder)\Coveo\$($msiFile)&quot;
+        $tmp = "$($using:Node.TempFolder)"
+        $msiFile = [System.IO.Path]::ChangeExtension($using:Node.Coveo.CESInstaller,".msi")
+        $msiPath = "$($using:Node.TempFolder)\Coveo\$($msiFile)"
 
-        $user = &quot;$($using:Node.Coveo.SvcAccount)&quot;
-        $pwd = &quot;$($using:Node.Coveo.SvcPassword)&quot;
+        $user = "$($using:Node.Coveo.SvcAccount)"
+        $pwd = "$($using:Node.Coveo.SvcPassword)"
 
-        msiexec.exe /qn /i &quot;$msiPath&quot; &quot;ADDLOCAL=BaseFeature,VCRedist,CESService,Admin,AdminService,CESConsole&quot; &quot;LOGONTYPE=account&quot; &quot;LOGONACCOUNT_USERNAME=$user&quot; &quot;LOGONACCOUNT_PASSWORD=$pwd&quot; /l*+v &quot;$tmp\Coveo-Install.log&quot; | Out-Null
+        msiexec.exe /qn /i "$msiPath" "ADDLOCAL=BaseFeature,VCRedist,CESService,Admin,AdminService,CESConsole" "LOGONTYPE=account" "LOGONACCOUNT_USERNAME=$user" "LOGONACCOUNT_PASSWORD=$pwd" /l*+v "$tmp\Coveo-Install.log" | Out-Null
     }
 }
-</code></pre>
-<p>(Again, the <code>GetScript</code> with this and the unzip <code>Script</code> above aren't filled in yet. These could be done with appropriate <code>Test-Path</code> calls)</p>
-<p>This is mostly just another example of using <code>msiexec.exe</code> to install a package. The set of parameters passed just install all the &quot;single server install&quot; features, and set the service account to the credentials given in the config file. Note that the resource takes the <code>Credential</code> parameter. As described in my previous post <a href="/posts/2015/wait-who-is-dsc-running-as-again" target="_blank">DSC scripts run in as a user which lacks certain operating system permissions</a> the CES installer needs to run correctly. Hence impersonating a different user with more rights.</p>
-<p>With that done, CES should be installed and running. You won't be able to do much with it as yet, since it doesn't have a license installed or any indexes to search. Next time we'll move on to the REST API and the Coveo for Sitecore extensions – which will get those set up.</p>
 
-
-            </div>
-            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (203)</a>
-                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
-                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
-                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
-                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
-                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
-                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
-                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
-                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+					</pre>
+					<p>(Again, the
+						<code>GetScript</code>
+						with this and the unzip
+						<code>Script</code>
+						above aren't filled in yet. These could be done with appropriate
+						<code>Test-Path</code>
+						calls)</p>
+					<p>This is mostly just another example of using
+						<code>msiexec.exe</code>
+						to install a package. The set of parameters passed just install all the "single server install" features, and set the service account to the credentials given in the config file. Note that the resource takes the
+						<code>Credential</code>
+						parameter. As described in my previous post
+						<a href="/posts/2015/wait-who-is-dsc-running-as-again" target="_blank">DSC scripts run in as a user which lacks certain operating system permissions</a>
+						the CES installer needs to run correctly. Hence impersonating a different user with more rights.</p>
+					<p>With that done, CES should be installed and running. You won't be able to do much with it as yet, since it doesn't have a license installed or any indexes to search. Next time we'll move on to the REST API and the Coveo for Sitecore extensions – which will get those set up.</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (203)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (47)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (12)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Packages (11)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -486,21 +572,16 @@ Script InstallVCRedist
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

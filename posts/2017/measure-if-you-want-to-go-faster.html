@@ -1,31 +1,28 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2017/measure-if-you-want-to-go-faster">
-        <meta name="description" content="I got the chance to speak at the Manchester Sitecore user group recently, introducing some tools and tricks that can be used to measure site performance while you&amp;#x27;re developing your Sitecore code.&amp;#xA;For anyone who wasn&amp;#x27;t there (and those who were but, want to refer back to what I said) here&amp;#x27;s a summary of the important bits of content from that talk...">
-        <meta property="og:description" content="I got the chance to speak at the Manchester Sitecore user group recently, introducing some tools and tricks that can be used to measure site performance while you&amp;#x27;re developing your Sitecore code.&amp;#xA;For anyone who wasn&amp;#x27;t there (and those who were but, want to refer back to what I said) here&amp;#x27;s a summary of the important bits of content from that talk...">
-            <meta name="keywords" content="Performance, Profiling, Sitecore, Visual Studio">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Measure if you want to go&#xA0;faster!</title> 
-
-        <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.webmanifest">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Measure if you want to go&amp;#xA0;faster!">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/measure-if-you-want-to-go-faster-social.jpg">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2017/measure-if-you-want-to-go-faster">
+		<meta name="description" content="I got the chance to speak at the Manchester Sitecore user group recently, introducing some tools and tricks that can be used to measure site performance while you're developing your Sitecore code.
+For anyone who wasn't there (and those who were but, want to refer back to what I said) here's a summary of the important bits of content from that talk...">
+		<meta property="og:description" content="I got the chance to speak at the Manchester Sitecore user group recently, introducing some tools and tricks that can be used to measure site performance while you're developing your Sitecore code.
+For anyone who wasn't there (and those who were but, want to refer back to what I said) here's a summary of the important bits of content from that talk...">
+		<meta name="keywords" content="Performance, Profiling, Sitecore, Visual Studio">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Measure if you want to go&nbsp;faster!</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Measure if you want to go&amp;#xA0;faster!">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/measure-if-you-want-to-go-faster-social.jpg">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -41,277 +38,379 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2017/measure-if-you-want-to-go-faster">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-
     
-
-    
-    <!-- 18/07/2022 07:56:01 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="nav -mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="nav hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="nav -mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="nav py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <div class="url p-1 bg-gray-100 rounded-md">Article printed from: <tt>https://blog.jermdavis.dev/posts/2017/measure-if-you-want-to-go-faster</tt></div>
-        <h1 class="text-5xl mb-4 pb-1">
-        Measure if you want to go faster!
-        </h1>
-            <div class="meta">Published 02 October 2017</div>
-                <div class="meta">Updated 19 August 2019</div>
-            <div class="flex py-1">
-                    <a href="/tags/performance/" class="p-1 mr-1 bg-gray-100 rounded-md"> Performance</a>
-                    <a href="/tags/profiling/" class="p-1 mr-1 bg-gray-100 rounded-md"> Profiling</a>
-                    <a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-                    <a href="/tags/visual-studio/" class="p-1 mr-1 bg-gray-100 rounded-md"> Visual Studio</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>I got the chance to speak at the Manchester Sitecore user group recently, introducing some tools and tricks that can be used to measure site performance while you're developing your Sitecore code.
-For anyone who wasn't there (and those who were but, want to refer back to what I said) here's a summary of the important bits of content from that talk...<!--more--></p>
-<p><a href="/img/2017/2017-09-slide.png" target="_blank"><img alt="" src="/img/2017/2017-09-slide.png"></a></p>
-<div style="float:right; margin-left:10px">
-<blockquote class="twitter-tweet" data-width="350"><p lang="en" dir="ltr">Really good talk from <a href="https://twitter.com/jermdavis?ref_src=twsrc%5Etfw">@jermdavis</a> about improving site performance using Sitecore’s debug tools <a href="https://twitter.com/bekagool?ref_src=twsrc%5Etfw">@bekagool</a> <a href="https://twitter.com/hashtag/Sitecore?src=hash&amp;amp;ref_src=twsrc%5Etfw">#Sitecore</a> Technical User Group <a href="https://t.co/UWNy0LG6Ho">pic.twitter.com/UWNy0LG6Ho</a></p>&mdash; Web Mike (@web_mike) <a href="https://twitter.com/web_mike/status/913474652533612544?ref_src=twsrc%5Etfw">September 28, 2017</a></blockquote>
-<script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-</div>
-<p>My talk was inspired by some work I'd done a while back, on a site that was going to be used as the target of a big TV advert. The team involved in that project looked at the usual infrastructure and architecture issues of scaling a site, but I also made a point of checking the performance of components as we were developing using profiling tools. These are simple checks that you can incorporate into your day-to-day development workflow, with the goal of catching any obvious performance issues early in your project.</p>
-<p>Most of us have probably experienced this scenario at some point: You write some code which looks like it was works well in development, and is also OK during functional testing. But then it grinds to a halt when it's used with large content trees or high loads. If you're lucky that happens during load testing, but maybe it's on production...</p>
-<p>As you move from development towards release, the cost and difficulty of fixing issues like this tends to increase, so what can you do, in order to avoid that sort of issue happening in code you're working on now?</p>
-<p>Here's what I suggested:</p>
-<h2>Sitecore's built in profiling tools</h2>
-<p><a href="/img/2017/2017-09-sitecoredebugmode.png" target="_blank"><img alt="Sitecore%26%238217%3Bs Debug Mode" src="/img/2017/2017-09-sitecoredebugmode.png"></a>The first tool I'd recommend you make use of is Sitecore's own profiling tool. This is part of the Experience Editor, and it seems like an under-appreciated gem to me. You don't have to pay any extra money for it, or do anything special to enable it. But it's great at helping you understand how your code interacts with Sitecore's Item APIs and rendering engine.<br style="clear:both;"></p>
-<p>You can get access to this profiling data by opening a page of your site in the Experience Editor, and then clicking the &quot;Preview&quot; dropdown, to select the &quot;Debug&quot; option:</p>
-<p><a href="/img/2017/2017-09-startdebugger.jpg" target="_blank"><img alt="Start Debugger" src="/img/2017/2017-09-startdebugger.jpg"></a></p>
-<p>That will make the page refresh, and after your page's content it will show you the performance data that it captures:</p>
-<p><a href="/img/2017/2017-09-profiledata.png" target="_blank"><img alt="Profile Data" src="/img/2017/2017-09-profiledata.png"></a></p>
-<p>The first region, titled &quot;Hot spots&quot; shows you a summary of the data, highlighting the worst offenders. The final section &quot;Sitecore Trace&quot; shows any debug output written to Sitecore's trace framework while components executed. But the interesting bit (for me at least) is the middle section, &quot;Profile&quot;.</p>
-<p>This gives you the detail about each operation that's been performed in the course of rendering the page. They're listed out in execution order. But what do they all mean? Well here's one row from that data:</p>
-<p><a href="/img/2017/2017-09-statsdetails1.png" target="_blank"><img alt="Stats Details" src="/img/2017/2017-09-statsdetails1.png"></a></p>
-<p>The &quot;Time&quot; column gives you a visual reference of how much of the page execution time this section the page is taking up. Alongside the &quot;Total&quot; (How much time this component and its children used) and &quot;Own&quot; (How much time just this component used) these let you understand how long the component took to render. When you're looking at these columns, you should be considering two things: Firstly, is this component taking a large chunk of the overall page time. Components which dominate the execution time are generally a good target for optimisation. Secondly, think about the execution time itself in the context of your goals for the responsiveness of your page – if the overall time is high, think about what you can investigate and adjust.</p>
-<p>The &quot;Items Read&quot; column gives you an idea of how hard your components are hitting the Item APIs. Generally, larger numbers here are less good. Minimising the number of items you read for any component is generally a good thing. Check API queries, or operations that are mapping data to Sitecore Items, and think about if there are ways to reduce the numbers being read. Maybe making better use of Axes to focus the query's scope more efficiently, or maybe adding filtering clauses to do things like restrict the query by template ID.</p>
-<p>The three caching columns &quot;Data Cache Hits&quot;, &quot;Data Cache Misses&quot; and &quot;Physical Reads&quot; give you an idea of how your item accesses are working against the caches. In an ideal world, you want cache misses and physical reads to be zero. Accessing the content database is orders of magnitude slower than caches, as in most real-world scenarios your database server is at least one network hop away from your front-end servers.</p>
-<p>It's worth remembering that in development you're usually looking at the best-case scenario for cache efficiency. There's only one user, accessing the site, and they're only looking at the one page you're measuring. That will tend to minimise cache misses because there's little churn going on. To get an idea of the worst case, it's helpful to use the Sitecore cache admin tool to clear the caches before refreshing the profiling stats here. You'll get significantly higher load times for your components when the cache is empty – giving you an idea of how physical reads and cache misses might make your component perform.</p>
-<p>Another thing to remember is that start-up time will skew these numbers. If you refresh the profiling page after changing a config file, updating a DLL or similar, you will want to refresh the page a second time to ensure you see what's happening when ASP.Net's load times are not affecting the numbers.</p>
-<p>The stats from this tool will give you good clues about where to look in your solution for less efficient code. Where you see components with larger numbers of items, check your queries. Look for opportunities to load fewer items: It's always better to exclude unwanted data in your queries than to load items and filter them out later. And where the execution time of components is higher, look for ways you can reduce the work the component does – sometimes <a href="/posts/2016/edge-cases-of-caching" target="_blank">custom use of the fragment caching APIs</a> can make a big difference here. (Especially if the overall component cannot be cached)</p>
-<h2>Visual Studio's code profiling tools</h2>
-<p><a href="/img/2017/2017-09-vsprofiler.png" target="_blank"><img alt="VS Profiler" src="/img/2017/2017-09-vsprofiler.png"></a></p>
-<p>Visual Studio has two groups of tools that can be useful for analysing your code. The first of these is its performance profiler. This lets you look at the detail of the CPU usage of your code. This goes into more depth than the execution time measurements for individual components that Sitecore can provide, as it can look down to the level of individual lines of code in your C#. The second is the general debugger. While this can also give you data about CPU usage, it's most helpful for investigating how your code makes use of managed memory.</p>
-<h3>CPU profiling</h3>
-Microsoft recommends that you use a release build when you're doing this sort of profiling, since this means you'll be profiling the optimised code.
-<p>You can pick a process to attach the profiler to via the following menu option:</p>
-<p><a href="/img/2017/2017-09-cpuprofiler.png" target="_blank"><img alt="CPU Profiler" src="/img/2017/2017-09-cpuprofiler.png"></a></p>
-<p>You then get to choose the process to attach to. When attaching to the IIS worker process running your Sitecore site you need to ensure the checkboxes for &quot;Show processes for all users&quot; and &quot;Show processes in all sessions&quot; are checked so you can see the web worker process you want to attach to.</p>
-<p>Once you've chosen a process, Visual Studio will inject the profiling code into it, and start recording data. You can then spend some time exercising your code. Refresh the page you're interested in, click on buttons that trigger post-backs or AJAX calls. And try to make sure you do each action a reasonable number of times to get a spread of data. Once you're done, click the &quot;stop profiling&quot; link...</p>
-<p><a href="/img/2017/2017-09-stopprofiling.png" target="_blank"><img alt="Stop Profiling" src="/img/2017/2017-09-stopprofiling.png"></a></p>
-<p>...and Visual Studio will generate a report based on the data it has gathered. (Note that detaching the profiler from your application causes it to be unloaded from memory. That's to remove all the specialised profiling code that gets injected when you attach the profiler in the first place) It will then show you a summary of the report:</p>
-<p><a href="/img/2017/2017-09-reportsummary.png" target="_blank"><img alt="Report Summary" src="/img/2017/2017-09-reportsummary.png"></a></p>
-<p>The first section of the page shows an overview of the CPU activity during the profiling. Your goal for any optimisation is to try and get this graph as low as possible overall – but it's a fairly coarse representation of the data.</p>
-<p>The second section shows you the &quot;hot path&quot; for the execution – the route through the code which has consumed the largest chunk of the CPU time during your profiling session. This is a really helpful shortcut to finding places that you can optimise. Seeing code from your solution in this list is a definite signal that you have some optimisation to do. You want this list to include only framework or Sitecore code.</p>
-<p>The third section describes the code which is doing the most work. Again, you only want to see framework code here if possible.</p>
-<p>The summary of the report will give you an overview of what's going on, but a more detailed view will help you focus on what aspects of your code are the best candidates for optimisation. I tend to start with the &quot;Modules&quot; page of the report, accessed from the drop-down list at the top of the page:</p>
-<p><a href="/img/2017/2017-09-choosemodules.png" target="_blank"><img alt="Choose Modules" src="/img/2017/2017-09-choosemodules.png"></a></p>
-<p>That gives you more detailed stats, broken down by the DLLs that have been loaded into the process:</p>
-<p><a href="/img/2017/2017-09-modules.png" target="_blank"><img alt="Modules" src="/img/2017/2017-09-modules.png"></a></p>
-<p>The stats are broken down into four columns. The first two show &quot;Inclusive&quot; and &quot;Exclusive&quot; samples. Like the timing data from the Sitecore profiler, that's data for &quot;this method, and any child methods it calls&quot; and &quot;this method on its own&quot;. The second two columns show this same data but expressed as a ratio of overall execution time, rather than an absolute number. I tend to sort by &quot;Inclusive samples %&quot; initially, as it gives a good idea of the relative expense of each bit of code.</p>
-<p>Don't get too bogged down in the exact numbers here – there are lots of things going on in the system which can affect these numbers from session to session in ways you cannot control. You want to focus on the relative values – trends in how the numbers change after you make modifications. And, as everywhere else here, you want your changes to try and reduce the numbers. And it's generally a bad sign if code you wrote is near the top of this list.</p>
-<p>You can drill down to individual methods by expanding the node for a DLL you're interested in. And if you spot something in your code that's worth further investigation, double-clicking the method in this list will take you to a details view which shows the call path and details of which bit of code is using the most CPU time:</p>
-<p><a href="/img/2017/2017-09-cpudetails.png" target="_blank"><img alt="CPU Details" src="/img/2017/2017-09-cpudetails.png"></a></p>
-<p>The UI does a great job of highlighting exactly where in your code most of the CPU time is going – so if you've accidentally put some really silly code into your solution that's wasting a load of CPU time, you can see find it very easily... (Yes, my presentation examples were deliberately caricatured 😉 )</p>
-<p>Once you've worked out the best places to adjust your code, you should make your optimisations and then re-measure it. Sometimes changes you make can end up making the code slower, due to the complexities of how it's processed by the framework and your CPU. So that re-test is important to ensure you're getting the benefits you hope for.</p>
-<h3>But what about memory?</h3>
-The profiler can help you find the bits of code that aren't making best use of CPU resources, but it's also important to check what's going on with memory in your application. Memory pressure can be a significant issue in production sites, as it can cause IIS to recycle your site. Given the start-up times for instances of Sitecore, avoiding this by keeping an eye on how your site uses memory is just as important as the CPU stats. 
-<p>You can do this easily by attaching the standard Visual Studio debugger:</p>
-<p><a href="/img/2017/2017-09-memorygraph.png" target="_blank"><img alt="Memory Graph" src="/img/2017/2017-09-memorygraph.png"></a></p>
-<p>By default you get graphs of memory usage and CPU over time while the debugger is attached. The memory graph gives you a simple way to watch trends over time. As you exercise your site, you you want to watch the slope of this trace. It's ok if the graph stays roughly flat, or oscillates up and down over time. But you don't want to see a graph which has an upward trend over time – that indicates something is consuming more and more memory – which is likely to lead to issues when left long enough. (The yellow markers on the graph indicate points when the garbage collector kicked in) <br style="clear:both;"></p>
-<p><a href="/img/2017/2017-10-memorysnapshot.png" target="_blank"><img alt="MemorySnapshot" src="/img/2017/2017-10-memorysnapshot.png"></a>While this is a nice visual way of seeing the behaviour of the site over time, it doesn't give much detail. But the debugger has a neat trick for helping you here. Below the graphs are some tabs, and they include an option to &quot;take a snapshot&quot;. That gets the runtime to record data about the current state of the managed heap – what objects are on it, and how much space they're occupying. You can take one snapshot at the beginning of your debugging session and then exercise your code for a bit. Once you've seen the trend you want to analyse on the overview graph, you can take a second snapshot.</p>
-<p><a href="/img/2017/2017-10-memorydelta.png" target="_blank"><img alt="Memory Delta" src="/img/2017/2017-10-memorydelta.png"></a>Once you have more than one snapshot, Visual Studio will show you a summary of the changes between them. A red upward arrow indicates &quot;memory usage went up&quot; and the overview tells you what happened both for the count of heap objects and the size of them. Green arrows indicated the values went down. Clicking on this summary will open a report that gives you the details of the difference between your snapshots. This gives you a list of all the object types that are in memory, alongside their change in size and change in count. As before, you can sort this list to show the data in different orders:</p>
-<p><a href="/img/2017/2017-10-heapdetails.png" target="_blank"><img alt="Heap Details" src="/img/2017/2017-10-heapdetails.png"></a></p>
-<p>Whichever way you sort it, ideally you don't want code from your codebase near the top of this list, as that implies that it's using increasing amounts of resources. Where you find objects that are going up over time, you can use &quot;Find References&quot; in your codebase to find where the object is being used and investigate whether you can reduce the usage or improve the effect of garbage collection by releasing references you no longer need.</p>
-<p>As with the previous measurements, after you've made some changes you should always recompile and re-test your code, just to make sure the change you made had the effect you wanted.</p>
-<h2>Client-side stuff is important too</h2>
-<p>It wasn't part of my original presentation, but in the Q &amp; A afterwards, we discussed the idea that your front-end code can be examined too. For that your browser's dev tools are useful. They can help you look into the rendering and scripting performance of your site, as well as the network-centric performance issues like how many files are being loaded. In Chrome, for example, you can see very detailed rendering performance data:</p>
-<p><a href="/img/2017/2017-10-browserprofiler.png" target="_blank"><img alt="Browser Profiler" src="/img/2017/2017-10-browserprofiler.png"></a></p>
-<h2>Conclusions</h2>
-<p>If you can set aside a small amount of time as you work on each bit of code for your site, you can give it a quick check for performance issues. Spotting things like inefficient Sitecore queries, or memory leaks at this point will be much less hassle for you than finding them in production. So I'd recommend you try and fit these sort of checks into your work whenever you can...</p>
-<p>Thanks to everyone who helped make this user group event a success – the presenters, the audience, the pizza chef, and <a href="http://www.bekagool.com/" rel="noopener noreferrer" target="_blank">Kagool</a> for hosting.</p>
-<p>See you all again at the next one, hopefully...</p>
-
-
-            </div>
-            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (203)</a>
-                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
-                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
-                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
-                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
-                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
-                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
-                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
-                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2017/measure-if-you-want-to-go-faster">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		
+		<!-- 18/07/2022 08:16:50 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2017/measure-if-you-want-to-go-faster</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Measure if you want to go&nbsp;faster!
+				</h1>
+				<div class="meta">Published 02 October 2017</div>
+				<div class="meta">Updated 19 August 2019</div>
+				<div class="flex py-1">
+					<a href="/tags/performance/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Performance</a>
+					<a href="/tags/profiling/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Profiling</a>
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/visual-studio/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Visual Studio</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I got the chance to speak at the Manchester Sitecore user group recently, introducing some tools and tricks that can be used to measure site performance while you're developing your Sitecore code. For anyone who wasn't there (and those who were but, want to refer back to what I said) here's a summary of the important bits of content from that talk...
+						<!--more-->
+					</p>
+					<p>
+						<a href="/img/2017/2017-09-slide.png" target="_blank">
+							<img alt="" src="/img/2017/2017-09-slide.png">
+						</a>
+					</p>
+					<div style="float:right; margin-left:10px">
+						<blockquote class="twitter-tweet" data-width="350">
+							<p lang="en" dir="ltr">Really good talk from
+								<a href="https://twitter.com/jermdavis?ref_src=twsrc%5Etfw">@jermdavis</a>
+								about improving site performance using Sitecore’s debug tools
+								<a href="https://twitter.com/bekagool?ref_src=twsrc%5Etfw">@bekagool</a>
+								<a href="https://twitter.com/hashtag/Sitecore?src=hash&amp;amp;ref_src=twsrc%5Etfw">#Sitecore</a>
+								Technical User Group
+								<a href="https://t.co/UWNy0LG6Ho">pic.twitter.com/UWNy0LG6Ho</a>
+							</p>— Web Mike (@web_mike)
+							<a href="https://twitter.com/web_mike/status/913474652533612544?ref_src=twsrc%5Etfw">September 28, 2017</a>
+						</blockquote>
+						<script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+					</div>
+					<p>My talk was inspired by some work I'd done a while back, on a site that was going to be used as the target of a big TV advert. The team involved in that project looked at the usual infrastructure and architecture issues of scaling a site, but I also made a point of checking the performance of components as we were developing using profiling tools. These are simple checks that you can incorporate into your day-to-day development workflow, with the goal of catching any obvious performance issues early in your project.</p>
+					<p>Most of us have probably experienced this scenario at some point: You write some code which looks like it was works well in development, and is also OK during functional testing. But then it grinds to a halt when it's used with large content trees or high loads. If you're lucky that happens during load testing, but maybe it's on production...</p>
+					<p>As you move from development towards release, the cost and difficulty of fixing issues like this tends to increase, so what can you do, in order to avoid that sort of issue happening in code you're working on now?</p>
+					<p>Here's what I suggested:</p>
+					<h2>Sitecore's built in profiling tools</h2>
+					<p>
+						<a href="/img/2017/2017-09-sitecoredebugmode.png" target="_blank">
+							<img alt="Sitecore%26%238217%3Bs Debug Mode" src="/img/2017/2017-09-sitecoredebugmode.png">
+						</a>The first tool I'd recommend you make use of is Sitecore's own profiling tool. This is part of the Experience Editor, and it seems like an under-appreciated gem to me. You don't have to pay any extra money for it, or do anything special to enable it. But it's great at helping you understand how your code interacts with Sitecore's Item APIs and rendering engine.<br style="clear:both;">
+					</p>
+					<p>You can get access to this profiling data by opening a page of your site in the Experience Editor, and then clicking the "Preview" dropdown, to select the "Debug" option:</p>
+					<p>
+						<a href="/img/2017/2017-09-startdebugger.jpg" target="_blank">
+							<img alt="Start Debugger" src="/img/2017/2017-09-startdebugger.jpg">
+						</a>
+					</p>
+					<p>That will make the page refresh, and after your page's content it will show you the performance data that it captures:</p>
+					<p>
+						<a href="/img/2017/2017-09-profiledata.png" target="_blank">
+							<img alt="Profile Data" src="/img/2017/2017-09-profiledata.png">
+						</a>
+					</p>
+					<p>The first region, titled "Hot spots" shows you a summary of the data, highlighting the worst offenders. The final section "Sitecore Trace" shows any debug output written to Sitecore's trace framework while components executed. But the interesting bit (for me at least) is the middle section, "Profile".</p>
+					<p>This gives you the detail about each operation that's been performed in the course of rendering the page. They're listed out in execution order. But what do they all mean? Well here's one row from that data:</p>
+					<p>
+						<a href="/img/2017/2017-09-statsdetails1.png" target="_blank">
+							<img alt="Stats Details" src="/img/2017/2017-09-statsdetails1.png">
+						</a>
+					</p>
+					<p>The "Time" column gives you a visual reference of how much of the page execution time this section the page is taking up. Alongside the "Total" (How much time this component and its children used) and "Own" (How much time just this component used) these let you understand how long the component took to render. When you're looking at these columns, you should be considering two things: Firstly, is this component taking a large chunk of the overall page time. Components which dominate the execution time are generally a good target for optimisation. Secondly, think about the execution time itself in the context of your goals for the responsiveness of your page – if the overall time is high, think about what you can investigate and adjust.</p>
+					<p>The "Items Read" column gives you an idea of how hard your components are hitting the Item APIs. Generally, larger numbers here are less good. Minimising the number of items you read for any component is generally a good thing. Check API queries, or operations that are mapping data to Sitecore Items, and think about if there are ways to reduce the numbers being read. Maybe making better use of Axes to focus the query's scope more efficiently, or maybe adding filtering clauses to do things like restrict the query by template ID.</p>
+					<p>The three caching columns "Data Cache Hits", "Data Cache Misses" and "Physical Reads" give you an idea of how your item accesses are working against the caches. In an ideal world, you want cache misses and physical reads to be zero. Accessing the content database is orders of magnitude slower than caches, as in most real-world scenarios your database server is at least one network hop away from your front-end servers.</p>
+					<p>It's worth remembering that in development you're usually looking at the best-case scenario for cache efficiency. There's only one user, accessing the site, and they're only looking at the one page you're measuring. That will tend to minimise cache misses because there's little churn going on. To get an idea of the worst case, it's helpful to use the Sitecore cache admin tool to clear the caches before refreshing the profiling stats here. You'll get significantly higher load times for your components when the cache is empty – giving you an idea of how physical reads and cache misses might make your component perform.</p>
+					<p>Another thing to remember is that start-up time will skew these numbers. If you refresh the profiling page after changing a config file, updating a DLL or similar, you will want to refresh the page a second time to ensure you see what's happening when ASP.Net's load times are not affecting the numbers.</p>
+					<p>The stats from this tool will give you good clues about where to look in your solution for less efficient code. Where you see components with larger numbers of items, check your queries. Look for opportunities to load fewer items: It's always better to exclude unwanted data in your queries than to load items and filter them out later. And where the execution time of components is higher, look for ways you can reduce the work the component does – sometimes
+						<a href="/posts/2016/edge-cases-of-caching" target="_blank">custom use of the fragment caching APIs</a>
+						can make a big difference here. (Especially if the overall component cannot be cached)</p>
+					<h2>Visual Studio's code profiling tools</h2>
+					<p>
+						<a href="/img/2017/2017-09-vsprofiler.png" target="_blank">
+							<img alt="VS Profiler" src="/img/2017/2017-09-vsprofiler.png">
+						</a>
+					</p>
+					<p>Visual Studio has two groups of tools that can be useful for analysing your code. The first of these is its performance profiler. This lets you look at the detail of the CPU usage of your code. This goes into more depth than the execution time measurements for individual components that Sitecore can provide, as it can look down to the level of individual lines of code in your C#. The second is the general debugger. While this can also give you data about CPU usage, it's most helpful for investigating how your code makes use of managed memory.</p>
+					<h3>CPU profiling</h3>
+					Microsoft recommends that you use a release build when you're doing this sort of profiling, since this means you'll be profiling the optimised code.
+					<p>You can pick a process to attach the profiler to via the following menu option:</p>
+					<p>
+						<a href="/img/2017/2017-09-cpuprofiler.png" target="_blank">
+							<img alt="CPU Profiler" src="/img/2017/2017-09-cpuprofiler.png">
+						</a>
+					</p>
+					<p>You then get to choose the process to attach to. When attaching to the IIS worker process running your Sitecore site you need to ensure the checkboxes for "Show processes for all users" and "Show processes in all sessions" are checked so you can see the web worker process you want to attach to.</p>
+					<p>Once you've chosen a process, Visual Studio will inject the profiling code into it, and start recording data. You can then spend some time exercising your code. Refresh the page you're interested in, click on buttons that trigger post-backs or AJAX calls. And try to make sure you do each action a reasonable number of times to get a spread of data. Once you're done, click the "stop profiling" link...</p>
+					<p>
+						<a href="/img/2017/2017-09-stopprofiling.png" target="_blank">
+							<img alt="Stop Profiling" src="/img/2017/2017-09-stopprofiling.png">
+						</a>
+					</p>
+					<p>...and Visual Studio will generate a report based on the data it has gathered. (Note that detaching the profiler from your application causes it to be unloaded from memory. That's to remove all the specialised profiling code that gets injected when you attach the profiler in the first place) It will then show you a summary of the report:</p>
+					<p>
+						<a href="/img/2017/2017-09-reportsummary.png" target="_blank">
+							<img alt="Report Summary" src="/img/2017/2017-09-reportsummary.png">
+						</a>
+					</p>
+					<p>The first section of the page shows an overview of the CPU activity during the profiling. Your goal for any optimisation is to try and get this graph as low as possible overall – but it's a fairly coarse representation of the data.</p>
+					<p>The second section shows you the "hot path" for the execution – the route through the code which has consumed the largest chunk of the CPU time during your profiling session. This is a really helpful shortcut to finding places that you can optimise. Seeing code from your solution in this list is a definite signal that you have some optimisation to do. You want this list to include only framework or Sitecore code.</p>
+					<p>The third section describes the code which is doing the most work. Again, you only want to see framework code here if possible.</p>
+					<p>The summary of the report will give you an overview of what's going on, but a more detailed view will help you focus on what aspects of your code are the best candidates for optimisation. I tend to start with the "Modules" page of the report, accessed from the drop-down list at the top of the page:</p>
+					<p>
+						<a href="/img/2017/2017-09-choosemodules.png" target="_blank">
+							<img alt="Choose Modules" src="/img/2017/2017-09-choosemodules.png">
+						</a>
+					</p>
+					<p>That gives you more detailed stats, broken down by the DLLs that have been loaded into the process:</p>
+					<p>
+						<a href="/img/2017/2017-09-modules.png" target="_blank">
+							<img alt="Modules" src="/img/2017/2017-09-modules.png">
+						</a>
+					</p>
+					<p>The stats are broken down into four columns. The first two show "Inclusive" and "Exclusive" samples. Like the timing data from the Sitecore profiler, that's data for "this method, and any child methods it calls" and "this method on its own". The second two columns show this same data but expressed as a ratio of overall execution time, rather than an absolute number. I tend to sort by "Inclusive samples %" initially, as it gives a good idea of the relative expense of each bit of code.</p>
+					<p>Don't get too bogged down in the exact numbers here – there are lots of things going on in the system which can affect these numbers from session to session in ways you cannot control. You want to focus on the relative values – trends in how the numbers change after you make modifications. And, as everywhere else here, you want your changes to try and reduce the numbers. And it's generally a bad sign if code you wrote is near the top of this list.</p>
+					<p>You can drill down to individual methods by expanding the node for a DLL you're interested in. And if you spot something in your code that's worth further investigation, double-clicking the method in this list will take you to a details view which shows the call path and details of which bit of code is using the most CPU time:</p>
+					<p>
+						<a href="/img/2017/2017-09-cpudetails.png" target="_blank">
+							<img alt="CPU Details" src="/img/2017/2017-09-cpudetails.png">
+						</a>
+					</p>
+					<p>The UI does a great job of highlighting exactly where in your code most of the CPU time is going – so if you've accidentally put some really silly code into your solution that's wasting a load of CPU time, you can see find it very easily... (Yes, my presentation examples were deliberately caricatured 😉 )</p>
+					<p>Once you've worked out the best places to adjust your code, you should make your optimisations and then re-measure it. Sometimes changes you make can end up making the code slower, due to the complexities of how it's processed by the framework and your CPU. So that re-test is important to ensure you're getting the benefits you hope for.</p>
+					<h3>But what about memory?</h3>
+					The profiler can help you find the bits of code that aren't making best use of CPU resources, but it's also important to check what's going on with memory in your application. Memory pressure can be a significant issue in production sites, as it can cause IIS to recycle your site. Given the start-up times for instances of Sitecore, avoiding this by keeping an eye on how your site uses memory is just as important as the CPU stats.
+					<p>You can do this easily by attaching the standard Visual Studio debugger:</p>
+					<p>
+						<a href="/img/2017/2017-09-memorygraph.png" target="_blank">
+							<img alt="Memory Graph" src="/img/2017/2017-09-memorygraph.png">
+						</a>
+					</p>
+					<p>By default you get graphs of memory usage and CPU over time while the debugger is attached. The memory graph gives you a simple way to watch trends over time. As you exercise your site, you you want to watch the slope of this trace. It's ok if the graph stays roughly flat, or oscillates up and down over time. But you don't want to see a graph which has an upward trend over time – that indicates something is consuming more and more memory – which is likely to lead to issues when left long enough. (The yellow markers on the graph indicate points when the garbage collector kicked in)
+						<br style="clear:both;">
+					</p>
+					<p>
+						<a href="/img/2017/2017-10-memorysnapshot.png" target="_blank">
+							<img alt="MemorySnapshot" src="/img/2017/2017-10-memorysnapshot.png">
+						</a>While this is a nice visual way of seeing the behaviour of the site over time, it doesn't give much detail. But the debugger has a neat trick for helping you here. Below the graphs are some tabs, and they include an option to "take a snapshot". That gets the runtime to record data about the current state of the managed heap – what objects are on it, and how much space they're occupying. You can take one snapshot at the beginning of your debugging session and then exercise your code for a bit. Once you've seen the trend you want to analyse on the overview graph, you can take a second snapshot.</p>
+					<p>
+						<a href="/img/2017/2017-10-memorydelta.png" target="_blank">
+							<img alt="Memory Delta" src="/img/2017/2017-10-memorydelta.png">
+						</a>Once you have more than one snapshot, Visual Studio will show you a summary of the changes between them. A red upward arrow indicates "memory usage went up" and the overview tells you what happened both for the count of heap objects and the size of them. Green arrows indicated the values went down. Clicking on this summary will open a report that gives you the details of the difference between your snapshots. This gives you a list of all the object types that are in memory, alongside their change in size and change in count. As before, you can sort this list to show the data in different orders:</p>
+					<p>
+						<a href="/img/2017/2017-10-heapdetails.png" target="_blank">
+							<img alt="Heap Details" src="/img/2017/2017-10-heapdetails.png">
+						</a>
+					</p>
+					<p>Whichever way you sort it, ideally you don't want code from your codebase near the top of this list, as that implies that it's using increasing amounts of resources. Where you find objects that are going up over time, you can use "Find References" in your codebase to find where the object is being used and investigate whether you can reduce the usage or improve the effect of garbage collection by releasing references you no longer need.</p>
+					<p>As with the previous measurements, after you've made some changes you should always recompile and re-test your code, just to make sure the change you made had the effect you wanted.</p>
+					<h2>Client-side stuff is important too</h2>
+					<p>It wasn't part of my original presentation, but in the Q &amp; A afterwards, we discussed the idea that your front-end code can be examined too. For that your browser's dev tools are useful. They can help you look into the rendering and scripting performance of your site, as well as the network-centric performance issues like how many files are being loaded. In Chrome, for example, you can see very detailed rendering performance data:</p>
+					<p>
+						<a href="/img/2017/2017-10-browserprofiler.png" target="_blank">
+							<img alt="Browser Profiler" src="/img/2017/2017-10-browserprofiler.png">
+						</a>
+					</p>
+					<h2>Conclusions</h2>
+					<p>If you can set aside a small amount of time as you work on each bit of code for your site, you can give it a quick check for performance issues. Spotting things like inefficient Sitecore queries, or memory leaks at this point will be much less hassle for you than finding them in production. So I'd recommend you try and fit these sort of checks into your work whenever you can...</p>
+					<p>Thanks to everyone who helped make this user group event a success – the presenters, the audience, the pizza chef, and
+						<a href="http://www.bekagool.com/" rel="noopener noreferrer" target="_blank">Kagool</a>
+						for hosting.</p>
+					<p>See you all again at the next one, hopefully...</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (203)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (47)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (12)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Packages (11)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -320,21 +419,16 @@ The profiler can help you find the bits of code that aren't making best use of C
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

@@ -1,31 +1,26 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/msi-parameters">
-        <meta name="description" content="Ages back I wrote up some &amp;lt;a href=&amp;quot;/posts/2014/unattended-installs-of-sitecore&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;work on automating the Sitecore installer&amp;lt;/a&amp;gt;. I noted back then that I wasn&amp;#x27;t sure what the purpose of the &amp;lt;code&amp;gt;SC_IISSITE_ID&amp;lt;/code&amp;gt; parameter to the MSI was. Having done some more work on the topic of install automation recently, I&amp;#x27;ve got some more detail on what it&amp;#x27;s for now, as well as another parameter that&amp;#x27;s more important than I had realised... ">
-        <meta property="og:description" content="Ages back I wrote up some &amp;lt;a href=&amp;quot;/posts/2014/unattended-installs-of-sitecore&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;work on automating the Sitecore installer&amp;lt;/a&amp;gt;. I noted back then that I wasn&amp;#x27;t sure what the purpose of the &amp;lt;code&amp;gt;SC_IISSITE_ID&amp;lt;/code&amp;gt; parameter to the MSI was. Having done some more work on the topic of install automation recently, I&amp;#x27;ve got some more detail on what it&amp;#x27;s for now, as well as another parameter that&amp;#x27;s more important than I had realised... ">
-            <meta name="keywords" content="PowerShell, Sitecore, Installation">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Unattended installs again: Understanding some more Sitecore MSI&#xA0;parameters</title> 
-
-        <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.webmanifest">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Unattended installs again: Understanding some more Sitecore MSI&amp;#xA0;parameters">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/msi-parameters-social.jpg">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/msi-parameters">
+		<meta name="description" content="Ages back I wrote up some <a href=&quot;/posts/2014/unattended-installs-of-sitecore&quot; target=&quot;_blank&quot;>work on automating the Sitecore installer</a>. I noted back then that I wasn't sure what the purpose of the <code>SC_IISSITE_ID</code> parameter to the MSI was. Having done some more work on the topic of install automation recently, I've got some more detail on what it's for now, as well as another parameter that's more important than I had realised... ">
+		<meta property="og:description" content="Ages back I wrote up some <a href=&quot;/posts/2014/unattended-installs-of-sitecore&quot; target=&quot;_blank&quot;>work on automating the Sitecore installer</a>. I noted back then that I wasn't sure what the purpose of the <code>SC_IISSITE_ID</code> parameter to the MSI was. Having done some more work on the topic of install automation recently, I've got some more detail on what it's for now, as well as another parameter that's more important than I had realised... ">
+		<meta name="keywords" content="PowerShell, Sitecore, Installation">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Unattended installs again: Understanding some more Sitecore MSI&nbsp;parameters</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Unattended installs again: Understanding some more Sitecore MSI&amp;#xA0;parameters">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/msi-parameters-social.jpg">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -41,127 +36,137 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/msi-parameters">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-
     
-
-    
-    <!-- 18/07/2022 07:56:02 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="nav -mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="nav hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="nav -mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="nav py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <div class="url p-1 bg-gray-100 rounded-md">Article printed from: <tt>https://blog.jermdavis.dev/posts/2015/msi-parameters</tt></div>
-        <h1 class="text-5xl mb-4 pb-1">
-        Unattended installs again: Understanding some more Sitecore MSI parameters
-        </h1>
-            <div class="meta">Published 15 June 2015</div>
-                <div class="meta">Updated 26 June 2018</div>
-            <div class="flex py-1">
-                    <a href="/tags/powershell/" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
-                    <a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-                    <a href="/tags/installation/" class="p-1 mr-1 bg-gray-100 rounded-md"> Installation</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>Ages back I wrote up some <a href="/posts/2014/unattended-installs-of-sitecore" target="_blank">work on automating the Sitecore installer</a>. I noted back then that I wasn't sure what the purpose of the <code>SC_IISSITE_ID</code> parameter to the MSI was. Having done some more work on the topic of install automation recently, I've got some more detail on what it's for now, as well as another parameter that's more important than I had realised... <!--more--></p>
-<p>The reason for me going back to this was that the installation scripting I'd used was working fine for me during testing, but when I came to try and install more than one automated instance on the same server I started to see the script failing.</p>
-<h2>So what does SC_IISSITE_ID do?</h2>
-<p>The first problem I hit was the installation failing with errors in the MSI log file around its call to <code>StartIIS7ConfigTransaction</code>. A bit of internet digging lead me to this post: <a href="http://wixtoolset.org/issues/2755/" target="_blank" rel="noopener noreferrer">http://wixtoolset.org/issues/2755/</a>. While it's not referring to Sitecore installs, it is referring to the idea that when the installation framework is installing stuff into IIS, it can make use of either site names or site IDs to find whether a particular site exists.</p>
-<p>During the install, the Sitecore MSI is using the ID you pass in the <code>SC_IISSITE_ID</code> field for creating the IIS site for your instance. Hence if that ID is unique the installer succeeds, but it will fail if you try to install two different instances with the same ID.</p>
-<p>The MSI engine documentation that the link above refers to says that the <code>SC_IISSITE_ID</code> property is optional. If you know it, pass it. But if you don't know it you can leave it out and the MSI engine will work out the next available ID to use.</p>
-<p>So to make the scripted installation succeed for more than one instance, this needs to be left as an empty string.</p>
-<h2>There's more than one "unique ID" number involved here...</h2>
-<p>Having fixed that, I then discovered a second problem. Installing a second version of Sitecore on the same machine would still fail, but now with a more obscure error. The log file included something like this:</p>
-<pre><code class="language-text">MSI (s) (08:88) [12:31:21:291]: Machine policy value 'TransformsSecure' is 1
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/msi-parameters">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		
+		<!-- 18/07/2022 08:16:49 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2015/msi-parameters</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Unattended installs again: Understanding some more Sitecore MSI&nbsp;parameters
+				</h1>
+				<div class="meta">Published 15 June 2015</div>
+				<div class="meta">Updated 26 June 2018</div>
+				<div class="flex py-1">
+					<a href="/tags/powershell/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						PowerShell</a>
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/installation/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Installation</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>Ages back I wrote up some
+						<a href="/posts/2014/unattended-installs-of-sitecore" target="_blank">work on automating the Sitecore installer</a>. I noted back then that I wasn't sure what the purpose of the
+						<code>SC_IISSITE_ID</code>
+						parameter to the MSI was. Having done some more work on the topic of install automation recently, I've got some more detail on what it's for now, as well as another parameter that's more important than I had realised... 
+						<!--more-->
+					</p>
+					<p>The reason for me going back to this was that the installation scripting I'd used was working fine for me during testing, but when I came to try and install more than one automated instance on the same server I started to see the script failing.</p>
+					<h2>So what does SC_IISSITE_ID do?</h2>
+					<p>The first problem I hit was the installation failing with errors in the MSI log file around its call to
+						<code>StartIIS7ConfigTransaction</code>. A bit of internet digging lead me to this post:
+						<a href="http://wixtoolset.org/issues/2755/" target="_blank" rel="noopener noreferrer">http://wixtoolset.org/issues/2755/</a>. While it's not referring to Sitecore installs, it is referring to the idea that when the installation framework is installing stuff into IIS, it can make use of either site names or site IDs to find whether a particular site exists.</p>
+					<p>During the install, the Sitecore MSI is using the ID you pass in the
+						<code>SC_IISSITE_ID</code>
+						field for creating the IIS site for your instance. Hence if that ID is unique the installer succeeds, but it will fail if you try to install two different instances with the same ID.</p>
+					<p>The MSI engine documentation that the link above refers to says that the
+						<code>SC_IISSITE_ID</code>
+						property is optional. If you know it, pass it. But if you don't know it you can leave it out and the MSI engine will work out the next available ID to use.</p>
+					<p>So to make the scripted installation succeed for more than one instance, this needs to be left as an empty string.</p>
+					<h2>There's more than one "unique ID" number involved here...</h2>
+					<p>Having fixed that, I then discovered a second problem. Installing a second version of Sitecore on the same machine would still fail, but now with a more obscure error. The log file included something like this:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">MSI (s) (08:88) [12:31:21:291]: Machine policy value 'TransformsSecure' is 1
 MSI (s) (08:88) [12:31:21:291]: Machine policy value 'DisableUserInstalls' is 0
 MSI (s) (08:88) [12:31:21:291]: Specified instance {60C35F8E-334E-513E-B901-858D8CA9E17D} via transform :ComponentGUIDTransform5.mst is already installed. MSINEWINSTANCE requires a new instance that is not installed.
 MSI (s) (08:88) [12:31:21:291]: MainEngineThread is returning 1639
@@ -176,24 +181,39 @@ MSI (s) (08:74) [12:31:21:300]: Decrementing counter to disable shutdown. If cou
 MSI (s) (08:74) [12:31:21:301]: Restoring environment variables
 MSI (c) (98:CC) [12:31:21:311]: Decrementing counter to disable shutdown. If counter &gt;= 0, shutdown will be denied.  Counter after decrement: -1
 MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
-</code></pre>
-<p>This one took a bit more head scratching to resolve, but the clue is in the phrase <code>:ComponentGUIDTransform5.mst is already installed. MSINEWINSTANCE requires a new instance that is not installed</code>.</p>
-<p>The <code>.mst</code> file referenced here is mentioned in the install script as part of the <code>TRANSFORMS</code> parameter. <a href="https://msdn.microsoft.com/en-gb/library/aa372085(v=vs.85).aspx" target="_blank" rel="noopener noreferrer">Reading up on this</a>, it turns out to be used to specify small updates to the overall MSI package, which can be used when you need to install the same package on a machine more than once. It takes a string which includes the name of a small update package, along with any parameters that package needs. So clearly it's another &quot;you need a unique ID&quot; issue – but this time you need to specify the ID you want, and can't leave it blank.</p>
-<p>Initially I tried counting the number of IIS sites to work out a number to use for this, however this did not work reliably. Sometimes the install would work, and sometimes not. After a bit more research I hit on the idea that the Sitecore installer writes to the registry – so I looked at that to see what data it included.</p>
-<p>On a 64bit machine, this data lives at <code>HKLM\Software\Wow6432Node\Sitecore CMS</code> and it looks a bit like this:</p>
-<p><a href="/img/2015/2015-06-sitecoreregistry.png" target="_blank"><img alt="Sitecore Install Registry" src="/img/2015/2015-06-sitecoreregistry.png"></a></p>
-<p>The registry data includes the <code>InstanceID</code> property. This looks more helpful – we can look at this data to work out what the next instance ID should be. A PowerShell function can work this out for us:</p>
-<pre><code class="language-powershell">function Generate-InstanceID([string]$siteName){
-    $registryPath =  &quot;Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\&quot;
+
+					</pre>
+					<p>This one took a bit more head scratching to resolve, but the clue is in the phrase
+						<code>:ComponentGUIDTransform5.mst is already installed. MSINEWINSTANCE requires a new instance that is not installed</code>.</p>
+					<p>The
+						<code>.mst</code>
+						file referenced here is mentioned in the install script as part of the
+						<code>TRANSFORMS</code>
+						parameter.
+						<a href="https://msdn.microsoft.com/en-gb/library/aa372085(v=vs.85).aspx" target="_blank" rel="noopener noreferrer">Reading up on this</a>, it turns out to be used to specify small updates to the overall MSI package, which can be used when you need to install the same package on a machine more than once. It takes a string which includes the name of a small update package, along with any parameters that package needs. So clearly it's another "you need a unique ID" issue – but this time you need to specify the ID you want, and can't leave it blank.</p>
+					<p>Initially I tried counting the number of IIS sites to work out a number to use for this, however this did not work reliably. Sometimes the install would work, and sometimes not. After a bit more research I hit on the idea that the Sitecore installer writes to the registry – so I looked at that to see what data it included.</p>
+					<p>On a 64bit machine, this data lives at
+						<code>HKLM\Software\Wow6432Node\Sitecore CMS</code>
+						and it looks a bit like this:</p>
+					<p>
+						<a href="/img/2015/2015-06-sitecoreregistry.png" target="_blank">
+							<img alt="Sitecore Install Registry" src="/img/2015/2015-06-sitecoreregistry.png">
+						</a>
+					</p>
+					<p>The registry data includes the
+						<code>InstanceID</code>
+						property. This looks more helpful – we can look at this data to work out what the next instance ID should be. A PowerShell function can work this out for us:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Generate-InstanceID([string]$siteName){
+    $registryPath =  "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\"
 
     if(-not (Test-path $registryPath)){
-        throw &quot;The instance-testing path in the registry could not be found - not a 64bit machine?&quot;
+        throw "The instance-testing path in the registry could not be found - not a 64bit machine?"
     }
 
-    $scRegistryPath = &quot;$registryPath\Sitecore CMS\&quot;
+    $scRegistryPath = "$registryPath\Sitecore CMS\"
 
     # default to 1 in case we've never had an install before
-    $instanceNumber = &quot;1&quot;
+    $instanceNumber = "1"
 
     if( Test-path $scRegistryPath ){
         Push-Location $scRegistryPath
@@ -201,152 +221,178 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
         $lastID = dir | Get-ItemProperty -Name InstanceID | Sort-Object -property InstanceID -Descending | Select-Object -ExpandProperty InstanceID -First 1
 
         if( -not [string]::IsNullOrWhiteSpace($lastID)){
-            Write-Host &quot;Previous instance found: $lastID &quot;
+            Write-Host "Previous instance found: $lastID "
 
             $instanceString = $lastID.Remove(0,10)
             $instanceNumber = [int]::Parse($instanceString)
             $instanceNumber = $instanceNumber + 1
         } else {
-            Write-Host &quot;No previous instance found&quot;
+            Write-Host "No previous instance found"
         }
 
         Pop-Location
     } else {
-        Write-Host &quot;No previous instance found&quot;
+        Write-Host "No previous instance found"
     }
 
-    Write-Host &quot;Using instance number: $instanceNumber&quot;
+    Write-Host "Using instance number: $instanceNumber"
 
     return $instanceNumber
 }
-</code></pre>
-<p>The code checks if the registry entries that we want to process exist. It defaults to instance number one, and then looks at all the data under the Sitecore CMS bit of the registry. It finds the highest InstanceID value that has been stored here, extracts the number from it and then adds one to it.</p>
-<p>So far, this has reliably found a valid ID to use.</p>
-<h2>So where does this leave the install script?</h2>
-<p>After making the changes above, the PowerShell code required to install an instance of Sitecore looks a bit like this:</p>
-<pre><code class="language-powershell">function Perform-Install([string]$license, [string]$installer, [string]$site, [string]$sqlServer, [string]$sqlUser, [string]$sqlPassword) {
-    $msi = &quot;msiexec.exe&quot;  
+
+					</pre>
+					<p>The code checks if the registry entries that we want to process exist. It defaults to instance number one, and then looks at all the data under the Sitecore CMS bit of the registry. It finds the highest InstanceID value that has been stored here, extracts the number from it and then adds one to it.</p>
+					<p>So far, this has reliably found a valid ID to use.</p>
+					<h2>So where does this leave the install script?</h2>
+					<p>After making the changes above, the PowerShell code required to install an instance of Sitecore looks a bit like this:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Perform-Install([string]$license, [string]$installer, [string]$site, [string]$sqlServer, [string]$sqlUser, [string]$sqlPassword) {
+    $msi = "msiexec.exe"  
     $instanceID = (Generate-InstanceID $site)
 
     if( -Not (Test-Path $license) )
     {
-        throw &quot;Cannot find license file at $license&quot;
+        throw "Cannot find license file at $license"
     }
 
     if( -Not (Test-Path $installer) )
     {
-        throw &quot;Cannot find the sitecore installer at $installer&quot;
+        throw "Cannot find the sitecore installer at $installer"
     }
 
-    write-host &quot;Extracting Sitecore cabinet file...&quot;
+    write-host "Extracting Sitecore cabinet file..."
     &amp;$installer /q /ExtractCab | out-null
-    write-host &quot;Extracted...&quot;
+    write-host "Extracted..."
 
-    write-host &quot;Installing Sitecore...&quot;
-    &amp;$msi /qn /i &quot;$($pwd)\SupportFiles\exe\Sitecore.msi&quot; &quot;TRANSFORMS=:InstanceId$($instanceID);:ComponentGUIDTransform5.mst&quot; &quot;MSINEWINSTANCE=1&quot; &quot;LOGVERBOSE=1&quot; &quot;SC_LANG=en-US&quot; &quot;SC_FULL=1&quot; &quot;SC_INSTANCENAME=$($site)&quot; &quot;SC_LICENSE_PATH=$($license)&quot; &quot;SC_SQL_SERVER_USER=$($sqlUser)&quot; &quot;SC_SQL_SERVER=$($sqlServer)&quot; &quot;SC_SQL_SERVER_PASSWORD=$($sqlPassword)&quot; &quot;SC_DBPREFIX=$($site)_&quot; &quot;SC_PREFIX_PHYSICAL_FILES=1&quot; &quot;SC_SQL_SERVER_CONFIG_USER=$($sqlUser)&quot; &quot;SC_SQL_SERVER_CONFIG_PASSWORD=$($sqlPassword)&quot; &quot;SC_DBTYPE=MSSQL&quot; &quot;INSTALLLOCATION=C:\Inetpub\wwwroot\$($site)&quot; &quot;SC_DATA_FOLDER=C:\Inetpub\wwwroot\$($site)\Data&quot; &quot;SC_DB_FOLDER=C:\Inetpub\wwwroot\$($site)\Database&quot; &quot;SC_MDF_FOLDER=C:\Inetpub\wwwroot\$($site)\Database\MDF&quot; &quot;SC_LDF_FOLDER=C:\Inetpub\wwwroot\$($site)\Database\LDF&quot; &quot;SC_NET_VERSION=4&quot; &quot;SITECORE_MVC=0&quot; &quot;SC_INTEGRATED_PIPELINE_MODE=1&quot; &quot;SC_IISSITE_NAME=$($site)&quot; &quot;SC_IISAPPPOOL_NAME=$($site)AppPool&quot; &quot;SC_IISSITE_HEADER=$($site)&quot; &quot;SC_IISSITE_PORT=80&quot; &quot;SC_IISSITE_ID=&quot; &quot;/l*+v&quot; &quot;$($pwd)\$($site)-Install.log&quot; | out-null   
-    write-host &quot;Installed...&quot;
+    write-host "Installing Sitecore..."
+    &amp;$msi /qn /i "$($pwd)\SupportFiles\exe\Sitecore.msi" "TRANSFORMS=:InstanceId$($instanceID);:ComponentGUIDTransform5.mst" "MSINEWINSTANCE=1" "LOGVERBOSE=1" "SC_LANG=en-US" "SC_FULL=1" "SC_INSTANCENAME=$($site)" "SC_LICENSE_PATH=$($license)" "SC_SQL_SERVER_USER=$($sqlUser)" "SC_SQL_SERVER=$($sqlServer)" "SC_SQL_SERVER_PASSWORD=$($sqlPassword)" "SC_DBPREFIX=$($site)_" "SC_PREFIX_PHYSICAL_FILES=1" "SC_SQL_SERVER_CONFIG_USER=$($sqlUser)" "SC_SQL_SERVER_CONFIG_PASSWORD=$($sqlPassword)" "SC_DBTYPE=MSSQL" "INSTALLLOCATION=C:\Inetpub\wwwroot\$($site)" "SC_DATA_FOLDER=C:\Inetpub\wwwroot\$($site)\Data" "SC_DB_FOLDER=C:\Inetpub\wwwroot\$($site)\Database" "SC_MDF_FOLDER=C:\Inetpub\wwwroot\$($site)\Database\MDF" "SC_LDF_FOLDER=C:\Inetpub\wwwroot\$($site)\Database\LDF" "SC_NET_VERSION=4" "SITECORE_MVC=0" "SC_INTEGRATED_PIPELINE_MODE=1" "SC_IISSITE_NAME=$($site)" "SC_IISAPPPOOL_NAME=$($site)AppPool" "SC_IISSITE_HEADER=$($site)" "SC_IISSITE_PORT=80" "SC_IISSITE_ID=" "/l*+v" "$($pwd)\$($site)-Install.log" | out-null   
+    write-host "Installed..."
 
-    write-host &quot;Tidying up...&quot;
-    rmdir &quot;.\SupportFiles&quot; -Recurse -Force
+    write-host "Tidying up..."
+    rmdir ".\SupportFiles" -Recurse -Force
 
-    return (Test-Path &quot;C:\inetpub\wwwroot\$site&quot;)
+    return (Test-Path "C:\inetpub\wwwroot\$site")
 }
-</code></pre>
-<p>This combines the two changes above, to make the install work for more than one Sitecore instance on a single server. It also includes a final test to see if the website folder now exists – which indicates whether we succeeded.</p>
-<h2>One other thing to note</h2>
-<p>While testing these changes, I found a couple of situations where (for reasons I've not been able to determine) uninstalling an instance via <code>.exe</code> or <code>.msi</code> didn't work correctly. Despite the removal of the IIS site, most of the files and the databases, attempts to reuse the same instance name failed. I was seeing errors in the MSI log file saying that the install had failed (but with no specific reason) in some cases, and in one case an error saying that the installation was rolled-back because connecting to the database did not work (When the supplied credentials were definitely valid).</p>
-<p>In these cases, I was able to resolve the install problems by checking the registry (as described above) and removing left-over entries from the instance(s) which had not been removed by the uninstall process.</p>
-<p>So if you see odd errors from the MSI process take a look at the registry and see if you have any leftovers.</p>
 
-
-            </div>
-            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (203)</a>
-                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
-                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
-                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
-                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
-                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
-                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
-                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
-                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+					</pre>
+					<p>This combines the two changes above, to make the install work for more than one Sitecore instance on a single server. It also includes a final test to see if the website folder now exists – which indicates whether we succeeded.</p>
+					<h2>One other thing to note</h2>
+					<p>While testing these changes, I found a couple of situations where (for reasons I've not been able to determine) uninstalling an instance via
+						<code>.exe</code>
+						or
+						<code>.msi</code>
+						didn't work correctly. Despite the removal of the IIS site, most of the files and the databases, attempts to reuse the same instance name failed. I was seeing errors in the MSI log file saying that the install had failed (but with no specific reason) in some cases, and in one case an error saying that the installation was rolled-back because connecting to the database did not work (When the supplied credentials were definitely valid).</p>
+					<p>In these cases, I was able to resolve the install problems by checking the registry (as described above) and removing left-over entries from the instance(s) which had not been removed by the uninstall process.</p>
+					<p>So if you see odd errors from the MSI process take a look at the registry and see if you have any leftovers.</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (203)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (47)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (12)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Packages (11)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -355,21 +401,16 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

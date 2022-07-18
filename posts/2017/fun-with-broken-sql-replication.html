@@ -1,31 +1,28 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2017/fun-with-broken-sql-replication">
-        <meta name="description" content="Recently I&amp;#x27;ve spent some time debugging some issues with a client site. One problem that came up during this work (which, sadly wasn&amp;#x27;t actually the problem I was looking for) was a set of errors from SQL Replication appearing in the Sitecore logs. In keeping with &amp;lt;a href=&amp;quot;/posts/2017/that-sound-you-can-hear-its-your-log-files-weeping&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;my previous ranting about keeping your Sitecore logs as error free as possible&amp;lt;/a&amp;gt; I spent some time working out how to solve this.&amp;#xA;Since I&amp;#x27;d not looked at databases at this sort of level for some considerable time, I&amp;#x27;m writing down some notes for my future self, next time I have to worry about this sort of thing...">
-        <meta property="og:description" content="Recently I&amp;#x27;ve spent some time debugging some issues with a client site. One problem that came up during this work (which, sadly wasn&amp;#x27;t actually the problem I was looking for) was a set of errors from SQL Replication appearing in the Sitecore logs. In keeping with &amp;lt;a href=&amp;quot;/posts/2017/that-sound-you-can-hear-its-your-log-files-weeping&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;my previous ranting about keeping your Sitecore logs as error free as possible&amp;lt;/a&amp;gt; I spent some time working out how to solve this.&amp;#xA;Since I&amp;#x27;d not looked at databases at this sort of level for some considerable time, I&amp;#x27;m writing down some notes for my future self, next time I have to worry about this sort of thing...">
-            <meta name="keywords" content="Sitecore, SQL Server">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Fun with broken SQL&#xA0;Replication</title> 
-
-        <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.webmanifest">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Fun with broken SQL&amp;#xA0;Replication">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/fun-with-broken-sql-replication-social.jpg">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2017/fun-with-broken-sql-replication">
+		<meta name="description" content="Recently I've spent some time debugging some issues with a client site. One problem that came up during this work (which, sadly wasn't actually the problem I was looking for) was a set of errors from SQL Replication appearing in the Sitecore logs. In keeping with <a href=&quot;/posts/2017/that-sound-you-can-hear-its-your-log-files-weeping&quot; target=&quot;_blank&quot;>my previous ranting about keeping your Sitecore logs as error free as possible</a> I spent some time working out how to solve this.
+Since I'd not looked at databases at this sort of level for some considerable time, I'm writing down some notes for my future self, next time I have to worry about this sort of thing...">
+		<meta property="og:description" content="Recently I've spent some time debugging some issues with a client site. One problem that came up during this work (which, sadly wasn't actually the problem I was looking for) was a set of errors from SQL Replication appearing in the Sitecore logs. In keeping with <a href=&quot;/posts/2017/that-sound-you-can-hear-its-your-log-files-weeping&quot; target=&quot;_blank&quot;>my previous ranting about keeping your Sitecore logs as error free as possible</a> I spent some time working out how to solve this.
+Since I'd not looked at databases at this sort of level for some considerable time, I'm writing down some notes for my future self, next time I have to worry about this sort of thing...">
+		<meta name="keywords" content="Sitecore, SQL Server">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Fun with broken SQL&nbsp;Replication</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Fun with broken SQL&amp;#xA0;Replication">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/fun-with-broken-sql-replication-social.jpg">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -40,121 +37,123 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2017/fun-with-broken-sql-replication">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-
     
-
-    
-    <!-- 18/07/2022 07:56:09 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="nav -mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="nav hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="nav -mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="nav py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <div class="url p-1 bg-gray-100 rounded-md">Article printed from: <tt>https://blog.jermdavis.dev/posts/2017/fun-with-broken-sql-replication</tt></div>
-        <h1 class="text-5xl mb-4 pb-1">
-        Fun with broken SQL Replication
-        </h1>
-            <div class="meta">Published 04 September 2017</div>
-            <div class="flex py-1">
-                    <a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-                    <a href="/tags/sql-server/" class="p-1 mr-1 bg-gray-100 rounded-md"> SQL Server</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>Recently I've spent some time debugging some issues with a client site. One problem that came up during this work (which, sadly wasn't actually the problem I was looking for) was a set of errors from SQL Replication appearing in the Sitecore logs. In keeping with <a href="/posts/2017/that-sound-you-can-hear-its-your-log-files-weeping" target="_blank">my previous ranting about keeping your Sitecore logs as error free as possible</a> I spent some time working out how to solve this.</p>
-<p>Since I'd not looked at databases at this sort of level for some considerable time, I'm writing down some notes for my future self, next time I have to worry about this sort of thing...<!--more--></p>
-<h2>The symptoms</h2>
-<p>The client in question had two database server clusters set up in separate data centres. For DR purposes, data was being pushed from #1 to #2 with a one-way replication. The replication had originally been configured for a subset of tables in Sitecore's Core database. It should have been pushing data from the ASP.Net Membership tables, but not pushing data for things like the ClientData table.</p>
-<p>But there were fairly regular exceptions appearing in the log, with epic stack traces like this:</p>
-<pre><code class="language-text">3836 06:50:18 ERROR Application error.
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2017/fun-with-broken-sql-replication">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		
+		<!-- 18/07/2022 08:16:57 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2017/fun-with-broken-sql-replication</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Fun with broken SQL&nbsp;Replication
+				</h1>
+				<div class="meta">Published 04 September 2017</div>
+				<div class="flex py-1">
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/sql-server/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						SQL Server</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>Recently I've spent some time debugging some issues with a client site. One problem that came up during this work (which, sadly wasn't actually the problem I was looking for) was a set of errors from SQL Replication appearing in the Sitecore logs. In keeping with
+						<a href="/posts/2017/that-sound-you-can-hear-its-your-log-files-weeping" target="_blank">my previous ranting about keeping your Sitecore logs as error free as possible</a>
+						I spent some time working out how to solve this.</p>
+					<p>Since I'd not looked at databases at this sort of level for some considerable time, I'm writing down some notes for my future self, next time I have to worry about this sort of thing...
+						<!--more-->
+					</p>
+					<h2>The symptoms</h2>
+					<p>The client in question had two database server clusters set up in separate data centres. For DR purposes, data was being pushed from #1 to #2 with a one-way replication. The replication had originally been configured for a subset of tables in Sitecore's Core database. It should have been pushing data from the ASP.Net Membership tables, but not pushing data for things like the ClientData table.</p>
+					<p>But there were fairly regular exceptions appearing in the log, with epic stack traces like this:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3,4" data-enlighter-language="text" style="width:100%; overflow:scroll;">3836 06:50:18 ERROR Application error.
 Exception: System.Exception
 Message: Table '[dbo].[ClientData]' into which you are trying to insert, update, or delete data is currently being upgraded or initialized for merge replication. On the publisher data modifications are disallowed until the upgrade completes and snapshot has successfully run. On subscriber data modifications are disallowed until the upgrade completes or the initial snapshot has been successfully applied and it has synchronized with the publisher.
 The transaction ended in the trigger. The batch has been aborted.
@@ -190,118 +189,159 @@ Source: Sitecore.Kernel
    at Sitecore.Analytics.Media.MediaRequestSessionModule.ContextPostMapRequestHandler(Object sender, EventArgs e)
    at System.Web.HttpApplication.SyncEventExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
    at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean&amp; completedSynchronously)
-</code></pre>
-<p>That's basically saying that (in this case) a media item request has failed because SQL Server refused to honour an attempt to write some data.</p>
-<h2>Sorting this out</h2>
-<p>Spending a bit of time with my good friend Google, came across <a href="https://blogs.technet.microsoft.com/bpaulblog/2011/07/30/few-more-merge-replication-scenarios-questions/" target="_blank" rel="noopener noreferrer">blog posts</a> and <a href="https://social.msdn.microsoft.com/Forums/sqlserver/en-US/20343f7e-68f7-4b5b-a2b5-c827ec4c3988/the-transaction-ended-in-trigger?forum=sqlreplication" target="_blank" rel="noopener noreferrer">forum questions</a> talking about this error outside the context of Sitecore.  These links suggest that the error is caused when some data from the setup of a replication gets left lying around because the replication wasn't configured successfully.</p>
-<p>Digging back through the history for this project, it turns out that there was a data centre outage in the past, and the replication was broken when the infrastructure was restored. So that tends to suggest that the posts above might be the right thing here.</p>
-<p>Those posts suggest you can investigate if this is the issue by looking at the results of running a query like this on your affected database to tell you what triggers are defined:</p>
-<pre><code class="language-sql">SELECT
+
+					</pre>
+					<p>That's basically saying that (in this case) a media item request has failed because SQL Server refused to honour an attempt to write some data.</p>
+					<h2>Sorting this out</h2>
+					<p>Spending a bit of time with my good friend Google, came across
+						<a href="https://blogs.technet.microsoft.com/bpaulblog/2011/07/30/few-more-merge-replication-scenarios-questions/" target="_blank" rel="noopener noreferrer">blog posts</a>
+						and
+						<a href="https://social.msdn.microsoft.com/Forums/sqlserver/en-US/20343f7e-68f7-4b5b-a2b5-c827ec4c3988/the-transaction-ended-in-trigger?forum=sqlreplication" target="_blank" rel="noopener noreferrer">forum questions</a>
+						talking about this error outside the context of Sitecore.  These links suggest that the error is caused when some data from the setup of a replication gets left lying around because the replication wasn't configured successfully.</p>
+					<p>Digging back through the history for this project, it turns out that there was a data centre outage in the past, and the replication was broken when the infrastructure was restored. So that tends to suggest that the posts above might be the right thing here.</p>
+					<p>Those posts suggest you can investigate if this is the issue by looking at the results of running a query like this on your affected database to tell you what triggers are defined:</p>
+					<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">SELECT
        o.name as 'TableName', t.* 
 FROM
        sys.triggers t
        LEFT JOIN sys.objects o ON t.parent_id = o.object_id
 
-</code></pre>
-<p>Looking at the source database of the broken replication, I saw:</p>
-<p><a href="/img/2017/2017-08-triggers.png" target="_blank"><img alt="Triggers" src="/img/2017/2017-08-triggers.png"></a></p>
-<p>Bingo. A load of <code>MSmerge_disabledml</code> triggers are still defined on tables that shouldn't be replicated anyway. According to Google, these get created during the process of configuring replication but should be tidied up if the replication setup succeeds. At some point one of the attempts to restore replication after the outage seems to have left these lying about.</p>
-<p>The &quot;right&quot; fix for this is to remove the replication configuration, ensure all those triggers are removed, and then re-configure the replication correctly. But that would have required downtime of the site. So to get a fix for the Sitecore errors in place quickly (which can then be tidied up later, at a more convenient time) I started by disabling the unwanted triggers.</p>
-<p>You can't write directly to the <code>sys.triggers</code> table to do that, because it belongs to SQL Server. But you can use the <code>DISABLE TRIGGER</code> command instead. When using the appropriate database you can run something like:</p>
-<pre><code class="language-sql">DISABLE TRIGGER MSmerge_disabledml_0152EE111E9F4B0D9DA847F08E0B6248 ON ClientData
-</code></pre>
-<p>for each of the triggers that need disabling. You should then see the <code>is_disabled</code> column change from zero to one in the <code>sys.triggers</code> table. (The trigger name there has to match the name in the second column of the query above)</p>
-<p>Doing that for all the unwanted triggers gets rid of the errors in the Sitecore log, and lets things go back to normal.</p>
 
+					</pre>
+					<p>Looking at the source database of the broken replication, I saw:</p>
+					<p>
+						<a href="/img/2017/2017-08-triggers.png" target="_blank">
+							<img alt="Triggers" src="/img/2017/2017-08-triggers.png">
+						</a>
+					</p>
+					<p>Bingo. A load of
+						<code>MSmerge_disabledml</code>
+						triggers are still defined on tables that shouldn't be replicated anyway. According to Google, these get created during the process of configuring replication but should be tidied up if the replication setup succeeds. At some point one of the attempts to restore replication after the outage seems to have left these lying about.</p>
+					<p>The "right" fix for this is to remove the replication configuration, ensure all those triggers are removed, and then re-configure the replication correctly. But that would have required downtime of the site. So to get a fix for the Sitecore errors in place quickly (which can then be tidied up later, at a more convenient time) I started by disabling the unwanted triggers.</p>
+					<p>You can't write directly to the
+						<code>sys.triggers</code>
+						table to do that, because it belongs to SQL Server. But you can use the
+						<code>DISABLE TRIGGER</code>
+						command instead. When using the appropriate database you can run something like:</p>
+					<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">DISABLE TRIGGER MSmerge_disabledml_0152EE111E9F4B0D9DA847F08E0B6248 ON ClientData
 
-            </div>
-            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (203)</a>
-                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
-                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
-                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
-                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
-                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
-                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
-                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
-                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+					</pre>
+					<p>for each of the triggers that need disabling. You should then see the
+						<code>is_disabled</code>
+						column change from zero to one in the
+						<code>sys.triggers</code>
+						table. (The trigger name there has to match the name in the second column of the query above)</p>
+					<p>Doing that for all the unwanted triggers gets rid of the errors in the Sitecore log, and lets things go back to normal.</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (203)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (47)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (12)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Packages (11)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -310,21 +350,16 @@ FROM
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

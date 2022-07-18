@@ -1,31 +1,28 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/client-side-faceted-search">
-        <meta name="description" content="A while back &amp;lt;a href=&amp;quot;/posts/2014/faceted-search-in-sitecore-6-6&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;I wrote up the faceted search example I&amp;#x27;d presented at the London Sitecore User Group&amp;lt;/a&amp;gt;, and commented that ASP.Net WebForms wasn&amp;#x27;t really great technology for providing that sort of UI. I noted that it would work better if it could be implemented using Ajax-style UI.&amp;#xA;Having finally had a chance to work out a basic pattern for &amp;lt;a href=&amp;quot;/posts/2014/json-web-services-when-youre-stuck-in-with-basic-asp-net&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;building JSON web services using the sort of technology that&amp;#x27;s easily available in basic Sitecore 6.6 websites&amp;lt;/a&amp;gt; last week, I&amp;#x27;ve now had a chance to get around to implementing a prototype of how the faceted search might be built with client-side processing. ">
-        <meta property="og:description" content="A while back &amp;lt;a href=&amp;quot;/posts/2014/faceted-search-in-sitecore-6-6&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;I wrote up the faceted search example I&amp;#x27;d presented at the London Sitecore User Group&amp;lt;/a&amp;gt;, and commented that ASP.Net WebForms wasn&amp;#x27;t really great technology for providing that sort of UI. I noted that it would work better if it could be implemented using Ajax-style UI.&amp;#xA;Having finally had a chance to work out a basic pattern for &amp;lt;a href=&amp;quot;/posts/2014/json-web-services-when-youre-stuck-in-with-basic-asp-net&amp;quot; target=&amp;quot;_blank&amp;quot;&amp;gt;building JSON web services using the sort of technology that&amp;#x27;s easily available in basic Sitecore 6.6 websites&amp;lt;/a&amp;gt; last week, I&amp;#x27;ve now had a chance to get around to implementing a prototype of how the faceted search might be built with client-side processing. ">
-            <meta name="keywords" content="JavaScript, Lucene, Sitecore">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Updating faceted search with client-side&#xA0;code</title> 
-
-        <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.webmanifest">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Updating faceted search with client-side&amp;#xA0;code">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/client-side-faceted-search-social.jpg">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2014/client-side-faceted-search">
+		<meta name="description" content="A while back <a href=&quot;/posts/2014/faceted-search-in-sitecore-6-6&quot; target=&quot;_blank&quot;>I wrote up the faceted search example I'd presented at the London Sitecore User Group</a>, and commented that ASP.Net WebForms wasn't really great technology for providing that sort of UI. I noted that it would work better if it could be implemented using Ajax-style UI.
+Having finally had a chance to work out a basic pattern for <a href=&quot;/posts/2014/json-web-services-when-youre-stuck-in-with-basic-asp-net&quot; target=&quot;_blank&quot;>building JSON web services using the sort of technology that's easily available in basic Sitecore 6.6 websites</a> last week, I've now had a chance to get around to implementing a prototype of how the faceted search might be built with client-side processing. ">
+		<meta property="og:description" content="A while back <a href=&quot;/posts/2014/faceted-search-in-sitecore-6-6&quot; target=&quot;_blank&quot;>I wrote up the faceted search example I'd presented at the London Sitecore User Group</a>, and commented that ASP.Net WebForms wasn't really great technology for providing that sort of UI. I noted that it would work better if it could be implemented using Ajax-style UI.
+Having finally had a chance to work out a basic pattern for <a href=&quot;/posts/2014/json-web-services-when-youre-stuck-in-with-basic-asp-net&quot; target=&quot;_blank&quot;>building JSON web services using the sort of technology that's easily available in basic Sitecore 6.6 websites</a> last week, I've now had a chance to get around to implementing a prototype of how the faceted search might be built with client-side processing. ">
+		<meta name="keywords" content="JavaScript, Lucene, Sitecore">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Updating faceted search with client-side&nbsp;code</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Updating faceted search with client-side&amp;#xA0;code">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/client-side-faceted-search-social.jpg">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -41,147 +38,160 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/client-side-faceted-search">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-
     
-
-    
-    <!-- 18/07/2022 07:56:17 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="nav -mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="nav hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="nav -mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="nav py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <div class="url p-1 bg-gray-100 rounded-md">Article printed from: <tt>https://blog.jermdavis.dev/posts/2014/client-side-faceted-search</tt></div>
-        <h1 class="text-5xl mb-4 pb-1">
-        Updating faceted search with client-side code
-        </h1>
-            <div class="meta">Published 15 September 2014</div>
-                <div class="meta">Updated 25 August 2016</div>
-            <div class="flex py-1">
-                    <a href="/tags/javascript/" class="p-1 mr-1 bg-gray-100 rounded-md"> JavaScript</a>
-                    <a href="/tags/lucene/" class="p-1 mr-1 bg-gray-100 rounded-md"> Lucene</a>
-                    <a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>A while back <a href="/posts/2014/faceted-search-in-sitecore-6-6" target="_blank">I wrote up the faceted search example I'd presented at the London Sitecore User Group</a>, and commented that ASP.Net WebForms wasn't really great technology for providing that sort of UI. I noted that it would work better if it could be implemented using Ajax-style UI.</p>
-<p>Having finally had a chance to work out a basic pattern for <a href="/posts/2014/json-web-services-when-youre-stuck-in-with-basic-asp-net" target="_blank">building JSON web services using the sort of technology that's easily available in basic Sitecore 6.6 websites</a> last week, I've now had a chance to get around to implementing a prototype of how the faceted search might be built with client-side processing. <!--more--></p>
-<h2>The overall pattern</h2>
-<p>We want a JSON web service to run on the Sitecore server, which will take requests for query data and return results and facet data in a similar style to that generated by the original example referenced above. Then we need the HTML and JavaScript that can talk to that service, and produce the user interface.</p>
-<p>Having done a bit of experimenting, I've broken that service down into two parts: one that fetches the configuration for the search (eg what facets to display, and information about them) and then one that takes the current facet settings and runs a query.</p>
-<p>Another change that is suggested by moving to client-side UI is that the state for the facets should be reflected in the hash fragments of the URL. This way users can bookmark the state of a search, and the forward and backward behaviour of the browser will work as expected.</p>
-<h2>The basic HTML</h2>
-<p>We're aiming for a similar UI to the t-shirt example from the previous attempt.</p>
-<p><a href="/img/2014/2014-09-basicui.png" target="_blank"><img alt="Basic UI" src="/img/2014/2014-09-basicui.png"></a></p>
-<p>We need a block of UI that contains the set of filters, and a list of the results that were generated.</p>
-<p>Because the HTML won't include any actual data when it is downloaded from the server, we also need to have some &quot;loading&quot; placeholders as well:</p>
-<pre><code class="language-xml">&lt;body&gt;
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2014/client-side-faceted-search">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		
+		<!-- 18/07/2022 08:17:06 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2014/client-side-faceted-search</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Updating faceted search with client-side&nbsp;code
+				</h1>
+				<div class="meta">Published 15 September 2014</div>
+				<div class="meta">Updated 25 August 2016</div>
+				<div class="flex py-1">
+					<a href="/tags/javascript/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						JavaScript</a>
+					<a href="/tags/lucene/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Lucene</a>
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>A while back
+						<a href="/posts/2014/faceted-search-in-sitecore-6-6" target="_blank">I wrote up the faceted search example I'd presented at the London Sitecore User Group</a>, and commented that ASP.Net WebForms wasn't really great technology for providing that sort of UI. I noted that it would work better if it could be implemented using Ajax-style UI.</p>
+					<p>Having finally had a chance to work out a basic pattern for
+						<a href="/posts/2014/json-web-services-when-youre-stuck-in-with-basic-asp-net" target="_blank">building JSON web services using the sort of technology that's easily available in basic Sitecore 6.6 websites</a>
+						last week, I've now had a chance to get around to implementing a prototype of how the faceted search might be built with client-side processing. 
+						<!--more-->
+					</p>
+					<h2>The overall pattern</h2>
+					<p>We want a JSON web service to run on the Sitecore server, which will take requests for query data and return results and facet data in a similar style to that generated by the original example referenced above. Then we need the HTML and JavaScript that can talk to that service, and produce the user interface.</p>
+					<p>Having done a bit of experimenting, I've broken that service down into two parts: one that fetches the configuration for the search (eg what facets to display, and information about them) and then one that takes the current facet settings and runs a query.</p>
+					<p>Another change that is suggested by moving to client-side UI is that the state for the facets should be reflected in the hash fragments of the URL. This way users can bookmark the state of a search, and the forward and backward behaviour of the browser will work as expected.</p>
+					<h2>The basic HTML</h2>
+					<p>We're aiming for a similar UI to the t-shirt example from the previous attempt.</p>
+					<p>
+						<a href="/img/2014/2014-09-basicui.png" target="_blank">
+							<img alt="Basic UI" src="/img/2014/2014-09-basicui.png">
+						</a>
+					</p>
+					<p>We need a block of UI that contains the set of filters, and a list of the results that were generated.</p>
+					<p>Because the HTML won't include any actual data when it is downloaded from the server, we also need to have some "loading" placeholders as well:</p>
+					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;body&gt;
     &lt;h1&gt;Search TShirts&lt;/h1&gt;
 
-    &lt;form id=&quot;filters&quot;&gt;
-        &lt;input type=&quot;hidden&quot; id=&quot;configID&quot; value=&quot;{027184E8-8007-49A2-B14C-1D02B766FE55}&quot; /&gt;
-        &lt;div class=&quot;loading&quot;&gt;-- Loading --&lt;/div&gt;
+    &lt;form id="filters"&gt;
+        &lt;input type="hidden" id="configID" value="{027184E8-8007-49A2-B14C-1D02B766FE55}" /&gt;
+        &lt;div class="loading"&gt;-- Loading --&lt;/div&gt;
     &lt;/form&gt;
 
-    &lt;ul id=&quot;results&quot;&gt;
-        &lt;li class=&quot;loading&quot;&gt;-- Loading --&lt;/li&gt;
+    &lt;ul id="results"&gt;
+        &lt;li class="loading"&gt;-- Loading --&lt;/li&gt;
     &lt;/ul&gt;
 &lt;/body&gt;
-</code></pre>
-<p>The <code>&lt;form&gt;</code> element will contain the dropdown lists that the facets can be selected from. But we also need to be able to work out what the Sitecore ID of the configuration item for our facets. This value can be output by a sublayout, from its datasource.</p>
-<p>The results can added to the <code>&lt;ul&gt;</code> element.</p>
-<h2>Fetching configuration</h2>
-<p>When the HTML for the page finishes loading the first thing that needs to happen is that the search configuration needs to be fetched. There needs to be a method on the search service that can take the GUID of the configuration template defined in the earlier posting, and it needs to return the display name for the facet and the HTML field name we plan to use. (And in more complex implementations it could also return data about the type of UI to display)</p>
-<p>To do that we need some classes to represent the data, and an API method:</p>
-<pre><code class="language-csharp">public class FilterConfig
+
+					</pre>
+					<p>The
+						<code>&lt;form&gt;</code>
+						element will contain the dropdown lists that the facets can be selected from. But we also need to be able to work out what the Sitecore ID of the configuration item for our facets. This value can be output by a sublayout, from its datasource.</p>
+					<p>The results can added to the
+						<code>&lt;ul&gt;</code>
+						element.</p>
+					<h2>Fetching configuration</h2>
+					<p>When the HTML for the page finishes loading the first thing that needs to happen is that the search configuration needs to be fetched. There needs to be a method on the search service that can take the GUID of the configuration template defined in the earlier posting, and it needs to return the display name for the facet and the HTML field name we plan to use. (And in more complex implementations it could also return data about the type of UI to display)</p>
+					<p>To do that we need some classes to represent the data, and an API method:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FilterConfig
 {
     public string DisplayName { get; set; }
     public string FieldName { get; set; }
@@ -206,12 +216,12 @@ public SearchConfiguration GetConfig(string configID)
     }
     else
     {
-        string facets = cfgItem.Fields[&quot;Facets&quot;].Value;
+        string facets = cfgItem.Fields["Facets"].Value;
         if (!string.IsNullOrEmpty(facets))
         {
             result.Filters = facets.Split('|')
                 .Select(id =&gt; Sitecore.Context.Database.GetItem(id))
-                .Select(itm =&gt; new FilterConfig() { DisplayName = itm.DisplayName, FieldName = itm.Fields[&quot;SearchIndexField&quot;].Value })
+                .Select(itm =&gt; new FilterConfig() { DisplayName = itm.DisplayName, FieldName = itm.Fields["SearchIndexField"].Value })
                 .Where(fc =&gt; !string.IsNullOrWhiteSpace(fc.FieldName) &amp;&amp; !string.IsNullOrWhiteSpace(fc.DisplayName))
                 .Select(fc =&gt; { fc.FieldName = fc.FieldName.ToLower(); return fc; })
                 .ToArray();
@@ -220,39 +230,43 @@ public SearchConfiguration GetConfig(string configID)
 
     return result;
 }
-</code></pre>
-<p>The code for the API call follows a similar pattern to the similar code in the WebForms version. It loads the item specified by the configuration item GUID and transforms the GUIDs in the &quot;Facets&quot; field and projects them into <code>FilterConfig</code> items to return.</p>
-<p>Then the client side code can call this method:</p>
-<pre><code class="language-jscript">var config = null;
+
+					</pre>
+					<p>The code for the API call follows a similar pattern to the similar code in the WebForms version. It loads the item specified by the configuration item GUID and transforms the GUIDs in the "Facets" field and projects them into
+						<code>FilterConfig</code>
+						items to return.</p>
+					<p>Then the client side code can call this method:</p>
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var config = null;
 
 function getConfig() {
-    var cfgID = $(&quot;#configID&quot;).val();
+    var cfgID = $("#configID").val();
 
     $.ajax({
-        url: &quot;/Search/SearchApi.asmx/GetConfig&quot;,
+        url: "/Search/SearchApi.asmx/GetConfig",
         data: data: JSON.stringify({ configID: cfgID}),
-        contentType: &quot;application/json; charset=utf-8&quot;,
-        type: &quot;POST&quot;,
-        dataType: &quot;json&quot;,
+        contentType: "application/json; charset=utf-8",
+        type: "POST",
+        dataType: "json",
         async: false,
         success: function (data) {
             if (data.d.Error) {
-                alert(&quot;Failed to find config&quot;);
+                alert("Failed to find config");
             }
 
             config = data.d.Filters;
         }
     });
 }
-</code></pre>
-<p>It fetches the value from the hidden form field for the configuration item ID and passes it across to the server. The result data then gets stored for use by future methods.</p>
-<p>Next the code needs to create the UI controls for the set of filters defined in the configuration:</p>
-<pre><code class="language-jscript">function setupUI() {
+
+					</pre>
+					<p>It fetches the value from the hidden form field for the configuration item ID and passes it across to the server. The result data then gets stored for use by future methods.</p>
+					<p>Next the code needs to create the UI controls for the set of filters defined in the configuration:</p>
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function setupUI() {
     for (i in config) {
         var filter = config[i];
 
         var block = $('&lt;div&gt;');
-        var span = $('&lt;span class=&quot;fieldName&quot;&gt;' + filter.DisplayName + '&lt;/span&gt;');
+        var span = $('&lt;span class="fieldName"&gt;' + filter.DisplayName + '&lt;/span&gt;');
         var select = $('&lt;select&gt;').attr({ id: filter.FieldName });
 
         span.appendTo(block);
@@ -262,7 +276,7 @@ function getConfig() {
         select.change(function () {
             if (!ignoreChangeEvents) {
                 var val = $(this).val();
-                if (typeof val === &quot;undefined&quot; | val == null | val == &quot;&quot;) {
+                if (typeof val === "undefined" | val == null | val == "") {
                     jQuery.bbq.removeState($(this).attr('id'));
                 } else {
                     var state = {};
@@ -273,12 +287,14 @@ function getConfig() {
         });
     }
 }
-</code></pre>
-<p>For each of the filter definitions returned in the config, a block of HTML is created to label the field and set up the dropdown list. And then it attaches an on-change event that's called when the user changes the value. This event checks if we're in a state where the changes to the UI controls should be reflected in the hash fragments of the URL. If so, the new value for the field gets added to the URL's hash fragment. If the new value is empty or null, the code removes that item from the hash.</p>
-<p>[The hash fragment management here makes use of a simple jQuery extension to provide automation for this: <a href="http://benalman.com/projects/jquery-bbq-plugin/" title="jQuery BBQ" target="_blank" rel="noopener noreferrer">jQuery BBQ</a>]</p>
-<p>After this is set up we can run the initial search – which I'll discuss in a second.</p>
-<p>Once that initial search has been run, the last thing that needs to be done is to attach an event to the &quot;hashchange&quot; event so that whenever the URL's hash fragment changes we run a new search:</p>
-<pre><code class="language-jscript">function setupHashChangeEvent() {
+
+					</pre>
+					<p>For each of the filter definitions returned in the config, a block of HTML is created to label the field and set up the dropdown list. And then it attaches an on-change event that's called when the user changes the value. This event checks if we're in a state where the changes to the UI controls should be reflected in the hash fragments of the URL. If so, the new value for the field gets added to the URL's hash fragment. If the new value is empty or null, the code removes that item from the hash.</p>
+					<p>[The hash fragment management here makes use of a simple jQuery extension to provide automation for this:
+						<a href="http://benalman.com/projects/jquery-bbq-plugin/" title="jQuery BBQ" target="_blank" rel="noopener noreferrer">jQuery BBQ</a>]</p>
+					<p>After this is set up we can run the initial search – which I'll discuss in a second.</p>
+					<p>Once that initial search has been run, the last thing that needs to be done is to attach an event to the "hashchange" event so that whenever the URL's hash fragment changes we run a new search:</p>
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function setupHashChangeEvent() {
     $(window).bind('hashchange', function (e) {
         ignoreChangeEvents = true;
         copyHashParamsToFormFields();
@@ -288,26 +304,27 @@ function getConfig() {
         });
     });
 }
-</code></pre>
-<p>It stops the event handle for dropdown list changes from updating the hash fragment (so we don't get an infinite loop), updates the UI dropdowns and then runs the search...</p>
-<h2>Running a search</h2>
-<p>Client side, the search code needs to show the &quot;loading&quot; placeholder, fetch the filter values to post back, talk to the server and then update the UI:</p>
-<pre><code class="language-jscript">function search(filterFunction) {
-    $(&quot;.loading&quot;).show();
+
+					</pre>
+					<p>It stops the event handle for dropdown list changes from updating the hash fragment (so we don't get an infinite loop), updates the UI dropdowns and then runs the search...</p>
+					<h2>Running a search</h2>
+					<p>Client side, the search code needs to show the "loading" placeholder, fetch the filter values to post back, talk to the server and then update the UI:</p>
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function search(filterFunction) {
+    $(".loading").show();
 
     var filters = collateFilterData(filterFunction);
     var data = { filterValues: filters };
 
     $.ajax({
-        url: &quot;/Search/SearchApi.asmx/Search&quot;,
+        url: "/Search/SearchApi.asmx/Search",
         data: JSON.stringify(data),
-        contentType: &quot;application/json; charset=utf-8&quot;,
-        type: &quot;POST&quot;,
-        dataType: &quot;json&quot;,
+        contentType: "application/json; charset=utf-8",
+        type: "POST",
+        dataType: "json",
         async: false,
         success: function (data) {
             if (data.d.Error) {
-                alert(&quot;error in search response&quot;);
+                alert("error in search response");
                 return;
             }
             bindDropdowns(data.d.Filters);
@@ -322,8 +339,8 @@ function collateFilterData(fn) {
         var filter = config[i];
 
         var val = fn(filter.FieldName);
-        if (typeof val === &quot;undefined&quot; | val === null) {
-            val = &quot;&quot;;
+        if (typeof val === "undefined" | val === null) {
+            val = "";
         }
 
         filters[filter.FieldName] = val;
@@ -331,10 +348,11 @@ function collateFilterData(fn) {
 
     return filters;
 }
-</code></pre>
-<p>Depending on where we are in the code, the place we want to take the filter parameters from changes. For the first run of the code, when the page first loads, we want to take the filter values direct from the hash fragment. But for subsequent searches the values can come from the form fields that get set up after the first search. The function that allows fetching of the correct facet values is passed in as a parameter here.</p>
-<p>On the server side, again we need some simple classes for the return data, and similar code to the old version of the code to run the search. The server receives the facet filter values from the client request, transforms them into a Lucene query, runs it and then constructs the result set:</p>
-<pre><code class="language-csharp">public class SearchResults
+
+					</pre>
+					<p>Depending on where we are in the code, the place we want to take the filter parameters from changes. For the first run of the code, when the page first loads, we want to take the filter values direct from the hash fragment. But for subsequent searches the values can come from the form fields that get set up after the first search. The function that allows fetching of the correct facet values is passed in as a parameter here.</p>
+					<p>On the server side, again we need some simple classes for the return data, and similar code to the old version of the code to run the search. The server receives the facet filter values from the client request, transforms them into a Lucene query, runs it and then constructs the result set:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SearchResults
 {
     public IEnumerable&lt;FilterData&gt; Filters { get; set; }
     public IEnumerable&lt;Result&gt; Results { get; set; }
@@ -366,7 +384,7 @@ private BooleanQuery buildQuery(Dictionary&lt;string, object&gt; filterValues)
 {
     BooleanQuery query = new BooleanQuery();
 
-    query.Add(new TermQuery(new Term(&quot;_template&quot;, ShortID.Encode(_template).ToLowerInvariant())), BooleanClause.Occur.MUST);
+    query.Add(new TermQuery(new Term("_template", ShortID.Encode(_template).ToLowerInvariant())), BooleanClause.Occur.MUST);
 
     foreach (var kvp in filterValues)
     {
@@ -382,7 +400,7 @@ private BooleanQuery buildQuery(Dictionary&lt;string, object&gt; filterValues)
 
 private SearchResultCollection runQuery(BooleanQuery query)
 {
-    Index index = Sitecore.Search.SearchManager.GetIndex(&quot;demo&quot;);
+    Index index = Sitecore.Search.SearchManager.GetIndex("demo");
 
     using (IndexSearchContext isc = index.CreateSearchContext())
     {
@@ -423,137 +441,171 @@ private IEnumerable&lt;Result&gt; buildResults(SearchResultCollection results)
         .Select(i =&gt; new Result() { DisplayName = i.DisplayName })
         .ToList();
 }
-</code></pre>
-<p>As with the previous version of this code, this skips over pagination – but data for that could easily be passed in with the facet filter data. Also, the results here are only including the item display name. In reality the UI requirements of the UI designs would determine</p>
-<p>Once the data is returned from the server, it can be bound to the UI. For the dropdowns, the code goes through the values that get sent back from the server. For each of the <code>&lt;select&gt;</code> elements that it matches up it removes the <code>&lt;option&gt;</code> elements that exist and add in new ones. And for the results, a similar process removes any previous results and inserts the new ones:</p>
-<pre><code class="language-jscript">function bindDropdowns(dropdownValues) {
+
+					</pre>
+					<p>As with the previous version of this code, this skips over pagination – but data for that could easily be passed in with the facet filter data. Also, the results here are only including the item display name. In reality the UI requirements of the UI designs would determine</p>
+					<p>Once the data is returned from the server, it can be bound to the UI. For the dropdowns, the code goes through the values that get sent back from the server. For each of the
+						<code>&lt;select&gt;</code>
+						elements that it matches up it removes the
+						<code>&lt;option&gt;</code>
+						elements that exist and add in new ones. And for the results, a similar process removes any previous results and inserts the new ones:</p>
+					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function bindDropdowns(dropdownValues) {
     for (i in dropdownValues) {
         var dropdownValue = dropdownValues[i];
 
         var ddl = $('#' + dropdownValue.FieldName);
         ddl.find('option').remove();
-        ddl.append('&lt;option value=&quot;&quot;&gt;All ' + dropdownValue.FieldName + '&lt;/option&gt;');
+        ddl.append('&lt;option value=""&gt;All ' + dropdownValue.FieldName + '&lt;/option&gt;');
 
         for (v in dropdownValue.Values) {
             var li = dropdownValue.Values[v];
-            ddl.append($(&quot;&lt;option&gt;&lt;/option&gt;&quot;)
-                .attr(&quot;value&quot;, li.Value)
-                .attr(&quot;selected&quot;, li.Selected)
+            ddl.append($("&lt;option&gt;&lt;/option&gt;")
+                .attr("value", li.Value)
+                .attr("selected", li.Selected)
                 .text(li.Text));
         }
     }
 
-    $(&quot;#filters .loading&quot;).hide();
+    $("#filters .loading").hide();
 }
 
 function bindResults(resultValues) {
-    var resultDiv = $(&quot;#results&quot;);
+    var resultDiv = $("#results");
     resultDiv.children().remove();
 
     for (i in resultValues) {
         var resultValue = resultValues[i];
         resultDiv
-            .append($(&quot;&lt;li&gt;&lt;/li&gt;&quot;)
+            .append($("&lt;li&gt;&lt;/li&gt;")
             .text(resultValue.DisplayName));
     }
 
-    $(&quot;#results .loading&quot;).hide();
+    $("#results .loading").hide();
 }
-</code></pre>
-<p>That's all the code that's required for this example. Whether you change the URL or the dropdown lists, the results now update with the server-side results:</p>
-<p><a href="/img/2014/2014-09-selected.png" target="_blank"><img alt="Selected" src="/img/2014/2014-09-selected.png"></a></p>
-<h2>Taking it further</h2>
-<p>For more complex UI, it's likely that the HTML to generate for results or facet filters would be more complex. And that makes having the jQuery code manipulate the HTML directly to create each result or filter harder to do. For situations like this the code can be made easier with other JavaScript libraries. At the simpler end, templating libraries like <a href="http://handlebarsjs.com/" title="Handlebars" target="_blank" rel="noopener noreferrer">Handlebars</a> can help. And at the complex end, UI frameworks like <a href="http://knockoutjs.com/" title="Knockout" target="_blank" rel="noopener noreferrer">Knockout</a> can be used instead of just jQuery.</p>
 
-
-            </div>
-            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (203)</a>
-                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
-                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
-                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
-                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
-                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
-                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
-                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
-                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+					</pre>
+					<p>That's all the code that's required for this example. Whether you change the URL or the dropdown lists, the results now update with the server-side results:</p>
+					<p>
+						<a href="/img/2014/2014-09-selected.png" target="_blank">
+							<img alt="Selected" src="/img/2014/2014-09-selected.png">
+						</a>
+					</p>
+					<h2>Taking it further</h2>
+					<p>For more complex UI, it's likely that the HTML to generate for results or facet filters would be more complex. And that makes having the jQuery code manipulate the HTML directly to create each result or filter harder to do. For situations like this the code can be made easier with other JavaScript libraries. At the simpler end, templating libraries like
+						<a href="http://handlebarsjs.com/" title="Handlebars" target="_blank" rel="noopener noreferrer">Handlebars</a>
+						can help. And at the complex end, UI frameworks like
+						<a href="http://knockoutjs.com/" title="Knockout" target="_blank" rel="noopener noreferrer">Knockout</a>
+						can be used instead of just jQuery.</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (203)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (47)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (12)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Packages (11)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -562,21 +614,16 @@ function bindResults(resultValues) {
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>

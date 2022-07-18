@@ -1,31 +1,26 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-        <link rel="canonical" href="https://blog.jermdavis.dev/posts/2017/downloading-stuff-from-dev-sitecore-net">
-        <meta name="description" content="There&amp;#x27;s been a bit of a theme in my recent posts about scripting stuff, and that continues this week. I&amp;#x27;ve been looking at some ideas for automating tasks for developers recently, and one of the things I was interested in was being able to get stuff downloaded from dev.sitecore.net without having to do it manually. So, here&amp;#x27;s some PowerShell that can help you with that...">
-        <meta property="og:description" content="There&amp;#x27;s been a bit of a theme in my recent posts about scripting stuff, and that continues this week. I&amp;#x27;ve been looking at some ideas for automating tasks for developers recently, and one of the things I was interested in was being able to get stuff downloaded from dev.sitecore.net without having to do it manually. So, here&amp;#x27;s some PowerShell that can help you with that...">
-            <meta name="keywords" content="PowerShell, Sitecore">
-        <meta name="author" content="Jeremy Davis">
-        <meta name="copyright" content="Jeremy Davis">
-
-    <title>Jeremy Davis - Downloading stuff from dev.sitecore.net</title> 
-
-        <meta name="robots" content="index, follow">
-
-            <link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
-            <link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
-
-    <meta name="application-name" content="Jeremy Davis">
-    <meta name="msapplication-tooltip" content="Jeremy Davis">
-    <meta name="msapplication-starturl" content="/">
-    <link rel="manifest" href="/manifest.webmanifest">
-
-    
-    <meta property="og:title" content="Jeremy Davis - Downloading stuff from dev.sitecore.net">
-        <meta property="og:image" content="https://blog.jermdavis.dev/img/featured/downloading-stuff-from-dev-sitecore-net-social.jpg">
-    <script type="application/ld+json">
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2017/downloading-stuff-from-dev-sitecore-net">
+		<meta name="description" content="There's been a bit of a theme in my recent posts about scripting stuff, and that continues this week. I've been looking at some ideas for automating tasks for developers recently, and one of the things I was interested in was being able to get stuff downloaded from dev.sitecore.net without having to do it manually. So, here's some PowerShell that can help you with that...">
+		<meta property="og:description" content="There's been a bit of a theme in my recent posts about scripting stuff, and that continues this week. I've been looking at some ideas for automating tasks for developers recently, and one of the things I was interested in was being able to get stuff downloaded from dev.sitecore.net without having to do it manually. So, here's some PowerShell that can help you with that...">
+		<meta name="keywords" content="PowerShell, Sitecore">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Downloading stuff from dev.sitecore.net</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Downloading stuff from dev.sitecore.net">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/downloading-stuff-from-dev-sitecore-net-social.jpg">
+		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -40,187 +35,221 @@
             "url": "https://jermdavis.dev/"
         }]
     }
-    </script>
-<meta property="og:url" content="https://blog.jermdavis.dev/posts/2017/downloading-stuff-from-dev-sitecore-net">
-<meta property="og:type" content="website">
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-
-    <link href="/scss/tailwind.css" rel="stylesheet">
-
-    <link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-    <link href="/scss/site-theme.css" rel="stylesheet">
-
-
-    <script src="/vendor/Cookies/cookies.min.js" defer=""></script>
-
     
-
-    
-    <!-- 18/07/2022 07:56:13 -->
-</head>
-
-<body class="max-w-7xl mx-auto">
-    <div class="relative bg-white" x-data="{ open: false }">
-
-    <!-- desktop -->
-    <div class="px-4 lg:px-6 bg-gray-100">
-        <div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-
-            <div class="flex justify-start lg:w-0 flex-1">
-                <a href="/">
-                    <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                </a>
-                <div class="mx-2">
-                    <div class="text-3xl">Jeremy Davis</div>
-                    <div class="text-lg">Sitecore, C# and web development</div>
-                </div>
-            </div>
-
-            <div class="nav -mr-2 -my-2 lg:hidden">
-                <button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
-                    <span class="sr-only">Open menu</span>
-                    <!-- Heroicon name: outline/menu -->
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="nav hidden lg:flex space-x-10">
-<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>            </nav>
-
-        </div>
-    </div>
-
-    <!--Mobile menu, show/hide based on mobile menu state.-->
-    <div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-
-        <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-            <div class="pt-5 pb-6 px-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex">
-                        <a href="/">
-                            <img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
-                        </a>
-                        <div class="mx-2">
-                            <div class="text-2xl">Jeremy Davis</div>
-                            <div class="text-base">Sitecore, C# and web development</div>
-                        </div>
-                    </div>
-
-                    <div class="nav -mr-2">
-                        <button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                            <span class="sr-only">Close menu</span>
-                            <!-- Heroicon name: outline/x -->
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="nav py-6 px-5 pt-0">
-                <nav class=" gap-x-8">
-<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a><a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>                </nav>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-    <header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
-    <div class="post-heading">
-        <div class="url p-1 bg-gray-100 rounded-md">Article printed from: <tt>https://blog.jermdavis.dev/posts/2017/downloading-stuff-from-dev-sitecore-net</tt></div>
-        <h1 class="text-5xl mb-4 pb-1">
-        Downloading stuff from dev.sitecore.net
-        </h1>
-            <div class="meta">Published 27 November 2017</div>
-            <div class="flex py-1">
-                    <a href="/tags/powershell/" class="p-1 mr-1 bg-gray-100 rounded-md"> PowerShell</a>
-                    <a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md"> Sitecore</a>
-            </div>
-    </div>
-</header>
-
-    <div class="py-2 lg:pl-3">
-        <div class="lg:flex">
-            <div class="lg:flex-auto mx-3 lg:min-w-0 content">
-                <p>There's been a bit of a theme in my recent posts about scripting stuff, and that continues this week. I've been looking at some ideas for automating tasks for developers recently, and one of the things I was interested in was being able to get stuff downloaded from dev.sitecore.net without having to do it manually. So, here's some PowerShell that can help you with that...<!--more--></p>
-<h2>Standing on the shoulders of giants...</h2>
-<p>Getting files downloaded from Sitecore is something that SIM already does, so I based my efforts on <a href="https://github.com/Sitecore/Sitecore-Instance-Manager/blob/04615ff582eb55ae30b26946bdf14d972b8b0b04/src/SIM.Tool.Windows/UserControls/Download8/Login.xaml.cs" rel="noopener" target="_blank">the code that SIM uses when you ask it to download a particular version of Sitecore</a>.</p>
-<p>There are three things that need doing to make this work:</p>
-<ol>
-<li>Get the user's login credentials for Sitecore's websites</li>
-<li>Authenticate with the website to get the cookies required for a download</li>
-<li>Fetch the required file and save it</li>
-</ol>
-So:
-<h2>Getting your download on</h2>
-<p>The <code>Get-Credential</code> commandlet can be used to prompt for the users details - but it's a bit tedious to have to type them in repeatedly if you've got various downloads to do. One way to deal with that is to cache the credential object to disk with the <code>Export-Clixml</code>. According to the docs, the credentials are encrypted using a key from the current user account, so this is reasonably secure. So a function to grab the cached credentials if they exist, or prompt for them otherwise might look like this:</p>
-<pre><code class="language-powershell">function Fetch-WebsiteCredentials
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2017/downloading-stuff-from-dev-sitecore-net">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		
+		<!-- 18/07/2022 08:17:00 -->
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2017/downloading-stuff-from-dev-sitecore-net</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Downloading stuff from dev.sitecore.net
+				</h1>
+				<div class="meta">Published 27 November 2017</div>
+				<div class="flex py-1">
+					<a href="/tags/powershell/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						PowerShell</a>
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>There's been a bit of a theme in my recent posts about scripting stuff, and that continues this week. I've been looking at some ideas for automating tasks for developers recently, and one of the things I was interested in was being able to get stuff downloaded from dev.sitecore.net without having to do it manually. So, here's some PowerShell that can help you with that...
+						<!--more-->
+					</p>
+					<h2>Standing on the shoulders of giants...</h2>
+					<p>Getting files downloaded from Sitecore is something that SIM already does, so I based my efforts on
+						<a href="https://github.com/Sitecore/Sitecore-Instance-Manager/blob/04615ff582eb55ae30b26946bdf14d972b8b0b04/src/SIM.Tool.Windows/UserControls/Download8/Login.xaml.cs" rel="noopener" target="_blank">the code that SIM uses when you ask it to download a particular version of Sitecore</a>.</p>
+					<p>There are three things that need doing to make this work:</p>
+					<ol>
+						<li>Get the user's login credentials for Sitecore's websites</li>
+						<li>Authenticate with the website to get the cookies required for a download</li>
+						<li>Fetch the required file and save it</li>
+					</ol>
+					So:
+					<h2>Getting your download on</h2>
+					<p>The
+						<code>Get-Credential</code>
+						commandlet can be used to prompt for the users details - but it's a bit tedious to have to type them in repeatedly if you've got various downloads to do. One way to deal with that is to cache the credential object to disk with the
+						<code>Export-Clixml</code>. According to the docs, the credentials are encrypted using a key from the current user account, so this is reasonably secure. So a function to grab the cached credentials if they exist, or prompt for them otherwise might look like this:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Fetch-WebsiteCredentials
 {
-	$file = &quot;dev.creds.xml&quot;
+	$file = "dev.creds.xml"
 
-	if(Test-Path &quot;.\\$file&quot;)
+	if(Test-Path ".\\$file")
 	{
-		$cred = Import-Clixml &quot;.\\$file&quot;
+		$cred = Import-Clixml ".\\$file"
 	}
 	else
 	{
-		$cred = Get-Credential -Message &quot;Enter your SDN download credentials:&quot;
-		$cred | Export-Clixml &quot;.\\$file&quot;
+		$cred = Get-Credential -Message "Enter your SDN download credentials:"
+		$cred | Export-Clixml ".\\$file"
 	}
 
 	return $cred
 }
-</code></pre>
-<p>Once the script has the user's website credentials, it needs to turn them into the cookies necessary for a download operation to succeed. Based on the code from SIM, that needs two operations. First you need to post the user's credentials as json to an API endpoint to get one cookie, and then you need to make a get request for the dev site homepage to get a second cookie.</p>
-<p>So this function can perform those two web requests, and return the two cookies we need:</p>
-<pre><code class="language-powershell">function Fetch-DownloadAuthentication($cred)
+
+					</pre>
+					<p>Once the script has the user's website credentials, it needs to turn them into the cookies necessary for a download operation to succeed. Based on the code from SIM, that needs two operations. First you need to post the user's credentials as json to an API endpoint to get one cookie, and then you need to make a get request for the dev site homepage to get a second cookie.</p>
+					<p>So this function can perform those two web requests, and return the two cookies we need:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Fetch-DownloadAuthentication($cred)
 {
-    $authUrl = &quot;https://dev.sitecore.net/api/authorization&quot;
+    $authUrl = "https://dev.sitecore.net/api/authorization"
 
     $pwd = $cred.GetNetworkCredential().Password
 
-    $postParams = &quot;{ &quot;&quot;username&quot;&quot;:&quot;&quot;$($cred.UserName)&quot;&quot;, &quot;&quot;password&quot;&quot;:&quot;&quot;$pwd&quot;&quot; }&quot;
+    $postParams = "{ ""username"":""$($cred.UserName)"", ""password"":""$pwd"" }"
 
-    $authResponse = Invoke-WebRequest -Uri $authUrl -Method Post -ContentType &quot;application/json;charset=UTF-8&quot; -Body $postParams -SessionVariable webSession
-    $authCookies = $webSession.Cookies.GetCookies(&quot;https://sitecore.net&quot;)
+    $authResponse = Invoke-WebRequest -Uri $authUrl -Method Post -ContentType "application/json;charset=UTF-8" -Body $postParams -SessionVariable webSession
+    $authCookies = $webSession.Cookies.GetCookies("https://sitecore.net")
 
-    $marketPlaceCookie = $authCookies[&quot;marketplace_login&quot;]
+    $marketPlaceCookie = $authCookies["marketplace_login"]
 
     if([String]::IsNullOrWhiteSpace($marketPlaceCookie))
     {
-        throw &quot;Credentials appear invalid&quot;
+        throw "Credentials appear invalid"
     }
 
-    $devUrl = &quot;https://dev.sitecore.net&quot;
+    $devUrl = "https://dev.sitecore.net"
 
     $devResponse = Invoke-WebRequest -Uri $devUrl -WebSession $webSession
-    $devCookies = $webSession.Cookies.GetCookies(&quot;https://dev.sitecore.net&quot;)
+    $devCookies = $webSession.Cookies.GetCookies("https://dev.sitecore.net")
 
-    $sessionCookie = $devCookies[&quot;ASP.Net_SessionId&quot;]
+    $sessionCookie = $devCookies["ASP.Net_SessionId"]
 
-    return &quot;$marketPlaceCookie; $sessionCookie&quot;
+    return "$marketPlaceCookie; $sessionCookie"
 }
-</code></pre>
-<p>So finally the script can use the cookies to download the file we want. In the scripts from the last couple of posts I'd been using the <code>Start-BitsTransfer</code> commandlet for this. But that doesn't appear to allow you to pass cookies for authentication. So I've fallen back to using <code>System.Net.WebClient</code>. While you can write some really simple code to do this, that implementation doesn't give you the nice progress bar that the Bits transfer allows. You don't need that, but I wanted it.</p>
-<p>So I did a bit of googling to see how you can implement the progress bar behaviour, and <a href="https://gist.github.com/dlwyatt/2a893db5e022e60beced" rel="noopener" target="_blank">I came across this gist</a> by Dave Wyatt. That implements pretty much what I needed, by attaching the progress bar code to the progress events raised by the <code>WebClient</code>. But there is a minor bug in that gist, which it took me a bit of time to work out. When you run a download with the code as-is, a nice progress bar is displayed, but there's no text visible, despite the value set for the <code>-Activity</code> parameter:</p>
-<p><a href="/img/2017/2017-11-progressbarbug.png" target="_blank"><img alt="Progress Bar Bug" src="/img/2017/2017-11-progressbarbug.png"></a></p>
-<p>The issue here is that the original code is trying to access the function's parameters inside the <code>Register-ObjectEvent</code>‘s <code>-Action</code> block. It's not immediately obvious, but because of PowerShell scope those variables aren't actually accessible there. What you have to do is use the <code>-MessageData</code> property to pass in a data structure containing the values you want to be able to access:</p>
-<pre><code class="language-powershell">$data = New-Object psobject -Property &#64;{Uri = $Uri; OutputFile = $OutputFile}
+
+					</pre>
+					<p>So finally the script can use the cookies to download the file we want. In the scripts from the last couple of posts I'd been using the
+						<code>Start-BitsTransfer</code>
+						commandlet for this. But that doesn't appear to allow you to pass cookies for authentication. So I've fallen back to using
+						<code>System.Net.WebClient</code>. While you can write some really simple code to do this, that implementation doesn't give you the nice progress bar that the Bits transfer allows. You don't need that, but I wanted it.</p>
+					<p>So I did a bit of googling to see how you can implement the progress bar behaviour, and
+						<a href="https://gist.github.com/dlwyatt/2a893db5e022e60beced" rel="noopener" target="_blank">I came across this gist</a>
+						by Dave Wyatt. That implements pretty much what I needed, by attaching the progress bar code to the progress events raised by the
+						<code>WebClient</code>. But there is a minor bug in that gist, which it took me a bit of time to work out. When you run a download with the code as-is, a nice progress bar is displayed, but there's no text visible, despite the value set for the
+						<code>-Activity</code>
+						parameter:</p>
+					<p>
+						<a href="/img/2017/2017-11-progressbarbug.png" target="_blank">
+							<img alt="Progress Bar Bug" src="/img/2017/2017-11-progressbarbug.png">
+						</a>
+					</p>
+					<p>The issue here is that the original code is trying to access the function's parameters inside the
+						<code>Register-ObjectEvent</code>‘s
+						<code>-Action</code>
+						block. It's not immediately obvious, but because of PowerShell scope those variables aren't actually accessible there. What you have to do is use the
+						<code>-MessageData</code>
+						property to pass in a data structure containing the values you want to be able to access:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$data = New-Object psobject -Property @{Uri = $Uri; OutputFile = $OutputFile}
 
 $changed = Register-ObjectEvent -InputObject $webClient -EventName DownloadProgressChanged -MessageData $data -Action {
-    Write-Progress -Activity &quot;Downloading $($event.MessageData.Uri)&quot; -Status &quot;To $($event.MessageData.OutputFile)&quot; -PercentComplete $eventArgs.ProgressPercentage
+    Write-Progress -Activity "Downloading $($event.MessageData.Uri)" -Status "To $($event.MessageData.OutputFile)" -PercentComplete $eventArgs.ProgressPercentage
 }
-</code></pre>
-<p>The <code>$event</code> variable inside the <code>-Action</code> block contains the data you pass in via <code>-MessageData</code>.</p>
-<p>There are a couple of other changes needed to the code from the gist. It needs to make use of the cookies that we captured before, and based on a bit of experimentation it needs to make sure it can be stopped gracefully by a Ctrl-C. That's easily achieved by <a href="https://stackoverflow.com/a/15788979/847953" rel="noopener" target="_blank">wrapping the main part of the download in a <code>try</code> block</a>, so that the <code>finally</code> part can be run after the download is aborted by the user. And with those changes, the completed download function is:</p>
-<pre><code class="language-powershell">function Invoke-FileDownload
+
+					</pre>
+					<p>The
+						<code>$event</code>
+						variable inside the
+						<code>-Action</code>
+						block contains the data you pass in via
+						<code>-MessageData</code>.</p>
+					<p>There are a couple of other changes needed to the code from the gist. It needs to make use of the cookies that we captured before, and based on a bit of experimentation it needs to make sure it can be stopped gracefully by a Ctrl-C. That's easily achieved by
+						<a href="https://stackoverflow.com/a/15788979/847953" rel="noopener" target="_blank">wrapping the main part of the download in a
+							<code>try</code>
+							block</a>, so that the
+						<code>finally</code>
+						part can be run after the download is aborted by the user. And with those changes, the completed download function is:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Invoke-FileDownload
 {
     [CmdletBinding()]
     param (
@@ -240,10 +269,10 @@ $changed = Register-ObjectEvent -InputObject $webClient -EventName DownloadProgr
         $webClient.Headers.Add([System.Net.HttpRequestHeader]::Cookie, $cookie)
     }
 
-    $data = New-Object psobject -Property &#64;{Uri = $Uri; OutputFile = $OutputFile}
+    $data = New-Object psobject -Property @{Uri = $Uri; OutputFile = $OutputFile}
 
     $changed = Register-ObjectEvent -InputObject $webClient -EventName DownloadProgressChanged -MessageData $data -Action {
-        Write-Progress -Activity &quot;Downloading $($event.MessageData.Uri)&quot; -Status &quot;To $($event.MessageData.OutputFile)&quot; -PercentComplete $eventArgs.ProgressPercentage
+        Write-Progress -Activity "Downloading $($event.MessageData.Uri)" -Status "To $($event.MessageData.OutputFile)" -PercentComplete $eventArgs.ProgressPercentage
     }
 
     try
@@ -257,15 +286,16 @@ $changed = Register-ObjectEvent -InputObject $webClient -EventName DownloadProgr
     }
     finally
     {
-        Write-Progress -Activity &quot;Downloading $Uri&quot; -Completed
+        Write-Progress -Activity "Downloading $Uri" -Completed
 
         Remove-Job $changed -Force
         Get-EventSubscriber | Where SourceObject -eq $webClient | Unregister-Event -Force
     }    
 }
-</code></pre>
-<p>Those three functions can then be wrapped up in a script to invoke them:</p>
-<pre><code class="language-powershell">param(
+
+					</pre>
+					<p>Those three functions can then be wrapped up in a script to invoke them:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
 	[string]$url,
 	[string]$target
 )
@@ -274,104 +304,134 @@ $cred = Fetch-WebsiteCredentials
 $cookie = Fetch-DownloadAuthentication $cred
 
 Invoke-FileDownload -Uri $url -OutputFile $target -Cookies $cookie
-</code></pre>
-<p>If that script is named <code>download.ps1</code> then you can download a copy of Sitecore 8.2 by running:</p>
-<pre><code class="language-powershell">.\download.ps1 &quot;https://dev.sitecore.net/~/media/82216B3D1FE245CFADC8B2C758E510C5.ashx&quot; &quot;sitecore.zip&quot;
-</code></pre>
-<p>And you get a working progress bar:</p>
-<p><a href="/img/2017/2017-11-downloadworking.png" target="_blank"><img alt="Download Working" src="/img/2017/2017-11-downloadworking.png"></a></p>
-<p>followed by a downloaded file...</p>
-<p>As before, <a href="https://gist.github.com/jermdavis/6c527452dfa0c3c52b679b94caff9402" rel="noopener" target="_blank">the full code for this is available as a gist</a> if you want to make use of it in your work.</p>
 
+					</pre>
+					<p>If that script is named
+						<code>download.ps1</code>
+						then you can download a copy of Sitecore 8.2 by running:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">.\download.ps1 "https://dev.sitecore.net/~/media/82216B3D1FE245CFADC8B2C758E510C5.ashx" "sitecore.zip"
 
-            </div>
-            <div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <section class="mvp">
-    <h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
-    <div class="bg-white mb-2 p-2"><a href="/mvp"><img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge"></a></div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Top Tags</h3>
-    <div class="bg-white p-2 flex flex-wrap">
-                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (203)</a>
-                    <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (47)</a>
-                    <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (31)</a>
-                    <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
-                    <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (15)</a>
-                    <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (14)</a>
-                    <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (14)</a>
-                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (12)</a>
-                    <a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Coveo (12)</a>
-                    <a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Packages (11)</a>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Recent Months</h3>
-    <div class="bg-white p-2">
-                <div><a class="text-lg" href="/posts/2022-07">2022 - July</a></div>
-                <div><a class="text-lg" href="/posts/2022-06">2022 - June</a></div>
-                <div><a class="text-lg" href="/posts/2022-05">2022 - May</a></div>
-                <div><a class="text-lg" href="/posts/2022-04">2022 - April</a></div>
-                <div><a class="text-lg" href="/posts/2022-03">2022 - March</a></div>
-    </div>
-    <div class="bg-white mb-2 p-2">
-        <a class="" href="/posts" role="button">All Posts <i class="fas fa-angle-double-right"></i></a>
-    </div>
-</section>
-
-<section>
-    <h3 class="bg-gray-300 p-2">Twitter</h3>
-    <div class="bg-white mb-2 p-2">
-        <a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
-        <script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-</section>
-            </div>
-        </div>
-    </div>
-
-    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-    <div class="flex-1 lg:flex-1 text-center lg:text-left">
-        <div>&copy; <a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2022</div>
-    </div>
-
-    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-        <a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a><br>
-    </div>
-
-    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-        <li class="inline-block">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-            </svg>
-        </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
-            </li>
-            <li class="inline-block ml-4">
-                <a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
-            </li>
-    </ul>
-</footer>
-
-    <div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-            <div class="w-full text-lg">
-                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-            </div>
-            <button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-        </div>
-    </div>
-    
-    <script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
-    <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-
-    <script type="text/javascript">
+					</pre>
+					<p>And you get a working progress bar:</p>
+					<p>
+						<a href="/img/2017/2017-11-downloadworking.png" target="_blank">
+							<img alt="Download Working" src="/img/2017/2017-11-downloadworking.png">
+						</a>
+					</p>
+					<p>followed by a downloaded file...</p>
+					<p>As before,
+						<a href="https://gist.github.com/jermdavis/6c527452dfa0c3c52b679b94caff9402" rel="noopener" target="_blank">the full code for this is available as a gist</a>
+						if you want to make use of it in your work.</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (203)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (47)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (12)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/packages/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Packages (11)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-04">2022 - April</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-03">2022 - March</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
         EnlighterJS.init('pre', 'code', {
             theme: 'droide',
             indent : 4,
@@ -380,21 +440,16 @@ Invoke-FileDownload -Uri $url -OutputFile $target -Cookies $cookie
             toolbarTop: '',
             toolbarBottom: ''
         });
-    </script>
-
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-    <script>
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
-    </script>
-
     
-
-    
-
-
-
-</body></html>
+		</script>
+	</body>
+</html>
