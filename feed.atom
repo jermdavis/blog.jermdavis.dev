@@ -7,7 +7,7 @@
 	</author>
 	<link rel="self" href="https://blog.jermdavis.dev/" />
 	<rights>2014-2022</rights>
-	<updated>2022-07-18T07:16:11Z</updated>
+	<updated>2022-07-19T14:51:51Z</updated>
 	<entry>
 		<id>https://blog.jermdavis.dev/posts/2022/first-look-sitecore-demo-portal</id>
 		<title>A first look at the Sitecore demo portal</title>
@@ -16,57 +16,8 @@
 		</author>
 		<link href="https://blog.jermdavis.dev/posts/2022/first-look-sitecore-demo-portal" />
 		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;If you're part of the Sitecore Partner or MVP community then you probably watched some of the content from their "&lt;a href="https://twitter.com/Tzikakis/status/1546854414937374720" target="_blank" rel="noopener"&gt;Global Sales Kick-off&lt;/a&gt;" recently. They talked about product roadmap and strategy stuff for the coming year, especially the new &lt;a href="https://www.sitecore.com/company/news-events/press-releases/2022/07/sitecore-experience-manager-cloud-now-available" target="_blank" rel="noopener"&gt;XM Cloud&lt;/a&gt; product. But something else which &lt;a href="https://twitter.com/daveof" target="_blank" rel="noopener"&gt;Dave O'Flanagan&lt;/a&gt; called out in his session is of interest to us in the community too: Sitecore's new internal demo portal.&lt;/p&gt;
-&lt;p&gt;The need to spin up a demo instance of Sitecore has been a common challenge for me over the time I've worked with the product. There have been various ways to do this - some very manual, and some involving a bit more automation. Different organisations and people all had their own approaches to how best to do this - but it's now being looked at centrally. I was lucky enough to get a sneak-peak of their new approach to this problem. And now it's been launched it seemed like something worth writing up, to make more Partners and MVPs aware of the tools at their disposal.&lt;!--more--&gt;&lt;/p&gt;
-&lt;p&gt;Internally, Sitecore's Demo Team have been dealing with the "how to we deploy and manage demos" problem at scale, and they've built up an interesting response based on Kubernetes automation as a result. The management portal that's come out of this in is an cool piece of technology - with some fascinating parallels to Sitecore's (not related) XM Cloud product.&lt;/p&gt;
-&lt;h2 id="what-is-it"&gt;What is it?&lt;/h2&gt;
-&lt;p&gt;The bigger your need to run demo instances, the more sense it makes to invest in the best automation you can to reduce the challenges of deploying the sites you require. So Sitecore's demo team have worked to leverage modern deployment techniques to make this as simple as possible for themselves. The system is a set of automations based on Kubernetes, Git and Sitecore's developer tooling patterns. Its goal is to allow the simplest possible approach to spinning up examples of their standard demo sites.&lt;/p&gt;
-&lt;p&gt;Since I've been working with Sitecore (starting a decade ago, around v6.4) there have been a series of changes which have helped to raise the level of abstraction for how you host and deploy their software. This tooling is continuing that trend.&lt;/p&gt;
-&lt;p&gt;Back in the day, you had to provision servers to run a Sitecore instance yourself. It might have been physical boxes you ordered for your office's server room, or it might have been some of &lt;a href="https://azure.microsoft.com/en-gb/resources/cloud-computing-dictionary/what-is-iaas/" target="_blank" rel="noopener"&gt;IaaS&lt;/a&gt; virtual machines in somebody else's data centre. But either way, you were worrying about the setup at the O/S level initially before moving on to adding Sitecore and SQL Server to the mix, and then deploying your custom code. And once it was running all the effort of maintaining and patching it fell on your shoulders too.&lt;/p&gt;
-&lt;p&gt;But around v9 the use of &lt;a href="https://azure.microsoft.com/en-gb/resources/cloud-computing-dictionary/what-is-paas/" target="_blank" rel="noopener"&gt;PaaS&lt;/a&gt; became more common - abstracting away the O/S and its patching needs, so that you just had to worry about the SQL Databases and IIS Sites aspect of your deployment. So patching and configuring the physical server underneath was no longer your problem. You only need to worry about configuring the ARM templates to set your infrastructure up for you, and then deploying your custom code.&lt;/p&gt;
-&lt;p&gt;And with the recent adoption of containers and composable SaaS-hosted products, Sitecore have the opportunity to take another step of abstraction. This portal is providing an approach where you worry about what Sitecore instances you need, and what code you want to deploy onto them, but all of the processes for getting that infrastructure in place, wiring systems up and getting the base Sitecore instance running can be hidden from you now. The bar for abstraction has risen above IIS and SQL, and up to your demo Sitecore site.&lt;/p&gt;
-&lt;p&gt;So you get to focus on the content and the features of your site, and ignore all the hassles of installation. And as someone who's spent a career fighting obscure "works on this machine!" issues, this is a really appealing idea...&lt;/p&gt;
-&lt;p&gt;There are strong parallels between this piece of work and the new XM Cloud product that Sitecore have recently started marketing. They both rely on similar patterns of containerisation and git-based automation. But a key difference is that XM Cloud is aimed at public websites and "normal" Sitecore users. Whereas this tooling is aimed at the sales need for easy to create, but short-lived demo sites. The future probably sees these two approaches aligning on the same technology stack eventually - but it's not there right now.&lt;/p&gt;
-&lt;h2 id="what-does-all-this-look-like"&gt;What does all this look like?&lt;/h2&gt;
-&lt;p&gt;Well, it's a web portal, so if you're granted access you can log on to the site using the same SSO credentials you use for other Sitecore properties like the &lt;a href="https://support.sitecore.com/csm" target="_blank" rel="noopener"&gt;Support&lt;/a&gt; or &lt;a href="https://learning.sitecore.com/" target="_blank" rel="noopener"&gt;Learning&lt;/a&gt; sites. And once you've done that you get a list of the instances you've currently got deployed:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-TheInstanceDisplay.png"&gt;&lt;img alt="A web browser showing your list of Sitecore instances" src="https://blog.jermdavis.dev/img/2022/06-TheInstanceDisplay.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;By default the list shows each of the instances that you own, but you can also get a view of all the instances that you have any access to, as you can be invited to collaborate on an instance that you didn't create too.&lt;/p&gt;
-&lt;p&gt;There's a "Quick Deploy" button here, which lets you fire up a new instance:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-QuickDeployButton.png"&gt;&lt;img alt="A dialog showing available templates for a quick deployment" src="https://blog.jermdavis.dev/img/2022/06-QuickDeployButton.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;For the moment there's a choice of three of Sitecore's demo websites you can deploy from here. But the underlying infrastructure of can (in theory) be used with any headless-focused Sitecore code. And when you pick a demo to start from it asks some fairly simple questions:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-ConfigureAnInstance.png"&gt;&lt;img alt="Configuration options for the instance" src="https://blog.jermdavis.dev/img/2022/06-ConfigureAnInstance.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;When you pick a base project you get to name your instance, you get to pick a Sitecore version, and you can pick which &lt;a href="https://azure.microsoft.com/en-gb/overview/what-is-azure/" target="_blank" rel="noopener"&gt;Azure&lt;/a&gt; Region you want your resources to run in. There is some further detail you can configure here, if you click the "customise" button. That expands out the wizard view to a more detailed form giving you some extra choices - starting with integrations:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-AddingIntegrations.png"&gt;&lt;img alt="The dialog for adding integrations to your instance" src="https://blog.jermdavis.dev/img/2022/06-AddingIntegrations.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;The options here can vary with the particular demo you're deploying. Above is from the more complex "Play! Summit" example. The ability to provision Content Hub or CDP/Personalize instances as part of your site setup makes perfect sense - those are other Sitecore products which have a fairly SaaS-friendly delivery model already. In the future I expect we'll see options for all of Sitecore's composable product suite here. It makes a lot of sense that you'd want to be able to provision demos which relate to all of the product suite. Similarly, provisioning Vercel as a host for your Next.js based Headless sites is pretty self-explanatory - Sitecore have a partnership here and it fits the headless model well.&lt;/p&gt;
-&lt;p&gt;The other option here is to connect the system to your own &lt;a href="https://git-scm.com/" target="_blank" rel="noopener"&gt;git repository&lt;/a&gt;. (Currently limited to &lt;a href="https://github.com/" target="_blank" rel="noopener"&gt;GitHub&lt;/a&gt; - but I expect to see other providers like &lt;a href="https://azure.microsoft.com/en-us/services/devops/" target="_blank" rel="noopener"&gt;Azure DevOps&lt;/a&gt; here too, eventually) If you select this, Sitecore's demo code can be cloned to your source control, and that gets used as the source for releases. So you'd be able to customise the code, if you have a need for a demo that's modified to suit a specific customer or sales opportunity.&lt;/p&gt;
-&lt;p&gt;For demo and test instances, it's might also be important to you to reduce running costs by having your site turn off on a schedule. There are UI options for this too:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-ScheduleManagement.png"&gt;&lt;img alt="The dialog giving options for scheduling downtime of your instance" src="https://blog.jermdavis.dev/img/2022/06-ScheduleManagement.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Since all of this runs on cloud resources provisioned by Sitecore, all the storage and compute power used by each site has to be paid for somehow. And the more sites they have to run, the bigger that challenge becomes - An organisation of Sitecore's scale is likely dealing with a lot. So turning off sites overnight and when they're not in use can help reduce those fees, and keep the provisioning more affordable.&lt;/p&gt;
-&lt;p&gt;But once you fill in all these options and make your choices, you can click "Deploy" button to fire off the release process. That will take you to the details page for your new release:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-DeploymentDetails2.png"&gt;&lt;img alt="The deployment details page during a release" src="https://blog.jermdavis.dev/img/2022/06-DeploymentDetails2.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;There's a lot going on here. Top left, "Important Links" is a list of all the URLs relevant for your deployment. Since this has only justs started, there's nothing here yet, other than some usernames (and the ability to grab passwords) for key users in your system. The links appear once the systems running them have been provisioned. Below that, the "Members" show which portal users have access to this deployment. And below that there's data about the demo license you have been granted to run the site, and the &lt;a href="https://www.sitecore.com/blog/content/were-thrilled-to-announce-groundbreaking-sitecore-experience-edge" target="_blank" rel="noopener"&gt;Experience Edge&lt;/a&gt; endpoints your site is using.&lt;/p&gt;
-&lt;p&gt;In the right column there's data about the options for the deployment under "Instance details", plus the ability to manually start and stop your site, or delete it if you're done with it. There's also the "View Deployment Details" button, which will take you to the details and progress screen for the deployment:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-DeploymentDetails.png"&gt;&lt;img alt="Viewing the details of an ongoing deployment" src="https://blog.jermdavis.dev/img/2022/06-DeploymentDetails.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;This shows you each of the deployment steps required to achieve your release. The list of things here will vary depending on the requirements of your particular demo repository. And as you'd expect for a release process, it works roughly from top to bottom, turning the rows green as each automated step gets sorted out for you. At its simplest, you can see above  here it's providing a temporary license, some DNS entries, the Experience Edge endpoint I mentioned above, plus the containers required for the core CMS.&lt;/p&gt;
-&lt;p&gt;If you pick a more complex demo, with other integrations, you can see that the list of steps gets longer. Here it's also provisioning Vercel for the headless "head" and Content Hub integrations for content and image management:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-MoreComplexDeployment.png"&gt;&lt;img alt="The deployment steps for a complex deployment with Vercel and Content Hub" src="https://blog.jermdavis.dev/img/2022/06-MoreComplexDeployment.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;And you're able to select individual steps if you want to see more detail of what's happening:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-DetailsFromK8s.png"&gt;&lt;img alt="Expanding the Kubernetes deployment step to see logged details" src="https://blog.jermdavis.dev/img/2022/06-DetailsFromK8s.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;And once the steps are all complete, the relevant links for your site will appear on the details page, so you can click through to them easily. This example provided some Vercel-hosted websites, an instance of Horizon and the standard XM CMS instance:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-RelevantLinks.png"&gt;&lt;img alt="Valid links for the deployment" src="https://blog.jermdavis.dev/img/2022/06-RelevantLinks.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;It takes minutes to provision a new site - though the time is dependent on the set of resources being provisoned, and there's probably a factor for how busy the underlying infrastructure in Azure is. While playing I've seen times around five to twenty minutes. And once it's done you're free to log in to the instances created, to do your work. In the Content Editor, for example:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-ContentEditorInstance.png"&gt;&lt;img alt="The instance of Content Editor for this deployment" src="https://blog.jermdavis.dev/img/2022/06-ContentEditorInstance.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Or in Horizon or other tools deployed as part of this setup:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-HorizonEditor.png"&gt;&lt;img alt="The instance of the Horizon Editor for this deployment" src="https://blog.jermdavis.dev/img/2022/06-HorizonEditor.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;And of course you can browse the public sites too. But once you're done with your instance, you can click the "delete" button to tidy up all the resources that were allocated during deployment:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-DeleteAnInstance.png"&gt;&lt;img alt="An instance being deleted" src="https://blog.jermdavis.dev/img/2022/06-DeleteAnInstance.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id="first-impressions"&gt;First impressions&lt;/h2&gt;
-&lt;p&gt;Having had a weekend to have a tinker with this, I think it's a great step forward for the provision of Sitecore instances. It brings speed and simplicity to demo infrastructure for partner organisations, MVPs and Sitecore's own staff. And I think it shows off some of the power of container automation, along side the new world of composable systems and Sitecore's work on demo websites. It's a provisioning system which is usable by people with little technical knowledge, so it's giving sales and marketing staff a lot of power to organise demos "on demand" for their engagements with clients and other events. That "help, I've got a demo in two hours and I don't have a site to show off!" email that I used to dread receiving should be a thing of the past...&lt;/p&gt;
-&lt;p&gt;The more complex instance provisioned above is the "Play Summit!" demo provided by Sitecore. This is open-source, and you can take a look at &lt;a href="https://github.com/Sitecore/Sitecore.Demo.Edge" target="_blank" rel="noopener"&gt;the overall code for the site&lt;/a&gt; if that's your thing. That repository shows what the code for the websites looks like, plus what the configuration for container-based execution too. There are a lot of moving parts to this demo - so there's lots to learn here about how it's all brought together. Plenty of interesting stuff for anyone who's more technically focused.&lt;/p&gt;
-&lt;p&gt;The ability to build up a custom Sitecore solution (like these demos) and have it work with an effective automatic provisioning system is really helpful - but it's also going to become more of our day-to-day development life once the new XM Cloud product gets it's full general release. While that's not the same thing as is being used here, the parallels are significant. And this model of "abstracting away much more of the infrastructure" is key to both these approaches. We're not too far from a position where devs, tech leads and architects spend less project time worrying about what infrastructure a site requires. The various cloud hosting technologies we can now employ can abstract that away for both the back-end code (Azure Functions, XM Cloud for example) and the front-end (e.g. Vercel).&lt;/p&gt;
-&lt;p&gt;For me, however, the key thing right now is how the demo portal can simplify my work: Reducing the up-front effort needed to deploy infrastructure for a Sitecore demo website, and enabling sales and marketing staff to self-manage demo instances without technical help.&lt;/p&gt;
-&lt;p&gt;Between this and XM Cloud, it's exciting times to be a Sitecore architect...&lt;/p&gt;
-</content>
+		<content>&lt;p&gt;If you're part of the Sitecore Partner or MVP community then you probably watched some of the content from their &amp;quot;&lt;a href="https://twitter.com/Tzikakis/status/1546854414937374720" target="_blank" rel="noopener"&gt;Global Sales Kick-off&lt;/a&gt;&amp;quot; recently. They talked about product roadmap and strategy stuff for the coming year, especially the new &lt;a href="https://www.sitecore.com/company/news-events/press-releases/2022/07/sitecore-experience-manager-cloud-now-available" target="_blank" rel="noopener"&gt;XM Cloud&lt;/a&gt; product. But something else which &lt;a href="https://twitter.com/daveof" target="_blank" rel="noopener"&gt;Dave O'Flanagan&lt;/a&gt; called out in his session is of interest to us in the community too: Sitecore's new internal demo portal.&lt;/p&gt;
+&lt;p&gt;The need to spin up a demo instance of Sitecore has been a common challenge for me over the time I've worked with the product. There have been various ways to do this - some very manual, and some involving a bit more automation. Different organisations and people all had their own approaches to how best to do this - but it's now being looked at centrally. I was lucky enough to get a sneak-peak of their new approach to this problem. And now it's been launched it seemed like something worth writing up, to make more Partners and MVPs aware of the tools at their disposal.&lt;/p&gt;</content>
 		<summary>&lt;p&gt;If you're part of the Sitecore Partner or MVP community then you probably watched some of the content from their &amp;quot;&lt;a href="https://twitter.com/Tzikakis/status/1546854414937374720" target="_blank" rel="noopener"&gt;Global Sales Kick-off&lt;/a&gt;&amp;quot; recently. They talked about product roadmap and strategy stuff for the coming year, especially the new &lt;a href="https://www.sitecore.com/company/news-events/press-releases/2022/07/sitecore-experience-manager-cloud-now-available" target="_blank" rel="noopener"&gt;XM Cloud&lt;/a&gt; product. But something else which &lt;a href="https://twitter.com/daveof" target="_blank" rel="noopener"&gt;Dave O'Flanagan&lt;/a&gt; called out in his session is of interest to us in the community too: Sitecore's new internal demo portal.&lt;/p&gt;
 &lt;p&gt;The need to spin up a demo instance of Sitecore has been a common challenge for me over the time I've worked with the product. There have been various ways to do this - some very manual, and some involving a bit more automation. Different organisations and people all had their own approaches to how best to do this - but it's now being looked at centrally. I was lucky enough to get a sneak-peak of their new approach to this problem. And now it's been launched it seemed like something worth writing up, to make more Partners and MVPs aware of the tools at their disposal.&lt;/p&gt;</summary>
 	</entry>
@@ -78,111 +29,7 @@
 		</author>
 		<link href="https://blog.jermdavis.dev/posts/2022/solr-operator-kubernetes" />
 		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;One of the recurring themes of deploying Sitecore over the last few years has been "how do I deal with Solr?". It's a question with many valid answers... I've been doing some research for a client recently, because they wanted to run their own SolrCloud instances in Kubernetes - and I came across the Apache Foundation's "Solr Operator" project. It's an interesting shortcut to efficient containerised deployments of Solr, and it might help you too...&lt;!--more--&gt;&lt;/p&gt;
-&lt;h2 id="what-is-this"&gt;What is this?&lt;/h2&gt;
-&lt;p&gt;If you have decided you want to run your SolrCloud for Sitecore in container infrastructure that you host, then &lt;a href="https://solr.apache.org/operator/" target="_blank" rel="noopener"&gt;Solr Operator&lt;/a&gt; could be the helper project you've been looking for. It's a pre-packaged &lt;a href="https://kubernetes.io/" target="_blank" rel="noopener"&gt;Kubernetes&lt;/a&gt; setup tool that lets you quickly and easily provision new instances of &lt;a href="https://solr.apache.org/guide/8_8/solrcloud.html#:~:text=SolrCloud%20is%20flexible%20distributed%20search,be%20sent%20to%20any%20server." target="_blank" rel="noopener"&gt;SolrCloud&lt;/a&gt;. And while it provisions them it can configure in helpful ways too, with built in support for authentication settings, scaling, SSL, Ingress Controller config and backups.&lt;/p&gt;
-&lt;p&gt;It's provided as a set of Kubernetes config files and Helm Charts, which you can apply to your existing Kubernetes instances (and it doesn't care about where they're run) to set up as many Solr instances as you need.&lt;/p&gt;
-&lt;p&gt;What is a "&lt;a href="https://helm.sh/docs/topics/charts/" target="_blank" rel="noopener"&gt;Helm Chart&lt;/a&gt;"? Well it's a pre-packaged set of Kubernetes config files, which are templated. Think of Helm as a bit like a package manager for Kubernetes. You say "fetch the package called &amp;lt;something&amp;gt;" and it downloads an archive containing a set of templated config files. When you say "install the package called &amp;lt;something&amp;gt;" you're passing in a set of variables, and it's injecting them into the templates to generate the real config files for your deployment. Under the surface (for Operator at least) what that means is you're downloading all the Kubernetes &lt;a href="https://en.wikipedia.org/wiki/YAML" target="_blank" rel="noopener"&gt;YAML&lt;/a&gt; files to set up Solr, but they've been templated using &lt;a href="https://mustache.github.io/" target="_blank" rel="noopener"&gt;Mustache&lt;/a&gt;. So when Helm runs, it replaces all of the &lt;code&gt;{{variable}}&lt;/code&gt; entries in these files to generate the final YAML files which will install Solr using your preferred features, names and settings...&lt;/p&gt;
-&lt;p&gt;So once you've installed Operator, it can sit in your Kubernetes cluster and manage backups etc for you. And whenever you need to provision another instance of SolrCloud (say you're running multiple client projects in parallel perhaps) then you run a simple command, and it sorts out all of the config to add the new containers to your setup.&lt;/p&gt;
-&lt;p&gt;And it's massively simpler than trying to do this yourself...&lt;/p&gt;
-&lt;h2 id="an-example-setup"&gt;An example setup&lt;/h2&gt;
-&lt;p&gt;I decided to try this out on my laptop. I don't have Kubernetes installed, but it turns out that's a feature of &lt;a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener"&gt;Docker Desktop&lt;/a&gt;, so running an instance of this locally is pretty simple. The steps are as follows:&lt;/p&gt;
-&lt;h3 id="get-docker-running-kubernetes-for-you"&gt;1. Get Docker running Kubernetes for you&lt;/h3&gt;
-&lt;p&gt;If you're like me, and have been running Sitecore using Docker Desktop, then you probably have it set up in Windows Containers mode. So switch it back to Linux Containers by right-clicking the Whale icon in your system tray:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-SwitchToLinux.png"&gt;&lt;img alt="Docker Desktop Context Menu with Switch To Linux highlighted" src="https://blog.jermdavis.dev/img/2022/06-SwitchToLinux.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Once that restarts, you'll need to enable the Kubernetes features, because they're not on by default. So click the settings "cog" icon in the top blue bar of the Docker Desktop window, and turn it on from the config window:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-EnableKubernetes.png"&gt;&lt;img alt="The Docker Desktop settings window, with Kubernetes enabled" src="https://blog.jermdavis.dev/img/2022/06-EnableKubernetes.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Once you've ticked that, you'll need to click "Apply &amp;amp; Restart". It may warn you it needs to do some downloading and that you'll need to have your internet connection working:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-ConfirmKubernetesChanges.png"&gt;&lt;img alt="Dockers confirm dialog, for downloading Kubernetes" src="https://blog.jermdavis.dev/img/2022/06-ConfirmKubernetesChanges.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Once you click "install" it will think for a bit, before restarting with a new engine icon in the bottom of the Docker Desktop window:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-K8s-Icon.png"&gt;&lt;img alt="The K8s engine icon alongside the Docker engine one" src="https://blog.jermdavis.dev/img/2022/06-K8s-Icon.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id="make-sure-you-have-helm"&gt;2. Make sure you have Helm&lt;/h3&gt;
-&lt;p&gt;If you don't have it installed already, then you can &lt;a href="https://get.helm.sh/helm-v3.9.0-windows-amd64.zip" target="_blank" rel="noopener"&gt;download the Helm for Windows executable&lt;/a&gt; and unzip it into a suitable working directory. You can keep it in the current directory for experiments, or stick it somewhere central and add it to the path if you're going to use it for other tasks too.&lt;/p&gt;
-&lt;h3 id="prepare-helm-and-kubernetes-to-set-up-solr"&gt;3. Prepare Helm and Kubernetes to set up Solr&lt;/h3&gt;
-&lt;p&gt;You'll need an ingress controller. The default setup for that is simple:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud/deploy.yaml`
-&lt;/pre&gt;
-&lt;p&gt;And that will quickly set up all the relevant resources for &lt;a href="https://www.nginx.com/" target="_blank" rel="noopener"&gt;Nginx&lt;/a&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-IngressInstalled.png"&gt;&lt;img alt="Screenshot showing that the Ingress Controller is installed" src="https://blog.jermdavis.dev/img/2022/06-IngressInstalled.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;In the real world you'll need some DNS entries provided for the resources you're creating - but for a quick local demo it's easiest to add host file entries. There are a few here, because your Solr cluster needs to have names for the overall cluster, plus each of the individual Solr instances in the cluster:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;127.0.0.1	default-example-solrcloud.ing.local.domain ing.local.domain default-example-solrcloud-0.ing.local.domain default-example-solrcloud-1.ing.local.domain default-example-solrcloud-2.ing.local.domain dinghy-ping.localhost
-&lt;/pre&gt;
-&lt;p&gt;And then you can get the Helm charts required for the setup, and make sure they're up to date:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;helm repo add apache-solr https://solr.apache.org/charts
-helm repo update
-&lt;/pre&gt;
-&lt;p&gt;The last step here is to install Operator itself. That requires two things. The first is some Custom Resource Definitions (CRDs) for Kubernetes, which can be installed via &lt;code&gt;kubectl&lt;/code&gt; and then the second is to use Helm to install the Operators:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;kubectl create -f https://solr.apache.org/operator/downloads/crds/v0.5.1/all-with-dependencies.yaml
-helm install solr-operator apache-solr/solr-operator --version 0.5.1
-&lt;/pre&gt;
-&lt;p&gt;The CRDs define common settings for things like Operator, SolrCloud, the extensions provided and backups. CRDs pull these together into custom resources in Kubernetes - which makes it easier for you to manage. They describe the config schema for these things to Kubernetes, so that when Operator creates instances of them, the correct data gets set up.&lt;/p&gt;
-&lt;p&gt;From the command line, they install themselves easily:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-OperatorInstalled.png"&gt;&lt;img alt="Console output from installing dependencies and Operator" src="https://blog.jermdavis.dev/img/2022/06-OperatorInstalled.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;And once they're run, you can see the containers for Nginx, and the Operator containers for both Solr and Zookeeper:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-RunningContainers.png"&gt;&lt;img alt="Containers for Operator and Ingress running in Docker Desktop" src="https://blog.jermdavis.dev/img/2022/06-RunningContainers.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id="provision-an-instance-of-solrcloud"&gt;3. Provision an instance of SolrCloud&lt;/h3&gt;
-&lt;p&gt;So once that's all in place, you're ready to fire up some Solr...&lt;/p&gt;
-&lt;p&gt;That's done by running the following &lt;code&gt;helm&lt;/code&gt; command:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;helm install example-solr apache-solr/solr --version 0.5.1
-  --set image.tag=8.8.2
-  --set addressability.external.method=Ingress
-  --set addressability.external.domainName="ing.local.domain"
-  --set addressability.external.useExternalAddress="true"
-  --set ingressOptions.ingressClassName="nginx"
-&lt;/pre&gt;
-&lt;p&gt;(This should all be on one line, but it's easier to read with some line breaks for clarity)&lt;/p&gt;
-&lt;p&gt;Breaking it down, it's telling Helm to &lt;code&gt;install&lt;/code&gt; an SolrCloud instance named &lt;code&gt;example-solr&lt;/code&gt; using the &lt;code&gt;apache-solr/solr&lt;/code&gt; templates that got installed in the step 3 above. The &lt;code&gt;--version 0.5.1&lt;/code&gt; is specifying what version of the Operator templates are being used (and that's the latest version as I write this).&lt;/p&gt;
-&lt;p&gt;And then the rest of the options are setting parameters for the install itself. This is where you can do most of the customisising of the setup to suit your needs. Each of these parameters gets prefixed with the &lt;code&gt;--set&lt;/code&gt; command to tell Helm that you're providing a value for one of the custom settings.&lt;/p&gt;
-&lt;p&gt;The important one here for Sitecore users is the &lt;code&gt;image.tag&lt;/code&gt; wich specifies the version tag for which Solr you want installed - &lt;code&gt;8.8.2&lt;/code&gt; here is the right one for Sitecore 10. The other parameters give here are to do with how you access Solr via the ingress controller - but there are lots of options, &lt;a href="https://artifacthub.io/packages/helm/apache-solr/solr#chart-values" target="_blank" rel="noopener"&gt;documented with the chart&lt;/a&gt; and with some other explanations on the &lt;a href="https://apache.github.io/solr-operator/docs/solr-cloud/solr-cloud-crd.html" target="_blank" rel="noopener"&gt;Operator website&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;So in a "real" deployment you need to do a bit of thinking about these settings, but the defaults above will work for a demo. But when you run it, you get some status info:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-InstallingSolr.png"&gt;&lt;img alt="Output from the Solr Helm chart running" src="https://blog.jermdavis.dev/img/2022/06-InstallingSolr.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;And you can check the status of the deployment as it proceeds using &lt;code&gt;kubectl get solrclouds -w&lt;/code&gt; in order to wait for it to complete. Initially the "ReadyNodes" field will be smaller than the "DesiredNodes" one:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-Status.png"&gt;&lt;img alt="Kubernetes showing that the set of nodes is not yet ready" src="https://blog.jermdavis.dev/img/2022/06-Status.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Note how because of those custom resources installed above "solrclouds" is a resource type you can &lt;code&gt;get&lt;/code&gt; here - Operator has enhanced the behaviour of &lt;code&gt;kubectl&lt;/code&gt; to make life easier. And once it's finished (which can take a while the first time) those two fields will match:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-SuccessStatus.png"&gt;&lt;img alt="Kubernetes with its node deployments complete" src="https://blog.jermdavis.dev/img/2022/06-SuccessStatus.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;And you'll have lots of containers running - adding your three Zookeepers, three Solrs and other bits:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-ContainersForSolr.png"&gt;&lt;img alt="Docker UI showing all the containers for a SolrCloud instance" src="https://blog.jermdavis.dev/img/2022/06-ContainersForSolr.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Now at this point you should be able to browse the Solr UI at the URL &lt;code&gt;http://default-example-solrcloud.ing.local.domain/solr/&lt;/code&gt; but you may encounter an issue here...&lt;/p&gt;
-&lt;p&gt;If you get a 404 error from Nginx saying it can't see Solr, then you'll need to &lt;a href="https://github.com/apache/solr-operator/issues/424" target="_blank" rel="noopener"&gt;make a small tweak to the settings for the ingress controller&lt;/a&gt;. You can run &lt;code&gt;kubectl edit ingress example-solrcloud-common&lt;/code&gt; to get it to open an editor to modify the settings for your ingress controller resource. And you need to add this line into the file after the &lt;code&gt;annotations&lt;/code&gt; line:&lt;/p&gt;
-&lt;pre data-enlighter-highlight="9" data-enlighter-language="language=yaml" style="width:100%; overflow:scroll;"&gt;# Please edit the object below. Lines beginning with a '#' will be ignored,
-# and an empty file will abort the edit. If an error occurs while saving this file will be
-# reopened with the relevant failures.
-#
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/backend-protocol: HTTP
-  creationTimestamp: "2022-06-23T20:40:25Z"
-  generation: 1
-  labels:
-&lt;/pre&gt;
-&lt;p&gt;(Or you can make a patch file and use the &lt;code&gt;kubernetes patch&lt;/code&gt; file to apply it, if you prefer a more automated approach)&lt;/p&gt;
-&lt;p&gt;And the save the file to update the settings. And that should fix the &lt;code&gt;404&lt;/code&gt; issue, and you should get access to Solr:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-SolrRunning.png"&gt;&lt;img alt="The Solr UI running" src="https://blog.jermdavis.dev/img/2022/06-SolrRunning.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;And now you have a nice target for a Sitecore SolrCloud init container to set up all your collections...&lt;/p&gt;
-&lt;h2 id="but-what-about-more-production-ready-situations"&gt;But what about more production-ready situations?&lt;/h2&gt;
-&lt;p&gt;From what the documentation says, these scripts are designed for creating production setups. But there are a few things you need to make sure you think about, and pass the appropriate setup parameters for:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;Persistent storage&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;By default, any data that gets stored by a Kubernetes container is temporary. Anything that gets written to a container is lost if that container gets stopped and a new instance started. So if you need services in your cluster to have permenant data, you have to configure it. There seem to be two broad approaches here:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;You can let Kubernetes sort it out, and just tell Operator you want to have persistent data, and how big the stores for each container you run should be. It can allocate its own storage and manage this for you. This is fairly easy to achieve, as you just need to apply the &lt;code&gt;--set datastorage.type="persistent"&lt;/code&gt; setting to enable it, and optionally &lt;a href="https://artifacthub.io/packages/helm/apache-solr/solr#data-storage-options" target="_blank" rel="noopener"&gt;set things like max size, reclamation policy or the particular disk resource type to use&lt;/a&gt;. But this means you don't own the lifetime of the resources provided.&lt;/li&gt;
-&lt;li&gt;Or I think you can provision your own cloud storage resources, and provide these to Kubernetes for its use. This is a bit more complex to achieve, as you need to customise the Kubernetes config a bit to provide your own &lt;code&gt;PersistentVolume&lt;/code&gt; resources for Solr to make claims against. But it should give you full control over the resources provisioned.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;TLS&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Out of the box, the SolrCloud instance provided by Operator is only available on Port 80. Inside a network you control, you might consider that acceptable. But if you're exposing these services outside of your private network, or you're dealing with data that you want to be encrypted in transit then you will need to add TLS settings to your config.&lt;/p&gt;
-&lt;p&gt;There are multiple choices to configure here. You can set up TLS for the individual Solr and Zookeeper nodes, so that all the traffic inside and out of the Kubernetes cluster uses SSL.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;Authentication&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;It's not common requirement for the sort of "private" Solr instance you run inside your network for Sitecore, but you might want to apply security to your SolrCloud instance. By default instances set up using Operator are anonymously accessible, but there are &lt;a href="https://apache.github.io/solr-operator/docs/solr-cloud/solr-cloud-crd.html#authentication-and-authorization" target="_blank" rel="noopener"&gt;plenty of options for configuring security if you do need it&lt;/a&gt;.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id="conclusions"&gt;Conclusions&lt;/h2&gt;
-&lt;p&gt;I think this is a really good addition to your infrastructure toolbox for Sitecore deployments. If you're choosing to run your own Solr in containers this is definitely the easiest setup approach I've discoverd so far. And since it's part of the Apache Foundation's projects you know it's going to do things right...&lt;/p&gt;
-</content>
+		<content>&lt;p&gt;One of the recurring themes of deploying Sitecore over the last few years has been &amp;quot;how do I deal with Solr?&amp;quot;. It's a question with many valid answers... I've been doing some research for a client recently, because they wanted to run their own SolrCloud instances in Kubernetes - and I came across the Apache Foundation's &amp;quot;Solr Operator&amp;quot; project. It's an interesting shortcut to efficient containerised deployments of Solr, and it might help you too...&lt;/p&gt;</content>
 		<summary>&lt;p&gt;One of the recurring themes of deploying Sitecore over the last few years has been &amp;quot;how do I deal with Solr?&amp;quot;. It's a question with many valid answers... I've been doing some research for a client recently, because they wanted to run their own SolrCloud instances in Kubernetes - and I came across the Apache Foundation's &amp;quot;Solr Operator&amp;quot; project. It's an interesting shortcut to efficient containerised deployments of Solr, and it might help you too...&lt;/p&gt;</summary>
 	</entry>
 	<entry>
@@ -194,29 +41,7 @@ metadata:
 		<link href="https://blog.jermdavis.dev/posts/2022/windows-11-gotcha" />
 		<link rel="enclosure" type="image" href="https://blog.jermdavis.dev/" />
 		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;For the moment &lt;a href="https://support.sitecore.com/kb?id=kb_article_view&amp;amp;sysparm_article=KB0087164" target="_blank" rel="noopener"&gt;Sitecore don't support Windows 11&lt;/a&gt; for installing XM or XP - but since Microsoft have a fairly agressive policy of rolling it out to machines currently running Windows 10 and installing it by default on new hardware, there are a fair few developers out there finding themselves having to work out how to get it to work...&lt;!--more--&gt;&lt;/p&gt;
-&lt;p&gt;One of my colleages tried to run a Sitecore Install Assistant (SIA) install of v10.2 on his laptop recently, and found that it failed. During the "start up all the services" phase, the Marketing Automation service would not come up. And in the logs for that service, this error (plus a bunch more stack trace) was repeated quite a few times:&lt;/p&gt;
-&lt;pre data-enlighter-highlight="6" data-enlighter-language="language=text" style="width:100%; overflow:scroll;"&gt;Starting Marketing Automation Engine...
-2022-06-08 15:51:29 ERR Error initializing XConnect client. System.AggregateException: One or more errors occurred. 
-   ---&amp;gt; Sitecore.XConnect.XdbCollectionUnavailableException: An error occurred while sending the request.
-   ---&amp;gt; System.Net.Http.HttpRequestException: An error occurred while sending the request. 
-   ---&amp;gt; System.Net.WebException: The underlying connection was closed: An unexpected error occurred on a receive. 
-   ---&amp;gt; System.ComponentModel.Win32Exception: The credentials supplied to the package were not recognized
-   at System.Net.Security.SslState.CheckThrow(Boolean authSuccessCheck, Boolean shutdownCheck)
-   at System.Net.Security.SslState.get_SecureStream()
-   at System.Net.TlsStream.EndRead(IAsyncResult asyncResult)
-   at System.Net.Connection.ReadCallback(IAsyncResult asyncResult)
-   --- End of inner exception stack trace ---
-&lt;/pre&gt;
-&lt;p&gt;(&lt;em&gt;Line-breaks added to make it easier to read&lt;/em&gt;)&lt;/p&gt;
-&lt;p&gt;And obviously the install can't complete at this point, so SIA fails...&lt;/p&gt;
-&lt;p&gt;I was answering questions about this issue remotely, and didn't immediately think to get on a screen share to investigate this. (my bad) So initially I didn't realise that Windows 11 was a factor here. Googling that error didn't give much in the way of useful hits at the time - mostly &lt;a href="https://stackoverflow.com/questions/7984945/the-credentials-supplied-to-the-package-were-not-recognized-error-when-authent" target="_blank" rel="noopener"&gt;Stack Overflow answers which did not refer to Sitecore&lt;/a&gt;. But they did seem to refer to SSL Certificates - which was a clue.&lt;/p&gt;
-&lt;p&gt;But once my colleague realised that Windows 11 might be a factor, the issue was fairly easy to resolve. A useful post from &lt;a href="https://twitter.com/maartenwillebr1" target="_blank" rel="noopener"&gt;Maarten Willebrands&lt;/a&gt; has a write-up of specific issues he'd seen with &lt;a href="https://www.maartenwillebrands.nl/2021/11/15/sitecore-running-sitecore-on-windows-11/" target="_blank" rel="noopener"&gt;Sitecore and Windows 11 which hits on the correct answer&lt;/a&gt;: The cause of the problem appears to be the default TLS settings in Win 11: TLS 1.3 is on by default in new IIS Sites, but xConnect does not work correctly with this enabled right now. Hence the errors we were seeing.&lt;/p&gt;
-&lt;p&gt;As Maarten points out in his post, disabling the use of TLS 1.3 in the IIS Site for xConnect will resolve the problem, and allow the Marketing Automation service to start:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/06-Win11SiteBinding.png"&gt;&lt;img alt="Site bindings dialog in Windows 11 - with TLS3 options" src="https://blog.jermdavis.dev/img/2022/06-Win11SiteBinding.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;So cheers to Maarten for the answer, and hopefully this post will add the alternative error message to Google for future people hitting this issue... Though I am hoping to see a fix from Sitecore with their next release, to either disable this setting automatically in the setup, or to make xConnect compatible.&lt;/p&gt;
-&lt;p&gt;*fingers crossed*&lt;/p&gt;
-</content>
+		<content>&lt;p&gt;For the moment &lt;a href="https://support.sitecore.com/kb?id=kb_article_view&amp;amp;sysparm_article=KB0087164" target="_blank" rel="noopener"&gt;Sitecore don't support Windows 11&lt;/a&gt; for installing XM or XP - but since Microsoft have a fairly agressive policy of rolling it out to machines currently running Windows 10 and installing it by default on new hardware, there are a fair few developers out there finding themselves having to work out how to get it to work...&lt;/p&gt;</content>
 		<summary>&lt;p&gt;For the moment &lt;a href="https://support.sitecore.com/kb?id=kb_article_view&amp;amp;sysparm_article=KB0087164" target="_blank" rel="noopener"&gt;Sitecore don't support Windows 11&lt;/a&gt; for installing XM or XP - but since Microsoft have a fairly agressive policy of rolling it out to machines currently running Windows 10 and installing it by default on new hardware, there are a fair few developers out there finding themselves having to work out how to get it to work...&lt;/p&gt;</summary>
 	</entry>
 	<entry>
@@ -227,238 +52,7 @@ metadata:
 		</author>
 		<link href="https://blog.jermdavis.dev/posts/2022/regular-expressions-dotnet-7" />
 		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;I've spent a bit of time looking at how Regular expressions are changing in the upcoming .Net 7 release. While they do have a bit of a reputation for making people's lives worse (&lt;a href="http://regex.info/blog/2006-09-15/247" target="_blank" rel="noopener"&gt;so much there's a well known programmer joke about it&lt;/a&gt;) they do have a place in your developer toolbox. So what caught my eye in the new features, and how does code get better with this new version? &lt;!--more--&gt;&lt;/p&gt;
-&lt;h2 id="my-background-problem"&gt;My background problem&lt;/h2&gt;
-&lt;p&gt;The need to parse text is pretty common in IT problems, but there's a specific issue I was looking at. I have a long-term personal project to &lt;a href="https://en.wikipedia.org/wiki/MUD" target="_blank" rel="noopener"&gt;build a "mud" game engine&lt;/a&gt; in C#. A core part of any text-based adventure game is parsing user input. And the first step is to split the user's input up into tokens. The game needs to do it every time any player issues a command - so it's a bit of code that can be pretty important for overall performance.&lt;/p&gt;
-&lt;p&gt;At its simplest, the parser in my game engine takes the string and:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Splits it by spaces&lt;/li&gt;
-&lt;li&gt;Unless a phrase is wrapped in quotes - where its taken as a literal&lt;/li&gt;
-&lt;li&gt;And discards punctuation&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;So &lt;code&gt;give sword to knight&lt;/code&gt; is broken into the tokens &lt;code&gt;give&lt;/code&gt;, &lt;code&gt;sword&lt;/code&gt;, &lt;code&gt;to&lt;/code&gt; and &lt;code&gt;knight&lt;/code&gt;. And &lt;code&gt;give sword to "green knight".&lt;/code&gt; would be broken into &lt;code&gt;give&lt;/code&gt;, &lt;code&gt;sword&lt;/code&gt;, &lt;code&gt;to&lt;/code&gt; and &lt;code&gt;green knight&lt;/code&gt;. Fairly simple - though the following phases where the code works out the meaning of the text is a bit more complicated. (Perhaps a topic for a future post?)&lt;/p&gt;
-&lt;p&gt;A lot of my coding follows the "make it work, then worry about making it pretty" principle so the current implementation of this parsing is based on simple regular expressions. And tbh, I'd never got to the "make it pretty" phase for this bit of code. The core of the work is the Regex &lt;code&gt;".*?"|\w*&lt;/code&gt; - that translates roughly as "match any string surrounded in quotes, or match any string of word characters". That generates a &lt;code&gt;Match&lt;/code&gt; for each token in the user input and those can get stored away for the game engine to use. Stripping out some stuff that's not relevant to this experiment, the core code is roughly this:&lt;/p&gt;
-&lt;pre data-enlighter-language="language=csharp" style="width:100%; overflow:scroll;"&gt;public class RegexStringTokeniser
-{
-    private static string quotes = "\"";
-    private static Regex parser = new Regex("\".*?\"|\\w*", RegexOptions.Singleline | RegexOptions.Compiled);
-
-    private List&amp;lt;string&amp;gt; tokens = new List&amp;lt;string&amp;gt;();
-
-    public int Count
-    {
-        get { return tokens.Count; }
-    }
-
-    public IEnumerable&amp;lt;string&amp;gt; Tokens
-    {
-        get
-        {
-            foreach (string token in tokens)
-            {
-                yield return token;
-            }
-        }
-    }
-
-    public RegexStringTokeniser(string input, bool removeQuotes = true)
-    {
-        ArgumentNullException.ThrowIfNull(input, nameof(input));
-
-        Match m = parser.Match(input);
-
-        while (m.Success)
-        {
-            if (m.Length &amp;gt; 0)
-            {
-                if (removeQuotes)
-                    tokens.Add(m.Value.Replace(quotes, ""));
-                else
-                    tokens.Add(m.Value);
-            }
-
-            m = m.NextMatch();
-        }
-    }
-}
-&lt;/pre&gt;
-&lt;p&gt;Pretty simple - and it works. The only real concession to performance I'd made was to make the regular expression a &lt;code&gt;static&lt;/code&gt; field and mark it as &lt;code&gt;RegexOptions.Compiled&lt;/code&gt; to get the performance boost of not having to parse the expression every time.&lt;/p&gt;
-&lt;p&gt;Measuring that with the excellent &lt;a href="https://benchmarkdotnet.org/articles/overview.html" target="_blank" rel="noopener"&gt;BenchmarkDotNet&lt;/a&gt;, when it parses a set of test data we get this as a baseline measurement:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/05-RegexBaseline.png"&gt;&lt;img alt="Stats for the memory and cpu performance of the regex parser" src="https://blog.jermdavis.dev/img/2022/05-RegexBaseline.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id="what-are-the-down-sides-here"&gt;What are the down sides here?&lt;/h2&gt;
-&lt;p&gt;Well they're the two things you're fighting with every bit of code you write: CPU usage (execution time) and Allocations (how much memory gets used).&lt;/p&gt;
-&lt;p&gt;Using a compiled &lt;code&gt;Regex&lt;/code&gt; reduces the CPU overhead a bit, and up until now that was all I'd really considered. But looking at the code it's fairly obvious that this has some memory effects - It's allocating 58Kb for the 12 tests. Each expression &lt;code&gt;Match&lt;/code&gt; is a class - a heap allocated object. So every time the matching process runs it's creating and then discarding objects that the GC has to track. And internally, matches are creating strings which get copied about.&lt;/p&gt;
-&lt;p&gt;So there are opportunities to improve here.&lt;/p&gt;
-&lt;h2 id="the-ideal-solution"&gt;The "ideal" solution&lt;/h2&gt;
-&lt;p&gt;The most efficient way of addressing this code is to get rid of the need for regular expressions at all. If we accept the loss of flexibility that comes from hard-coding the matching algorithm, the code can step through the input directly. There's another interesting new .Net feature that can help here: &lt;code&gt;ReadOnlySpan&amp;lt;T&amp;gt;&lt;/code&gt;. (Thought this one is already released, so you can use it now) It's a way of handling "slicing" of arrays of data, and minimising the memory allocations involved. They're not as easy to use as strings, because they're stack-based data they can't be stored in fields or collections. But it's not too difficult to work around that limitiation in order to get the benefits here.&lt;/p&gt;
-&lt;p&gt;The code above can get rewritten in this style. It's a bit longer and more complex, but the results are interesting:&lt;/p&gt;
-&lt;pre data-enlighter-language="language=csharp" style="width:100%; overflow:scroll;"&gt;public class SpanStringTokeniser
-{
-    private List&amp;lt;string&amp;gt; tokens = new List&amp;lt;string&amp;gt;();
-
-    public int Count
-    {
-        get { return tokens.Count; }
-    }
-
-    public IEnumerable&amp;lt;string&amp;gt; Tokens
-    {
-        get
-        {
-            foreach (string token in tokens)
-            {
-                yield return token;
-            }
-        }
-    }
-
-    public SpanStringTokeniser(ReadOnlySpan&amp;lt;char&amp;gt; input, bool removeQuotes=true)
-    {
-        int start = 0;
-        int len = 0;
-        bool inQuote = false;
-        do
-        {
-            if (!inQuote &amp;amp;&amp;amp; input[start + len] == '"')
-            {
-                inQuote = true;
-                len = 0;
-                if (removeQuotes)
-                {
-                    start += 1;
-                }
-                else
-                {
-                    len += 1;
-                }
-            }
-            else if (inQuote &amp;amp;&amp;amp; input[start + len] == '"')
-            {
-                inQuote = false;
-
-                if(!removeQuotes)
-                {
-                    len += 1;
-                }
-
-                tokens.Add(input.Slice(start, len).ToString());
-                start += len;
-
-                if (removeQuotes)
-                {
-                    start += 1;
-                }
-
-                start += SkipPunctuation(input, start);
-
-                len = 0;
-            }
-            else if (!inQuote &amp;amp;&amp;amp; (char.IsPunctuation(input[start + len]) || char.IsWhiteSpace(input[start + len])) )
-            {
-                if (len &amp;gt; 0)
-                {
-                    tokens.Add(input.Slice(start, len).ToString());
-                }
-
-                start += len + SkipPunctuation(input, start);
-                len = 0;
-            }
-            else
-            {
-                len += 1;
-            }
-        }
-        while (start + len &amp;lt; input.Length);
-
-        if (start &amp;lt;= input.Length-1)
-        {
-            tokens.Add(input.Slice(start).ToString());
-        }
-    }
-
-    private int SkipPunctuation(ReadOnlySpan&amp;lt;char&amp;gt; input, int pos)
-    {
-        int delta = 0;
-        while( (pos + delta &amp;lt; input.Length) &amp;amp;&amp;amp; (char.IsWhiteSpace(input[pos + delta]) || char.IsPunctuation(input[pos + delta])) &amp;amp;&amp;amp; input[pos + delta] != '"')
-        {
-            delta += 1;
-        }
-
-        return delta;
-    }
-}
-&lt;/pre&gt;
-&lt;p&gt;(I'm pretty sure this isn't the simplest re-write I could do - it's just a first pass for comparisons. All those nested if/else clauses could be improved for a start...)&lt;/p&gt;
-&lt;p&gt;Re-doing the measurments to compare this implementation to the original &lt;code&gt;Regex&lt;/code&gt; gives a nice improvement. It's a quarter of the CPU time, and reduces the memory allocations down to 7Kb:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/05-SpanComparison.png"&gt;&lt;img alt="Comparing the stats for Regex vs Span parsing" src="https://blog.jermdavis.dev/img/2022/05-SpanComparison.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;But it's certainly less easy to read...&lt;/p&gt;
-&lt;h2 id="what-about-the-middle-ground"&gt;What about the middle ground?&lt;/h2&gt;
-&lt;p&gt;The latest updates in Preview 4 of .Net 7 &lt;a href="https://devblogs.microsoft.com/dotnet/regular-expression-improvements-in-dotnet-7/" target="_blank" rel="noopener"&gt;add a load of change to Regular Expressions&lt;/a&gt;. There's a lot of interesting technical detail in that post, but the key things from my perspective are the ability to generate the "compiled" &lt;code&gt;Regex&lt;/code&gt; at compilation time, and the ability to use ValueTypes to return data about matches.&lt;/p&gt;
-&lt;p&gt;Converting the original class to this model involves three main changes.&lt;/p&gt;
-&lt;p&gt;First up, instead of declaring the &lt;code&gt;Regex&lt;/code&gt; directly the code can now declare a &lt;code&gt;partial static&lt;/code&gt; property and use the &lt;code&gt;[RegexGenerator]&lt;/code&gt; attribute to specify what expression needs to be generated. That allows the C# compiler to parse the expression we want generated, and then construct the C# code for it and put it into the compiler-generated file for this partial class.&lt;/p&gt;
-&lt;p&gt;That change gives two interesting benefits. Firstly it means 100% of the work to turn the regular expression into .Net code happens at compile time, so there's no startup-time penalty for the "compiled" expression that the original code used. And the second is that a side-effect of that is you can now step the debugger into this compiled code, which could be really useful if you need to understand the behaviour of your expression:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/05-DebugIntoRegex.png"&gt;&lt;img alt="Debugging into a generated Regex" src="https://blog.jermdavis.dev/img/2022/05-DebugIntoRegex.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Secondly, to support that change the overall class needs to be declared &lt;code&gt;partial&lt;/code&gt; too.&lt;/p&gt;
-&lt;p&gt;And then thirdly, these new &lt;code&gt;Regex&lt;/code&gt; classes have a new &lt;code&gt;EnumerateMatches()&lt;/code&gt; method which returns a set of &lt;code&gt;ValueMatch&lt;/code&gt; data - stack allocated value types so the GC does not have to get involved.&lt;/p&gt;
-&lt;pre data-enlighter-highlight="1,5,6,33" data-enlighter-language="language=csharp" style="width:100%; overflow:scroll;"&gt;public partial class RegexGeneratorStringTokeniser
-{
-    private static string quotes = "\"";
-
-    [RegexGenerator("\".*?\"|\\w*", RegexOptions.Singleline)]
-    private static partial Regex parser();
-
-    private List&amp;lt;string&amp;gt; tokens = new List&amp;lt;string&amp;gt;();
-
-    public int Count
-    {
-        get { return tokens.Count; }
-    }
-
-    public IEnumerable&amp;lt;string&amp;gt; Tokens
-    {
-        get
-        {
-            foreach (string token in tokens)
-            {
-                yield return token;
-            }
-        }
-    }
-
-    public RegexGeneratorStringTokeniser(ReadOnlySpan&amp;lt;char&amp;gt; s, bool removeQuotes = true)
-    {
-        if (s == null)
-        {
-            throw new ArgumentNullException(nameof(s));
-        }
-
-        foreach (ValueMatch match in parser().EnumerateMatches(s))
-        {
-            if(match.Length == 0)
-            {
-                continue;
-            }
-
-            if(removeQuotes &amp;amp;&amp;amp; s[match.Index] == '"' &amp;amp;&amp;amp; s[match.Index + match.Length - 1] == '"')
-            {
-                tokens.Add(s.Slice(match.Index + 1, match.Length - 2).ToString());
-            }
-            else
-            {
-                tokens.Add(s.Slice(match.Index, match.Length).ToString());
-            }
-        }
-    }
-}
-&lt;/pre&gt;
-&lt;p&gt;The code-style police in my head don't really like the use of &lt;code&gt;parser().EnumerateMatches(s)&lt;/code&gt; there - it would be nicer if &lt;code&gt;parser&lt;/code&gt; was a property getter not a method. But &lt;a href="https://github.com/dotnet/csharplang/discussions/3412" target="_blank" rel="noopener"&gt;partial property getters aren't a thing in C# yet&lt;/a&gt;. So I'll just have to put up with that for now...&lt;/p&gt;
-&lt;p&gt;That code can also take in a &lt;code&gt;ReadOnlySpan&amp;lt;char&amp;gt;&lt;/code&gt; as its input, as the new &lt;code&gt;Regex&lt;/code&gt; methods can operate on spans. The &lt;code&gt;ValueMatch&lt;/code&gt; data gives the starting position and length of each match found. That data can be used to slice the input span to generate the set of result strings.&lt;/p&gt;
-&lt;p&gt;Re-measuring with this version gives more interesting info:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/05-ModernRegex.png"&gt;&lt;img alt="Measurements comparing .Net 7 Regex to the other two approaches" src="https://blog.jermdavis.dev/img/2022/05-ModernRegex.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;This approach gives some of the performance improvement compared to hand-written code, but it maintains the same improved memory performance as that code.&lt;/p&gt;
-&lt;h2 id="in-conclusion"&gt;In conclusion...&lt;/h2&gt;
-&lt;p&gt;This has been an interesting experiment. It shows that hand-crafting parsing code for your specific scenarios is still likely the fastest approach to whatever you're doing. But if this preview code from Microsoft makes it into the final .Net 7 release, regular expressions can be significantly better than they were before. Which makes it more likely that keeping the flexibility they provide is worthwhile.&lt;/p&gt;
-</content>
+		<content>&lt;p&gt;I've spent a bit of time looking at how Regular expressions are changing in the upcoming .Net 7 release. While they do have a bit of a reputation for making people's lives worse (&lt;a href="http://regex.info/blog/2006-09-15/247" target="_blank" rel="noopener"&gt;so much there's a well known programmer joke about it&lt;/a&gt;) they do have a place in your developer toolbox. So what caught my eye in the new features, and how does code get better with this new version? &lt;/p&gt;</content>
 		<summary>&lt;p&gt;I've spent a bit of time looking at how Regular expressions are changing in the upcoming .Net 7 release. While they do have a bit of a reputation for making people's lives worse (&lt;a href="http://regex.info/blog/2006-09-15/247" target="_blank" rel="noopener"&gt;so much there's a well known programmer joke about it&lt;/a&gt;) they do have a place in your developer toolbox. So what caught my eye in the new features, and how does code get better with this new version? &lt;/p&gt;</summary>
 	</entry>
 	<entry>
@@ -469,64 +63,7 @@ metadata:
 		</author>
 		<link href="https://blog.jermdavis.dev/posts/2022/xref-recent-statiq" />
 		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;I updated the build project for this blog recently, as &lt;a href="https://www.statiq.dev/" target="_blank" rel="noopener"&gt;the engine used to generate&lt;/a&gt; it was updated. But doing that caused an issue which I think others might bump into. So here's an explanation of what I saw and how to fix it:&lt;!--more--&gt;&lt;/p&gt;
-&lt;h2 id="the-issue"&gt;The issue&lt;/h2&gt;
-&lt;p&gt;In a couple of places in the theme for my blog I make use of &lt;code&gt;xref&lt;/code&gt; links. That's a way of writing a link in your source which doesn't directly care where the resulting page will end up. The publishing code will fix-up your link to the correct URL once it's worked out where the target page is.&lt;/p&gt;
-&lt;p&gt;One place I'm using these links is in the MVP widget on the right hand column. Clicking the image takes you to the relevant page. So in the &lt;code&gt;cshtml&lt;/code&gt; for the right column I have a link which says:&lt;/p&gt;
-&lt;pre data-enlighter-language="html" style="width:100%; overflow:scroll;"&gt;&amp;lt;a href="xref:mvp"&amp;gt;....&amp;lt;/a&amp;gt;
-&lt;/pre&gt;
-&lt;p&gt;and then elsewhere in the project I have a file called &lt;code&gt;mvp.md&lt;/code&gt; which defines that page. And that linking had been working fine up until I updated to beta 45. Having done that, I started to see errors:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-ErrorsFromStatiqBuild.png"&gt;&lt;img alt="A list of errors about xref resolution" src="https://blog.jermdavis.dev/img/2022/03-ErrorsFromStatiqBuild.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;There's basically one error here, but it's repeated a lot:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;[ERRO] Archives/PostProcess » ExecuteSwitch » RenderContentPostProcessTemplates » ResolveXrefs » 15 xref resolution failures:
-C:/Users/jeremy.davis/source/repos/blog.jermdavis.dev/StatiqGenerator/theme/input/posts.cshtml
- - Multiple ambiguous matching documents found for xref "mvp"
-&lt;/pre&gt;
-&lt;p&gt;Every time the engine is trying to render any page which has the xref link to the mvp page, it gets this error. Something that changed in beta 45 means it can no longer resolve this link correctly.&lt;/p&gt;
-&lt;h2 id="working-out-the-cause"&gt;Working out the cause&lt;/h2&gt;
-&lt;p&gt;The best place to start with an issue like this is with &lt;a href="https://github.com/statiqdev/Statiq.Web/releases/tag/v1.0.0-beta.45" target="_blank" rel="noopener"&gt;the release notes for the new version&lt;/a&gt;. And looking through that, there is something interesting here:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Expanded xref lookup behavior to look in all relevant pipelines, not just the "content" pipeline 
-(exclusions can be customized using the XrefPipelines and AdditionalXrefPipelines settings).
-&lt;/pre&gt;
-&lt;p&gt;Looking through the git commits associated with this release, and thinking about that comment &lt;a href="https://github.com/statiqdev/Statiq.Web/blob/4c23f91bf2b7a1e4a91ec6c45ff22ef808f9d112/src/Statiq.Web/Bootstrapper/BootstrapperExtensions.cs#L158" target="_blank" rel="noopener"&gt;lead me to this extension method&lt;/a&gt;: (with some less relevant bits snipped out)&lt;/p&gt;
-&lt;pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;private static TBootstrapper AddDefaultWebSettings&amp;lt;TBootstrapper&amp;gt;(this TBootstrapper bootstrapper)
-            where TBootstrapper : IBootstrapper =&amp;gt;
-            bootstrapper
-                .AddSettingsIfNonExisting(new Dictionary&amp;lt;string, object&amp;gt;
-                {
-                    {
-                        WebKeys.XrefPipelines,
-                        new string[]
-                        {
-                            nameof(Pipelines.Content),
-                            nameof(Pipelines.Assets),
-                            nameof(Pipelines.Data),
-                            nameof(Pipelines.Archives),
-                            nameof(Pipelines.Feeds)
-                        }
-                    }
-                });
-&lt;/pre&gt;
-&lt;p&gt;The code is providing the value for a config setting as part of the bootstrap process for the Statiq engine. It's specifying a set of pipelines which are going to be processed to find potential &lt;code&gt;xref&lt;/code&gt; targets. I think in the previous version of the code it only looked at the Content pipeline, but now it looks at all the main ones.&lt;/p&gt;
-&lt;p&gt;So why might this break my site?&lt;/p&gt;
-&lt;p&gt;It took me a while to work this out. I tried a variety of changes to my theme and content before I realised what was up. But the answer turned out to be my tags. As well as having a markdown page titled "MVP" in the content, I also had a few posts which were tagged "MVP" too. The Archives pipeline generates pages for each tag to list all the posts which have that tag applied. So you end up with HTML files for both the MVP page and for the MVP tag listing.&lt;/p&gt;
-&lt;p&gt;And now that the outputs of the Archives pipeline are being considered as possible targets for an &lt;code&gt;xref&lt;/code&gt; link because of the code changes in this version. And so we have an issue - because as the error says, the code can no longer decide which of the two possible matches is the right one...&lt;/p&gt;
-&lt;h2 id="possible-answers"&gt;Possible answers&lt;/h2&gt;
-&lt;p&gt;I came up with ideas for how this might get sorted:&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;Option 1 - change the content:&lt;/b&gt; Change the name of the MVP page, or the MVP tag.&lt;br&gt;
-Whatever they're called, as long as they both have different names, the problem will go away. Of course you'll have to remember not to accidentally cause the same issue again in the future with some other page/tag combination. So any matching combination will cause the error.&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;Option 2 - change the config:&lt;/b&gt; Reconfigure the site to ignore the Archives pipeline.&lt;br&gt;
-Alternatively, do you want the xref processing to look at the output of the Archives pipeline? The config in the code above is a setting - which means it can be overridden in the Statiq config files. (Or in your code, if you're choosing to configure things that way) For example I tried adding the following to &lt;code&gt;appsettings.json&lt;/code&gt;:&lt;/p&gt;
-&lt;pre data-enlighter-language="json" style="width:100%; overflow:scroll;"&gt;{
-  "XrefPipelines": ["Content", "Assets", "Data", "Feeds"]
-}
-&lt;/pre&gt;
-&lt;p&gt;That specifies all of the pipelines except the Archives one - so the output file generated for the "MVP" tag will never be considered as a target of my &lt;code&gt;xref&lt;/code&gt;. The down side of this is that once you exclude the archive pipeline from this config, you can't use an &lt;code&gt;xref&lt;/code&gt; to refer to anything in the archives.&lt;/p&gt;
-&lt;p&gt;&lt;b&gt;Option 3 - change the links:&lt;/b&gt; Make your links without &lt;code&gt;xref&lt;/code&gt;.&lt;br&gt;
-You could go back to using normal HTML links instead of &lt;code&gt;xref&lt;/code&gt;. That would work fine - but it's sort of avoiding the problem.&lt;/p&gt;
-&lt;p&gt;(And I suppose technically option 4 is "stay on an older version of Statiq" - but that's not a good choice)&lt;/p&gt;
-&lt;p&gt;I've gone for option 2 here, and my site is generating without errors again.&lt;/p&gt;
-</content>
+		<content>&lt;p&gt;I updated the build project for this blog recently, as &lt;a href="https://www.statiq.dev/" target="_blank" rel="noopener"&gt;the engine used to generate&lt;/a&gt; it was updated. But doing that caused an issue which I think others might bump into. So here's an explanation of what I saw and how to fix it:&lt;/p&gt;</content>
 		<summary>&lt;p&gt;I updated the build project for this blog recently, as &lt;a href="https://www.statiq.dev/" target="_blank" rel="noopener"&gt;the engine used to generate&lt;/a&gt; it was updated. But doing that caused an issue which I think others might bump into. So here's an explanation of what I saw and how to fix it:&lt;/p&gt;</summary>
 	</entry>
 	<entry>
@@ -538,37 +75,7 @@ You could go back to using normal HTML links instead of &lt;code&gt;xref&lt;/cod
 		<link href="https://blog.jermdavis.dev/posts/2022/is-that-really-a-unicorn-issue" />
 		<link rel="enclosure" type="image" href="https://blog.jermdavis.dev/" />
 		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;I hit a rather confusing issue with a release a while back, which initially appeared to be a Unicorn problem. But after investigating the details, I think this was actually an infrastructure problem causing some odd behaviour. I doubt this is a common problem, but still worth writing down in case it's a challenge for anyone else... &lt;!--more--&gt;&lt;/p&gt;
-&lt;h2&gt;Some background&lt;/h2&gt;
-&lt;p&gt;The release in question was a containerised build. It had been running fine for some time, and I'd already released this build to the "dev" and "qa" instances of the site. The release process was set up to deploy the new images to Kubernetes, and then once the CM image was deployed and started, trigger the Unicorn sync to complete the deployment.&lt;/p&gt;
-&lt;h2&gt;The issue&lt;/h2&gt;
-&lt;p&gt;When the release was triggered on the pre-prod instance of the site. The images deployed ok, but then the Unicorn sync failed. I've had instances in the past where synchronisation had failed for data-related reasons - a missing file in source control, or something an editor had done to the content tree. But in this instance it failed with a much stranger error:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;Creating master:/sitecore/System/Modules/some-item failed. API returned null.
-&lt;/pre&gt;
-&lt;p&gt;Google wasn't a great deal of help here. Searching for references to that message gave one hit - and that was in &lt;a href="https://github.com/SitecoreUnicorn/Rainbow/blob/3366c917df58fe0f7e6ca6d1a3b0cb267dd4c7f4/src/Rainbow.Storage.Sc/Deserialization/DefaultDeserializer.cs#L384" rel="noopener" target="_blank"&gt;the GitHub repository that the code in question came from&lt;/a&gt;. So no easy answers for this one.&lt;/p&gt;
-&lt;p&gt;I tried repeating the deployment - which gave the same error. And I tried pulling down the source and running a sync on my local instance - which gave no errors.&lt;/p&gt;
-&lt;p&gt;So, for a while I was a bit stumped...&lt;/p&gt;
-&lt;h2&gt;A possible explanation&lt;/h2&gt;
-&lt;p&gt;Going back to first-principles I thought about two things:&lt;/p&gt;
-&lt;p&gt;Firstly, what is the code doing when the exception is thrown? Well looking at the source, it's trying to create an item from a template:&lt;/p&gt;
-&lt;pre data-enlighter-highlight="3" data-enlighter-language="csharp" style="width:100%; overflow:scroll;"&gt;AssertTemplate(database, new ID(serializedItemData.TemplateId), serializedItemData.Path);
-
-Item targetItem = ItemManager.AddFromTemplate(serializedItemData.Name, new ID(serializedItemData.TemplateId), destinationParentItem, new ID(serializedItemData.Id));
-
-if (targetItem == null)
-    throw new DeserializationException("Creating " + serializedItemData.DatabaseName + ":" + serializedItemData.Path + " failed. API returned null.");
-
-targetItem.Versions.RemoveAll(true);
-&lt;/pre&gt;
-&lt;p&gt;The call to &lt;code&gt;AddFromTemplate()&lt;/code&gt; is returning null - which leads to the exception being thrown.
-Why might that call fail by returning null? It's not obvious, but likely it's to do with some unexpected data somewhere?&lt;/p&gt;
-&lt;p&gt;The second difference is that the infrastructure is different between pre-prod and dev/qa. The client's infrastructure choices for this instance mean that there are two CM servers in the pre-prod deployment.&lt;/p&gt;
-&lt;p&gt;Thinking about that made me wonder if the cause here might be related to those multiple CM instances. What if the deployment was starting with a connection to one CM instance, and then getting swapped to the other one as the containers updated? And that lead me to thinking about clearing caches - because that could be a reason the in-memory data might be different.&lt;/p&gt;
-&lt;p&gt;And in fact clearing the cache on the active CM instance did get rid of the error, and allow the sync to complete correctly. And none of the other things I'd tried had done so. So I'm fairly sure something data and cache related is what was happening when I saw the error.&lt;/p&gt;
-&lt;h2&gt;Preventing this problem&lt;/h2&gt;
-&lt;p&gt;So, turns out this is probably an interesting variation on something I've discussed before. The problem comes down to how &lt;a href="https://blog.jermdavis.dev/posts/2021/revisiting-waiting-for-kubernetes-deployments" rel="noopener" target="_blank"&gt;it waits for container updates&lt;/a&gt;. If you have multiple CM roles and a release process which performs post-release tasks on your Sitecore CM role, you must wait for all of these roles to update before continuing. (And in fact, this issue came up before I posted that previous problem - it's not recurred since I made the changes I wrote about there)&lt;/p&gt;
-&lt;p&gt;And once again I'm thinking life is simpler with only one CM instance running at a time...&lt;/p&gt;
-</content>
+		<content>&lt;p&gt;I hit a rather confusing issue with a release a while back, which initially appeared to be a Unicorn problem. But after investigating the details, I think this was actually an infrastructure problem causing some odd behaviour. I doubt this is a common problem, but still worth writing down in case it's a challenge for anyone else... &lt;/p&gt;</content>
 		<summary>&lt;p&gt;I hit a rather confusing issue with a release a while back, which initially appeared to be a Unicorn problem. But after investigating the details, I think this was actually an infrastructure problem causing some odd behaviour. I doubt this is a common problem, but still worth writing down in case it's a challenge for anyone else... &lt;/p&gt;</summary>
 	</entry>
 	<entry>
@@ -579,57 +86,7 @@ Why might that call fail by returning null? It's not obvious, but likely it's to
 		</author>
 		<link href="https://blog.jermdavis.dev/posts/2022/windows-pdf-printer-paper-size" />
 		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;Recently I needed to do an odd bit of printing. I needed to generate an A3 PDF for printing which had crop marks around it. That means it needs to be printed to "a bit larger than A3" size. In the past I'd used Foxit's PDF printer for this (where it just worked), but that no longer seems to be free. Turns out the default Windows PDF printer needs a bit of hackery to enable using odd-sized paper. I'm sure I'll find myself needing to do this again in the future, so this is a reminder for my future self.&lt;!--more--&gt;&lt;/p&gt;
-&lt;h2 id="the-problem"&gt;The problem&lt;/h2&gt;
-&lt;p&gt;I've got a Photoshop drawing that's a "just over A3" sized. It's an A3 print with what printers call "bleed" - the extra bit of your design you have to leave around the edges of a print to ensure that once it's cropped to its right size, the printing goes all the way to the edges of the page. The print company I'm using needs a PDF with crop marks on the image so they can print that extra and trim then trim the artwork to the right size. But when I try to send image this to Microsoft's Windows 10 PDF printer, I can't select a custom paper size, and the choices don't include anything larger than A3:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-MissingPaperOptions.png"&gt;&lt;img alt="Print properties, with fixed set of sizes" src="https://blog.jermdavis.dev/img/2022/03-MissingPaperOptions.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Now in theory, you should be able to add new paper sizes to printers. There's a UI option in the "Printers &amp;amp; Scanners" page in settings, for "Print server properties":&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-PrintServerProperties.png"&gt;&lt;img alt="The 'Printers &amp;amp; scanners' dialog" src="https://blog.jermdavis.dev/img/2022/03-PrintServerProperties.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;And in there, you should be able to create new "custom" paper sizes:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-NewFormDialog.png"&gt;&lt;img alt="Adding a new paper size" src="https://blog.jermdavis.dev/img/2022/03-NewFormDialog.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;And those should then be able to show up in the paper choices. You can see the new option in some print drivers installed on my computer:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-NewPaperVisible.png"&gt;&lt;img alt="New paper size in a LaserJet driver" src="https://blog.jermdavis.dev/img/2022/03-NewPaperVisible.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;But it doesn't work with Microsoft's PDF Printer - the larger paper sizes I tried to add would never shows up there.&lt;/p&gt;
-&lt;h2 id="the-solution"&gt;The solution&lt;/h2&gt;
-&lt;p&gt;After a load of "standard Windows trouble-shooting" (you know: rebooting and reinstalling stuff) I did a pile of googling. That eventually &lt;a href="https://franklinheath.co.uk/2015/08/29/custom-page-sizes-for-microsoft-print-to-pdf/" target="_blank" rel="noopener"&gt;lead me to this blog post&lt;/a&gt; about adding custom paper sizes to the MS PDF printer.&lt;/p&gt;
-&lt;p&gt;The instructions there provided the outline of what I needed to do. Broadly that's:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Look in the registry to find some data about the PDF Printer driver&lt;/li&gt;
-&lt;li&gt;Use that data to find some special files on disk which describe the printer&lt;/li&gt;
-&lt;li&gt;Edit one of those files to add some extra data that enables custom paper sizes&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Sounds way more complex than it should be - but achievable. However, there were a couple of tricky points for me here.&lt;/p&gt;
-&lt;p&gt;First up was understanding how the registry data maps to the disk data. The key thing here is that there's actually two things to look at in the registry. First is under &lt;code&gt;HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\ CurrentVersion\Print\Printers\Microsoft Print to PDF&lt;/code&gt;. There's an entry here that tells you which folder to look in for the print driver data under &lt;code&gt;C:\Windows\System32\spool\V4Dirs&lt;/code&gt;. All the folders are named with GUIDs, so you need to know which one to open:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-FindingThePrintDriverFolder.png"&gt;&lt;img alt="Finding the right folder for the print driver files" src="https://blog.jermdavis.dev/img/2022/03-FindingThePrintDriverFolder.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;But then you need to look at a second bit of data under &lt;code&gt;...\Microsoft Print to PDF\PrinterDriverData&lt;/code&gt; in the registry, in order to find the name of the individual data file to edit. It's also given a fairly random looking name, so would be hard to guess. But the registry item, combined with the blog post saying it's a &lt;code&gt;gpd&lt;/code&gt; file gives you the info:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-FindingThePrintDriverFile.png"&gt;&lt;img alt="Finding the right file in the print driver folder" src="https://blog.jermdavis.dev/img/2022/03-FindingThePrintDriverFile.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Having worked that out, I was able to follow the instructions in the blog about editing the file I'd found. But it didn't work for me, and it took some time for me to work out why...&lt;/p&gt;
-&lt;p&gt;It turns out the issue is actually pretty simple. The article describes addings some extra markup to the printer definition, which allows the print driver to see the custom paper sizes defined in the "Print server properties" dialog from earlier. It suggests you add following text into the file immediately after the &lt;code&gt;*DefaultOption:&lt;/code&gt; entry:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-highlight="5" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;*Option: CUSTOMSIZE
-{
-*rcNameID: =USER_DEFINED_SIZE_DISPLAY
-*MinSize: PAIR(936000, 1332000)
-*MaxSize: PAIR(5346000, 7560000)
-*MaxPrintableWidth: 5346000
-}
-&lt;/pre&gt;
-&lt;p&gt;But, as highlighted, the mark-up defined here gives some bounds for the "size" of your printer.&lt;/p&gt;
-&lt;p&gt;What I missed initially is that you have to make sure that you set these to be &lt;em&gt;larger&lt;/em&gt; than your desired paper size. Otherwise the print driver will (sensibly) filter out the choices you've defined which "don't fit" on its maximum paper size. That doesn't really make sense for a "print to PDF" driver because it should have no physical limits. But it does make sense for the base abstraction all print drivers are built around, as that assumes that physical paper size is a key property of printers.&lt;/p&gt;
-&lt;p&gt;Now I should probably have &lt;a href="https://docs.microsoft.com/en-gb/windows-hardware/drivers/print/supporting-user-defined-paper-sizes" target="_blank" rel="noopener"&gt;taken the time to work out what the units above actually mean&lt;/a&gt;, but to be honest it all looked a bit complex, so I just hacked it. I increased the most significant digit of each of the width &amp;amp; height fields by one to make the maximum larger. And the after a bit more confusion where this sort-of worked but not quite, I realised that you also need to increase the MaxPrintableWidth property too:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-highlight="5,6" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;*Option: CUSTOMSIZE
-{
-*rcNameID: =USER_DEFINED_SIZE_DISPLAY
-*MinSize: PAIR(936000, 1332000)
-*MaxSize: PAIR(6346000, 8560000)
-*MaxPrintableWidth: 8560000
-}
-&lt;/pre&gt;
-&lt;p&gt;If you don't change that value to match the largest dimension of your paper, you end up with "unprintable" areas because the printer thinks it can't actually draw on that bit of the paper. That shows up as "hatched" areas in the print preview dialog.&lt;/p&gt;
-&lt;p&gt;But as soon as those changes are saved, the new size appears in my printer options:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-PaperSizeNowVisible.png"&gt;&lt;img alt="New paper size showing up in the PDF printer" src="https://blog.jermdavis.dev/img/2022/03-PaperSizeNowVisible.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;And I can generate my PDFs successfully, on "a bit bigger than A3" paper, to allow for cropping.&lt;/p&gt;
-&lt;p&gt;After all that I have to echo the writer of the blog post linked above - why don't Microsoft ship this extra config by default? Seems like "print to any sized PDF" would be a sensbible feature. And it would save us all the hacking above...&lt;/p&gt;
-</content>
+		<content>&lt;p&gt;Recently I needed to do an odd bit of printing. I needed to generate an A3 PDF for printing which had crop marks around it. That means it needs to be printed to &amp;quot;a bit larger than A3&amp;quot; size. In the past I'd used Foxit's PDF printer for this (where it just worked), but that no longer seems to be free. Turns out the default Windows PDF printer needs a bit of hackery to enable using odd-sized paper. I'm sure I'll find myself needing to do this again in the future, so this is a reminder for my future self.&lt;/p&gt;</content>
 		<summary>&lt;p&gt;Recently I needed to do an odd bit of printing. I needed to generate an A3 PDF for printing which had crop marks around it. That means it needs to be printed to &amp;quot;a bit larger than A3&amp;quot; size. In the past I'd used Foxit's PDF printer for this (where it just worked), but that no longer seems to be free. Turns out the default Windows PDF printer needs a bit of hackery to enable using odd-sized paper. I'm sure I'll find myself needing to do this again in the future, so this is a reminder for my future self.&lt;/p&gt;</summary>
 	</entry>
 	<entry>
@@ -640,25 +97,7 @@ Why might that call fail by returning null? It's not obvious, but likely it's to
 		</author>
 		<link href="https://blog.jermdavis.dev/posts/2022/most-important-sugcon-slide" />
 		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;I wasn't at SUGCON this year, but I was watching the Twitter reactions, and I've chatted to a few community people about what was said at the event. And in amongst all the exiting technical stuff about XM Cloud, I think there's one slide which really stands out to me... &lt;!--more--&gt;&lt;/p&gt;
-&lt;p&gt;This:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://twitter.com/Gatagordo/status/1507405611675308036"&gt;&lt;img alt="SUGCON presentation slide showing Symphony connecting to other CMS content sources" src="https://blog.jermdavis.dev/img/2022/04-SUGCON-Composibility-Slide.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;[Thanks to &lt;a href="https://twitter.com/Gatagordo/" rel="noopener" target="_blank"&gt;Gert Gullentops&lt;/a&gt;' twitter for the image]&lt;/p&gt;
-&lt;p&gt;It's showing the idea that the future "front-end as-a-service" product Sitecore are working on (Sometimes referred to as Symphony - the new SaaS-deployed enhancement to the current Horizon editing UI) will allow you to source content from multiple content management systems. And that's a really big break from the traditional CMS or DXP Sitecore have sold. We're used to products which can provide the editing and rendering tools for the content they store internally. Integrations with other content sources are usually custom code. In the past it's usually boiled down to "copy the data in" approaches (Using Data Exchange Framework, or your own code) for most people, and the occasional custom database provider implementation (like the way you can see Commerce products in the content tree with Experience Commerce) if you're feeling particularly clever.&lt;/p&gt;
-&lt;p&gt;So it's really interesting to see content integration becoming a first-class part of the Sitecore ecosystem for a few reasons:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;b&gt;It's code you don't have to write any more&lt;/b&gt;&lt;br&gt;
-Wherever the system can provide a good implementation for code that used to be our problem, it's helpful. We can now focus that development effort on something new - a customer feature we didn't have time for before...
-&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;It fits with the "composable" model&lt;/b&gt;&lt;br&gt;
-As we move away from the &lt;a href="https://en.wikipedia.org/wiki/Monolithic_application" target="_blank" rel="noopener"&gt;monolithic&lt;/a&gt; DXP, the ease of plugging together systems becomes more important. Supporting common APIs and standards to allow interoperability means we have more flexibility to choose the right tools for our projects. What one of my colleages has been calling the &lt;i&gt;"best of need"&lt;/i&gt; architecture. You don't have to pick all the bundled tools of one vendor, but you get to select the tools which fit your requirements best from the whole market. And they should plug together easily.
-&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;It's good for omnichannel&lt;/b&gt;&lt;br&gt;
-A specific example of how composability helps is the idea that many businesses want to curate content for use across all their channels. Writing product copy once, and then using it on the web, in adverts and in catalogs for example. Being able to easily integrate your web CMS with the business' central content source makes that content reuse simpler and more effective.
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;This seems like a really clear signal of Sitecore's change of focus and direction recently - So I'm fascinated to see how this pans out in client projects...&lt;/p&gt;
-</content>
+		<content>&lt;p&gt;I wasn't at SUGCON this year, but I was watching the Twitter reactions, and I've chatted to a few community people about what was said at the event. And in amongst all the exiting technical stuff about XM Cloud, I think there's one slide which really stands out to me... &lt;/p&gt;</content>
 		<summary>&lt;p&gt;I wasn't at SUGCON this year, but I was watching the Twitter reactions, and I've chatted to a few community people about what was said at the event. And in amongst all the exiting technical stuff about XM Cloud, I think there's one slide which really stands out to me... &lt;/p&gt;</summary>
 	</entry>
 	<entry>
@@ -669,63 +108,7 @@ A specific example of how composability helps is the idea that many businesses w
 		</author>
 		<link href="https://blog.jermdavis.dev/posts/2022/challenges-graphql-tooling" />
 		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;I've started looking at the details of the Headless Services GraphQL endpoints in Sitecore recently. And as part of this research, I got a bit confused trying to test queries in the Sitecore UI. I've worked out what was up, but maybe others will find themselves in a similar situation, so: &lt;!--more--&gt;&lt;/p&gt;
-&lt;p&gt;When you look at at &lt;code&gt;Json Rendering&lt;/code&gt; in the content tree, one of the fields it has is for a custom GraphQL query to help you format its data. Helpfully, that includes a built-in query prototyping tool under the "Open xGraph Browser" link:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-JsonRenderingFields.png"&gt;&lt;img alt="The GraphQL field in a Json Rendering" src="https://blog.jermdavis.dev/img/2022/03-JsonRenderingFields.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;You can use this to tweak your queries and verify that they return the data you think they do. But if you're new to using GraphQL with Sitecore, there are a some small gotchas you might hit here. When you click the link shown in the field above, you get taken to the prototyping page. The code tries to pass across your query along with some context data, but currently it doesn't work very well.&lt;/p&gt;
-&lt;h2 id="big-queries-dont-get-passed"&gt;Big queries don't get passed&lt;/h2&gt;
-&lt;p&gt;After a certain size, the query in your Content Editor field won't be passed. If that happens you'll get a message in the editor to warn you:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;# Query was too long to transfer into editor.
-# Please copy and paste your integrated mode query here to execute it.
-{
-}
-&lt;/pre&gt;
-&lt;p&gt;As it says, if this happens you'll need to manually copy your query in.&lt;/p&gt;
-&lt;h2 id="other-context-data-doesnt-seem-to-get-passed-either"&gt;Other context data doesn't seem to get passed either&lt;/h2&gt;
-&lt;p&gt;When you click to open the prototyping page, the querystring appears to include a lot of useful data. If you decode the url, you'll get something like this:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;https://cm.jsstest.localhost/sitecore/api/graph/edge/ui?query=# Editing here does not save the query on the item; copy it back when done!
-
-query Test($contextItem: String!, $language: String!)
-{
-  item(path: $contextItem, language:$language) {
-      id
-      name
-    }
-}&amp;amp;variables={
-  "datasource": "",
-  "contextItem": "/sitecore/content/JssTest"
-}
-&amp;amp;sc_apikey={BDC711CC-8F6E-4B61-AF4B-27E39360CD85}
-&lt;/pre&gt;
-&lt;p&gt;But in the version I'm looking at, (Sitecore v10.2, JSS v19) only the query comes across into the prototyping UI. And that means you'll see some errors while you try to get your query to run. First up, hitting "play" in the middle of the window will get you a security error if your endpoint is secured:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-GraphQL-Security-Error.png"&gt;&lt;img alt="GraphQL playground complaining about lack of API key" src="https://blog.jermdavis.dev/img/2022/03-GraphQL-Security-Error.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;It says &lt;code&gt;Server cannot be reached&lt;/code&gt; in the query endpoint address field, and the response JSON includes the message &lt;code&gt;SSC API Key is required. Pass ith 'sc_apikey' query string or HTTP header.&lt;/code&gt; in its data.&lt;/p&gt;
-&lt;p&gt;Now the API key it needs is probably in page querystring, but for me it wasn't passed through to the GraphQL endpoint correctly. I needed to manually move it from the page's URL into the url used for the query endpoint:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-Move-GraphQL-API-Key.png"&gt;&lt;img alt="Moving the API key from the browser url to the endpoint url" src="https://blog.jermdavis.dev/img/2022/03-Move-GraphQL-API-Key.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;But having done that I hit a second error:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;{
-  "errors": [
-    {
-      "message": "GraphQL.ExecutionError: Variable '$contextItem' is invalid. Received a null input for a non-null field. ---&amp;gt; GraphQL.Execution.InvalidValueException: Variable '$contextItem' is invalid. Received a null input for a non-null field.\r\n   at GraphQL.Execution.ExecutionHelper.AssertValidValue(ISchema schema, IGraphType type, Object input, String fieldName)\r\n   at GraphQL.Execution.ExecutionHelper.GetVariableValue(Document document, ISchema schema, VariableDefinition variable, Object input)\r\n   at GraphQL.Execution.ExecutionHelper.GetVariableValues(Document document, ISchema schema, VariableDefinitions variableDefinitions, Inputs inputs)\r\n   at GraphQL.DocumentExecuter.BuildExecutionContext(ISchema schema, Object root, Document document, Operation operation, Inputs inputs, Object userContext, CancellationToken cancellationToken, Metrics metrics, IEnumerable`1 listeners, Boolean throwOnUnhandledException)\r\n   at GraphQL.DocumentExecuter.&amp;lt;ExecuteAsync&amp;gt;d__8.MoveNext()\r\n   --- End of inner exception stack trace ---",
-      "extensions": {
-        "code": "INVALID_VALUE"
-      }
-    }
-  ]
-}
-&lt;/pre&gt;
-&lt;p&gt;That's a complicated way of saying "you added a required variable called &lt;code&gt;$contextItem&lt;/code&gt; in your query, but you've not passed a value for it". But if you look back at the data we decoded from the URL before, that variable is there. So why can't the query see it?&lt;/p&gt;
-&lt;p&gt;It took me a while to work this out, because I couldn't understand where the UI was looking for the variable. But it was right under my nose the whole time, as it turns out that the parameters for your query should be under the "query variables" pane that's hiding at the bottom left of the page:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-Finding-GraphQL-Params.png"&gt;&lt;img alt="Location of the GraphQL parameters tab" src="https://blog.jermdavis.dev/img/2022/03-Finding-GraphQL-Params.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;It's minimised by default, so you need to click it or drag it up to see the contents. And I found that it was empty in this case - which would explain the error. So I tried copying in the data I'd decoded from the URL:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-Adding-GraphQL-Params.png"&gt;&lt;img alt="Adding data to the GraphQL parameters" src="https://blog.jermdavis.dev/img/2022/03-Adding-GraphQL-Params.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;And that's a step forward - the error has changed to say that it's the "language" variable which is missing now. Which is right - that wasn't in the URL data at all. But if I add it, everything works:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/03-Succesful-GraphQL-Query.png"&gt;&lt;img alt="A successful GraphQL query" src="https://blog.jermdavis.dev/img/2022/03-Succesful-GraphQL-Query.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Success!&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;i&gt;&lt;b&gt;Note:&lt;/b&gt;&lt;/i&gt; Having spoken to Sitecore Support, the failure to pass the API key and the standard parameters is confirmed as a bug. Speaking to &lt;a href="https://twitter.com/jflh" target="_blank" rel="noopener"&gt;Jeff L'Heureux&lt;/a&gt; at Sitecore, he pointed out that the tooling used for this GraphQL playground has been changed in a recent release - so the lack of wiring up of these parameters was probably caused by that change. If this is an issue for you, reference bug 523547 when you speak to support to raise its priority. But hopefully this will be fixed in a future release.
-&lt;/blockquote&gt;
-</content>
+		<content>&lt;p&gt;I've started looking at the details of the Headless Services GraphQL endpoints in Sitecore recently. And as part of this research, I got a bit confused trying to test queries in the Sitecore UI. I've worked out what was up, but maybe others will find themselves in a similar situation, so: &lt;/p&gt;</content>
 		<summary>&lt;p&gt;I've started looking at the details of the Headless Services GraphQL endpoints in Sitecore recently. And as part of this research, I got a bit confused trying to test queries in the Sitecore UI. I've worked out what was up, but maybe others will find themselves in a similar situation, so: &lt;/p&gt;</summary>
 	</entry>
 	<entry>
@@ -736,41 +119,7 @@ query Test($contextItem: String!, $language: String!)
 		</author>
 		<link href="https://blog.jermdavis.dev/posts/2022/diagnosing-packaging-failure" />
 		<updated>0001-01-01T00:00:00Z</updated>
-		<content>&lt;p&gt;I came across an interesting issue generating a Sitecore Package recently. Googling the issue didn't give me the whole answer, so it's time to enhance the internet again with a explanation of what I saw and why I think it happened...&lt;!--more--&gt;&lt;/p&gt;
-&lt;h2 id="the-issue"&gt;The issue&lt;/h2&gt;
-&lt;p&gt;I was building a package as a backup before making some changes to a client's site. I added a series of "sources" to the package for some sets of items, but one final bit of the site did not work. The dialog accepted my choice of items and their children, but when I tried to close the dialog for adding a new source:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-CloseTheDialog.png"&gt;&lt;img alt="The close button on the add-new-source dialog for a Sitecore package" src="https://blog.jermdavis.dev/img/2022/01-CloseTheDialog.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;I got an error back instead of success:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-InitialErrorDialog.png"&gt;&lt;img alt="" src="https://blog.jermdavis.dev/img/2022/01-InitialErrorDialog.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Clicking the "details" button there got me a YSOD:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-DetailedErrorDialog.png"&gt;&lt;img alt="" src="https://blog.jermdavis.dev/img/2022/01-DetailedErrorDialog.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;For Google's benefit, the interesting part of the stack trace for this was:&lt;/p&gt;
-&lt;pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"&gt;[ArgumentOutOfRangeException: startIndex cannot be larger than length of string.
-Parameter name: startIndex]
-   System.String.InternalSubStringWithChecks(Int32 startIndex, Int32 length, Boolean fAlwaysCopy)
-   System.String.Substring(Int32 startIndex) +19
-   Sitecore.Install.Items.ItemFieldsProperties.GetFieldsProperties(Item item) +432
-   Sitecore.Install.Items.ItemToEntryConverter.InternalConvert(Item item, IProcessingContext context)
-   Sitecore.Install.Framework.BaseConverter`1.Convert(T entry, IProcessingContext context) +69
-   Sitecore.Install.Framework.InternalSink.Put(T entry) +97
-&lt;/pre&gt;
-&lt;p&gt;As a good developer I tried searching for that issue, and came up with only &lt;a href="https://www.sitecore-cms.de/2013/09/startindex-cannot-be-larger-than-length.html" target="_blank" rel="noopener"&gt;one interesting hit, in a pretty old blog post&lt;/a&gt;. That dates back to 2013 (!) and describes the same error I saw, but said that Sitecore Support said "this is your problem" when asked about it.&lt;/p&gt;
-&lt;p&gt;So useful to see that someone else saw the problem - but didn't help me specifically...&lt;/p&gt;
-&lt;h2 id="the-underlying-crash"&gt;The underlying crash&lt;/h2&gt;
-&lt;p&gt;Given the stack trace didn't say much of help, the next step was to find out what the code was doing when the exception occurred. Breaking out &lt;a href="https://github.com/icsharpcode/ILSpy" target="_blank" rel="noopener"&gt;ILSpy&lt;/a&gt;, the method being called there is this:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-CodeForError.png"&gt;&lt;img alt="Decompiled code for the stack trace above" src="https://blog.jermdavis.dev/img/2022/01-CodeForError.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;That code is going through all the fields on an item to make a pipe-separate list, and then finally it tries to remove the first pipe in order to return the list as a string. Maybe not the best way of achieving that behaviour, but we'll work with what we've got...&lt;/p&gt;
-&lt;p&gt;The obvious failure path here is "what happens if the item has no fields"? No data would be added to the &lt;code&gt;StringBuilder&lt;/code&gt; and hence an exception occurs when you try to skip the first character of the resultant empty string.&lt;/p&gt;
-&lt;h2 id="finding-the-cause"&gt;Finding the cause&lt;/h2&gt;
-&lt;p&gt;Next question then, is why do we have an item with no fields? Surely all items have some fields? They all inherit from the standard Sitecore base item, right? Well I did some snooping through the content tree to try and work out what was broken. Since the issue appeared making packages, I tried adding different subtrees of the content until I found the specific place in the tree which caused the issue:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-ItemWithNoFields.png"&gt;&lt;img alt="The item with no fields" src="https://blog.jermdavis.dev/img/2022/01-ItemWithNoFields.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;That does indeed have no visible fields, but it doesn't show any obvious error. So the next logical thing to check is the template:&lt;/p&gt;
-&lt;p&gt;&lt;a target="_blank" href="https://blog.jermdavis.dev/img/2022/01-AMissingTemplate.png"&gt;&lt;img alt="" src="https://blog.jermdavis.dev/img/2022/01-AMissingTemplate.png"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;And there we have the issue - the template this item uses inherits from something that's missing! And that's where all the fields went, which in turn caused the crash.&lt;/p&gt;
-&lt;p&gt;I suspect something like this was the underlying cause of the bug in the blog post I found before, but it can be hard to find the dodgy item in a big content tree. Particularly because the issue only really revealed itself in the specific situation of packaging.&lt;/p&gt;
-&lt;p&gt;I'd recommend using a sort of "binary search" approach here. If packaging a specific item breaks, go down to its children and try to make packages of just each child. Work out which one (or ones) fail and which succeed. Doing that until you're confident which items fail, and which items succeed will help you to work out what item (or template used by items) is broken.&lt;/p&gt;
-&lt;p&gt;Those data templates - they're important...&lt;/p&gt;
-</content>
+		<content>&lt;p&gt;I came across an interesting issue generating a Sitecore Package recently. Googling the issue didn't give me the whole answer, so it's time to enhance the internet again with a explanation of what I saw and why I think it happened...&lt;/p&gt;</content>
 		<summary>&lt;p&gt;I came across an interesting issue generating a Sitecore Package recently. Googling the issue didn't give me the whole answer, so it's time to enhance the internet again with a explanation of what I saw and why I think it happened...&lt;/p&gt;</summary>
 	</entry>
 </feed>
