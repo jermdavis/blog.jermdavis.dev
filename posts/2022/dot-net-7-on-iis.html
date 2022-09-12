@@ -1,0 +1,360 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2022/dot-net-7-on-iis">
+		<meta name="description" content="How to make the latest preview of ASP.Net Core run under IIS">
+		<meta property="og:description" content="How to make the latest preview of ASP.Net Core run under IIS">
+		<meta name="keywords" content=".Net, Bug, Windows Server, IIS">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Hosting ASP.Net Core 7 Preview 7 under IIS</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Hosting ASP.Net Core 7 Preview 7 under IIS">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/dot-net-7-on-iis-social.jpg">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Hosting ASP.Net Core 7 Preview 7 under IIS",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/dot-net-7-on-iis-social.jpg"
+        ],
+        "datePublished": "2022-09-12T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2022/dot-net-7-on-iis">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2022/dot-net-7-on-iis</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Hosting ASP.Net Core 7 Preview 7 under IIS
+				</h1>
+				<h2 class="text-2xl">Fresh server gives fresh pain</h2>
+				<div class="meta">Published 12 September 2022</div>
+				<div class="flex py-1">
+					<a href="/tags/net/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						.Net</a>
+					<a href="/tags/bug/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Bug</a>
+					<a href="/tags/windows-server/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Windows Server</a>
+					<a href="/tags/iis/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						IIS</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I was hacking up an app as a personal project recently, and decided to try out the latest preview (Number 7) of ASP.Net Core for .Net 7. I happened to be deploying this project to a server which had never run ASP.Net Core before, and that deployment left me scratching my head for some time. So in case this issue hits others, here's what happened to me:
+						<!--more-->
+					</p>
+					<h2 id="following-the-docs">Following the docs</h2>
+					<p>I'd built myself an app, and it was running fine under VS 2022 on my laptop. So I went to the .Net docs website to see what was required to put this onto my server. Microsoft are pretty pro-active here, so
+						<a href="https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-7.0" target="_blank" rel="noopener">there are already doc pages for hosting ASP.Net Core 7 under IIS</a>.</p>
+					<p>Reading through that, the instructions seemed to be:</p>
+					<ul>
+						<li>Be running Windows Server 2012 R2 or later</li>
+						<li>Install the .Net 7 and ASP.Net Core 7 runtimes for the relevent preview version</li>
+						<li>Install the "ASP.Net Core Module / Hosting Bundle"</li>
+						<li>Create an IIS site configured for "No Managed Code"</li>
+						<li>Deploy the ASP.Net Core site into the folder for the IIS site</li>
+					</ul>
+					<p>Seems simple? In the past there had been some extra complexity about the difference between "in process" and "out of process" hosting for ASP.Net Core websites with IIS. But in the current versions that seems to default to "in process" with sensible configuration. So it seemed to me that I did not need to do anything extra here.</p>
+					<h2 id="first-attempt">First attempt</h2>
+					<p>My server is running Windows Home Server 2016 - which seems like it meets the core O/S requirement above. So that should be fine. I had deployed a couple of earlier previews of .Net 7 onto this box, but not the ASP.Net Core bits. So I went to the
+						<a href="https://dotnet.microsoft.com/en-us/download/dotnet/7.0" target="_blank" rel="noopener">downloads page for Preview 7</a>
+						and looked for the relevant bits:</p>
+					<p>
+						<a target="_blank" href="/img/2022/09-Dotnet7Downloads.png">
+							<img alt="Downloads page for .Net 7 Preview 7" src="/img/2022/09-Dotnet7Downloads.png">
+						</a>
+					</p>
+					<p>Based on the info there, I grabbed the hosting bundle from there and ran the installer - which ran without errors. I rebooted the server afterwards, for safety.</p>
+					<p>Creating the IIS site was easy, and I disabled the .Net 4 runtime, to leave it in the "no managed code" state as instructed:</p>
+					<p>
+						<a target="_blank" href="/img/2022/09-DisableManagedCode.png">
+							<img alt="App pool config dialog in IIS, showing no managed code" src="/img/2022/09-DisableManagedCode.png">
+						</a>
+					</p>
+					<p>With that done, I published from Visual Studio into my freshly created website folder on the server, and fired up a browser:</p>
+					<p>
+						<a target="_blank" href="/img/2022/09-FailedWebsiteLoad500.png">
+							<img alt="A browser window showing the basic IIS 500-error screen with no details" src="/img/2022/09-FailedWebsiteLoad500.png">
+						</a>
+					</p>
+					<p>Not good...</p>
+					<p>So I went and looked for logs. This looks like the IIS error page, rather than an ASP.Net one - so I went to the event log first. Nothing there - I could see no new events being created when I refreshed the page. Looking at the IIS logs for this site I could see entries for the request, and they were marked as being returned with 500 errors - but you don't get details there. Just to check I<a href="https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/logging-and-diagnostics?view=aspnetcore-7.0" target="_blank" rel="noopener">
+							tried enabling the ASP.Net Core stdout logging for the app</a>, but nothing got created there. (Unsurprising - a vanilla IIS error suggests .Net never got called here)</p>
+					<p>At this point I was a bit stumped, so I spent some time in Google...</p>
+					<h2 id="finding-a-cause">Finding a cause</h2>
+					<p>Googling for stuff about "my ASP.Net Core app gives a 500 error on IIS" brought back a collection of the usual
+						<a href="https://stackoverflow.com/questions/39785773/asp-net-core-app-deployed-on-iis-meets-500-internal-server-error" target="_blank" rel="noopener">Stack Overflow</a>
+						and blog post responses. These seemed to fall into a few categories:</p>
+					<ul>
+						<li>Your app is running, but you've messed up config for something like a database, so it crashes on startup</li>
+						<li>Turn on the logging to find out what's up!</li>
+						<li>Did you remember to install the hosting bundle?</li>
+					</ul>
+					<p>None of those seemed appropriate. My app was entirely self-contained - so runtime config wasn't an issue. I'd tried logging and got nothing. And I definitely installed the hosting bundle. But I came across one blog post which was talking about how the
+						<a href="https://thebernardlim.com/dotnet-core-http500/" target="_blank" rel="noopener">hosting bundle can be messed up by missing system-level config</a>. So I tried looking into this.</p>
+					<p>Interestingly, the
+						<code>%WinDir%\System32\Inetsrv\Config\applicationHost.config</code>
+						config file mentioned there did not include any reference to
+						<code>aspNetCore</code>
+						- but this made me realise that IIS was supposed to have a module installed for ASP.Net Core hosting. When I went back and looked at the IIS config for my site, I could not see this:</p>
+					<p>
+						<a target="_blank" href="/img/2022/09-MissingModule.png">
+							<img alt="IIS Modules for the site in question, not showing the ASP.Net Core module" src="/img/2022/09-MissingModule.png">
+						</a>
+					</p>
+					<p>(It was also missing from the overall server config - so it wasn't just an issue for my particular site)</p>
+					<p>Now that sounded like a sensible root cause - if the module was missing, then my site would never run - and IIS could well suffer a "what on earth do I do to handle this code?" error as a result. (Though I'm still not sure why I can't see that in the event logs)</p>
+					<p>I went back to Google and discovered that this module should live under
+						<code>%ProgramFiles%\IIS\Asp.Net Core Module\V2\aspnetcorev2.dll</code>
+						and I checked for that. The folder did not exist at all. So further proof that the module was missing.</p>
+					<h2 id="a-fix">A fix</h2>
+					<p>Google didn't give me any help about the specifics I'd discovered. But I did stumble onto a fix myself: I wondered if this might be a ".Net 7 is too bleeding-edge to work on my server" issue, and tried downloading the hosting bundle supplied for Asp.Net Core 6 instead. That's available on the
+						<a href="https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-6.0" target="_blank" rel="noopener">.Net 6 version of the hosting page cited above</a>:</p>
+					<p>
+						<a target="_blank" href="/img/2022/09-HostingBundleDownloadForV6.png">
+							<img alt="The download link for the .Net 6 version of the ASP.Net Core hosting bundle" src="/img/2022/09-HostingBundleDownloadForV6.png">
+						</a>
+					</p>
+					<p>I ran that, and bingo! My site started to work despite the version difference. And I could now see the module on my site too:</p>
+					<p>
+						<a target="_blank" href="/img/2022/09-GotTheHostingModule.png">
+							<img alt="The IIS modules screen, now showing the ASP.Net Core hosting module" src="/img/2022/09-GotTheHostingModule.png">
+						</a>
+					</p>
+					<p>So there you have it. For reasons I can't work out (there were no log errors about it - even in the detailed installer log) the .Net 7 Hosting Bundle installer didn't work correctly on my server, but the .Net 6 one did. I do wonder if this might be related to having had older previews of .Net 7 installed in the past?</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (205)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (47)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (16)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (12)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+							<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Bug (11)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2022-09">2022 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-08">2022 - August</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
