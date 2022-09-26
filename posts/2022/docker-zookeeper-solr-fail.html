@@ -1,0 +1,486 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2022/docker-zookeeper-solr-fail">
+		<meta name="description" content="Trying to diagnose an odd error with Docker running Solr for Sitecore - and failing...">
+		<meta property="og:description" content="Trying to diagnose an odd error with Docker running Solr for Sitecore - and failing...">
+		<meta name="keywords" content="Docker, SolrCloud, Sitecore, Bug">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Strange Docker / Zookeeper errors</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Strange Docker / Zookeeper errors">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/docker-zookeeper-solr-fail-social.jpg">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Strange Docker / Zookeeper errors",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/docker-zookeeper-solr-fail-social.jpg"
+        ],
+        "datePublished": "2022-09-26T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2022/docker-zookeeper-solr-fail">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2022/docker-zookeeper-solr-fail</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Strange Docker / Zookeeper errors
+				</h1>
+				<h2 class="text-2xl">You can't win them all...</h2>
+				<div class="meta">Published 26 September 2022</div>
+				<div class="flex py-1">
+					<a href="/tags/docker/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Docker</a>
+					<a href="/tags/solrcloud/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						SolrCloud</a>
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/bug/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Bug</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>Usually with these blog posts, I find a problem, I fight with it for a bit, and then I solve the problem. But this post has been sitting half-written in my publishing queue since May (!) this year, and I have entirely failed to solve this issue. So I'm admitting defeat, and publishing this anyway because maybe one of you knows the answer. Or at least it might serve as a warning...</p>
+					<p>My issue is that I've been working through some really odd and annoying Solr issues which only manifest in Docker on one laptop. I'm really not sure if these are issues that others might see, or if this is a problem that's entirely down to this laptop's setup. But they're definitely a problem... 
+						<!--more-->
+					</p>
+					<h2>The initial issue</h2>
+					<p>I was supposed to be working on some proof-of-concept work around JSS and Docker. My starting point was
+						<a href="https://doc.sitecore.com/xp/en/developers/hd/190/sitecore-headless-development/the-sitecore-containers-template-for-jss-next-js-apps.html" target="_blank" rel="noopener">the example Nextjs / Docker project which is available from Sitecore</a>. In theory, you can run
+						<code>dotnet new</code>
+						to create an example project with all the relevant files for Sitecore 10.2, run
+						<code>init.ps1</code>
+						to configure stuff for Docker and then run
+						<code>up.ps1</code>
+						to start your site. And in the past that's worked fine for me.</p>
+					<p>But a week or so ago, the instance I had set up stopped working for me. I could run
+						<code>up.ps1</code>
+						but it would respond that it had timed out waiting for the CM role to become available:</p>
+					<p>
+						<a target="_blank" href="/img/2022/05-UpScriptFails.png">
+							<img alt="Docker reporting that it has failed to connect to the Sitecore CM role" src="/img/2022/05-UpScriptFails.png">
+						</a>
+					</p>
+					<p>I tried a lot of the classic "fix my Sitecore Docker instance" tricks:
+						<code>docker-compose down</code>
+						and then up again, rebooting the computer, running
+						<code>clean.ps1</code>
+						to get rid of the state, running
+						<code>up.ps1</code>
+						again. Running
+						<code>init.ps1</code>
+						again. But none of those solved the problem.</p>
+					<p>Looking at the state of the setup in more detail, the root problem was Solr. It was starting and appeared to be running, but the logs showed two errors. When it first starts, it complains about not being able to see Zookeeper:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="27" data-enlighter-language="text" style="width:100%; overflow:scroll;">2022-04-28 10:39:01.496 INFO  (main) [   ] o.e.j.u.log Logging initialized @2211ms to org.eclipse.jetty.util.log.Slf4jLog
+2022-04-28 10:39:01.668 INFO  (main) [   ] o.e.j.s.Server jetty-9.4.34.v20201102; built: 2020-11-02T14:15:39.302Z; git: e46af88704a893fc12cb0e3bf46e2c7b48a009e7; jvm 1.8.0_252-b09
+2022-04-28 10:39:01.699 INFO  (main) [   ] o.e.j.d.p.ScanningAppProvider Deployment monitor [file:///C:/solr/server/contexts/] at interval 0
+2022-04-28 10:39:02.856 INFO  (main) [   ] o.e.j.w.StandardDescriptorProcessor NO JSP Support for /solr, did not find org.apache.jasper.servlet.JspServlet
+2022-04-28 10:39:02.871 INFO  (main) [   ] o.e.j.s.session DefaultSessionIdManager workerName=node0
+2022-04-28 10:39:02.871 INFO  (main) [   ] o.e.j.s.session No SessionScavenger set, using defaults
+2022-04-28 10:39:02.871 INFO  (main) [   ] o.e.j.s.session node0 Scavenging every 600000ms
+2022-04-28 10:39:02.965 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter Using logger factory org.apache.logging.slf4j.Log4jLoggerFactory
+2022-04-28 10:39:02.965 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter  ___      _       Welcome to Apache Solr™ version 8.8.2
+2022-04-28 10:39:02.965 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter / __| ___| |_ _   Starting in cloud mode on port 8983
+2022-04-28 10:39:02.965 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter \__ \/ _ \ | '_|  Install dir: C:\solr
+2022-04-28 10:39:02.965 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter |___/\___/_|_|    Start time: 2022-04-28T10:39:02.965Z
+2022-04-28 10:39:02.981 INFO  (main) [   ] o.a.s.c.SolrPaths Using system property solr.solr.home: c:\\data
+2022-04-28 10:39:02.981 INFO  (main) [   ] o.a.s.c.SolrXmlConfig Loading container configuration from c:\data\solr.xml
+2022-04-28 10:39:03.075 INFO  (main) [   ] o.a.s.c.SolrXmlConfig MBean server found: com.sun.jmx.mbeanserver.JmxMBeanServer@47542153, but no JMX reporters were configured - adding default JMX reporter.
+2022-04-28 10:39:03.528 INFO  (main) [   ] o.a.s.h.c.HttpShardHandlerFactory Host whitelist initialized: WhitelistHostChecker [whitelistHosts=null, whitelistHostCheckingEnabled=true]
+2022-04-28 10:39:03.700 WARN  (main) [   ] o.e.j.u.s.S.config Trusting all certificates configured for Client@5b7ea70d[provider=null,keyStore=null,trustStore=null]
+2022-04-28 10:39:03.700 WARN  (main) [   ] o.e.j.u.s.S.config No Client EndPointIdentificationAlgorithm configured for Client@5b7ea70d[provider=null,keyStore=null,trustStore=null]
+2022-04-28 10:39:03.856 WARN  (main) [   ] o.e.j.u.s.S.config Trusting all certificates configured for Client@10c8f62[provider=null,keyStore=null,trustStore=null]
+2022-04-28 10:39:03.856 WARN  (main) [   ] o.e.j.u.s.S.config No Client EndPointIdentificationAlgorithm configured for Client@10c8f62[provider=null,keyStore=null,trustStore=null]
+2022-04-28 10:39:03.918 INFO  (main) [   ] o.a.s.c.SolrZkServerProps Reading configuration from: c:\data\zoo.cfg
+2022-04-28 10:39:03.918 INFO  (main) [   ] o.a.s.c.SolrZkServer STARTING EMBEDDED STANDALONE ZOOKEEPER SERVER at port 9983
+2022-04-28 10:39:03.918 WARN  (main) [   ] o.a.s.c.SolrZkServer Embedded Zookeeper is not recommended in production environments. See Reference Guide for details.
+2022-04-28 10:39:04.418 INFO  (main) [   ] o.a.s.c.ZkContainer Zookeeper client=localhost:9983
+2022-04-28 10:39:04.996 WARN  (Thread-12) [   ] o.a.z.s.ServerCnxnFactory maxCnxns is not configured, using default value 0.
+2022-04-28 10:39:05.012 INFO  (main) [   ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+2022-04-28 10:39:05.028 WARN  (NIOWorkerThread-1) [   ] o.a.z.s.NIOServerCnxn Close of session 0x0 =&gt; java.io.IOException: ZooKeeperServer not running
+	at org.apache.zookeeper.server.NIOServerCnxn.readLength(NIOServerCnxn.java:544) java.io.IOException: ZooKeeperServer not running
+	at org.apache.zookeeper.server.NIOServerCnxn.readLength(NIOServerCnxn.java:544) ~[?:?]
+	at org.apache.zookeeper.server.NIOServerCnxn.doIO(NIOServerCnxn.java:332) ~[?:?]
+	at org.apache.zookeeper.server.NIOServerCnxnFactory$IOWorkRequest.doWork(NIOServerCnxnFactory.java:522) ~[?:?]
+	at org.apache.zookeeper.server.WorkerService$ScheduledWorkRequest.run(WorkerService.java:154) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) ~[?:1.8.0_252]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) ~[?:1.8.0_252]
+	at java.lang.Thread.run(Thread.java:748) [?:1.8.0_252]
+2022-04-28 10:39:05.028 WARN  (NIOWorkerThread-1) [   ] o.a.z.s.WorkerService Unexpected exception =&gt; java.lang.NullPointerException
+	at org.apache.zookeeper.server.ZooKeeperServer.removeCnxn(ZooKeeperServer.java:285) java.lang.NullPointerException: null
+	at org.apache.zookeeper.server.ZooKeeperServer.removeCnxn(ZooKeeperServer.java:285) ~[?:?]
+	at org.apache.zookeeper.server.NIOServerCnxn.close(NIOServerCnxn.java:593) ~[?:?]
+	at org.apache.zookeeper.server.NIOServerCnxn.close(NIOServerCnxn.java:583) ~[?:?]
+	at org.apache.zookeeper.server.NIOServerCnxn.doIO(NIOServerCnxn.java:374) ~[?:?]
+	at org.apache.zookeeper.server.NIOServerCnxnFactory$IOWorkRequest.doWork(NIOServerCnxnFactory.java:522) ~[?:?]
+	at org.apache.zookeeper.server.WorkerService$ScheduledWorkRequest.run(WorkerService.java:154) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) ~[?:1.8.0_252]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) ~[?:1.8.0_252]
+	at java.lang.Thread.run(Thread.java:748) [?:1.8.0_252]
+
+					</pre>
+					<p>And then later in the logs, I got errors like this:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="4" data-enlighter-language="text" style="width:100%; overflow:scroll;">2022-04-27 14:49:43.626 INFO  (main) [   ] o.e.j.s.AbstractConnector Started ServerConnector@1329eff{HTTP/1.1, (http/1.1, h2c)}{0.0.0.0:8983}
+2022-04-27 14:49:43.626 INFO  (main) [   ] o.e.j.s.Server Started @38620ms
+2022-04-27 14:50:05.641 ERROR (qtp572868060-18) [   ] o.a.s.s.SolrDispatchFilter Error processing the request. CoreContainer is either not initialized or shutting down.
+2022-04-27 14:50:05.725 WARN  (qtp572868060-18) [   ] o.e.j.s.HttpChannel /solr/admin/cores =&gt; javax.servlet.ServletException: javax.servlet.UnavailableException: Error processing the request. CoreContainer is either not initialized or shutting down.
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:162)
+javax.servlet.ServletException: javax.servlet.UnavailableException: Error processing the request. CoreContainer is either not initialized or shutting down.
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:162) ~[jetty-server-9.4.34.v20201102.jar:9.4.34.v20201102]
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127) ~[jetty-server-9.4.34.v20201102.jar:9.4.34.v20201102]
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:322) ~[jetty-rewrite-9.4.34.v20201102.jar:9.4.34.v20201102]
+
+					</pre>
+					<p>And if you try to browse to the Solr instance now you get this friendly error:</p>
+					<p>
+						<a target="_blank" href="/img/2022/05-SolrUiError.png">
+							<img alt="CoreContainer is not initialised error - when browsing Solr" src="/img/2022/05-SolrUiError.png">
+						</a>
+					</p>
+					<p>And that explains the Sitecore instance failing to start: The Docker error is about the
+						<code>solr-init</code>
+						container being in an error state, which makes perfect sense if Solr itself isn't working.</p>
+					<h2>Further confusion</h2>
+					<p>Having worked out what was breaking, I tried a variety of experiments to work out what to do in order to get past this, and found some confusing behaviour:</p>
+					<p>I could use
+						<code>dotnet new</code>
+						to create a new instance of the example project. This would start the first time I ran
+						<code>up.ps1</code>
+						but would then show the same error as above on the second and subsequent attempts. I could use notepad to edit the
+						<code>.env</code>
+						file for one of these projects and change the
+						<code>COMPOSE_PROJECT_NAME</code>
+						variable. Once saved, this would allow the site to start once, and then subsequent attempts would fail with the same error. And I could edit the
+						<code>docker-compose.yml</code>
+						file(s) to tweak the settings (say, exposing a new port) and save that change. Again, it would start once and then subsequent attempts would fail. Rebooting my computer would also allow things to start once.</p>
+					<p>That suggests to me that something to do with building the image has an affect on this issue. Maybe something to do with there being state data which doesn't exist on the first start of a new image, but does exist (and causes an issue) on the subsequent starts.</p>
+					<p>So I could use these as work-arounds - but they all involved changing the project I was working on, or rebooting - which seemed heavy handed. At some point I'd accidentally commit one of my hacky changes to source control and risk messing up other team members' work...</p>
+					<p>And the overall issue made me very confused.</p>
+					<p>I wondered if Zookeeper was actually broken, when I was seeing the errors in the Solr logs. So I tried a test where I allowed
+						<code>up.ps1</code>
+						to run to the error shown above, and then connected a Powershell session into the Solr container with
+						<code>docker exec -it sitecore_jss_poc3_solr_1 powershell.exe</code>. Once in there I could run a bit of script to call Zookeeper API to ask it if it was alive:</p>
+					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$client = New-Object System.Net.Sockets.TcpClient
+
+$client.Connect("localhost", 9983)
+$ns = [System.Net.Sockets.NetworkStream]$client.GetStream()
+
+$sendBytes = [System.Text.Encoding]::ASCII.GetBytes("ruok")
+$ns.Write($sendBytes, 0, $sendBytes.Length)
+
+$buffer = New-Object 'byte[]' 10
+$bytesRead = $ns.Read($buffer, 0, 10)
+
+$receivedBytes = New-Object 'byte[]' $bytesRead
+[System.Array]::Copy($buffer, $receivedBytes, $bytesRead)
+
+$result= [System.Text.Encoding]::ASCII.GetString($receivedBytes)
+
+Write-Host "Response: $result"
+
+					</pre>
+					<p>Confusingly, that returned success:</p>
+					<p>
+						<a target="_blank" href="/img/2022/05-ZookeeperIsUp.png">
+							<img alt="Zookeeper API returning success" src="/img/2022/05-ZookeeperIsUp.png">
+						</a>
+					</p>
+					<p>So whatever is preventing Solr from seeing Zookeeper, Zookeeper itself is running...</p>
+					<h2>Flailing about for an answer</h2>
+					<p>I tried making a cut-down docker-compose file set which just started Solr, in order to be able to test these issues faster. That showed all the same behaviour as the main Sitecore files. Copying that cut-down project to my personal laptop worked fine, and did not show any of these issues. That's a pretty clear indication that the issue is something specific to the work laptop I started on.</p>
+					<p>At this point I hit Google pretty hard, spoke to others in my company, as well as asking about this in the Docker channel in Sitecore Slack. I found a small number of others who'd seen similar issue, and some muttering about how the current version of Docker might be to blame for some issues. (I had upgraded to
+						<code>4.7.1 (77678)</code>
+						recently, so that was plausible)</p>
+					<p>Reverting to Docker Desktop v4.6 didn't seem to resolve the issue. Stopping all the services for my office VPN didn't resolve the issue. One suggestion was to run
+						<code>netsh winsock reset</code>
+						in an elevated session and reboot. But that seemed to have no more effect that rebooting would have had on its own.</p>
+					<p>To revert back to "latest" Docker Desktop after these tests I did the uninstall, and noticed a few folders left lying about which seemed Docker-related. So I manually tidied all the files in
+						<code>docker</code>
+						and
+						<code>docker desktop</code>
+						folders under
+						<code>c:\programdata\</code>
+						and in the children of
+						<code>%appdata%</code>
+						on my machine. But after reinstalling that didn't seem to make a difference.</p>
+					<p>Next on my list to consider was, could this be a docker networking issue? I tried running
+						<code>docker network ls</code>
+						to see what existed:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">PS C:\Users\jeremy.davis\source\repos\test&gt; docker network ls
+NETWORK ID     NAME             DRIVER    SCOPE
+a8aafbd09e1f   Default Switch   ics       local
+2190f8e7c643   nat              nat       local
+e8c1255ef410   none             null      local
+
+					</pre>
+					<p>The "Default Switch" entry wasn't there on a colleague's machine. And it went away when I speculatively ran the network prune command:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">PS C:\Users\jeremy.davis\source\repos\test&gt; docker network prune
+WARNING! This will remove all custom networks not used by at least one container.
+Are you sure you want to continue? [y/N] y
+Deleted Networks:
+Default Switch
+PS C:\Users\jeremy.davis\source\repos\test&gt; docker network ls
+NETWORK ID     NAME      DRIVER    SCOPE
+2190f8e7c643   nat       nat       local
+e8c1255ef410   none      null      local
+
+					</pre>
+					<p>After doing this, my Solr test compose file would start. Not 100% of the time. But more than 50% of the time. Which is a significant step forwards, but clearly still not right somehow. And the main Sitecore compose project would start with the same reliability too.</p>
+					<p>
+						<b>Note:</b>
+						Take care to ensure you've run
+						<code>docker-compose down</code>
+						before pruning - you'll get odd errors about not being able to start the containers if you don't:</p>
+					<p>
+						<a target="_blank" href="/img/2022/05-ForgotDownBeforePrune.png">
+							<img alt="Network not found error from docker" src="/img/2022/05-ForgotDownBeforePrune.png">
+						</a>
+					</p>
+					<p>If you get this "Network
+						<long id="">
+							not found" error, run down and then up again to resolve it.</long>
+					</p>
+					<p>But I've not managed to get it any better than this. I still get that error about not finding Zookeeper sometimes when starting the Solr container.</p>
+					<h2>Explanations?</h2>
+					<p>I don't have much of an explanation to be honest. It feels like this is somehow an issue with Docker networking's interactions with the container or with Windows. But how or why this isn't working on my particular machine is not clear to me.</p>
+					<p>So I'm putting this here in case it makes more sense to someone else, or in case it helps someone else who's stuck. But it's probably neither the right solution, or a good one. Just a hacky workaround which has helped me.</p>
+					<p>My suspicion is that this is down to something specific in the build or state of my work laptop, since I don't see these issues on my personal laptop. Maybe one day I'll work out what that is. More likely I'll end up reformatting and it will magically go away after that. But for the moment I have the
+						<code>docker network prune</code>
+						work around to mostly bypass the error here and get on with some work...</p>
+					<p>To be honest, there are days when I don't really like computers... ;-)</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (206)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (47)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (16)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (14)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (13)</a>
+							<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Bug (12)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2022-09">2022 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-08">2022 - August</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-07">2022 - July</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-06">2022 - June</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-05">2022 - May</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
