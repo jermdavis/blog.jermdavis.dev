@@ -1,0 +1,471 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2022/sitecore-10-3-webhooks-integration">
+		<meta name="description" content="Sitecore 10.3 adds WebHooks to the CMS event model. Here's how they work.">
+		<meta property="og:description" content="Sitecore 10.3 adds WebHooks to the CMS event model. Here's how they work.">
+		<meta name="keywords" content="Sitecore, Events, Composable">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Webhooks in Sitecore 10.3</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Webhooks in Sitecore 10.3">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/sitecore-10-3-webhooks-integration-social.jpg">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Webhooks in Sitecore 10.3",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/sitecore-10-3-webhooks-integration-social.jpg"
+        ],
+        "datePublished": "2022-12-05T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2022/sitecore-10-3-webhooks-integration">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2022/sitecore-10-3-webhooks-integration</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Webhooks in Sitecore 10.3
+				</h1>
+				<h2 class="text-2xl">A new way to wire up integrations</h2>
+				<div class="meta">Published 05 December 2022</div>
+				<div class="flex py-1">
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/events/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Events</a>
+					<a href="/tags/composable/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Composable</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>After a bit more of a pause than most attendees of
+						<a href="/posts/2022/symposium-2022#your-on-prem-paas-dxp-gets-some-love-too" target="_blank" rel="noopener">Symposium</a>
+						this year were expecting,
+						<a href="https://dev.sitecore.net/Downloads/Sitecore_Experience_Platform/103/Sitecore_Experience_Platform_103.aspx" target="_blank" rel="noopener">Sitecore 10.3 is finally out in the wild now</a>. And (to me at least) one of the most interesting changes is that the server-side event model for the CMS has been extended with Webhooks. What does that mean, and how can you make use of them? Well since I was lucky enough to get my hands on the "MVP Preview" of this release a couple of weeks back, I've had a chance to do some digging. Read on to find out...
+						<!--more-->
+					</p>
+					<h2 id="what-and-why">What and why?</h2>
+					<p>This is one of the features added to the 10.3 release which has come from the roadmap around composable and the development for
+						<a href="https://www.sitecore.com/products/xm-cloud" target="_blank" rel="noopener">XM Cloud</a>. The move towards SaaS-hosted systems and composability means we need easier "plug and play" ways of connecting systems together, and
+						<a href="https://en.wikipedia.org/wiki/Webhook" target="_blank" rel="noopener">Webhooks</a>
+						are a useful standard here.</p>
+					<p>Where in the past you would have written some back-end code to handle an event like "Item Created" and then patched it into the CMS's config, Webhooks allow the CMS to automatically make an HTTP request to an endpoint you own each time that event is triggered. And the body of that request contains a description of the event which occurred. This makes wiring up your events to other systems much simpler - and will eventually tie easily into
+						<a href="https://blog.jermdavis.dev/posts/2022/symposium-2022#connect" target="_blank" rel="noopener">Sitecore Connect</a>, the new
+						<a href="https://www.gartner.com/en/information-technology/glossary/information-platform-as-a-service-ipaas" target="_blank" rel="noopener">iPaaS</a>
+						product which was announced recently.</p>
+					<h2 id="how">How?</h2>
+					<p>If you look at the config 10.3, you'll see that for each of the system's main CMS events there's a new handler in place. For example, with the
+						<code>Item:Deleted</code>
+						event we now see this:</p>
+					<pre data-enlighter-highlight="9" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;event name="item:deleted" patch:source="Sitecore.EmailExperience.ContentManagement.config"&gt;
+    &lt;handler type="Sitecore.Links.ItemEventHandler, Sitecore.Kernel" method="OnItemDeleted" resolve="true"/&gt;
+    &lt;handler type="Sitecore.Tasks.ItemEventHandler, Sitecore.Kernel" method="OnItemDeleted"/&gt;
+    &lt;handler type="Sitecore.Globalization.ItemEventHandler, Sitecore.Kernel" method="OnItemDeleted"/&gt;
+    &lt;handler type="Sitecore.Data.Fields.ItemEventHandler, Sitecore.Kernel" method="OnItemDeleted"/&gt;
+    &lt;handler type="Sitecore.Rules.ItemEventHandler, Sitecore.Kernel" method="OnItemDeleted"/&gt;
+    &lt;handler type="Sitecore.Caching.Placeholders.PlaceholderCacheEventHandler, Sitecore.Kernel" method="UpdateCaches" resolve="true"/&gt;
+    &lt;handler type="Sitecore.Publishing.PartialHtmlCacheClearer, Sitecore.Kernel" method="OnItemEvent" resolve="true"/&gt;
+    &lt;handler type="Sitecore.Events.Webhooks.WebhookSubscriber, Sitecore.Kernel" method="OnWebhookItemDeleted" resolve="true" patch:source="Sitecore.Webhooks.config"/&gt;
+    &lt;handler type="Sitecore.Marketing.xMgmt.Caching.IdsByAliasesCacheClearer, Sitecore.Marketing.xMgmt" method="OnItemDeleted" resolve="true" patch:source="Sitecore.Marketing.config"/&gt;
+    &lt;handler type="Sitecore.Marketing.xMgmt.Definitions.ItemEventHandler, Sitecore.Marketing.xMgmt" method="OnItemDeleted" patch:source="Sitecore.Marketing.config"/&gt;
+    &lt;handler type="Sitecore.Analytics.Data.Caches.ProfilesWithDefaultValuesCacheHandler, Sitecore.Analytics" method="OnItemDeleted" resolve="true" patch:source="Sitecore.Analytics.Tracking.config"/&gt;
+    &lt;handler method="OnItemDeleted" ref="experienceAnalytics/client/segmentDeployedEventHandler" patch:source="Sitecore.ExperienceAnalytics.Client.config"/&gt;
+    &lt;handler type="Sitecore.Modules.EmailCampaign.Core.RootItemEventHandler, Sitecore.EmailCampaign" method="OnRootDeleted" resolve="true" patch:source="Sitecore.EmailExperience.ContentManagement.config"/&gt;
+    &lt;handler type="Sitecore.Modules.EmailCampaign.Core.ItemEventHandler, Sitecore.EmailCampaign" method="OnItemDeleted" resolve="true" patch:source="Sitecore.EmailExperience.ContentManagement.config"/&gt;
+&lt;/event&gt;
+
+					</pre>
+					<p>The file
+						<code>Sitecore.WebHooks.config</code>
+						has patched in a new handler, for this event. That allows the system to make a Webhook call if this event is triggered.</p>
+					<p>But for a Webhook to be useful, it needs to call a system you own - so how do you configure this? Well there's a new location in the
+						<code>system</code>
+						part of the content tree to hold this config:</p>
+					<p>
+						<a target="_blank" href="/img/2022/11-WebHookConfigItem.png">
+							<img alt="Sitecore's Content Editor showing a new config item for a WebHook" src="/img/2022/11-WebHookConfigItem.png">
+						</a>
+					</p>
+					<p>You can create items under
+						<code>/sitecore/system/Webhooks</code>
+						to configure the hooks you want called. And for each one you get to configure a set of options:</p>
+					<p>First, you need to specify which events in the CMS should trigger the call. You can pick from all the common item-change and publishing events, and you are able to select multiple events per hook. The set of options is defined under
+						<code>/sitecore/system/Settings/Webhooks/Event Types</code>:</p>
+					<p>
+						<a target="_blank" href="/img/2022/11-WebHookEvents.png">
+							<img alt="The list of Webhook event options in the content tree" src="/img/2022/11-WebHookEvents.png">
+						</a>
+					</p>
+					<p>You are also able to specify a Rules Engine ruleset to further refine when this Webhook should be triggered. For example, triggering only when an item is in a specific part of the content tree:</p>
+					<p>
+						<a target="_blank" href="/img/2022/11-WebHookRule.png">
+							<img alt="The rules editor showing a 'descendant item of Home' rule" src="/img/2022/11-WebHookRule.png">
+						</a>
+					</p>
+					<p>So you're able to give fairly granular control of when the hook should be triggered.</p>
+					<p>The remaining options control how the remote URL is triggered:</p>
+					<p>
+						<a target="_blank" href="/img/2022/11-WebHookConnectivity.png">
+							<img alt="The config options fields for how a webhook will be triggered" src="/img/2022/11-WebHookConnectivity.png">
+						</a>
+					</p>
+					<p>The
+						<code>Enabled</code>
+						flag is fairly obvious - controlling whether this hook should be processed or not. And the
+						<code>Url</code>
+						controls what HTTP endpoint will be called when this hook does trigger. Note that you can call any URL, but if you specify an
+						<code>HTTP</code>
+						url you'll get a Content Editor warning suggesting that you should use
+						<code>HTTPS</code>
+						instead for security. The final option here is for
+						<code>Serialization Type</code>, which lets you choose between sending the body of your hook as
+						<code>JSON</code>
+						or
+						<code>XML</code>
+						data.</p>
+					<p>The
+						<code>Authorization</code>
+						field allows you to pass credentials when the hook url is called. You set these up under
+						<code>/sitecore/system/Settings/Webhooks/Authorizations</code>
+						and you can specify your credentials in a variety of ways:</p>
+					<p>
+						<a target="_blank" href="/img/2022/11-WebHookAuthorisation.png">
+							<img alt="The insert options list for authorisation types for Webhooks" src="/img/2022/11-WebHookAuthorisation.png">
+						</a>
+					</p>
+					<p>You create an item for each
+						<code>OAuth</code>,
+						<code>Basic</code>,
+						<code>Digest</code>
+						or
+						<code>API Key</code>
+						authentication setup you need. For example, you can add a specific security header to each request:</p>
+					<p>
+						<a target="_blank" href="/img/2022/11-WebHookHeader.png">
+							<img alt="Content Editor settings for a WebHook security header" src="/img/2022/11-WebHookHeader.png">
+						</a>
+					</p>
+					<p>And once that is created, you can pick this option for the Webhook item's
+						<code>Authorization</code>
+						field, and have it sent.</p>
+					<h2 id="in-action">In action...</h2>
+					<p>Having set up your choices here, you can save this and the CMS will start making calls to your hook whenever a suitable event occurs. So if I create a test item under
+						<code>Home</code>
+						and delete that:</p>
+					<p>
+						<a target="_blank" href="/img/2022/11-WebHookItemToDelete.png">
+							<img alt="The item to be deleted in the content tree" src="/img/2022/11-WebHookItemToDelete.png">
+						</a>
+					</p>
+					<p>The Webhook will call the configured endpoint and return some data. To see what it did, I put a simple "dump out the request you receive" ASPX page at my target URL:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Method: POST
+Header: x-My-Auth=SecretValueIsSetHere
+&lt;event&gt;
+	&lt;EventName&gt;item:deleted&lt;/EventName&gt;
+	&lt;Item&gt;
+		&lt;Language&gt;en&lt;/Language&gt;
+		&lt;Version&gt;1&lt;/Version&gt;
+		&lt;Id&gt;f22e1fd7-dcf8-4216-8067-71a654b5d8a3&lt;/Id&gt;
+		&lt;Name&gt;Delete me&lt;/Name&gt;
+		&lt;ParentId&gt;00000000-0000-0000-0000-000000000000&lt;/ParentId&gt;
+		&lt;TemplateId&gt;76036f5e-cbce-46d1-af0a-4143f9b557aa&lt;/TemplateId&gt;
+		&lt;MasterId&gt;00000000-0000-0000-0000-000000000000&lt;/MasterId&gt;
+		&lt;SharedFields&gt;
+			&lt;Id&gt;06d5295c-ed2f-4a54-9bf2-26228d113318&lt;/Id&gt;
+			&lt;Value&gt;applications/32x32/delete.png&lt;/Value&gt;
+		&lt;/SharedFields&gt;
+		&lt;SharedFields&gt;
+			&lt;Id&gt;a4f985d9-98b3-4b52-aaaf-4344f6e747c6&lt;/Id&gt;
+			&lt;Value&gt;{A5BC37E7-ED96-4C1E-8590-A26E64DB55EA}&lt;/Value&gt;
+		&lt;/SharedFields&gt;
+	&lt;/Item&gt;
+	&lt;ParentID&gt;110d559f-dea5-42ea-9c1c-8a5df7e70ef9&lt;/ParentID&gt;
+	&lt;WebhookItemId&gt;67d6575f-31df-4231-8f2c-556d2f3646f2&lt;/WebhookItemId&gt;
+	&lt;WebhookItemName&gt;Delete an item&lt;/WebhookItemName&gt;
+&lt;/event&gt;
+
+					</pre>
+					<p>Sitecore made a
+						<code>POST</code>
+						request to my endpoint, passing the security header I configured, and a blob of XML describing the properties of the event which was triggered and the item it acted on. But that could have been JSON if I'd configured it that way...</p>
+					<h2 id="what-if-something-goes-wrong">What if something goes wrong?</h2>
+					<p>Well you'll get errors in your Sitecore log, and the Webhook URL won't get its post correctly. For example, if I deliberately break the ASPX page that was receiving the call above, I get the following in the logs:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="4" data-enlighter-language="text" style="width:100%; overflow:scroll;">8596 00:38:48 INFO  AUDIT (sitecore\Admin): Add from template: master:/sitecore/templates/Sample/Sample Item, language: en, version: 1, id: {76036F5E-CBCE-46D1-AF0A-4143F9B557AA}
+ManagedPoolThread #12 00:38:48 INFO  Job started: Sitecore.ListManagement.Operations.UpdateListOperationsAgent
+ManagedPoolThread #12 00:38:48 INFO  Job ended: Sitecore.ListManagement.Operations.UpdateListOperationsAgent
+ 980 00:38:48 ERROR Webhooks: Request is not successfull https://localhost/HookReceiver.aspx. Response code was InternalServerError
+ManagedPoolThread #9 00:38:48 INFO  Job started: Index_Update_IndexName=sitecore_testing_index
+ManagedPoolThread #6 00:38:48 INFO  Job started: Index_Update_IndexName=sitecore_fxm_master_index
+
+					</pre>
+					<p>When the execution of the target URL breaks you see an error like this. So you'd need to check logs for your endpoint to discover the detail of this error. However if the issue is with the config or process of calling that URL instead, any exceptions thrown on Sitecore's side will be recorded in the log. For example, turning of HTTPS on my test endpoint, I see:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="1,3" data-enlighter-language="text" style="width:100%; overflow:scroll;">8572 01:55:36 ERROR Webhooks: Request failed. https://localhost/HookReceiver.aspx
+Exception: System.Net.Http.HttpRequestException
+Message: An error occurred while sending the request.
+Source: mscorlib
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Sitecore.Common.HttpClient.SitecoreHttpClient.&lt;SendAsync&gt;d__4.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Sitecore.Events.Webhooks.Authorization.BaseRequestSender.&lt;SendAsync&gt;d__11.MoveNext()
+
+					</pre>
+					<p>Plus a chunk of nested
+						<code>SocketException</code>
+						and
+						<code>WebException</code>
+						stack trace that I've omitted for readability...</p>
+					<h2 id="conclusions">Conclusions</h2>
+					<p>Whether you're using SaaS or IaaS/PaaS implementations of Sitecore, this has the potential to make wiring CMS events to other systems much simpler in the future. If you have a need for editorial actions to be communicated to an external system, this is probably the easiest route to take going forward. In fact I'm involved in a project at the moment where having this in place could have removed the need for quite a lot of code...</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (209)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (48)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (16)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (13)</a>
+							<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Bug (12)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2022-12">2022 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-11">2022 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-10">2022 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-09">2022 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-08">2022 - August</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Socials</h3>
+						<div class="bg-white mb-2 p-2">
+							<div>
+								<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
