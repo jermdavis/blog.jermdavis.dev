@@ -1,0 +1,470 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2022/revisit-extract-solr-query-sitecore">
+		<meta name="description" content="How to extract the raw Solr query text from ContentSearch in Sitecore 10.2">
+		<meta property="og:description" content="How to extract the raw Solr query text from ContentSearch in Sitecore 10.2">
+		<meta name="keywords" content="Sitecore, Solr, SolrCloud, ContentSearch">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Revisiting extracting the raw Solr query</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Revisiting extracting the raw Solr query">
+		<meta property="og:publish_date" content="2022-12-19T00:00:00+00:00">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/revisit-extract-solr-query-sitecore-social.jpg?">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Revisiting extracting the raw Solr query",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/revisit-extract-solr-query-sitecore-social.jpg"
+        ],
+        "datePublished": "2022-12-19T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2022/revisit-extract-solr-query-sitecore">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2022/revisit-extract-solr-query-sitecore</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Revisiting extracting the raw Solr query
+				</h1>
+				<h2 class="text-2xl">Not all breaking changes make it into release notes</h2>
+				<div class="meta">Published 19 December 2022</div>
+				<div class="flex py-1">
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/solr/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Solr</a>
+					<a href="/tags/solrcloud/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						SolrCloud</a>
+					<a href="/tags/contentsearch/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						ContentSearch</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>A while back
+						<a href="/posts/2021/peeking-into-search-queries" target="_blank" rel="noopener">I wrote a post about how you could extract the raw Solr query from Sitecore's ContentSearch APIs</a>. Usually the queries hid behind LINQ operations, but there are times where having the raw text can be helpful - sometimes Sitecore's API doesn't support the operations you need. That work was done under Sitecore v10.0, but having tried to repeat it under v10.2, I discover it no longer works. There have been some changes under the surface of ContentSearch which require a different approach. So if you need to do this under v10.2, here's how:
+						<!--more-->
+					</p>
+					<h2 id="the-issue">The issue</h2>
+					<p>I sat down to write some grouped query code in a v10.2 project recently, and copied in my "grab the search query" code from
+						<a href="/posts/2021/peeking-into-search-queries" target="_blank" rel="noopener">my original post</a>. But the compiler was not happy with it:</p>
+					<p>
+						<a target="_blank" href="/img/2022/11-CompilerWarningContentSearch.png">
+							<img alt="A compiler warning that the ContentSearch query cannot be cast to GenericQueryable as this is depreciated" src="/img/2022/11-CompilerWarningContentSearch.png">
+						</a>
+					</p>
+					<p>For Google's benefit the important bits of that error are:
+						<code>[depreciated] class Sitecore.ContentSearch.Linq.Parsing.GenericQueryable&lt;TElement,TQuery&gt;</code>
+						and
+						<code>GenericQueryable&lt;SearchResultItem,SolrCompositeQuery&gt; is obsolete. Please use IndexQueryable&lt;TElement, TQuery&gt; instead.</code>
+					</p>
+					<p>Ignoring that compiler message didn't help - as I ended up with a
+						<code>NullReferenceException</code>
+						at runtime.</p>
+					<p>That doesn't bode well. So what has happened? Well firing up the debugger, and looking at the
+						<code>IQueryable</code>
+						at runtime, its base type is now
+						<code>IndexQueryable&lt;T,SolrCompositeQuery&gt;</code>:</p>
+					<p>
+						<a target="_blank" href="/img/2022/11-NewUnderlyingQueryType.png">
+							<img alt="Debugger looking at the internal type for a search query, and seeing it is IndexQueryable<T,SolrCompositeQuery>" src="/img/2022/11-NewUnderlyingQueryType.png">
+						</a>
+					</p>
+					<p>So under the surface, something that changed during the work for
+						<a href="https://dev.sitecore.net/Downloads/Sitecore%20Experience%20Platform/101/Sitecore%20Experience%20Platform%20101/Release%20Notes" target="_blank" rel="noopener">v10.1</a>
+						or
+						<a href="https://dev.sitecore.net/Downloads/Sitecore%20Experience%20Platform/102/Sitecore%20Experience%20Platform%20102/Release%20Notes" target="_blank" rel="noopener">v10.2</a>
+						has revised the internal type used to represent a Solr query before it's executed.</p>
+					<p>So lets cast our
+						<code>IQueryable&lt;T&gt;</code>
+						to this new type and see what we get:</p>
+					<p>
+						<a target="_blank" href="/img/2022/11-CastingToNewType.png">
+							<img alt="Autocomplete for the IndexQueryable type - showing no public GetQuery() method now exists" src="/img/2022/11-CastingToNewType.png">
+						</a>
+					</p>
+					<p>An issue indeed. There's no public
+						<code>GetQuery()</code>
+						method here any more. Reverting back to
+						<a href="https://github.com/icsharpcode/ILSpy#ilspy----" target="_blank" rel="noopener">ILSpy</a>
+						for a sec to examine the definition of this class, we can see the following in the code:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// Sitecore.ContentSearch.Linq.Parsing.IndexQueryable&lt;TElement,TQuery&gt;
+using System.Linq.Expressions;
+
+private TQuery GetQuery(Expression expression)
+{
+	return _queryTranslator.Translate(expression);
+}
+
+					</pre>
+					<p>The change to the underlying types has hidden
+						<code>GetQuery()</code>
+						away as
+						<code>private</code>
+						now.</p>
+					<p>That's a frustrating change in the light of
+						<a href="https://doc.sitecore.com/xp/en/developers/102/platform-administration-and-architecture/using-solr-to-group-search-results.html" target="_blank" rel="noopener">the documentation still suggesting there are queries where you need to know the raw Solr query language</a>
+						rather than just the LINQ expressions...</p>
+					<h2 id="a-solution">A solution</h2>
+					<p>But all is not lost - Microsoft have provided us with
+						<a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/reflection" target="_blank" rel="noopener">Reflection</a>
+						to solve this problem. Yes it has some performance challenges, and yes it means our code might well break again with future releases of ContentSearch. But it allows a way forward here at least.</p>
+					<p>You can use the reflection APIs to get a reference to any method of a class and execute it, no matter whether it's public or private. You get the
+						<code>Type</code>
+						for your object, find the
+						<code>MethodInfo</code>
+						for the code you want to call, and pass in any parameters you need. So in this case, we can hack together a simple method that can call
+						<code>GetQuery()</code>
+						for us:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public string GetQuery&lt;T&gt;(IQueryable&lt;T&gt; query)
+{
+    var type = query.GetType();
+    var method = type.GetMethod("GetQuery", BindingFlags.Instance | BindingFlags.NonPublic);
+
+    var solrQuery = (SolrCompositeQuery)method.Invoke(query, new object[] { query.Expression });
+
+    return solrQuery.ToString();
+}
+
+					</pre>
+					<p>And that can be run against the
+						<code>IQueryable</code>
+						that gets created by a ContentSearch LINQ query:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">using (var ctx = ContentSearchManager.GetIndex("sitecore_master_index").CreateSearchContext())
+{
+    var q = ctx.GetQueryable&lt;SearchResultItem&gt;()
+        .Where(i =&gt; i.TemplateName == "Search Item")
+        .Where(i =&gt; i.Paths.Contains(new Sitecore.Data.ID("{80A1CDA6-8A15-4BD6-8A71-59025A5A8219}")));
+
+    var queryText = GetQuery(q);
+
+    // do something with the query text
+}
+
+					</pre>
+					<p>So that solves my immediate problem - I can get the basic query again now.</p>
+					<p>If you're doing this somewhere that performance is important, then you don't want to do the reflection method lookup for every execution. You could do this in a static constructor for whatever controller is running this search code, but I figure it's probably most useful to factor it out into a helper class:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class QueryExtensions&lt;T&gt; 
+{
+    private static readonly MethodInfo _getQuery;
+
+    static QueryExtensions()
+    {
+        var type = typeof(IndexQueryable&lt;T, SolrCompositeQuery&gt;);
+        _getQuery = type.GetMethod("GetQuery", BindingFlags.Instance | BindingFlags.NonPublic);
+    }
+
+    public static string GetQuery(IQueryable&lt;T&gt; query)
+    {
+        var solrQuery = (SolrCompositeQuery)_getQuery.Invoke(query, new object[] { query.Expression });
+
+        return solrQuery.ToString();
+    }
+}
+
+					</pre>
+					<p>I don't think you can use this pattern to make an extension method - but it does allow you to have a per-query type static field for the method, which will reduce the slow reflection lookups. This will only call reflection once per query result type you use it against.</p>
+					<h2 id="a-side-note-about-geographic-queries">A side-note about geographic queries</h2>
+					<p>If you were paying attention to the code example I showed in the first screenshot above, you'll have noticed a call to
+						<code>WithinRadius()</code>. That's a useful LINQ method that ContentSearch provides for doing geographic queries. But you'll see an interesting result when you call my helper code above for a query which uses that method. Taking this LINQ expression:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var q = ctx.GetQueryable&lt;SearchResultItem&gt;()
+    .Where(i =&gt; i.TemplateName == "Search Item")
+    .Where(i =&gt; i.Paths.Contains(new Sitecore.Data.ID("{80A1CDA6-8A15-4BD6-8A71-59025A5A8219}")))
+    .WithinRadius(i =&gt; i.Location, new Coordinate(52.843647, -3.944892), 5);
+
+					</pre>
+					<p>Printing the query with my example class above gives you this:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">query: "(_templatename:(\"Search Item\") AND _path:(\"80a1cda68a154bd68a7159025a5a8219\")) AND _val_:__boost"
+
+					</pre>
+					<p>There's no geographic clause in there... So what's going on?</p>
+					<p>What I realised after a bit of thinking is that Solr has some ways of breaking up your query into "the main query" and a "filter query" to optimise its caching strategies. When you issue a geographic query via ContentSearch is puts the distance-related bits into the "filter query" part of the data sent to Solr, and you don't see that using the code above.</p>
+					<p>Doing a bit of digging, you can find this data though. The result of the call to
+						<code>GetQuery</code>
+						is a
+						<code>SolrCompositeQuery</code>
+						object. That includes a field for the main query as well as a
+						<code>Filter</code>
+						field for the filter query. The
+						<code>Filter</code>
+						field is of type
+						<code>SolrQuery</code>
+						and it has a
+						<code>Query</code>
+						property which returns its text. So the helper method defined above can be adjusted to return both:</p>
+					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class QueryExtensions&lt;T&gt; 
+{
+    private static readonly MethodInfo _getQuery;
+
+    static QueryExtensions()
+    {
+        var type = typeof(IndexQueryable&lt;T, SolrCompositeQuery&gt;);
+        _getQuery = type.GetMethod("GetQuery", BindingFlags.Instance | BindingFlags.NonPublic);
+    }
+
+    public static (string query, string filter) GetQuery(IQueryable&lt;T&gt; query)
+    {
+        var solrQuery = (SolrCompositeQuery)_getQuery.Invoke(query, new object[] { query.Expression });
+        var filterQuery = (SolrQuery)solrQuery.Filter;
+
+        return (solrQuery.ToString(), filterQuery.Query);
+    }
+}
+
+					</pre>
+					<p>And the results of running this against the LINQ query above are:</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">query: "(_templatename:(\"Search Item\") AND _path:(\"80a1cda68a154bd68a7159025a5a8219\")) AND _val_:__boost",
+filter: "{!geofilt sfield=coordinate_rpt pt=52.843647,-3.944892 d=5}"
+
+					</pre>
+					<p>Problem solved...</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (210)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (48)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (17)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (15)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (14)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Bug (13)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2022-12">2022 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-11">2022 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-10">2022 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-09">2022 - September</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-08">2022 - August</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Socials</h3>
+						<div class="bg-white mb-2 p-2">
+							<div>
+								<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2022</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
