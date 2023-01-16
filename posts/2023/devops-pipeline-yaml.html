@@ -1,0 +1,388 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com www.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2023/devops-pipeline-yaml">
+		<meta name="description" content="You need to pay careful attention to how you define multi-line text fields in a DevOps YAML pipeline">
+		<meta property="og:description" content="You need to pay careful attention to how you define multi-line text fields in a DevOps YAML pipeline">
+		<meta name="keywords" content="DevOps, YAML">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Pay attention to the subtle details in your Devops pipeline YAML</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Pay attention to the subtle details in your Devops pipeline YAML">
+		<meta property="og:publish_date" content="2023-01-16T00:00:00+00:00">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/devops-pipeline-yaml-social.jpg?">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Pay attention to the subtle details in your Devops pipeline YAML",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/devops-pipeline-yaml-social.jpg"
+        ],
+        "datePublished": "2023-01-16T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2023/devops-pipeline-yaml">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+						<a class="text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium text-gray-500 hover:text-gray-900" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="background-image: url(&amp;quot;/&amp;quot;);">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2023/devops-pipeline-yaml</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Pay attention to the subtle details in your Devops pipeline YAML
+				</h1>
+				<h2 class="text-2xl">Valid YAML doesn't necessarily mean working pipelines</h2>
+				<div class="meta">Published 16 January 2023</div>
+				<div class="flex py-1">
+					<a href="/tags/devops/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						DevOps</a>
+					<a href="/tags/yaml/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						YAML</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>Computers. Very useful when they work, but wildly frustrating when they don't. Recently I had one of those moments of frustration (well, two days actually) with Azure Devops and its YAML-based build pipelines. The root cause here seems like one of those things that could well bite others, so here's what happened to me...
+						<!--more-->
+					</p>
+					<h2 id="the-issue">The issue</h2>
+					<p>I've been working with a client who had set up a DevOps build pipeline for their container-based website. Broadly their build process is split into "build the C# code" and "publish the Docker Images". And in between those two steps there's a bit of housekeeping to remove some stuff from the build which shouldn't end up in the images, and copy some bits and pieces into the right locations for the DockerFiles to find.</p>
+					<p>To give the simplest example possible, one of the things that should get tidied up are some
+						<code>.gitkeep</code>
+						files, which are used to make sure that empty directories can be committed to source control. The build process fills these with relevant files, but it's tidier to get rid of the "noise" before building the images. As a very basic example, the source tree might look like:</p>
+					<p>
+						<a target="_blank" href="/img/2023/01-DevOpsSourceTree.png">
+							<img alt="A screenshot of an Azure DevOps repo, showing folders with .gitkeep files" src="/img/2023/01-DevOpsSourceTree.png">
+						</a>
+					</p>
+					<p>A few files, but including some
+						<code>.gitignore</code>
+						files which shouldn't end up in the output.</p>
+					<p>The client's DevOps pipeline was using the YAML style pipeline definitions. And they'd added a "Delete Files" task to do some of this tidying. The task was set to remove
+						<code>FolderOne/.gitkeep</code>
+						and
+						<code>FolderTwo/.gitkeep</code>
+						when it ran.</p>
+					<p>But when we looked at the output of the build, the files which should have been deleted were still present:</p>
+					<p>
+						<a target="_blank" href="/img/2023/01-IncorrectBuildOutput.png">
+							<img alt="The contents of the DevOps build artefact showing that the .gitkeep files have not been deleted" src="/img/2023/01-IncorrectBuildOutput.png">
+						</a>
+					</p>
+					<p>All the folders listed in the Delete task still had their
+						<code>.gitkeep</code>
+						files.</p>
+					<p>But the output of the task for deletion didn't show any errors:</p>
+					<p>
+						<a target="_blank" href="/img/2023/01-LackOfLogErrors.png">
+							<img alt="The log from the delete build pipeline step showing no errors when the delete fails to occur" src="/img/2023/01-LackOfLogErrors.png">
+						</a>
+					</p>
+					<p>So it was not at all obvious what might be wrong, and I spent quite a long time staring at the YAML file for the build, trying to work out what was causing this:</p>
+					<p>
+						<a target="_blank" href="/img/2023/01-IncorrectDeleteTask.png">
+							<img alt="A screenshot of the DevOps pipeline YAML file, showing the incorrect Delete task" src="/img/2023/01-IncorrectDeleteTask.png">
+						</a>
+					</p>
+					<p>For Google's benefit, the YAML for that deletion task is:</p>
+					<pre data-enlighter-language="yaml" style="width:100%; overflow:scroll;">- task: DeleteFiles@1
+  inputs:
+    SourceFolder: '$(Build.Repository.LocalPath)'
+    Contents: &gt;-
+      FolderOne/.gitkeep
+      FolderTwo/.gitkeep
+
+					</pre>
+					<h2 id="the-solution">The solution</h2>
+					<p>In the end, the answer came to me because I went to my own DevOps instance and tried to recreate the issue in a new blank repo.</p>
+					<p>I used the "assistant" in the UI to create a new delete task, trying to replicate the problem. And it created this:</p>
+					<pre data-enlighter-language="yaml" style="width:100%; overflow:scroll;">- task: DeleteFiles@1
+  inputs:
+    SourceFolder: '$(Build.Repository.LocalPath)'
+    Contents: | 
+      FolderOne/.gitkeep
+      FolderTwo/.gitkeep
+
+					</pre>
+					<p>Do you see the difference? In the "broken" example, the "Contents" field in the YAML is defined using
+						<code>Contents: &gt;-</code>
+						but in the working example it was defined as
+						<code>Contents: |</code>. A really subtle difference, but once I corrected that in the client's build the results changed:</p>
+					<p>
+						<a target="_blank" href="/img/2023/01-CorrectBuildOutput.png">
+							<img alt="A sceenshot of the DevOps built pipeline artefact showing the correct result, without .gitkeep files" src="/img/2023/01-CorrectBuildOutput.png">
+						</a>
+					</p>
+					<p>The
+						<code>.gitignore</code>
+						files had gone...</p>
+					<h2 id="but-why">But why?</h2>
+					<p>Well it turns out YAML's
+						<a href="https://yaml-multiline.info/" target="_blank" rel="noopener">handling of multi-line fields</a>
+						is way more complicated (Flexible? Powerful? Confusing?) than I thought.</p>
+					<p>There are two things going on. One is the "style" of the block, which is determined by the
+						<code>&gt;</code>
+						or the
+						<code>|</code>
+						character. The
+						<code>&gt;</code>
+						in the original file meant "replace newlines with spaces", where the
+						<code>|</code>
+						character tells the parser to keep the newlines. And then the
+						<code>-</code>
+						from the original file meant "leave a single newline at the end of the block".</p>
+					<p>So the original file wasn't working because the delete command was receiving</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">FolderOne/.gitkeep FolderTwo/.gitkeep&lt;newline&gt;
+
+					</pre>
+					<p>rather than</p>
+					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">FolderOne/.gitkeep&lt;newline&gt;
+FolderTwo/.gitkeep&lt;newline&gt;
+
+					</pre>
+					<p>And that kind of makes sense that the delete operation might get confused...</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (211)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (48)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (17)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (15)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Bug (13)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2023-01">2023 - January</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-12">2022 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-11">2022 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-10">2022 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-09">2022 - September</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Twitter</h3>
+						<div class="bg-white mb-2 p-2">
+							<a class="twitter-timeline" data-height="400" data-chrome="noheader nofooter noborders" href="https://twitter.com/jermdavis">Tweets by JermDavis</a>
+							<script async="" defer="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Socials</h3>
+						<div class="bg-white mb-2 p-2">
+							<div>
+								<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium text-gray-500 hover:text-gray-900" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2023</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium text-gray-500 hover:text-gray-900" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium text-gray-500 hover:text-gray-900" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+        EnlighterJS.init('pre', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+    
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
