@@ -164,7 +164,7 @@ So here's some notes on the hows and whys of using code to change layout details
 					</p>
 					<h2>Loading the Layout Details</h2>
 					<p>To read meaningful data from the Renderings field, you have to take into account the Layout Delta behaviour. The XML in the Renderings field for a particular item is not necessarily all the data you need to process. Hence you need to make sure you use the correct Sitecore classes to read this data. To extract the full XML, you can use:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var page = Sitecore.Context.Database.GetItem("/sitecore/content/Home");
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var page = Sitecore.Context.Database.GetItem("/sitecore/content/Home");
 var field = page.Fields[Sitecore.FieldIDs.LayoutField];
 string xml = LayoutField.GetFieldValue(field);
 
@@ -184,7 +184,7 @@ string xml = LayoutField.GetFieldValue(field);
 					<p>Once you have the XML, you have two choices about how to work with it. You could just manipulate the XML manually if you wanted. However the more supportable approach (which I'm interested here) is to use the API objects that Sitecore provides. And the class
 						<code>LayoutDefinitions</code>
 						manages this for us, and provides a method to parse the XML into objects:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var details = Sitecore.Layouts.LayoutDefinition.Parse(xml);
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var details = Sitecore.Layouts.LayoutDefinition.Parse(xml);
 
 					</pre>
 					<h2>Modifying the Layout Details</h2>
@@ -198,7 +198,7 @@ string xml = LayoutField.GetFieldValue(field);
 					</p>
 					<p>So in the same way this bit of UI shows, you start traversing these objects by finding the appropriate
 						<code>Device</code>. You can either iterate them:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach(DeviceDefinition device in details.Devices)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach(DeviceDefinition device in details.Devices)
 {
     // do something with device
 }
@@ -206,27 +206,27 @@ string xml = LayoutField.GetFieldValue(field);
 					</pre>
 					<p>or you can find a specific one by ID (The ID is the GUID of the Device item under
 						<code>/sitecore/layout/Devices</code>):</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var device = details.GetDevice("{FE5D7FDF-89C0-4D99-9AA3-B5FBD009C9F3}");
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var device = details.GetDevice("{FE5D7FDF-89C0-4D99-9AA3-B5FBD009C9F3}");
 
 					</pre>
 					<p>Each of these devices then includes a series of Rendering Definitions - the things which need to be displayed when this device is being used. Again you can either iterate these, or extract specific ones. To iterate through the things that will be rendered, you can:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach(RenderingDefinition rendering in device.Renderings)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach(RenderingDefinition rendering in device.Renderings)
 {
     // do something with a rendering
 }
 
 					</pre>
 					<p>Each of these renderings have properties for things like the Datasource, the cache settings etc. They also have a unique ID for each individual rendering, as well as the ID of the Rendering / Sublayout that is being used for presentation. You can fetch specific renderings with:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">RenderingDefinition r = device.GetRenderingByUniqueId("{43222D12-08C9-453B-AE96-D406EBB95126}");
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">RenderingDefinition r = device.GetRenderingByUniqueId("{43222D12-08C9-453B-AE96-D406EBB95126}");
 
 					</pre>
 					<p>(I don't believe these IDs are presented in the UI anywhere – so they make most sense in combination with iterating the collection)</p>
 					<p>Alternatively you can fetch by the UI component's ID. If you want to find exactly one rendering definition based on a specific control ID you can call:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">RenderingDefinition r = device.GetRendering("{FE5D7FDF-89C0-4D99-9AA3-B5FBD009C9F3}");
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">RenderingDefinition r = device.GetRendering("{FE5D7FDF-89C0-4D99-9AA3-B5FBD009C9F3}");
 
 					</pre>
 					<p>or if you expect to get back more than one rendering definition based on a specific component you could call:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach(RenderingDefinition r = device.GetRenderings("{43222D12-08C9-453B-AE96-D406EBB95126}"))
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach(RenderingDefinition r = device.GetRenderings("{43222D12-08C9-453B-AE96-D406EBB95126}"))
 {
     // do something with a rendering
 }
@@ -235,7 +235,7 @@ string xml = LayoutField.GetFieldValue(field);
 					<p>In all of these cases, you can then update the
 						<code>RenderingDefinition</code>
 						object's properties in the usual way. For example, if you wanted to set a data source:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">RenderingDefinition r = device.GetRenderingByUniqueId("{43222D12-08C9-453B-AE96-D406EBB95126}");
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">RenderingDefinition r = device.GetRenderingByUniqueId("{43222D12-08C9-453B-AE96-D406EBB95126}");
 r.Datasource = "/somewhere/thing/stuff";
 
 					</pre>
@@ -248,7 +248,7 @@ r.Datasource = "/somewhere/thing/stuff";
 					<p>After you've made your changes you need to save your data. As above, you need to ensure that you deal with the fact that you're saving a Layout Delta. And again this is done via the
 						<code>LayoutField</code>
 						class. For example:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">string newXml = details.ToXml();
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">string newXml = details.ToXml();
 var field = page.Fields[Sitecore.FieldIDs.LayoutField];
 
 using (new Sitecore.Data.Items.EditContext(page))
@@ -381,7 +381,7 @@ using (new Sitecore.Data.Items.EditContext(page))
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -389,7 +389,7 @@ using (new Sitecore.Data.Items.EditContext(page))
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

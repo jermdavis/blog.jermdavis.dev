@@ -174,7 +174,7 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 					<h2>Parsing the command line</h2>
 					<p>If a tool is going to read command line parameters, it makes sense to re-use some pre-existing code for dealing with parsing them. A useful tool I've used for this before is
 						<a href="http://commandlinearguments.codeplex.com/SourceControl/latest#CommandLineArguments.cs" title="Command Line Arguments parser" target="_blank" rel="noopener noreferrer">this argument parser class from Peter Hallam @ Microsoft</a>. Adding this class into the project allows us to define the arguments we want to parse in terms of a C# class that will represent the resultant data. We need to be able to specify the following options:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CommandLineParameters
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CommandLineParameters
 {
     [Argument(ArgumentType.Required | ArgumentType.AtMostOnce, HelpText = "Starting changeset number", ShortName = "s", LongName = "start")]
     public int StartChangeSet;
@@ -196,7 +196,7 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 					<p>The
 						<code>Argument</code>
 						attribute marks these fields as being parameters which can be parsed from the command line. You can do the parsing using the following code:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">static void Main(string[] args)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">static void Main(string[] args)
 {
     CommandLineParameters cp = new CommandLineParameters();
     if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
@@ -218,7 +218,7 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 					</p>
 					<h2>Getting the TFS changes</h2>
 					<p>With the parameters parsed, the next thing to do is fetch the TFS changes. This can be done using a similar pattern to the approach from the PowerShell script – but using a more C# friendly way of executing the external tool. Plus, in this version we'll allow for both the first and last changeset to process (as per the configuration above) The class to manage the TFS interaction is as follows:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TFSCommandLine
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TFSCommandLine
 {
     private string _toolPath = @"c:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\TF.exe";
     private string _argumentTemplate = @"history .\ /recursive /format:detailed /noprompt /version:{0}";
@@ -327,7 +327,7 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 					<p>Finally we call
 						<code>parse()</code>
 						to process those strings. Again, this works in much the same way that the PowerShell script did - but instead of storing the individual actions as strings the code is using an enumeration:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[Flags]
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[Flags]
 public enum TFSActions
 {
     None = 0,
@@ -341,7 +341,7 @@ public enum TFSActions
 					<p>I'm thinking that as this code evolves, it may be useful to make the implementation of this class (specifically how it fetches the data) replaceable. I know it's possible to talk to TFS via an API rather than the command line. It may also be useful to be able to read test data to process without having a connection to TFS available – for automated tests perhaps. But that's a topic for a future post, perhaps.</p>
 					<h2>Processing the data</h2>
 					<p>The pattern I want to use for processing the data from TFS is a pipeline model. I'll talk about the implementation of this in a future post in this series, I think. But the overall process will be that the Pipeline will take the TFS data object as its input, it will pass this to each of the configured pipeline components and the result will be an object that represents a Package Definition. The code for running it will end up looking something like this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">CommandLineParameters cp = new CommandLineParameters();
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">CommandLineParameters cp = new CommandLineParameters();
 if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
 {
     TFSCommandLine cmd = new TFSCommandLine();
@@ -488,7 +488,7 @@ if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -496,7 +496,7 @@ if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

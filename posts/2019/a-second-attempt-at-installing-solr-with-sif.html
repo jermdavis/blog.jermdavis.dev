@@ -168,7 +168,7 @@
 					<p>The biggest logical change to the SIF extension for Solr is that we no longer need to generate a certificate. If we just need to copy a certificate that was already generated - hence the code for
 						<code>Invoke-EnsureSSLCertificateTask</code>
 						gets a lot simpler:</p>
-					<pre data-enlighter-highlight="14,21,22" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Invoke-EnsureSSLCertificateTask
+					<pre class="code" data-enlighter-highlight="14,21,22" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Invoke-EnsureSSLCertificateTask
 {
     [CmdletBinding(SupportsShouldProcess=$true)]
     param(
@@ -201,7 +201,7 @@
 					<p>The location of the new certificate and its password also needs to be passed in to
 						<code>Invoke-ConfigureSolrTask</code>
 						that SIF calls to modify the default Solr config, so it can be passed down the chain...</p>
-					<pre data-enlighter-highlight="14,22" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Invoke-ConfigureSolrTask
+					<pre class="code" data-enlighter-highlight="14,22" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Invoke-ConfigureSolrTask
 {
     [CmdletBinding(SupportsShouldProcess=$true)]
     param(
@@ -236,7 +236,7 @@
 					<p>...to the
 						<code>configureHTTPS</code>
 						method. It already knows how to point Solr at the certificate, but in my original code I'd hardcoded the certificate password for simplicity. SIF doesn't use a simple default password, so we need to be able to pass in the right password, and it needs to be put into the config:</p>
-					<pre data-enlighter-highlight="7,19,21" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function configureHTTPS
+					<pre class="code" data-enlighter-highlight="7,19,21" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function configureHTTPS
 {
     Param(
         [string]$solrHost,
@@ -276,7 +276,7 @@
 						<a href="/posts/2017/solr-installs-with-sif" target="_blank">looked at installing Solr alongside Sitecore using SIF</a>
 						it was against an earlier version of Sitecore. So that's going to require some changes even before we get to the certificates bit...</p>
 					<p>The version of Solr required by v9.1 is Solr 7.2.1. That gets specified in the json file that describes our Solr requirements to SIF. So lets update that parameter. I also have a newer version of Java running on the VM I tested this on, so that needs updating too:</p>
-					<pre data-enlighter-highlight="5,10" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+					<pre class="code" data-enlighter-highlight="5,10" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
     "Parameters" : {
         "JREVersion": {
             "Type": "string",
@@ -293,7 +293,7 @@
 
 					</pre>
 					<p>I also decided I wanted a way around the issue of the path for the JRE. Depending on whether you're using 64 bit or 32 bit Java, you get your Java program files folder in a different place. So I decided to add a parameter for which Program Files folder it is using, and configured it for the 64-bit version of Java I was using:</p>
-					<pre data-enlighter-highlight="5" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+					<pre class="code" data-enlighter-highlight="5" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
     "Parameters" : {
         "ProgFilesFolder": {
             "Type": "string",
@@ -305,7 +305,7 @@
 
 					</pre>
 					<p>That parameter then gets used to help work out the correct JRE path variable from the original script:</p>
-					<pre data-enlighter-highlight="3" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+					<pre class="code" data-enlighter-highlight="3" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
     "Variables" : {
         "JREPath":             "[concat(parameter('ProgFilesFolder'), '\\Java\\jre', parameter('JREVersion'))]"
     },
@@ -313,7 +313,7 @@
 
 					</pre>
 					<p>Since we changed some method signatures in the PowerShell, the Tasks binding needs updating:</p>
-					<pre data-enlighter-highlight="10,20" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+					<pre class="code" data-enlighter-highlight="10,20" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
     "Tasks" : {
         "Rewrite Solr config file": {
             "Type": "ConfigureSolr",
@@ -340,13 +340,13 @@
 
 					</pre>
 					<p>Those changes require some extra data to be passed in. The source certificate name is going to be a combination of a path, the host name we're using for Solr and the ".pfx" extension. Since that involves calculation, it means we need to set it up as a Variable:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="2" data-enlighter-language="text" style="width:100%; overflow:scroll;">    "Variables" : {
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="2" data-enlighter-language="text" style="width:100%; overflow:scroll;">    "Variables" : {
         "SourceCert":        "[concat(parameter('CertFilePath'), parameter('SolrHost'), '.pfx')]"
     }
 
 					</pre>
 					<p>And that means we also have two new parameters to the overall SIF script, in the folder we'll find the certificate in, and the password for the certificate file:</p>
-					<pre data-enlighter-highlight="5,10" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+					<pre class="code" data-enlighter-highlight="5,10" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
     "Parameters" : {
         "CertFilePath": {
             "Type": "string",
@@ -375,7 +375,7 @@
 						is that we need to trigger the creation of a certificate for Solr and then to call the Solr install we created above. These need inserting at the top of the
 						<code>Includes</code>
 						section so that they happen first:</p>
-					<pre data-enlighter-highlight="4,7" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+					<pre class="code" data-enlighter-highlight="4,7" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
     "Includes": {
         "SolrCertificates": {
             "Source": ".\\createcert.json"
@@ -388,7 +388,7 @@
 
 					</pre>
 					<p>For those to work, some further parameters are required. First up, there are some parameters that define how the rest of the script can work:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="5,10,15" data-enlighter-language="text" style="width:100%; overflow:scroll;">{
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="5,10,15" data-enlighter-language="text" style="width:100%; overflow:scroll;">{
     "Parameters": {
         "SolrExportPassword": {
             "Type": "String",
@@ -411,7 +411,7 @@
 					</pre>
 					<p>We don't want SIF to generate a password for the Solr certificate, so we need to define a value for that. And we need to tell the Solr install script where it can find the generated certificate and what the host name for Solr should be.</p>
 					<p>Some of those values then need passing in to other bits of the script. SIF defines a special naming convention when you want a value to be passed to a specific included script. Where a parameter name is prefixed with the name of an include and a colon, it is specific to that include. Also, instead of defining a default value for these parameters, they define a reference to another parameter's name – effectively copying that value:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="5,10,15" data-enlighter-language="text" style="width:100%; overflow:scroll;">{
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="5,10,15" data-enlighter-language="text" style="width:100%; overflow:scroll;">{
     "Parameters": {
         "SolrCertificates:CertificateName": {
             "Type": "String",
@@ -435,7 +435,7 @@
 					<p>Once these changes are made, you then need to tweak the PowerShell that invokes the JSON data. The change I made here was to pass in the
 						<code>SolrHost</code>
 						value, but you could pass in the password as well if you wanted to change the default above:</p>
-					<pre data-enlighter-highlight="2,11" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># Solr host name
+					<pre class="code" data-enlighter-highlight="2,11" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># Solr host name
 $SolrHost = "solr";
 
 # Install XP0 via combined partials file.
@@ -599,7 +599,7 @@ $singleDeveloperParams = @{
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -607,7 +607,7 @@ $singleDeveloperParams = @{
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

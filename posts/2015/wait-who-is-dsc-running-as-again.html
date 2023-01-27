@@ -151,7 +151,7 @@
 					<p>The first question to address is what account does an "ordinary" script run as? We can write a simple
 						<code>Script</code>
 						resource that outputs the details of the current user. For example:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Script ShowUser
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Script ShowUser
 {
     GetScript = { }
     TestScript = { $False }
@@ -190,7 +190,7 @@
 						<code>Configuration</code>
 						block in your script, and the credential needs to be passed into it.</p>
 					<p>To achieve this, we need to add a new parameter to the DSC script, to allow us to pass in our chosen credential:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Configuration ExampleCredentials
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Configuration ExampleCredentials
 {
     param (
         [Parameter(Mandatory=$true)]
@@ -216,14 +216,14 @@
 					<p>When the DSC Script is executed, the
 						<code>Get-Credentials</code>
 						Commandlet can capture a credential to pass in as the last parameter for the call to the DSC script:</p>
-					<pre data-enlighter-highlight="1" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">ExampleCredentials -ConfigurationData "\\vboxsvr\DSC\configData.psd1" -PackagePath "\\VBOXSVR\DSC\location" -CustomCredential (Get-Credential)
+					<pre class="code" data-enlighter-highlight="1" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">ExampleCredentials -ConfigurationData "\\vboxsvr\DSC\configData.psd1" -PackagePath "\\VBOXSVR\DSC\location" -CustomCredential (Get-Credential)
 Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose 
 
 					</pre>
 					<p>Now, while this prevents you from having to hard-code credentials into your DSC script, remember that the data is saved in your
 						<code>.MOF</code>
 						file. Hence this isn't secure. In order to persuade PowerShell that you really mean to do this, you need to add an extra bit of data to your Node configuration data:</p>
-					<pre data-enlighter-highlight="5" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">@{
+					<pre class="code" data-enlighter-highlight="5" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">@{
     AllNodes = @(
         @{
             NodeName = "*"
@@ -246,7 +246,7 @@ Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose
 							<code>.MOF</code>
 							files using certificates</a>.</p>
 					<p>But what if you need your scripts to run unattended? How can you capture credentials if there's no user around to enter them? Simple enough. One appraoch is to create the Credential object manually, and pass that to the DSC invocation instead:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$username = "SomeDomain\AnyUser"
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$username = "SomeDomain\AnyUser"
 $password = ConvertTo-SecureString "your-password" -Force -AsPlainText
 $credential = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $password
 
@@ -262,7 +262,7 @@ Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose
 					</blockquote>
 					<h2>How can we use this credential?</h2>
 					<p>Quite a few DSC resources can have a credential object passed to them, which they will try to use for impersonation. For example, you can run a script using a specific credential:</p>
-					<pre data-enlighter-highlight="3" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Script CredentialExample
+					<pre class="code" data-enlighter-highlight="3" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Script CredentialExample
 {
     Credential = $CustomCredential
     GetScript = { }
@@ -283,7 +283,7 @@ Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose
 					<p>Another aspect of this that I've not quite understood yet, is that once you pass in credentials to a script resource like this, some operations no longer work. For example, the
 						<code>Write-Verbose</code>
 						commandlet will not display results. For example, consider this script:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Script CredentialExample
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Script CredentialExample
 {
     Credential = $CustomCredential
     GetScript = { }
@@ -313,7 +313,7 @@ Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose
 						<code>xWindowsProcess</code>. This allows any Windows program or PowerShell script to be run as a particular user. For example, we can write a
 						<code>Script</code>
 						resource to generate a PowerShell script, and then execute it as a different user:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Script GenerateScript
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Script GenerateScript
 {
     GetScript = { }
     TestScript = { $False }
@@ -333,13 +333,13 @@ Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose
 					<p>Next you need to import the module you downloaded above. Immediately before the
 						<code>Node</code>
 						line in your DSC script, add the import statement:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Import-DSCResource -ModuleName xPSDesiredStateConfiguration
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Import-DSCResource -ModuleName xPSDesiredStateConfiguration
 
 					</pre>
 					<p>Then we can add an
 						<code>xWindowsProcess</code>
 						resource to execute a task - in this case the PowerShell script we output above:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">xWindowsProcess RunScript
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">xWindowsProcess RunScript
 {
     DependsOn = "[script]GenerateScript"
     Path = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
@@ -471,7 +471,7 @@ Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -479,7 +479,7 @@ Start-DscConfiguration -Path .\ExampleCredentials -Wait -Force -Verbose
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

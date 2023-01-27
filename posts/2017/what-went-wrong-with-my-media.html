@@ -159,7 +159,7 @@
 					</blockquote>
 					<h2>The issue:</h2>
 					<p>A developer on my team (and a bit later the client themselves) reported issues with media items on a particular v8.0 site. The developer noticed that there were some PDFs available for download which caused a 500 error to be thrown. The client noticed some images on the site had become broken. Under the surface these were both manifestations of the same problem. Requests for these specific media items failed with an exception, but requests for other media items worked fine. The site's 500-page handling hid the details, but in the logs you would see this:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">5496 19:20:22 ERROR Application error.
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">5496 19:20:22 ERROR Application error.
 Exception: System.Web.HttpParseException
 Message: The code block is missing a closing "}" character.  Make sure you have a matching "}" character for all the "{" characters within this block, and that none of the "}" characters are being interpreted as markup.
 
@@ -202,21 +202,21 @@ Source: System.Web.WebPages.Razor
 					<p>My colleagues tried copying the broken content back from production to recreate the issue on our development platform – but no luck. The same items in the same locations did not cause any errors there.</p>
 					<p>Looking at the IIS logs from production, there were clear differences between the "failed" and successful requests for media items:</p>
 					<p>For a working request, the logs looked exactly as you would expect:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2017-05-08 11:22:41 127.0.0.1 GET /~/media/Folder/Folder/thumbnails/Folder/A-working-media-item.ashx - 443 - 127.0.0.1 Mozilla/5.0+(Windows+NT+6.3;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/57.0.2987.133+Safari/537.36 - 200 0 0 84
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2017-05-08 11:22:41 127.0.0.1 GET /~/media/Folder/Folder/thumbnails/Folder/A-working-media-item.ashx - 443 - 127.0.0.1 Mozilla/5.0+(Windows+NT+6.3;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/57.0.2987.133+Safari/537.36 - 200 0 0 84
 
 					</pre>
 					<p>But for the requests returning the error, the logged URLs were different to those being requested:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2017-05-08 11:13:36 127.0.0.1 GET /~/media/Folder/Folder/thumbnails/Folder/sitecore_media.ashx/~/media/Folder/Folder/thumbnails/Folder/A-broken-media-item.ashx - 443 - 127.0.0.1 Mozilla/5.0+(Windows+NT+6.3;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/57.0.2987.133+Safari/537.36 - 500 0 0 874
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2017-05-08 11:13:36 127.0.0.1 GET /~/media/Folder/Folder/thumbnails/Folder/sitecore_media.ashx/~/media/Folder/Folder/thumbnails/Folder/A-broken-media-item.ashx - 443 - 127.0.0.1 Mozilla/5.0+(Windows+NT+6.3;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/57.0.2987.133+Safari/537.36 - 500 0 0 874
 
 					</pre>
 					<p>These duplicated the folder and included a reference to "sitecore_media.ashx" – which is the underlying handler for media requests.</p>
 					<p>This broken URL also looked like part of the error message being reported at the bottom of the screenshot above:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Source file: /~/media/Folder/Folder/thumbnails/Folder/sitecore_media.ashx/~/media/Folder/Folder/thumbnails/Folder/A-broken-media-item.ashx/default.cshtml
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Source file: /~/media/Folder/Folder/thumbnails/Folder/sitecore_media.ashx/~/media/Folder/Folder/thumbnails/Folder/A-broken-media-item.ashx/default.cshtml
 
 					</pre>
 					<p>The presence "default.cshtml" might be related to why we were getting a Razor error, but still doesn't explain anything about what's caused the underlying issue.</p>
 					<p>I also noticed that some of the breaking URLs had the "/en/" language prefix and some didn't. (The site was published in two languages – so the presence of a prefix was expected) When you looked at the error messages being shown for those that included the prefix, they looked subtly different:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Source file: /en/~/media/Folder/Folder/thumbnails/Folder/sitecore_media.ashx/en/~/media/Folder/Folder/thumbnails/Folder/A-working-media-item.ashx.cshtml
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Source file: /en/~/media/Folder/Folder/thumbnails/Folder/sitecore_media.ashx/en/~/media/Folder/Folder/thumbnails/Folder/A-working-media-item.ashx.cshtml
 
 					</pre>
 					<p>Note how the URL got a bit longer (because of the two copies of the prefix) but the "/default" vanished. Now the url ends with ".ashx.cshtml" on the
@@ -396,7 +396,7 @@ Source: System.Web.WebPages.Razor
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -404,7 +404,7 @@ Source: System.Web.WebPages.Razor
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

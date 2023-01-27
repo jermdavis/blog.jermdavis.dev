@@ -149,7 +149,7 @@
 					<p>So how can I write the code so that it the internals work in the "right" angle units for their work, but I have the option to define things as degrees or as radians to suit my thinking?</p>
 					<h2>The traditional approach</h2>
 					<p>A lot of code which does units conversions provides helper methods to convert from one set of units to another. Something like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void CalculateSomeAngles(double radians)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void CalculateSomeAngles(double radians)
 {
     ...
 }
@@ -162,7 +162,7 @@ CalculateSomeAngles(radians);
 					<p>So what else could you do?</p>
 					<h2>Types to the rescue</h2>
 					<p>So what if our CalculateSomeAngles() method was explicit about the units it expected by expressing a type?</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public struct Radians
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public struct Radians
 {
     public double Value { get; private set; }
 	
@@ -181,7 +181,7 @@ CalculateSomeAngles(new Radians(1.1));
 
 					</pre>
 					<p>With a wrapper type to be explicit about the units, it's harder to make a mistake. And we can also use this pattern to allow you to pass whatever units you prefer. We can define a struct for degrees too:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public struct Degrees
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public struct Degrees
 {
     public double Value { get; private set; }
 	
@@ -193,7 +193,7 @@ CalculateSomeAngles(new Radians(1.1));
 
 					</pre>
 					<p>But the magic here is adding some operators to allow the compiler to automatically do some conversions for us. If we add a "to degrees" conversion to the radians struct and the equivalent degrees struct:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public struct Degrees
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public struct Degrees
 {
     public static implicit operator Radians(Degrees d)
     {
@@ -212,7 +212,7 @@ public struct Radians
 					</pre>
 					<p>Then the compiler no longer cares which you pass – it will just convert to the one it needs in any situation...</p>
 					<p>So you can write:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">CalculateSomeAngles(new Radians(1.1));
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">CalculateSomeAngles(new Radians(1.1));
 CalculateSomeAngles(new Degrees(72));
 
 					</pre>
@@ -220,7 +220,7 @@ CalculateSomeAngles(new Degrees(72));
 					<h2>And there's more...</h2>
 					<p>Using this for unit conversion is one very simple usage for this approach. (And in fact, one you could argue can be solved in other ways) The other place I found this sort of pattern helpful was in implementation animations. I wanted to enable a situation where most (if not all) of the properties of objects in a scene could be animated. Broadly that means "animate the values of a double" or "animate a matrix". And in both cases the implicit conversions idea can help.</p>
 					<p>The pattern I ended up with for animation was that it needed a mechanism to set which frame is being rendered, and a mechanism to get the value for this point. Something like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAnimateable&lt;T&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAnimateable&lt;T&gt;
 {
     T Value { get; }
     void SetFrame(int thisFrame, int frameCount);
@@ -229,7 +229,7 @@ CalculateSomeAngles(new Degrees(72));
 					</pre>
 					<p>So if we have a material with "shinyness" that can be amimated, we can replace the normal
 						<code>double</code>-typed property with something which exposes this interface, and when the material gets initialised for a specific frame we just pass that data down to the animateable properties:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PhongMaterial
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PhongMaterial
 {
     ....
     public IAnimateable&lt;double&gt; Shinyness { get; init ; }
@@ -246,7 +246,7 @@ CalculateSomeAngles(new Degrees(72));
 
 					</pre>
 					<p>And we can have a whatever implementations of this animatable double we like. So to move between 1 and 100, we might declare something like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var someShape = new Sphere() {
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var someShape = new Sphere() {
     Material = new PhongMaterial() {
         Shinyness = new AnimatedRange(1, 100)
     }
@@ -254,7 +254,7 @@ CalculateSomeAngles(new Degrees(72));
 
 					</pre>
 					<p>But the side effect of doing this is that when we don't need an animated value we still have to pass an object for that value:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var someShape = new Sphere() {
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var someShape = new Sphere() {
     Material = new PhongMaterial() {
         Shinyness = new StaticValue(25)
     }
@@ -262,7 +262,7 @@ CalculateSomeAngles(new Degrees(72));
 
 					</pre>
 					<p>But the trick above with implicit conversions can save us some typing here. The definition for the static value can help:</p>
-					<pre data-enlighter-highlight="14,15,16,17" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class StaticValue : IAnimateable&lt;double&gt;
+					<pre class="code" data-enlighter-highlight="14,15,16,17" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class StaticValue : IAnimateable&lt;double&gt;
 {
     public double Value { get; private set; }
 
@@ -283,7 +283,7 @@ CalculateSomeAngles(new Degrees(72));
 
 					</pre>
 					<p>And now a value which doesn't animate can be declared as:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var someShape = new Sphere() {
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var someShape = new Sphere() {
     Material = new PhongMaterial() {
         Shinyness = 25
     }
@@ -408,7 +408,7 @@ CalculateSomeAngles(new Degrees(72));
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -416,7 +416,7 @@ CalculateSomeAngles(new Degrees(72));
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

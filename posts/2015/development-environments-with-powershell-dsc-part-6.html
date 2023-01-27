@@ -175,7 +175,7 @@
 					<p>As we'll see in a bit, we need to run some of this process as another user. So
 						<a href="/posts/2015/wait-who-is-dsc-running-as-again" target="_blank">as discussed in my previous post about DSC impersonation</a>, we need to modify the basics of the script to allow for passing in credentials. For the purposes of a simple example, I'm just using the local administrator account here, but you may choose to use a more constrained account, and put more effort into
 						<a href="https://msdn.microsoft.com/en-us/PowerShell/DSC/secureMOF" target="_blank" rel="noopener noreferrer">securing the credentials</a>:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration CoveoInstall
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration CoveoInstall
 {
     param (
         [Parameter(Mandatory=$true)]
@@ -206,7 +206,7 @@ Start-DscConfiguration -Path .\CoveoInstall -Wait -Force -Verbose
 
 					</pre>
 					<p>We're also going to require some extra configuration data for this install. Extending the config data used in the previous installs, we'll add in some stuff specific to Coveo and it's dependencies, and a bit more to the Sitecore section:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
     
     AllNodes = @(
         @{
@@ -261,7 +261,7 @@ Start-DscConfiguration -Path .\CoveoInstall -Wait -Force -Verbose
 					<p>The Coveo Enterprise Search service needs a collection of things installed before it can run. Based on the
 						<a href="https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_ces_silently.htm" target="_blank" rel="noopener noreferrer">documentation from Coveo</a>, you can use the following DSC resources to provide them.</p>
 					<p>First, they ask for all of .Net framework 4 and 3.5:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">WindowsFeature NetFramework35Core
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">WindowsFeature NetFramework35Core
 {
     Name = "NET-Framework-Core"
     IncludeAllSubFeature = "True"
@@ -277,7 +277,7 @@ WindowsFeature NetFramework45Core
 
 					</pre>
 					<p>They also ask for all of IIS:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">WindowsFeature IIS
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">WindowsFeature IIS
 {
     Name = "Web-Server"
     IncludeAllSubFeature = "True"
@@ -290,7 +290,7 @@ WindowsFeature NetFramework45Core
 						in the config extract above. So you can then copy it over to your target machine and use the
 						<code>Package</code>
 						resource to install it without any UI:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyMSChart
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyMSChart
 {
     SourcePath = "$PackagePath\$($Node.Coveo.MSChart)"
     DestinationPath = "$($Node.TempFolder)\$($Node.Coveo.MSChart)"
@@ -312,7 +312,7 @@ Package InstallMSChart
 						resource to call
 						<code>msiexec.exe</code>
 						for the install instead:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyMSXml
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyMSXml
 {
     SourcePath = "$PackagePath\$($Node.Coveo.MSXml)"
     DestinationPath = "$($Node.TempFolder)\$($Node.Coveo.MSXml)"
@@ -334,7 +334,7 @@ Script InstallMSXml
 
 					</pre>
 					<p>Next up is the Visual C Runtime re-distributable. This one doesn't come as an MSI, but the installer allows a silent install by passing a flag to the executable:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyVCRedist
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyVCRedist
 {
     SourcePath = "$PackagePath\$($Node.Coveo.VCRedist)"
     DestinationPath = "$($Node.TempFolder)\$($Node.Coveo.VCRedist)"
@@ -371,7 +371,7 @@ Script InstallVCRedist
 						<a href="http://www.7-zip.org/" target="_blank" rel="noopener noreferrer">7zip</a>
 						available, but you can use others if you prefer.</p>
 					<p>First up, we need to copy over the command-line zip tool. In this case the exe and it's DLL have been put in a folder under the package path. This folder can then be transferred over to the target machine:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyZip
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyZip
 {
     SourcePath = "$PackagePath\$($Node.Coveo.ZipFolder)"
     DestinationPath = "$($Node.TempFolder)\"
@@ -382,7 +382,7 @@ Script InstallVCRedist
 
 					</pre>
 					<p>Then we need to copy over the CES installer itself:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyCoveo
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyCoveo
 {
     SourcePath = "$PackagePath\$($Node.Coveo.CESInstaller)"
     DestinationPath = "$($Node.TempFolder)\$($Node.Coveo.CESInstaller)"
@@ -393,7 +393,7 @@ Script InstallVCRedist
 					<p>And then we can use the zip to to decompress it with a
 						<code>Script</code>
 						resource:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script UnzipCoveo
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script UnzipCoveo
 {
     DependsOn = "[file]CopyCoveo", "[file]CopyZip"
     GetScript = { 
@@ -418,7 +418,7 @@ Script InstallVCRedist
 					<p>With this done, a further
 						<code>script</code>
 						resource can perform the job of installing CES:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script InstallCoveo
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script InstallCoveo
 {
     Credential = $cred
     DependsOn = "[script]UnzipCoveo"
@@ -571,7 +571,7 @@ Script InstallVCRedist
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -579,7 +579,7 @@ Script InstallVCRedist
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

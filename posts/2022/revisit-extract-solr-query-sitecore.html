@@ -193,7 +193,7 @@
 						method here any more. Reverting back to
 						<a href="https://github.com/icsharpcode/ILSpy#ilspy----" target="_blank" rel="noopener">ILSpy</a>
 						for a sec to examine the definition of this class, we can see the following in the code:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// Sitecore.ContentSearch.Linq.Parsing.IndexQueryable&lt;TElement,TQuery&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// Sitecore.ContentSearch.Linq.Parsing.IndexQueryable&lt;TElement,TQuery&gt;
 using System.Linq.Expressions;
 
 private TQuery GetQuery(Expression expression)
@@ -221,7 +221,7 @@ private TQuery GetQuery(Expression expression)
 						for the code you want to call, and pass in any parameters you need. So in this case, we can hack together a simple method that can call
 						<code>GetQuery()</code>
 						for us:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public string GetQuery&lt;T&gt;(IQueryable&lt;T&gt; query)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public string GetQuery&lt;T&gt;(IQueryable&lt;T&gt; query)
 {
     var type = query.GetType();
     var method = type.GetMethod("GetQuery", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -235,7 +235,7 @@ private TQuery GetQuery(Expression expression)
 					<p>And that can be run against the
 						<code>IQueryable</code>
 						that gets created by a ContentSearch LINQ query:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">using (var ctx = ContentSearchManager.GetIndex("sitecore_master_index").CreateSearchContext())
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">using (var ctx = ContentSearchManager.GetIndex("sitecore_master_index").CreateSearchContext())
 {
     var q = ctx.GetQueryable&lt;SearchResultItem&gt;()
         .Where(i =&gt; i.TemplateName == "Search Item")
@@ -249,7 +249,7 @@ private TQuery GetQuery(Expression expression)
 					</pre>
 					<p>So that solves my immediate problem - I can get the basic query again now.</p>
 					<p>If you're doing this somewhere that performance is important, then you don't want to do the reflection method lookup for every execution. You could do this in a static constructor for whatever controller is running this search code, but I figure it's probably most useful to factor it out into a helper class:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class QueryExtensions&lt;T&gt; 
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class QueryExtensions&lt;T&gt; 
 {
     private static readonly MethodInfo _getQuery;
 
@@ -272,14 +272,14 @@ private TQuery GetQuery(Expression expression)
 					<h2 id="a-side-note-about-geographic-queries">A side-note about geographic queries</h2>
 					<p>If you were paying attention to the code example I showed in the first screenshot above, you'll have noticed a call to
 						<code>WithinRadius()</code>. That's a useful LINQ method that ContentSearch provides for doing geographic queries. But you'll see an interesting result when you call my helper code above for a query which uses that method. Taking this LINQ expression:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var q = ctx.GetQueryable&lt;SearchResultItem&gt;()
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var q = ctx.GetQueryable&lt;SearchResultItem&gt;()
     .Where(i =&gt; i.TemplateName == "Search Item")
     .Where(i =&gt; i.Paths.Contains(new Sitecore.Data.ID("{80A1CDA6-8A15-4BD6-8A71-59025A5A8219}")))
     .WithinRadius(i =&gt; i.Location, new Coordinate(52.843647, -3.944892), 5);
 
 					</pre>
 					<p>Printing the query with my example class above gives you this:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">query: "(_templatename:(\"Search Item\") AND _path:(\"80a1cda68a154bd68a7159025a5a8219\")) AND _val_:__boost"
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">query: "(_templatename:(\"Search Item\") AND _path:(\"80a1cda68a154bd68a7159025a5a8219\")) AND _val_:__boost"
 
 					</pre>
 					<p>There's no geographic clause in there... So what's going on?</p>
@@ -297,7 +297,7 @@ private TQuery GetQuery(Expression expression)
 						and it has a
 						<code>Query</code>
 						property which returns its text. So the helper method defined above can be adjusted to return both:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class QueryExtensions&lt;T&gt; 
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class QueryExtensions&lt;T&gt; 
 {
     private static readonly MethodInfo _getQuery;
 
@@ -318,7 +318,7 @@ private TQuery GetQuery(Expression expression)
 
 					</pre>
 					<p>And the results of running this against the LINQ query above are:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">query: "(_templatename:(\"Search Item\") AND _path:(\"80a1cda68a154bd68a7159025a5a8219\")) AND _val_:__boost",
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">query: "(_templatename:(\"Search Item\") AND _path:(\"80a1cda68a154bd68a7159025a5a8219\")) AND _val_:__boost",
 filter: "{!geofilt sfield=coordinate_rpt pt=52.843647,-3.944892 d=5}"
 
 					</pre>
@@ -440,7 +440,7 @@ filter: "{!geofilt sfield=coordinate_rpt pt=52.843647,-3.944892 d=5}"
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -448,7 +448,7 @@ filter: "{!geofilt sfield=coordinate_rpt pt=52.843647,-3.944892 d=5}"
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

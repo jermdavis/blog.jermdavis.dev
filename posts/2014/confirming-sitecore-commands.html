@@ -154,7 +154,7 @@
 					</p>
 					<p>The starting point for anything triggered by clicking a button in the ribbon is a class which inherits from
 						<code>Sitecore.Shell.Framework.Commands.Command</code>, and they require an Execute() method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace Blog.Examples
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace Blog.Examples
 {
     public class ConfirmCommand : Command
     {
@@ -166,11 +166,11 @@
 
 					</pre>
 					<p>Whenever you want to make use of a class derived from Command in your ribbon configuration, you need to register it in the Sitecore configuration. And that means a quick configuration patch. Each entry in the commands collection in configuration needs two bits of data. The "type" attribute is a normal .Net type descriptor for the class you've implemented, and the "name" attribute is the textual name you will use later when you specify what gets called when a ribbon button is clicked. So we can use example:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;command name="extensions:confirm" type="Blog.Examples.ConfirmCommand,Blog.Examples" /&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;command name="extensions:confirm" type="Blog.Examples.ConfirmCommand,Blog.Examples" /&gt;
 
 					</pre>
 					<p>With that done, we need to make the command present some UI. Having done a bit of spelunking through the commands that ship with Sitecore, they share a common pattern where the command launches a pipeline in order to allow the UI to display UI and then process its results:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ConfirmCommand : Command
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ConfirmCommand : Command
 {
     public override void Execute(CommandContext context)
     {
@@ -188,11 +188,11 @@
 						<img src="/img/2014/finding-item.png" alt="Finding the Click event">
 					</a>
 					<p>Examining the code for these commands shows that the parameters inside the brackets are parsed into the Parameters collection of the commands context object as a name/value collection. A quick test shows that this means you can just wrap the command you want to confirm as a parameter of the confirm command itself. So, thinking this through the confirm command will also need to know what text to put in the confirmation dialog, so we need two parameters:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">extensions:confirm(title=revert the database, cmd=itemsync:loaddatabase(revert=1))
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">extensions:confirm(title=revert the database, cmd=itemsync:loaddatabase(revert=1))
 
 					</pre>
 					<p>The "title" parameter optionally provides the text to append to the dialog message, and "cmd" provides the command to be executed. And the code to process this looks like this: (Error handling and validation omitted for clarity)</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Confirm(ClientPipelineArgs args)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Confirm(ClientPipelineArgs args)
 {
     string msg;
     if (!string.IsNullOrWhiteSpace(args.Parameters["title"]))
@@ -212,7 +212,7 @@
 					<p>The call to
 						<code>args.WaitForPostBack()</code>
 						signals to the internals of Sitecore that this code wants to know the response from the dialog box that we've displayed. What happens as a result of that is when the user makes their click our code gets run again, passing in a new parameter to say what button got clicked. So we need to refactor this method slightly to detect that we've had a "postback" from the dialog box, and process it appropriately. That makes our Run() method look like this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Confirm(ClientPipelineArgs args)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Confirm(ClientPipelineArgs args)
 {
     if (args.IsPostBack)
     {
@@ -379,7 +379,7 @@
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -387,7 +387,7 @@
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

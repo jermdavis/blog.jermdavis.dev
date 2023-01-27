@@ -155,14 +155,14 @@
 					<p>When you
 						<a href="http://docs.mongodb.org/manual/tutorial/install-mongodb-on-windows/" target="_blank" rel="noopener noreferrer">look at the documentation for Windows installs on the Mongodb.org site</a>, it's clear that they've thought about this scenario. Their installer is packaged as an
 						<code>MSI</code>, and they document the parameters you can pass to configure it. So to perform a simple unattended install for a development machine, you can run:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi ADDLOCAL="ALL"
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi ADDLOCAL="ALL"
 
 					</pre>
 					<p>(Though obviously the name of the
 						<code>MSI</code>
 						varies depending on the version you want to use)</p>
 					<p>To make that work in PowerShell, you need to fiddle with the text a little though:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi "ADDLOCAL=ALL" | Out-Null
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi "ADDLOCAL=ALL" | Out-Null
 
 					</pre>
 					<p>Note the change in the way the double quotes are used around the
@@ -181,7 +181,7 @@
 					<p>The first of these is trivial. You need a two folders – One for logs and one for data. If your data is going to live in
 						<code>c:\MongoData</code>
 						you might use a quick snippet of PowerShell:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$mongoDataFolder = "c:\MongoData"
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$mongoDataFolder = "c:\MongoData"
 
 md "$mongoDataFolder\data"
 md "$mongoDataFolder\logs"
@@ -192,7 +192,7 @@ md "$mongoDataFolder\logs"
 						<code>C:</code>
 						and am using the default "local system" account for the service, the permissions here are ok by default.</p>
 					<p>Next is the basic config file – which is also pretty trivial. At its simplest, according to the documentation, all you need is:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:
     destination: file
     path: c:\MongoData\log\mongod.log
 storage:
@@ -202,7 +202,7 @@ storage:
 					<p>Interestingly, MongoDB's default settings create quite large disk files for your databases – the journal file defaults to 1GB of disk space for each database. This can be a lot of space to use up on a development machine, so there is an option called
 						<code>SmallFiles</code>
 						which can be enabled if you want to reduce this size down to 128MB for each journal. Adding it to the example config above would give:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:
     destination: file
     path: c:\MongoData\log\mongod.log
 storage:
@@ -213,7 +213,7 @@ storage:
 					</pre>
 					<p>At this point, I don't know enough about how MongoDB works to understand whether this setting is a good idea for us Sitecore developers though.</p>
 					<p>You can write out the basic config to disk using the path variable above with:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$cfg = @"
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$cfg = @"
 systemLog:
     destination: file
     path: $mongoDataFolder\logs\mongod.log
@@ -228,23 +228,23 @@ $cfg | Out-File "$mongoDataFolder\mongod.cfg"
 						<code>@"..."@</code>
 						is PowerShell's way of expressing a multi-line string. The closing "tag" here must be on a new line. If not, it will not work.</p>
 					<p>Then, according to the documentation, you can tell MongoDB to configure itself as a service:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">"C:\Program Files\MongoDB\v3.0\bin\mongod.exe" --config "C:\MongoData\mongod.cfg" --install
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">"C:\Program Files\MongoDB\v3.0\bin\mongod.exe" --config "C:\MongoData\mongod.cfg" --install
 
 					</pre>
 					<p>Again, we can edit this a bit to make it more PowerShell-friendly:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">&amp;"$Env:ProgramFiles\MongoDB\Server\3.0\bin\mongod.exe" --config "$mongoDataFolder\mongod.cfg" --install | Out-Null
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">&amp;"$Env:ProgramFiles\MongoDB\Server\3.0\bin\mongod.exe" --config "$mongoDataFolder\mongod.cfg" --install | Out-Null
 
 					</pre>
 					<p>The ampersand says "treat the following string as if it was a command to execute". The
 						<code>$Env:ProgramFiles</code>
 						variable makes sure we get the right folder for the 64bit Program Files directory, and we make use of the variable from before to locate the config file.</p>
 					<p>Note that this will create the service, but won't set it to start automatically. You can change the start settings and ensure it's started up via:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Set-Service -Name MongoDB -StartupType Automatic
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Set-Service -Name MongoDB -StartupType Automatic
 Start-Service -Name MongoDB
 
 					</pre>
 					<p>So, to pull it all together:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "Installing MongoDB..."
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "Installing MongoDB..."
 msiexec.exe /q /i mongodb-win32-x86_64-2008plus-ssl-3.0.6-signed.msi "ADDLOCAL=ALL" | Out-Null
 
 Write-Host "Create data folder"
@@ -276,13 +276,13 @@ Start-Service -Name MongoDB
 					<h2>RoboMongo</h2>
 					<p>So, once you've run this script, how do you test that it's all working? Well
 						<a href="http://robomongo.org/" target="_blank" rel="noopener noreferrer">RoboMongo is a useful tool for investigating what's going on inside the MongoDB server</a>. Their default installer is less automation-friendly – but they do provide the application in a zip file. You can download that to the folder with your script, and use a bit more PowerShell to unzip it:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Add-Type -AssemblyName System.IO.Compression.FileSystem
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Add-Type -AssemblyName System.IO.Compression.FileSystem
 [System.IO.Compression.ZipFile]::ExtractToDirectory("$Pwd\Robomongo-0.8.5-i386.zip", "$Env:ProgramFiles\")
 
 					</pre>
 					<p>That uses the .Net Framework's built in ability with archives to extract the files.</p>
 					<p>You can just run the program from there, but it's easier to add an icon to your desktop (or some other location). You can achieve that via PowerShell too:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$WshShell = New-Object -comObject WScript.Shell
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$WshShell = New-Object -comObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut("$Env:UserProfile\Desktop\Robomongo.lnk")
 $Shortcut.TargetPath = "$Env:ProgramFiles\Robomongo-0.8.5-i386\Robomongo.exe"
 $Shortcut.Save()
@@ -413,7 +413,7 @@ $Shortcut.Save()
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -421,7 +421,7 @@ $Shortcut.Save()
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

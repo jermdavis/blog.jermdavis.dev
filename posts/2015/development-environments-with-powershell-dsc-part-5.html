@@ -175,7 +175,7 @@
 					</blockquote>
 					<h2>We're going to need some more config...</h2>
 					<p>The basic Sitecore install is going to do two things for us – getting Sitecore running, and enabling us to remotely add any packages we need to set up in future parts of our install. So we can add in the following to our basic configuration:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
     AllNodes = @(
         @{
             NodeName = "WIN-AQEKG7L9SE8"
@@ -204,7 +204,7 @@
 					<p>This adds the disk path to the WWWRoot folder. This could be part of the Sitecore config block itself, but it struck me that this was something I'd end up using for things other than just Sitecore. Inside the Sitecore config block, the properties specify the name of the installer to use, the license file we're using and an instance name to install. It also specifies the SQL server details to be used by Sitecore, and the ASPX file that will be used to enable us to install packages.</p>
 					<h2>The core Sitecore install</h2>
 					<p>As with our previous installs, the script starts from the same basic DSC pattern:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration SitecoreInstall
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration SitecoreInstall
 {
     param (
         [Parameter(Mandatory=$true)]
@@ -225,7 +225,7 @@
 					<p>The first thing we need to do is copy over the Sitecore installer and license files, which can be done with the
 						<code>File</code>
 						resource:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File SitecoreInstaller
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File SitecoreInstaller
 {
     SourcePath = "$PackagePath\$($Node.Sitecore.Installer)"
     DestinationPath = "$($Node.TempFolder)\$($Node.Sitecore.Installer)"
@@ -250,7 +250,7 @@ File SitecoreLicense
 						property for this resource, as it wasn't immediately obvious what it should return. The
 						<code>TestScript</code>
 						just checks if our temp folder already includes the "SupportFiles" folder that this process should create:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script ExtractSC8
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script ExtractSC8
 {
     DependsOn = "[File]SitecoreInstaller"
     GetScript = {
@@ -287,7 +287,7 @@ File SitecoreLicense
 					<p>The
 						<code>SetScript</code>
 						for the install is a bit more complex here. This resource has been written to install v8 of Sitecore, but this could be easily adjusted to work with other versions.</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script SC8
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script SC8
 {
     DependsOn = "[Script]ExtractSC8, [file]SitecoreLicense"
     GetScript = {
@@ -367,7 +367,7 @@ File SitecoreLicense
 						file to act as an endpoint where package installs can be requested. (<a href="https://github.com/adoprog/Sitecore-Deployment-Helpers/blob/9c93812f799216c4c676f800fb2a3f083bf73fd9/InstallModules.aspx" target="_blank" rel="noopener noreferrer">The
 							<code>ASPX</code>
 							file I borrowed from another developer is here</a>) You can use this to install whatever packages you need, or you can use it to install something like PowerShell Extensions which provide a better installation endpoint. But to get going, we just need a file resource to put the file in place:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File AddRemoteDeploy
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File AddRemoteDeploy
 {
     DependsOn = "[script]SC8"
     SourcePath = "$PackagePath\$($Node.Sitecore.PackageInstallFile)"
@@ -378,7 +378,7 @@ File SitecoreLicense
 
 					</pre>
 					<p>Now, one key aspect to getting packages installed correctly via this route is the response time of Sitecore when you make one of these requests. Especially with large packages and Sitecore 8, it's quite possible to end up with your request for the package to be installed timing out. Hence it's sensible to make sure Sitecore is started up before you try to install anything. And this can be done with another script resource:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script WarmSitecore
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script WarmSitecore
 {
     DependsOn = "[script]SC8"
     GetScript = {
@@ -555,7 +555,7 @@ File SitecoreLicense
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -563,7 +563,7 @@ File SitecoreLicense
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

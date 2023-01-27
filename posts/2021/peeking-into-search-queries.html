@@ -151,7 +151,7 @@
 					</p>
 					<h2>What's the issue?</h2>
 					<p>When you fire up some code for a query, you're generally using something vaguely along the lines of:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name");
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name");
 using (var context = index.CreateSearchContext())
 {
     var query = context.GetQueryable&lt;SearchResultItem&gt;();
@@ -174,7 +174,7 @@ using (var context = index.CreateSearchContext())
 						interface is a generic representation of a query - it doesn't know anything specific about Solr, Azure Search or any other Sitecore provider. But that raw quey must get generated at some point in order to run the search – and we know it turns up in the logs. You can look at any of the
 						<code>Search.log.*.*.txt</code>
 						files that Sitecore writes and see things like:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="4" data-enlighter-language="text" style="width:100%; overflow:scroll;">3044 15:25:54 INFO  Warming and Caching your search indexes
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="4" data-enlighter-language="text" style="width:100%; overflow:scroll;">3044 15:25:54 INFO  Warming and Caching your search indexes
 3044 15:25:54 INFO  /******* Warming Queries ********/
 3044 15:25:54 INFO  /*************************/
 2780 15:36:15 INFO  Solr Query - ?q=(_name:(item*) OR (_content:(*item*) OR _name:(item) OR (_content:(item) AND _language:(en)))) AND _val_:__boost&amp;start=0&amp;rows=1000000&amp;fq=_indexname:(sitecore_master_index)&amp;wt=xml
@@ -203,7 +203,7 @@ using (var context = index.CreateSearchContext())
 					<p>Well at runtime has we have
 						<code>GenericQueryable&lt;T, SolrCompositeQuery&gt;</code>
 						as it's concrete type. That looks like it might be more helpful. What does that give us?</p>
-					<pre data-enlighter-highlight="17" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class GenericQueryable&lt;TElement, TQuery&gt; : IOrderedQueryable&lt;TElement&gt;, IQueryable&lt;TElement&gt;, IEnumerable&lt;TElement&gt;, IEnumerable, IQueryable, IOrderedQueryable, IQueryProvider, IHasNativeQuery&lt;TQuery&gt;, IHasNativeQuery, IHasTraceWriter, IContentSearchQueryable
+					<pre class="code" data-enlighter-highlight="17" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class GenericQueryable&lt;TElement, TQuery&gt; : IOrderedQueryable&lt;TElement&gt;, IQueryable&lt;TElement&gt;, IEnumerable&lt;TElement&gt;, IEnumerable, IQueryable, IOrderedQueryable, IQueryProvider, IHasNativeQuery&lt;TQuery&gt;, IHasNativeQuery, IHasTraceWriter, IContentSearchQueryable
 {
     public GenericQueryable(Index&lt;TElement, TQuery&gt; index, QueryMapper&lt;TQuery&gt; queryMapper, IQueryOptimizer queryOptimizer, FieldNameTranslator fieldNameTranslator, IExpressionParser parser);
     protected GenericQueryable(Index&lt;TQuery&gt; index, QueryMapper&lt;TQuery&gt; queryMapper, IQueryOptimizer queryOptimizer, Expression expression, Type itemType, FieldNameTranslator fieldNameTranslator, IExpressionParser parser);
@@ -233,7 +233,7 @@ using (var context = index.CreateSearchContext())
 						type, and poking about inside that shows it has a very interesting looking
 						<code>ToString()</code>
 						method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public override string ToString()
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public override string ToString()
 {
 	DefaultQuerySerializerEx defaultQuerySerializerEx = new DefaultQuerySerializerEx((ISolrFieldSerializer)(object)new DefaultFieldSerializer());
 	return defaultQuerySerializerEx.Serialize(Query);
@@ -246,7 +246,7 @@ using (var context = index.CreateSearchContext())
 							<code>Sitecore.ContentSearch.Linq.Solr.dll</code>
 						</a>
 						in order to do this, but it works out fairly simply:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name");
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name");
 using (var context = index.CreateSearchContext())
 {
     var q = context.GetQueryable&lt;SearchResultItem&gt;();
@@ -395,7 +395,7 @@ using (var context = index.CreateSearchContext())
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -403,7 +403,7 @@ using (var context = index.CreateSearchContext())
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

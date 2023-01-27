@@ -162,7 +162,7 @@
 					<p>The first thing to note is that installing services requires admin privileges. That means the script should probably report an error if it's run from a session that's not elevated.
 						<a href="https://superuser.com/questions/749243/detect-if-powershell-is-running-as-administrator" rel="noopener noreferrer" target="_blank">One approach</a>
 						to testing that state looks like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$elevated = [bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups -match "S-1-5-32-544")
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$elevated = [bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups -match "S-1-5-32-544")
 if($elevated -eq $false)
 {
     throw "In order to install services, please run this script elevated."
@@ -171,7 +171,7 @@ if($elevated -eq $false)
 					</pre>
 					<p>That checks if the current user has the Administrator security principal, and if not, throws an error to stop the script.</p>
 					<p>Now the script is going to need some input from the user to decide what it needs to do:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Param(
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Param(
     $installFolder = "c:\solr",
     $nssmVersion = "2.24",
     $solrVersion = "6.6.2",
@@ -193,7 +193,7 @@ if($elevated -eq $false)
 						<code>$solrSSL</code>. And finally we need to know what version of the Java runtime Solr should use when it runs if there's not global setting for this, via
 						<code>$JREVersion</code>.</p>
 					<p>Based on those settings, the script can compute a few other values that will be used later:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$JREPath = "C:\Program Files (x86)\Java\jre$JREVersion"
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$JREPath = "C:\Program Files (x86)\Java\jre$JREVersion"
 $solrName = "solr-$solrVersion"
 $solrRoot = "$installFolder\$solrName"
 $nssmRoot = "$installFolder\nssm-$nssmVersion"
@@ -211,7 +211,7 @@ $downloadFolder = "~\Downloads"
 							folder. That's only appropriate if you're using the 32bit java runtime. If you are using the 64bit version you will need to change this path so that it points to the right location for your machine.</i>
 					</p>
 					<p>Next we need to ensure that Solr and NSSM are downloaded and unzipped to the right place. Since the same task has to happen for two things, that suggests a function... To avoid downloading and unzipping when it's not necessary this should check if the destination folder we're using exists, and do nothing if it does. If it doesn't exist then it should check if the zip file exists before downloading it:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function downloadAndUnzipIfRequired
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function downloadAndUnzipIfRequired
 {
     Param(
         [string]$toolName,
@@ -236,7 +236,7 @@ $downloadFolder = "~\Downloads"
 
 					</pre>
 					<p>That can be called once for each of the zip files we want downloaded and extracted:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$solrZip = "$downloadFolder\$solrName.zip"
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$solrZip = "$downloadFolder\$solrName.zip"
 downloadAndUnzipIfRequired "Solr" $solrRoot $solrZip $solrPackage $installFolder
 
 $nssmZip = "$downloadFolder\nssm-$nssmVersion.zip"
@@ -246,7 +246,7 @@ downloadAndUnzipIfRequired "NSSM" $nssmRoot $nssmZip $nssmPackage $installFolder
 					<p>Solr is a Java application, so it needs to know which Java runtime to make use of. You can set this in the Solr config files, but my preference is to ensure that there's a global environment variable to specify this, as that makes it easier to change it for everything when the runtime gets updated. So if the system doesn't have the right value for the
 						<code>JAVA_HOME</code>
 						environment variable, the script needs to set that to match the version of Java the parameter specifies:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$jreVal = [Environment]::GetEnvironmentVariable("JAVA_HOME", [EnvironmentVariableTarget]::Machine)
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$jreVal = [Environment]::GetEnvironmentVariable("JAVA_HOME", [EnvironmentVariableTarget]::Machine)
 if($jreVal -ne $JREPath)
 {
     Write-Host "Setting JAVA_HOME environment variable"
@@ -255,7 +255,7 @@ if($jreVal -ne $JREPath)
 
 					</pre>
 					<p>The next thing we need, is to deal with the configuration for Solr. If the parameters for the script say it's using HTTP, that's pretty easy:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($solrSSL -eq $false)
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($solrSSL -eq $false)
 {
     if(!(Test-Path -Path "$solrRoot\bin\solr.in.cmd.old"))
     {
@@ -273,7 +273,7 @@ if($jreVal -ne $JREPath)
 						<code>solr.in.cmd</code>
 						file. So the script can read that, find the line that needs updating, and replace it with the right value. Before changing anything it backs up the original file - which is also an easy way to tell if the changes have already been made.</p>
 					<p>If the host name we're using for Solr here isn't "localhost" then it's proably also useful to add that to the machine's hosts file:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($solrHost -ne "localhost")
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($solrHost -ne "localhost")
 {
     $hostFileName = "c:\\windows\system32\drivers\etc\hosts"
     $hostFile = [System.Io.File]::ReadAllText($hostFileName)
@@ -288,7 +288,7 @@ if($jreVal -ne $JREPath)
 					<p>Life is a bit more complex if HTTPS is enabled, as the certificates need setting up as well. That involves four things: Generating a certificate, exporting it so Solr can make use of it for its web server, trusting the certificate and finally more config changes.</p>
 					<p>Being a Java application, Solr's default is to use the not-very-Windows-friendly "JKS" export format for the certificates. If you prefer that approach,
 						<a href="https://gist.github.com/kamsar/c3c8322c1ec40eac64c7dd546e5124de#file-solrssl-ps1" rel="noopener noreferrer" target="_blank">the code is out there</a>. But newer versions of Solr can use "PFX" files, which is easier to deal with in a PowerShell-native way.</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($solrSSL -eq $true)
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($solrSSL -eq $true)
 {
     $existingCert = Get-ChildItem Cert:\LocalMachine\Root | where FriendlyName -eq "$solrName"
     if(!($existingCert))
@@ -339,7 +339,7 @@ if($jreVal -ne $JREPath)
 					<p>If no certificate exists in the Solr folders then it can be exported to there in PFX format. This script is only aimed at development environments, so I've not bothered with a strong password for this file – but that would be easy to add if you needed it.</p>
 					<p>Finally, the same tactic for updating the config file can set the host, and the relevant settings for SSL.</p>
 					<p>With all that in place, Solr is ready to be started, so the service is the next thing to sort out:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$svc = Get-Service "$solrName" -ErrorAction SilentlyContinue
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$svc = Get-Service "$solrName" -ErrorAction SilentlyContinue
 if(!($svc))
 {
     Write-Host "Installing Solr service"
@@ -356,7 +356,7 @@ if($svc.Status -ne "Running")
 					<p>It checks if a correctly named service exists, and if not
 						<a href="https://nssm.cc/usage" rel="noopener noreferrer" target="_blank">gets NSSM to set one up</a>. If the service isn't running it gets started.</p>
 					<p>Finally, to prove it worked, the script opens the Solr UI in your default browser:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$protocol = "http"
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$protocol = "http"
 if($solrSSL -eq $true)
 {
     $protocol = "https"
@@ -493,7 +493,7 @@ Invoke-Expression "start $($protocol)://$($solrHost):$solrPort/solr/#/"
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -501,7 +501,7 @@ Invoke-Expression "start $($protocol)://$($solrHost):$solrPort/solr/#/"
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

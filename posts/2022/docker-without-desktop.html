@@ -159,7 +159,7 @@
 						to test if a feature has been installed, and
 						<code>Enable-WindowsOptionalFeature</code>
 						if you need to add it. So I tried wrapping those up in a helper function to install a named feature:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function VerifyWindowsFeature
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function VerifyWindowsFeature
 {
 	param(
 		[string]$featureName
@@ -182,7 +182,7 @@
 
 					</pre>
 					<p>Installing features like this often requires a restart - but helpfully you can tell Windows "don't reboot please" and get a flag back saying whether a reboot is required. So this function can be called a couple of times to install the two features needed, and then we can test if a reboot is required:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function EnsureWindowsFeatures
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function EnsureWindowsFeatures
 {
 	$containersNeedsRestart = VerifyWindowsFeature "Containers"
 	$hyperVNeedsReboot = VerifyWindowsFeature "Microsoft-Hyper-V"
@@ -204,7 +204,7 @@
 					<p>The first thing I wanted to check was whether the Docker service was already running. That's fairly easy to do with PowerShell - you can filter the results of
 						<code>Get-Service</code>
 						by the known name of the Docker service that gets installed. If there are results then the service exists. The result is an object which gives you the name and state of that service, so you can tell if it's running or not. And if it is you can check if there are any active containers. I probably need a better way to handle this, but for a first pass the script throws an exception at that point - I didn't want to try and delete the service if it was working. But otherwise the service can be stopped and (since we know at this point that the Docker code must already be present) the command line to unregister it can be called:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function StopAndRemoveExistingService
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function StopAndRemoveExistingService
 {
     param(
         [string]$svcName
@@ -241,7 +241,7 @@
 					<p>So with the service stopped and unregistered (if it existed) the next job is to download the archive that Docker provide. Given I was running this code fairly often while I tested, I optimised it a bit by avoiding the download if the file already existed. The
 						<code>$name</code>
 						variable here is just to make the debug output more readable, as I figured this function might be useful for more than one download in this bit of work: (Spoiler - it was...)</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function DownloadFile
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function DownloadFile
 {
     param(
         [string]$name,
@@ -266,11 +266,11 @@
 						here (for the latest version of Docker) is a project for another day - but for the moment it's easy enough to call this function with a fixed version string like
 						<code>https://download.docker.com/win/static/stable/x86_64/docker-20.10.8.zip</code>.</p>
 					<p>With that zip downloaded, it can be extracted easily enough:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Expand-Archive $dockerZip -DestinationPath $dockerEnginePath -Force
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Expand-Archive $dockerZip -DestinationPath $dockerEnginePath -Force
 
 					</pre>
 					<p>In order to be able to run the "register Docker as a service" command, the code needs to make sure that the folder which has been unzipped is in the system path. The easiest way to handle that is to check if the install folder is already in the path, and if not add it:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function EnsureDockerInPath
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function EnsureDockerInPath
 {
     param(
         [string]$installPath
@@ -293,7 +293,7 @@
 					</pre>
 					<p>I suspect this isn't "right" as there are circumstances where the test might get the wrong answer, but it's good enough for a first pass.</p>
 					<p>And with that done, it's easy to install and start the service:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function EnsureDockerServiceRunning
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function EnsureDockerServiceRunning
 {
     param(
         [string]$svcName
@@ -306,7 +306,7 @@
 
 					</pre>
 					<p>Those functions are enough to get a basic install running. They can be combined together into a simple overall script:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">#Requires -RunAsAdministrator
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">#Requires -RunAsAdministrator
 param(
     [string]$dockerEnginePath = "C:\",
     [string]$dockerInstallPath = "C:\Docker",
@@ -340,7 +340,7 @@ popd
 
 					</pre>
 					<p>After running that script and dealing with any reboots required you should be able to run a simple test container:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">docker run hello-world
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">docker run hello-world
 
 					</pre>
 					<p>But, you won't be able to run Sitecore yet...</p>
@@ -360,7 +360,7 @@ popd
 						</a>
 					</p>
 					<p>For Google's benefit, the important part of that message is:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Error response from daemon: 
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Error response from daemon: 
 Unrecognised volume spec: file '\\.\pipe\docker_engine` cannot be mapped. 
 Only directories can be mapped on this platform.
 
@@ -373,14 +373,14 @@ Only directories can be mapped on this platform.
 						<code>.exe</code>
 						file which can be copied to the Docker folder we created above, and run as-is.</p>
 					<p>The extra code to cope with that is fairly simple, and can be added into the base script above. It needs a couple of extra parameters to the overall script:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
     [string]$composeEngineUrl = "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Windows-x86_64.exe",
     [string]$composeExe = "docker-compose.exe"
 )
 
 					</pre>
 					<p>And the download operation can be added to the script's logic</p>
-					<pre data-enlighter-highlight="&amp;quot;4-6&amp;quot;" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># Get docker service running
+					<pre class="code" data-enlighter-highlight="&amp;quot;4-6&amp;quot;" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># Get docker service running
 EnsureDockerServiceRunning $serviceName
 
 DownloadFile "Compose" $composeEngineUrl $composeExe
@@ -402,7 +402,7 @@ popd
 					<p>That could be an issue for some users, so I did a bit more digging into how this might be resolved. I came across some google results explaining that you need to
 						<a href="https://github.com/tfenster/dockeraccesshelper" target="_blank" rel="noopener">explicity grant rights to non-admin</a>
 						users to allow them access to the Docker service. I didn't want to have an external dependency for this bit of script, so I pulled in the core behaviour there to a function:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function GrantRights
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function GrantRights
 {
     param(
         $domain,
@@ -444,7 +444,7 @@ popd
 							<i>I learned an important thing while testing this:</i>
 						</b>
 						If you run up a VM in Azure to test Docker (or other virtualisation stuff) then you have to be careful which VM "size" you choose. If you pick a v1 or v2 VM you'll be able to run the script here without errors, but you'll get an error that looks like this when you try to start any container:
-						<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Error response from daemon: 
+						<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Error response from daemon: 
 hcsshim::CreateComputeSystem 8459c6c816e764642634ce29cfee666d30834df0f2792fba9e411d11bd0c33f6: 
 The virtual machine could not be started because a required feature is not installed
 
@@ -579,7 +579,7 @@ The virtual machine could not be started because a required feature is not insta
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -587,7 +587,7 @@ The virtual machine could not be started because a required feature is not insta
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

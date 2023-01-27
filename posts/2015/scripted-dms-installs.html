@@ -169,7 +169,7 @@
 						<li>The set of modules and content packages to install</li>
 					</ul>
 					<p>Some simple-to-read XML to describe that data might look like this:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;"> &lt;config&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;"> &lt;config&gt;
   &lt;params&gt;
     &lt;param name="InstanceName"&gt;Test&lt;/param&gt;
     &lt;param name="LicenseFile"&gt;.\files\License-2014.xml&lt;/param&gt;
@@ -187,7 +187,7 @@
 					</pre>
 					<p>PowerShell is pretty good at dealing with data in XML, so we can easily make the location of one of these config documents a required parameter of our "install an instance" script, and parse the file into an XML document. The individual config functions can then query this document.</p>
 					<p>Loading the data might look like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param([Parameter(Mandatory=$true)][string]$configFile)
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param([Parameter(Mandatory=$true)][string]$configFile)
 
 if( -not (Test-Path $configFile) ) {
     throw "Config file must exist"
@@ -212,7 +212,7 @@ if( -not (Test-Path $configFile) ) {
 						<code>Get-Content</code>
 						commandlet to return an XML document which we can query later. At this point I've not added any code to validate that the XML loaded has the correct schema – but that would be a useful thing to add in later.</p>
 					<p>And then the data can be read with some simple helper functions:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Get-ConfigParam([string] $name) {
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Get-ConfigParam([string] $name) {
     $val = Select-Xml "/config/params/param[@name='$name']/text()" $xml
     
     if([string]::IsNullOrEmpty($val)) {
@@ -242,7 +242,7 @@ function Get-ConfigModules() {
 						<a href="/posts/2015/msi-parameters" target="_blank">call the "install instance" script from last week's post</a>, fetching the parameters to pass to the MSI installer from a config file.</p>
 					<h2>Adding DMS to your instance</h2>
 					<p>So with this in hand, the code for adding DMS might look like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-DMS() {
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-DMS() {
     # fetch the zip
     $dmsZip = Get-ConfigParam "DMSFiles"
     
@@ -290,7 +290,7 @@ function Get-ConfigModules() {
 					<p>Next the code works out the absolute path to the DMS database files that were just copied, and works out the correct database name. Then it uses the SQL Server command line tool to run a T-SQL command to attach the database correctly.</p>
 					<p>The code then calls another function to add the connection string, before tidying up the temporary folder.</p>
 					<p>The function to add the connection string might look like this:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-DMSConnectionString([string] $conStrFile, [string] $dbName) {
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Add-DMSConnectionString([string] $conStrFile, [string] $dbName) {
     $sqlUser = Get-ConfigParam "sqlUser"
     $sqlPassword = Get-ConfigParam "sqlPassword"
     $sqlServer = Get-ConfigParam "sqlServer"
@@ -441,7 +441,7 @@ function Get-ConfigModules() {
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -449,7 +449,7 @@ function Get-ConfigModules() {
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

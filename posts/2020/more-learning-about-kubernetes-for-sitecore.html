@@ -155,7 +155,7 @@
 						it timed out, and the script window reported a fairly generic  error. It took me a while to work out how to get some details back from AKS about what happened, but eventually I found the
 						<code>kubectl describe pod &lt;pod-name&gt;</code>
 						command and got this:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Events:
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Events:
 Type     Reason                  Age    From                   Message
 ----     ------                  ----   ----                   -------
 Normal   Scheduled               39m    default-scheduler      Successfully assigned ingress-basic/nginx-ingress-ingress-nginx-admission-create-x7nc7 to akswin000000
@@ -169,7 +169,7 @@ Warning  FailedCreatePodSandBox  39m    kubelet, akswin000000  Failed to create 
 
 					</pre>
 					<p>Initially I was worried that I'd broken something in the scripts here – I'd made a few edits to make them match my needs more closely. So I spent quite a lot of time trying to find helpful stuff in Google, and bugging people on Sitecore Slack. But eventually I realised that this was not actually the first error. Somehow I'd missed the fact that another error earlier in the process (at step two) that had scrolled off my console screen when I wasn't looking. And this turned out to be the important one:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">--- Linking AKS to ACR ---
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">--- Linking AKS to ACR ---
 az : ForbiddenError: The client 'my.user@company.com' with object id 'xx56b90b-xxxx-xxxx-xxxx-98ea3aa7xxxx' does not have 
 authorization to perform action 'Microsoft.Authorization/roleAssignments/write' over scope '/subscriptions/xxd1df1a-xxxx-xxxx-xxxx-dfdbd355xxxx/resourceGroups/client-k8s/providers/Microsoft.ContainerRegistry/registries/client/providers/Microsoft.Author
 ization/roleAssignments/xx5f2920-xxxx-xxxx-xxxx-9a8efa47xxxx' or the scope is invalid. If access was recently granted, please 
@@ -190,7 +190,7 @@ At C:\Users\JDavis\Downloads\Sitecore-Symposium-2020-Containers-AKS-main\2.Creat
 					<p>Once I got Owner rights applied to my account, tidied up my resource group and ran the scripts again, these errors disappeared.</p>
 					<h2>Pay attention to your node specs!</h2>
 					<p>Another mistake was a classic case of "read other people's scripts properly before you run them!". When the scripts got to this part of step two:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"># Add windows server nodepool
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"># Add windows server nodepool
 Write-Host "--- Creating Windows Server Node Pool ---" -ForegroundColor Blue
 az aks nodepool add --resource-group $ResourceGroup `
     --cluster-name $AksName `
@@ -213,7 +213,7 @@ Write-Host "--- Complete: Windows Server Node Pool Created ---" -ForegroundColor
 						in my Docker compose file. And that meant it needed something similar for Helm so that Kubernetes would run my custom script too.</p>
 					<p>After a few rounds of googling and a certain amount of trial and error, I worked out that the custom
 						<code>entrypoint</code>:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="8" data-enlighter-language="text" style="width:100%; overflow:scroll;">  solr:
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="8" data-enlighter-language="text" style="width:100%; overflow:scroll;">  solr:
     image: ${REGISTRY}${COMPOSE_PROJECT_NAME}-k8s-xp1-solrcloud:${VERSION:-latest}
     build:
       context: ./containers/build/solrcloud
@@ -226,7 +226,7 @@ Write-Host "--- Complete: Windows Server Node Pool Created ---" -ForegroundColor
 
 					</pre>
 					<p>needs to get replaced with this for Kubernetes:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="22,23" data-enlighter-language="text" style="width:100%; overflow:scroll;">apiVersion: apps/v1
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="22,23" data-enlighter-language="text" style="width:100%; overflow:scroll;">apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: solr
@@ -395,7 +395,7 @@ spec:
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -403,7 +403,7 @@ spec:
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

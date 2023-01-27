@@ -153,29 +153,29 @@
 					<p>So you'd hope that they'd be helpful if you need to move from one set of database accounts to another...</p>
 					<h2>The issue:</h2>
 					<p>But when I tried to use these scripts with the Active Directory accounts provided by the client, I got oddly inconsistent results. When I tried to call the procedure in some databases with my user</p>
-					<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">USE [MyInstance_Xdb.Collection.Shard0]
+					<pre class="code" data-enlighter-language="sql" style="width:100%; overflow:scroll;">USE [MyInstance_Xdb.Collection.Shard0]
 GO
 [xdb_collection].[GrantLeastPrivilege] 'Domain\ProcessAccountName'
 
 					</pre>
 					<p>I got success. It would write out all the changes it made. But when I called the same procedure in other databases, with the same approach</p>
-					<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">USE [MyInstance_ProcessingEngineStorage]
+					<pre class="code" data-enlighter-language="sql" style="width:100%; overflow:scroll;">USE [MyInstance_ProcessingEngineStorage]
 GO
 [sitecore_processing_storage].[GrantLeastPrivilege] 'Domain\ProcessAccountName'
 
 					</pre>
 					<p>I got error messages instead – saying something like:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Msg 102, Level 15, State 1, Line 9
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Msg 102, Level 15, State 1, Line 9
 Incorrect syntax near '\'.
 
 					</pre>
 					<p>When I tested it, across all the non-content databases, it broke on ProcessingEngineStorage, MarketingAutomation, Processing.Pools, Processing.Tasks, ProcessingEngineTasks and ReferenceData.</p>
 					<p>Looking at the underlying code, the scripts which work run statements in the form of</p>
-					<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">EXECUTE('grant execute on TYPE::[database].[thing] TO [' + @Name + ']')
+					<pre class="code" data-enlighter-language="sql" style="width:100%; overflow:scroll;">EXECUTE('grant execute on TYPE::[database].[thing] TO [' + @Name + ']')
 
 					</pre>
 					<p>and the ones that fail look like</p>
-					<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">EXECUTE('grant execute on TYPE::[database].[thing] TO ' + @Name)
+					<pre class="code" data-enlighter-language="sql" style="width:100%; overflow:scroll;">EXECUTE('grant execute on TYPE::[database].[thing] TO ' + @Name)
 
 					</pre>
 					<p>so it's pretty easy to tweak them to be successful. But it's a bit of a pain that this doesn't work out of the box. So I've reported this to Sitecore Support, who have accepted it's a bug. If you're hitting this issue too, make reference to bug 331327.</p>
@@ -297,7 +297,7 @@ Incorrect syntax near '\'.
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -305,7 +305,7 @@ Incorrect syntax near '\'.
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

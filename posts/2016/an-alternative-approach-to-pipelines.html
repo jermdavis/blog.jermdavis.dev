@@ -162,7 +162,7 @@
 					<p>And after a bit of tinkering and thinking about what Stephen had been saying, it turns out you can do quite interesting things with some pretty simple code here...</p>
 					<h2>One approach...</h2>
 					<p>In generic terms, a pipeline step can be described as an interface with single a processing method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep&lt;INPUT, OUTPUT&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep&lt;INPUT, OUTPUT&gt;
 {
     OUTPUT Process(INPUT input);
 }
@@ -170,7 +170,7 @@
 					</pre>
 					<p>By declaring different type parameters for the input and the output, we can describe a step that changes the type of the data it's processing...</p>
 					<p>So a (trivial) concrete example of such a step might turn an integer to a string like so:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class IntToStringStep : IPipelineStep&lt;int, string&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class IntToStringStep : IPipelineStep&lt;int, string&gt;
 {
     public string Process(int input)
     {
@@ -180,7 +180,7 @@
 
 					</pre>
 					<p>A pipeline needs to be able to compose together a set of these steps. The usage I've been thinking about would adopt a "code first" approach to setting these things up. Extension methods give an easy way to achieve this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class PipelineStepExtensions
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class PipelineStepExtensions
 {
     public static OUTPUT Step&lt;INPUT, OUTPUT&gt;(this INPUT input, IPipelineStep&lt;INPUT, OUTPUT&gt; step)
     {
@@ -190,14 +190,14 @@
 
 					</pre>
 					<p>So you can stack together a set of steps using code like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">int input=5;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">int input=5;
 string result = input
                   .Step(new IntToStringStep())
                   .Step(new DoSomethingToAString());
 
 					</pre>
 					<p>But literal code like that isn't much use if we want to inject a pipeline via DI, so we need a wrapper class which can be used as a base for types that will be be registered for injection. At its most simple, (ignoring the whole business of naming pipelines, patching of pipeline steps etc) that just needs to expose a method to process the data, and set up the pipeline internally:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class Pipeline&lt;INPUT, OUTPUT&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class Pipeline&lt;INPUT, OUTPUT&gt;
 {
     public Func&lt;INPUT, OUTPUT&gt; PipelineSteps { get; protected set; }
 
@@ -209,7 +209,7 @@ string result = input
 
 					</pre>
 					<p>So you can create a concrete pipeline just by defining the set of steps you need in the constructor. Taking the trivial example from above:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TrivalPipeline : Pipeline&lt;int, string&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TrivalPipeline : Pipeline&lt;int, string&gt;
 {
     public TrivialPipeline()
     {
@@ -224,7 +224,7 @@ string result = input
 					<h2>Here's where it gets more interesting...</h2>
 					<p>So that works fairly simply and easily, and you can build up quite complex pipelines with the compiler doing all your type checking for you. But during my chat with Stephen he suggested some other really interesting ideas that can stem from this design...</p>
 					<p>First up: what if the overall pipeline class above implements the IPipelineStep interface? It's a trivial change:</p>
-					<pre data-enlighter-highlight="1" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class Pipeline&lt;INPUT, OUTPUT&gt; : IPipelineStep&lt;INPUT, OUTPUT&gt;
+					<pre class="code" data-enlighter-highlight="1" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class Pipeline&lt;INPUT, OUTPUT&gt; : IPipelineStep&lt;INPUT, OUTPUT&gt;
 {
     public Func&lt;INPUT, OUTPUT&gt; PipelineSteps { get; protected set; }
 
@@ -236,7 +236,7 @@ string result = input
 
 					</pre>
 					<p>But it allows you to nest your pipeline objects, so that the top level pipeline can use other pipelines instead of individual steps. So you can build up more complex behaviour from groups of simpler tasks. Continuing with the trivial examples:</p>
-					<pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CompoundPipeline : Pipeline&lt;int, string&gt;
+					<pre class="code" data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CompoundPipeline : Pipeline&lt;int, string&gt;
 {
     public ExamplePipeline()
     {
@@ -260,7 +260,7 @@ public class InnerPipeline : Pipeline&lt;int, int&gt;
 
 					</pre>
 					<p>The second interesting thing that you can do with this approach is that pipeline steps can be decorators that add logic to an inner step. For example, what about a scenario where you want to make a particular step optional, based on some sort of criteria? Rather than baking that logic into the underlying component, you can put the logic into a decorator and wrap it around any component you want to make optional. For example:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class OptionalStep&lt;INPUT, OUTPUT&gt; : IPipelineStep&lt;INPUT, OUTPUT&gt; where INPUT : OUTPUT
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class OptionalStep&lt;INPUT, OUTPUT&gt; : IPipelineStep&lt;INPUT, OUTPUT&gt; where INPUT : OUTPUT
 {
     private IPipelineStep&lt;INPUT, OUTPUT&gt; _step;
     private Func&lt;INPUT, bool&gt; _choice;
@@ -290,7 +290,7 @@ public class InnerPipeline : Pipeline&lt;int, int&gt;
 						and
 						<code>OUTPUT</code>
 						are related. So if you wanted a particular step to only run if the input was greater than 15 you could use something like:</p>
-					<pre data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PipelineWithOptionalStep : Pipeline&lt;int, int&gt;
+					<pre class="code" data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PipelineWithOptionalStep : Pipeline&lt;int, int&gt;
 {
     public PipelineWithOptionalStep()
     {
@@ -432,7 +432,7 @@ public class InnerPipeline : Pipeline&lt;int, int&gt;
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -440,7 +440,7 @@ public class InnerPipeline : Pipeline&lt;int, int&gt;
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

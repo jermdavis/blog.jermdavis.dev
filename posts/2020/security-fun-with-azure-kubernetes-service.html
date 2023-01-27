@@ -168,13 +168,13 @@
 					<p>From the command line you can create a new service account with
 						<code>kubectl</code>. So I started by creating one in my Sitecore deployment's namespace. However despite a variety of experiments here, I was unable to make that work correctly – it was easy to create the account, but AKS would always refuse to perform any actions under these credentials. After a lot of research, I found one article that described putting your service account into the "kube-system" namespace. And this worked for me.</p>
 					<p>So the command I created the user with ended up as:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl -n kube-system create serviceaccount azure-pipeline
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl -n kube-system create serviceaccount azure-pipeline
 
 					</pre>
 					<p>Once you have an account, you need to "bind" it to a role, telling AKS which rights the account should have. Kubernetes calls this a "role binding". And Kubernetes roles can be scoped to either your application or to the entire cluster. Given the issue above, a cluster scoped role and binding seems more appropriate.</p>
 					<p>Again, I tried creating my own role, with what I thought was the right set of permissions, but was unable to make it work. So I fell back to one of the built-in admin roles. While this isn't best security practice, it's good enough to make the whole thing work while I learn more.</p>
 					<p>So the role binding to a cluster role can be set up:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl create clusterrolebinding azure-pipeline-binding --clusterrole=cluster-admin --serviceaccount=kube-system:azure-pipeline
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl create clusterrolebinding azure-pipeline-binding --clusterrole=cluster-admin --serviceaccount=kube-system:azure-pipeline
 
 					</pre>
 					<p>Note how the namespace here is specified by prefixing the user
@@ -204,17 +204,17 @@
 					</p>
 					<p>The server URL is highlighted here – and you can copy that into the DevOps field.</p>
 					<p>You then need the authentication data. Again, DevOps gives you some commands to run, and again these break for me. So cue some more research... What I found I could do was get all the service accounts by running</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl get serviceaccounts azure-pipeline -o custom-columns=":secrets[0].name" -n kube-system
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl get serviceaccounts azure-pipeline -o custom-columns=":secrets[0].name" -n kube-system
 
 					</pre>
 					<p>to get the name of the token inside AKS – something like
 						<code>azure-pipeline-token-ajdsa</code>
 						And then you can pass the token name you get to a second command:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl get secret azure-pipeline-token-ajdsa -o json -n kube-system
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl get secret azure-pipeline-token-ajdsa -o json -n kube-system
 
 					</pre>
 					<p>to get a blob of json:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">{
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">{
     "apiVersion": "v1",
     "data": {
         "ca.crt": "... redacted ...",
@@ -243,7 +243,7 @@
 					<p>Early on in this process I came across some documentation describing the
 						<code>can-i</code>
 						command for checking if a user can do an operation. In theory, you can use a command like:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl auth can-i create deployment -n my-deployment --as azure-pipeline
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl auth can-i create deployment -n my-deployment --as azure-pipeline
 
 					</pre>
 					<p>and the response comes back as "yes" or "no" depending on whether that user has the appropriate rights or not.</p>
@@ -255,13 +255,13 @@
 					<p>Before I started trying to get the DevOps release to work, I'd been testing some releases from the command line. Those had been working fine. So when I ran the first DevOps release that succeeded, I was surprised to find that after DevOps declared it had finished applying the release I was seeing AKS erroring because it was unable to pull the requisite images.</p>
 					<p>Stepping back and thinking about it, that did make some sense. My AKS instance is sitting with my ACR instance in my DevOps. That means when I ran command line deploys as "me" they were running with the correct security tokens to access both AKS and ACR. But once DevOps takes over using its special token above, that doesn't have access to my ACR...</p>
 					<p>Another pass through the documentation teaches me another new thing. You can add the auth details for your ACR as a secret in your AKS instance:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl create secret docker-registry my-company-acr --docker-server=myacr.azurecr.io --docker-username=myacr --docker-password=1234343+sdasdsdaKJKweq --docker-email=my-email@somewhere.com
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl create secret docker-registry my-company-acr --docker-server=myacr.azurecr.io --docker-username=myacr --docker-password=1234343+sdasdsdaKJKweq --docker-email=my-email@somewhere.com
 
 					</pre>
 					<p>(You need to enable the "admin account" option under "Access Keys" in your ACR to get a standard username / password to use here)</p>
 					<p>And then you can tweak the yaml files for the pods you're deploying, by telling them the name of the secret you created above. It took me a couple of goes to get this in the right place in my files. I am developing a profound hatred of significant whitespace in config files 😉</p>
 					<p>Anyway, the right thing to set is:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="19,20" data-enlighter-language="text" style="width:100%; overflow:scroll;">apiVersion: apps/v1
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="19,20" data-enlighter-language="text" style="width:100%; overflow:scroll;">apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: xdbrefdata
@@ -423,7 +423,7 @@ spec:
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -431,7 +431,7 @@ spec:
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

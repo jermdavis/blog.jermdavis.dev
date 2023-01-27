@@ -169,7 +169,7 @@ Talking about this with a colleague a while back, I wondered if there was a way 
 					<p>And when you look up these two buttons' commands in the
 						<code>commands.config</code>
 						file you will find:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">&lt;command name="item:setlayoutdetails" type="Sitecore.Shell.Framework.Commands.SetLayoutDetails,Sitecore.Kernel" /&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">&lt;command name="item:setlayoutdetails" type="Sitecore.Shell.Framework.Commands.SetLayoutDetails,Sitecore.Kernel" /&gt;
 &lt;command name="pagedesigner:reset" type="Sitecore.Shell.Applications.Layouts.PageDesigner.Commands.Reset,Sitecore.Client"/&gt;
 
 					</pre>
@@ -179,7 +179,7 @@ Talking about this with a colleague a while back, I wondered if there was a way 
 						<code>QueryState()</code>
 						which the UI framework calls (passing in the item being edited) so a command can say whether it should be visible or enabled.</p>
 					<p>Hence one way we can try and solve our problem is to inherit from the standard Sitecore command classes for these menu options and add in some extra logic. Since both commands need the same logic, we can factor that out into a separate class to avoid writing it twice. For the sake of blog-post simplicity, lets stick it in a static helper method. Something like this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class SimplerLayoutHelper
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class SimplerLayoutHelper
 {
     public static CommandState QueryState(CommandContext context, Func&lt;CommandContext, CommandState&gt; baseMethod)
     {
@@ -213,7 +213,7 @@ Talking about this with a colleague a while back, I wondered if there was a way 
 						method that we want to fall back to if we decide not to return a result. If we have a context item to work on, it checks we're not in the Core database, as we're not bothered about those items. Then it runs an ancestor query to decide if the item in question is a child of the Templates or Content parts of the tree (the two places where setting Layout Details makes sense).</p>
 					<p>If it's not in the right part of the tree then we return the "Disabled" state to grey out the button and prevent them being clicked. If it does have Templates as an ancestor then we make a further check to see if the name of the context item is "__Standard Values". If not, we return Disabled to prevent the layout details being set in the wrong part of the Template tree. And otherwise we just pass the context through to the original method to let Sitecore's code take care of the remaining scenarios.</p>
 					<p>The replacement command classes can then be put together very simply:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SimplerLayoutDetails : Sitecore.Shell.Framework.Commands.SetLayoutDetails
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SimplerLayoutDetails : Sitecore.Shell.Framework.Commands.SetLayoutDetails
 {
     public override CommandState QueryState(CommandContext context)
     {
@@ -232,7 +232,7 @@ public class SimplerLayoutReset : Sitecore.Shell.Applications.Layouts.PageDesign
 					</pre>
 					<p>All we need to do is call our helper method and pass in the context and the base method from the original class.</p>
 					<p>These new command classes can be configured with a simple config patch:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
   &lt;sitecore&gt;
     &lt;commands&gt;
       &lt;command 
@@ -379,7 +379,7 @@ public class SimplerLayoutReset : Sitecore.Shell.Applications.Layouts.PageDesign
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -387,7 +387,7 @@ public class SimplerLayoutReset : Sitecore.Shell.Applications.Layouts.PageDesign
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

@@ -146,7 +146,7 @@ A few times I've come across projects with subtly broken implementations of this
 						<!--more-->
 					</p>
 					<p>Running some code every so often implies we need something to run, and a timescale to run it on. So the beginnings of a class to handle this might look like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">using System;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">using System;
 using System.Threading;
 
 public class FunctionScheduler
@@ -163,7 +163,7 @@ public class FunctionScheduler
 
 					</pre>
 					<p>Then we need to be able to start the process, and schedule the action. That's simple enough with the standard Windows timer APIs:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private Timer _timer = null;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private Timer _timer = null;
 
 public void Start()
 {
@@ -188,7 +188,7 @@ private void timerTick(object o)
 						<a href="https://msdn.microsoft.com/en-us/library/system.threading.monitor(v=vs.110).aspx" rel="noopener" target="_blank">
 							<code>Monitor</code>
 							object</a>. This can "lock" an object in our code. If the lock is taken out when he action starts and released when the action ends, we have a simple and safe way of ensuring the action is never run in parallel with itself.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private object _lock = new object();
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private object _lock = new object();
 
 private void timerTick(object o)
 {
@@ -206,7 +206,7 @@ private void timerTick(object o)
 						stays in the "entered" state. Once that happens, each time the
 						<code>Timer</code>
 						triggers the action won't get re-run. But of course it's simple enough to fix this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void timerTick(object o)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void timerTick(object o)
 {
     if (Monitor.TryEnter(_lock))
     {
@@ -226,7 +226,7 @@ private void timerTick(object o)
 						<code>Monitor</code>
 						lock gets released.</p>
 					<p>And finally, we can stop the timer when it's no longer necessary:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Stop()
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Stop()
 {
     _timer.Dispose();
 }
@@ -236,7 +236,7 @@ private void timerTick(object o)
 						<a href="https://gist.github.com/jermdavis/23e1ca98e7faf37663aac26949b8ab2a" rel="noopener" target="_blank">gist of the full class</a>
 						if you want to copy it.</p>
 					<p>That approach makes most sense when you have a single bit of work that's scheduled for the lifetime of your process, but sometimes you have smaller tasks which you need to start and stop more often. In that scenario the code might be more readable with a dispose-based pattern:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DisposableFunctionScheduler : IDisposable
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DisposableFunctionScheduler : IDisposable
 {
     private int _runEveryMs;
     private Action _actionToRun;
@@ -275,7 +275,7 @@ private void timerTick(object o)
 
 					</pre>
 					<p>So you can schedule some work as follows:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">class Program
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">class Program
 {
     static void Action()
     {
@@ -417,7 +417,7 @@ private void timerTick(object o)
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -425,7 +425,7 @@ private void timerTick(object o)
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

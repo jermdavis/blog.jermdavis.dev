@@ -207,7 +207,7 @@
 					</p>
 					<p>This user needs to have a password set, so the API can use it.</p>
 					<p>With those in place, authenticating a new client connection can be done as follows:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public IWebMClient Connect(Uri endpoint)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public IWebMClient Connect(Uri endpoint)
 {
     var oauth = new OAuthPasswordGrant
     {
@@ -225,7 +225,7 @@
 						<code>https://your-instance.stylelabsdemo.com</code>
 						but it will vary depending on how your instance is set up.</p>
 					<p>Then you need to create the new Asset. There are a few steps to that</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task&lt;long&gt; ImportAsset(IWebMClient client, Uri imageUrl, string clientsCustomId)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task&lt;long&gt; ImportAsset(IWebMClient client, Uri imageUrl, string clientsCustomId)
 {
     // First, create an asset record
     var asset = await client.EntityFactory.CreateAsync(Constants.Asset.DefinitionName, CultureLoadOption.Default);
@@ -263,7 +263,7 @@
 					</pre>
 					<p>That will cause Content Hub to download the image, set up the Asset record and generate the correct renditions. So then the code needs to generate the Public Link the integration system needs to store in Sitecore.</p>
 					<p>Generating the public link can be done as shown:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task&lt;long&gt; CreatePublicLink(IWebMClient client, long assetId, string renditionName)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task&lt;long&gt; CreatePublicLink(IWebMClient client, long assetId, string renditionName)
 {
     // Create new Public Link record
     var publicLink = await client.EntityFactory.CreateAsync(Constants.PublicLink.DefinitionName);
@@ -286,7 +286,7 @@
 					</pre>
 					<p>When you look at the schema of a "Public Link" entity in the system, it doesn't have a URL property though. So how do you know what the address to request for the link is? Well a bit of googling
 						<a href="https://www.alpha-solutions.com/no/innsikt/sitecore-content-hub---public-link-for-an-asset" rel="noopener" target="_blank">lead me to an answer for this</a>: You work out the address based on the instance's base url, the "RelativeUrl" property and the "VersionHash" property:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task&lt;string&gt; FetchPublicLink(IWebMClient client, string baseUrl, long publicLinkId)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task&lt;string&gt; FetchPublicLink(IWebMClient client, string baseUrl, long publicLinkId)
 {
     Console.Write($"Fetching public link {publicLinkId}");
 
@@ -324,7 +324,7 @@
 					<p>Having had a bit of a think – the issue is the asynchronous nature of how Content Hub processes stuff. When you create a new Asset, you're running background jobs to fetch the image and generate the renditions. So you don't actually know when that will occur. But the code above is creating the Asset record and immediately creating a Public Link record based on the asset and a specific rendition name. And at that point, I don't think the rendition in question actually exists in Content Hub's database. Hence the error message above.</p>
 					<p>So how can we fix this? Waiting!</p>
 					<p>After you create the asset, you have to wait for the fetch job to complete. And after you create the Public Link you have to wait for it before you try to generate the URL. The waiting can be done with a fairly simple code pattern:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task WaitForRendition(IWebMClient client, long assetId, string renditionName)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task WaitForRendition(IWebMClient client, long assetId, string renditionName)
 {
     bool done = false;
 
@@ -478,7 +478,7 @@
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -486,7 +486,7 @@
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

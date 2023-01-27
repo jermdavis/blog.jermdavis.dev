@@ -172,7 +172,7 @@ As an experiment in &quot;can it be done?&quot; I tried to see if it was possibl
 						<img alt="image" src="/img/2014/TrackingFieldData.png">
 					</a>
 					<p>Looking at the XML, you find something like:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;tracking&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;tracking&gt;
 	&lt;profile id="{24DFF2CF-B30A-4B75-8967-2FE3DED82271}" name="Focus"&gt;
 		&lt;key name="Practical" value="5"/&gt;
 		&lt;key name="Process" value="8"/&gt;
@@ -211,7 +211,7 @@ As an experiment in &quot;can it be done?&quot; I tried to see if it was possibl
 					<p>What we need to do here is to perform some computation on the raw field data before it is handed to Lucene. We can configure the search indexer to run our code when it encounters the Profile Card data field on an item fairly simply.</p>
 					<p>Firs of all, we need the base of our custom search indexing code. This needs to inherit from
 						<code>FieldCrawlerBase</code>, which is defined by the Advanced Database Crawler:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TrackingFieldCrawler : FieldCrawlerBase
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TrackingFieldCrawler : FieldCrawlerBase
 {
     public TrackingFieldCrawler(Field field) : base(field)
     {
@@ -226,7 +226,7 @@ As an experiment in &quot;can it be done?&quot; I tried to see if it was possibl
 					<p>We'll come back to the details of what this has to do in a minute – but first we need to patch this into the configuration so that it gets called. You need to add two bits of configuration to your indexing config. First find the
 						<code>fieldCrawlers</code>
 						element in the search config file, and add this element to its children:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;fieldCrawler type="YourNamespace.TrackingFieldCrawler,YourBinary" fieldType="Tracking" /&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;fieldCrawler type="YourNamespace.TrackingFieldCrawler,YourBinary" fieldType="Tracking" /&gt;
 
 					</pre>
 					<p>But remember to fill in the .Net type descriptor there to point to the real namespace and binary that hold your instance of TrackingFieldCrawler. This tells the indexer "when you see a field that matches the type ‘Tracking', pass it to the
@@ -234,7 +234,7 @@ As an experiment in &quot;can it be done?&quot; I tried to see if it was possibl
 						class" so that our custom code gets run over the Profile Card data. Next you need to find the
 						<code>fieldTypes</code>
 						element and add the following as a child of it:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;fieldType name="Tracking" storageType="NO" indexType="TOKENIZED" vectorType="NO" boost="1f"/&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;fieldType name="Tracking" storageType="NO" indexType="TOKENIZED" vectorType="NO" boost="1f"/&gt;
 
 					</pre>
 					<p>This tells Lucene how to treat the data our custom class generates. You may wish to modify this a bit to match your own solution, but for the purppses of this example we're saying:</p>
@@ -248,7 +248,7 @@ As an experiment in &quot;can it be done?&quot; I tried to see if it was possibl
 						<li>name: What the field is called in the Sitecore Template that defines it.</li>
 					</ul>
 					With the index config in place, we can now look at what to do in the code. And it's fairly simple:
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public override string GetValue()
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public override string GetValue()
 {
     if (string.IsNullOrWhiteSpace(this._field.Value))
     {
@@ -409,7 +409,7 @@ As an experiment in &quot;can it be done?&quot; I tried to see if it was possibl
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -417,7 +417,7 @@ As an experiment in &quot;can it be done?&quot; I tried to see if it was possibl
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

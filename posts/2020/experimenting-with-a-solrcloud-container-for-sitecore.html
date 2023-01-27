@@ -160,7 +160,7 @@
 						<a href="https://hub.docker.com/_/microsoft-powershell" rel="noopener" target="_blank">PowerShell-on-top-of-Nanoserver image</a>
 						which seems ideal for this purpose. Swapping over is easy: just change the arguments passed into the Dockerfile that builds the base for the Solr container. That lives in the
 						<a href="https://github.com/Sitecore/docker-images/blob/master/windows/dependencies/sitecore-openjdk/build.json" rel="noopener" target="_blank">"build.json" file for the Java Runtime image that Solr sits on top of</a>:</p>
-					<pre data-enlighter-highlight="7" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+					<pre class="code" data-enlighter-highlight="7" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
   "tags": [
     {
       "tag": "sitecore-openjdk:8-nanoserver-${nanoserver_version}",
@@ -182,7 +182,7 @@
 						<a href="https://github.com/Sitecore/docker-images/blob/master/windows/9.x.x/sitecore-xp-solr/Boot.cmd" rel="noopener" target="_blank">entrypoint script that runs when the container starts</a>
 						can copy those files into the Solr folders if no cores exist. So the first step in removing this behaviour is to strip out the bit of the Dockerfile that's creating these base files.</p>
 					<p>In the Dockerfile, the change is to remove this bit:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3,4,5,6,7,8,9,10,11" data-enlighter-language="text" style="width:100%; overflow:scroll;">RUN New-Item -Path 'C:\\clean' -ItemType Directory | Out-Null; `
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="3,4,5,6,7,8,9,10,11" data-enlighter-language="text" style="width:100%; overflow:scroll;">RUN New-Item -Path 'C:\\clean' -ItemType Directory | Out-Null; `
     Copy-Item -Path 'C:\\solr\\server\\solr\\*' -Destination 'C:\\clean' -Force -Recurse; `
 #    $env:CORE_NAMES -split ',' | ForEach-Object { `
 #        $name = $_.Trim(); `
@@ -203,7 +203,7 @@
 						<a href="https://github.com/Sitecore/docker-images/blob/master/windows/9.x.x/sitecore-xp-solr/Boot.cmd" rel="noopener" target="_blank">entrypoint file that already exists</a>
 						– but that's<br>
 						a batch file, and we need PowerShell here. So instead, lets change the Dockerfile have a PowerShell entrypoint. If we name this file "Boot.ps1" to match the pattern, it can get copied in. There's a second PowerShell script that includes the business for creating collections later. Plus we need to make the container fire up PowerShell and run the new boot script with the appropriate parameters. That all happens at the end of the Dockerfile:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">...snip...
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">...snip...
 
 EXPOSE 8983
 
@@ -214,7 +214,7 @@ CMD ["c:\\program files\\powershell\\pwsh.exe", "-f", "Boot.ps1", "c:\\solr", "8
 
 					</pre>
 					<p>The Boot.ps1 file needs to do some of the same stuff that the old batch file did, and we'll extend it. First up, it needs to receive the parameters:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
 	[string]$solrPath,
 	[string]$solrPort,
 	[string]$installPath,
@@ -223,7 +223,7 @@ CMD ["c:\\program files\\powershell\\pwsh.exe", "-f", "Boot.ps1", "c:\\solr", "8
 
 					</pre>
 					<p>The "copy files" behaviour from the original script can stay, but in PowerShell flavour – and it's doing something with lock files too:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$solrConfig = "$dataPath\solr.xml"
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$solrConfig = "$dataPath\solr.xml"
 if(Test-Path $solrConfig)
 {
 	Write-Host "### Config exists!"
@@ -246,7 +246,7 @@ Pop-Location
 
 					</pre>
 					<p>And finally, fire up Solr in Cloud mode:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "### Starting Solr..."
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "### Starting Solr..."
 
 &amp; "$solrPath\bin\solr.cmd" start -port $solrPort -f -c
 
@@ -258,14 +258,14 @@ Pop-Location
 						to
 						<code>http://</code>. That's a quick search and replace operation. And the secondly, it needs to include the logic to decide what to do when it's run.</p>
 					<p>The logic starts by waiting for Solr to be running:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># wait for it to start
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># wait for it to start
 Write-Host "### Waiting on $solrPort..."
 Wait-ForSolrToStart "localhost" $solrPort
 Write-Host "### Started..."
 
 					</pre>
 					<p>Because SolrCloud uses both disk and Zookeeper for storing data, we need to be able to call API endpoints to set up collections, so the rest of the script has to wait for Solr to be running. Then we need to check to see if there's any work to do. This should really get refactored out to a function, but it asks the API how many collections exist at present:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># check for collections - /solr/admin/collections?action=LIST&amp;wt=json
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># check for collections - /solr/admin/collections?action=LIST&amp;wt=json
 $url = "http://localhost:$solrPort/solr/admin/collections?action=LIST"
 $response = Invoke-WebRequest -UseBasicParsing -Uri $url
 $obj = $response | ConvertFrom-Json
@@ -274,7 +274,7 @@ Write-Host "Collection count: $collectionCount"
 
 					</pre>
 					<p>If there are no collections, then we need to create them. Otherwise, we can assume it's already been done and skip this bit. If we do have to create them, the that calls the function I wrote when I was originally automating SolrCloud. This also needs a bit of further hacking, as the set of collections and aliases created is fixed right now and it should be configured by data passed in from the json config data – but it does the job for a demo:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($collectionCount -eq 0)
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($collectionCount -eq 0)
 {
     Write-Host "Need to create"
     Configure-SolrCollection "c:\clean" "localhost" "$solrPort" 1 1 1 ""
@@ -288,7 +288,7 @@ else
 					<p>The last step is making sure this script runs. This bit was a bit of a head-scratcher. The script needs to run in parallel with Solr, but Solr has to run with the "-f" flag, which causes it to keep going forever. So the collection creation has to execute before Solr is started, but needs to not block execution of the startup. And it also needs to be able to send its output back to the Docker console, if we're running connected. After a bit of hackery I settled on PowerShell's
 						<code>Start-Process</code>
 						command. That runs the script in parallel, but doesn't wait for it to end. So "Boot.ps1" can be updated:</p>
-					<pre data-enlighter-highlight="3" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "### Starting Solr..."
+					<pre class="code" data-enlighter-highlight="3" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "### Starting Solr..."
 
 Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\MakeCollections.ps1 $solrPort"
 
@@ -440,7 +440,7 @@ Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\Ma
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -448,7 +448,7 @@ Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\Ma
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

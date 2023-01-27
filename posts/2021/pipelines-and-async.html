@@ -146,7 +146,7 @@
 					</p>
 					<h2>Async gets everywhere...</h2>
 					<p>In my original code I had a basic pipeline step pattern that could map an input to an output:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep&lt;INPUT, OUTPUT&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep&lt;INPUT, OUTPUT&gt;
 {
 	OUTPUT Process(INPUT input);
 }
@@ -155,7 +155,7 @@
 					<p>If you want to make the
 						<code>Process()</code>
 						method be awaitable, then you have to declare that method slightly differently:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;INPUT, OUTPUT&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;INPUT, OUTPUT&gt;
 {
 	Task&lt;OUTPUT&gt; Process(INPUT input);
 }
@@ -179,14 +179,14 @@
 						<code>Task&lt;INPUT&gt;</code>
 						too? That solves our order-of-steps issue because every step can have the same signature:</p>
 					<p>So the basic definition becomes:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;INPUT, OUTPUT&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;INPUT, OUTPUT&gt;
 {
 	Task&lt;OUTPUT&gt; Process(Task&lt;INPUT&gt; input);
 }
 
 					</pre>
 					<p>Based on that, we need to tweak the definitions of the abstract pipeline based on these steps, to follow the same pattern:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
 {
 	public Func&lt;Task&lt;TIn&gt;, Task&lt;TOut&gt;&gt; _pipelineSteps { get; protected set; }
 
@@ -198,7 +198,7 @@
 
 					</pre>
 					<p>And similarly adjust the helper method which allows us to compose the steps together:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class AsyncPipelineStepExtensions
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class AsyncPipelineStepExtensions
 {
 	public static Task&lt;TOut&gt; Step&lt;TIn, TOut&gt;(this Task&lt;TIn&gt; Input, IAsyncPipelineStep&lt;TIn, TOut&gt; Step)
 	{
@@ -208,7 +208,7 @@
 
 					</pre>
 					<p>That gives us a basis to try defining some steps... How about an async fetch for some HTML from a website?</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt;
 {
 	private static readonly HttpClient _client = new HttpClient();
 	
@@ -233,7 +233,7 @@
 						</b>
 					</p>
 					<p>And writing to disk can be async too:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
 	public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input)
 	{
@@ -249,7 +249,7 @@
 					</pre>
 					<p>This is slightly different, because we're awaiting something which doesn't return data – but it's broadly the same pattern.</p>
 					<p>And we can compose those together into a pipeline:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt;
 {
 	public ExampleAsyncPipeline()
 	{
@@ -264,7 +264,7 @@
 					<p>That doesn't change from our pre-async definition of a new pipeline. But we do need a little tweak to how we use it. Because our steps always have to take a
 						<code>Task&lt;T&gt;</code>
 						as input, we need a little tweak to ensure we have one for the input to the pipeline:</p>
-					<pre data-enlighter-highlight="6" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main()
+					<pre class="code" data-enlighter-highlight="6" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main()
 {
 	var pipeline = new ExampleAsyncPipeline();
 	var uri = new Uri("https://news.bbc.co.uk/");
@@ -278,7 +278,7 @@
 
 					</pre>
 					<p>Now this runs, and it gives us some valid output:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">https://news.bbc.co.uk/ saved to C:\Users\jeremy\AppData\Local\Temp\tmpF77A.tmp
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">https://news.bbc.co.uk/ saved to C:\Users\jeremy\AppData\Local\Temp\tmpF77A.tmp
 
 					</pre>
 					<p>But thinking about it, the code should probably hide the need for the
@@ -286,7 +286,7 @@
 						call for us. We can amend the abstract
 						<code>AsyncPipeline</code>
 						to do this easily:</p>
-					<pre data-enlighter-highlight="10,11,12,13,14" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
+					<pre class="code" data-enlighter-highlight="10,11,12,13,14" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
 {
 	public Func&lt;Task&lt;TIn&gt;, Task&lt;TOut&gt;&gt; _pipelineSteps { get; protected set; }
 
@@ -304,7 +304,7 @@
 
 					</pre>
 					<p>Abstracting that away means we won't forget to do it later, and it makes the code to run the pipeline marginally neater too:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main()
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main()
 {
 	var pipeline = new ExampleAsyncPipeline();
 	var uri = new Uri("https://news.bbc.co.uk/");
@@ -449,7 +449,7 @@
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -457,7 +457,7 @@
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

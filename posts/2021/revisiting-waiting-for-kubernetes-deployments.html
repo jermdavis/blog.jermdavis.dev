@@ -147,7 +147,7 @@
 					</p>
 					<h2>The challenge</h2>
 					<p>When I first worked through the problem of "make DevOps wait for Kubernetes to finish an operation", I tried making the DevOps release wait based on the status of pods. A command like:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe wait --for=condition=Ready pods -l app=cm -n &lt;YourNamespace&gt; --timeout=2700s
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe wait --for=condition=Ready pods -l app=cm -n &lt;YourNamespace&gt; --timeout=2700s
 
 					</pre>
 					<p>That seemed to be working OK for a while – but recently I've seen some issues. On some deployments I'd do a release in DevOps which would complete ok, but when I went to smoke-test it afterwards it would be clear that the Unicorn updates were missing. This was odd, as I could see the DevOps logs saying that the step which fired off the Unicorn sync had completed ok:</p>
@@ -168,12 +168,12 @@
 					<p>So how can DevOps ensure that all of the CM pods have been updated before it tries the Unicorn Job?</p>
 					<h2>A possible solution</h2>
 					<p>After spending a bit of time with my friend Google, I came across another approach. Instead of waiting on the state of a pod, it turns out you can wait on the state of a deployment:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe rollout status deployment cm -n &lt;YourNamespace&gt;
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe rollout status deployment cm -n &lt;YourNamespace&gt;
 
 					</pre>
 					<p>By default that command will keep waiting until all the changes from an "apply" operation for a deployment called "cm" have finished. Which should include any replicas spinning up.</p>
 					<p>But it's worth noting that timeouts behave differently here than they do with the "wait" command above. In the original pattern, you passed a timeout flag on the command line, kubectl.exe would wait for "the pod to be ready, or that timeout to expire". The "rollout" command doesn't work that way. There's no command line parameter to control the timeout. It is done via the yaml file for the deployment, using a parameter called "progressDeadlineSeconds". It took me a while to get this one right, as the docs say "it's a child of the spec node", but aren't entirely clear which one, because your yaml probably includes more than one. It's the highest level "spec" that needs this setting:</p>
-					<pre data-enlighter-highlight="9" data-enlighter-language="yaml" style="width:100%; overflow:scroll;">apiVersion: apps/v1
+					<pre class="code" data-enlighter-highlight="9" data-enlighter-language="yaml" style="width:100%; overflow:scroll;">apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cm
@@ -318,7 +318,7 @@ spec:
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -326,7 +326,7 @@ spec:
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

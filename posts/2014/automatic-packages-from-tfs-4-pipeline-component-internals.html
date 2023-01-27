@@ -153,7 +153,7 @@
 					<h2>1: Basic Package Metadata</h2>
 					<p>The first component that runs is the
 						<code>SetPackageMetadata</code>. This is a simple component that just sets some basic package metadata. For the moment that is just the package's name and the name of the package creator:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SetPackageMetadata : IPipelineComponent
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SetPackageMetadata : IPipelineComponent
 {
     public const string PackageNameKey = "SetPackageMetadata.PackageName";
 
@@ -179,7 +179,7 @@
 					<p>The second step in the pipeline is to remove any changed files from the Source Control data that we don't want to process. The job of the
 						<code>RemoveUnwantedItems</code>
 						is to fetch the configuration required for this, and then make use of the data to filter the Source Control Changes.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class RemoveUnwantedItems : IPipelineComponent
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class RemoveUnwantedItems : IPipelineComponent
 {
     public const string ExtensionsToIgnoreKey = "RemoveUnwantedItems.ExtensionsToIgnore";
     public const string FoldersToIgnoreKey = "RemoveUnwantedItems.FoldersToIgnore";
@@ -217,7 +217,7 @@
 					</pre>
 					<p>Similarly to the previous code, the first thing to do is to fetch the configuration parameters. Here however, we also have to process them into arrays that we can iterate over later, as they are stored as comma separated lists. And once this is done, the code then needs to iterate the set of changes passed in through the input data for the pipeline. Since we need to iterate and modify this collection the code starts by copying the keys in the input dictionary, and then iterates that copy. For each key that it processes it checks whether it contains an excluded extension, an excluded folder in its path, or no extension at all. If one of those tests matches, then the item is removed from the input dictionary.</p>
 					<p>The tests for extensions and folders are simple:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private bool hasExcludedExtension(string key)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private bool hasExcludedExtension(string key)
 {
     foreach (string extension in extensions)
     {
@@ -270,7 +270,7 @@ private bool noExtension(string key)
 					<p>If the input from source control contains things like changes to
 						<code>.less</code>
 						files that need to have the extension changed in the package output, then this component will process the change. It takes a slightly more complex input configuration to specify a list of old and new names, and then checks the source control data for entries that need changing:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class RenameFiles : IPipelineComponent
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class RenameFiles : IPipelineComponent
 {
     public const string ExtensionsKey = "RenameFiles.Extensions";
 
@@ -315,7 +315,7 @@ private bool noExtension(string key)
 					<p>This code follows similar patterns to the previous examples.</p>
 					<h2>4: Getting the right files to deploy</h2>
 					<p>Getting the relevant files to deploy is the next task to process. This requires knowing where the web project being deployed is located, in order to be able to adjust the paths returned by Source Control into the relative style of path required in a package:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractFilesToDeploy : IPipelineComponent
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractFilesToDeploy : IPipelineComponent
 {
     public const string WebProjectFolderKey = "ExtractFilesToDeploy.WebProjectFolder";
 
@@ -351,7 +351,7 @@ private bool noExtension(string key)
 					<p>The key bit of this tool is to get changes to serialised items into the output package. The
 						<code>ExtractItemsToDeploy</code>
 						item does this for us:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractItemsToDeploy : IPipelineComponent
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractItemsToDeploy : IPipelineComponent
 {
     private ProjectConfiguration cfg;
 
@@ -387,7 +387,7 @@ private bool noExtension(string key)
 						<code>PackageSourceItems</code>
 						is constructed and added to the overall package. So far so simple.</p>
 					<p>But if you look at the XML in a set of Sitecore items you'll note that the definition of each item to package looks a bit odd compared to what we get from Source Control:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;xitems&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;xitems&gt;
   ...
   &lt;Entries&gt;
     &lt;x-item&gt;/master/sitecore/system/Dictionary/ProjectName/Forms/Login/ce_Password_Strength/{DD5E504F-5FF9-477F-A2FB-B3905B76368C}/invariant/0&lt;/x-item&gt;
@@ -402,7 +402,7 @@ private bool noExtension(string key)
 						<code>formatItemItentifier()</code>
 						above performs that process.</p>
 					<p>If we look at the content of one of those files, we see roughly the following:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">----item----
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">----item----
 version: 1
 id: {DD5E504F-5FF9-477F-A2FB-B3905B76368C}
 database: master
@@ -436,7 +436,7 @@ At least 7 characters, where one or more is a punctuation character.
 					</pre>
 					<p>You can see that all the data we need is stored in the "item" section that begins the file. It includes the GUID, the path. For the purposes of the prototype here I'm not bothered by specific item versions or languages, so we can fix those bits of the data to "invariant" for the language and "0" for the version in order to tell Sitecore to ignore those options when building the package.</p>
 					<p>Hence we can write a very simple parser to turn the data into a dictionary. It ignores any blank lines, and looks for lines marked with four hyphens – processing data until it reaches one of these regions marked with a title other than "item". And finally it breaks the remaining strings into name / value pairs:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IDictionary&lt;string, string&gt; parseFile(StreamReader sr)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IDictionary&lt;string, string&gt; parseFile(StreamReader sr)
 {
     Dictionary&lt;string, string&gt; data = new Dictionary&lt;string, string&gt;(StringComparer.CurrentCultureIgnoreCase);
     bool done = false;
@@ -474,7 +474,7 @@ At least 7 characters, where one or more is a punctuation character.
 
 					</pre>
 					<p>And we can generate the correct path data using code as follows:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string formatItemIdentifer(string key)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string formatItemIdentifer(string key)
 {
     string identifier;
 
@@ -503,7 +503,7 @@ At least 7 characters, where one or more is a punctuation character.
 					<p>The last thing which needs to be added to the package is the binaries generated from the code in the web package. The
 						<code>ExtractBinariesToDeploy</code>
 						component does this. The configuration for this is a bit more complex, as it needs to be a set of project names, with their accompanying set of binaries. Currently that's a comma separated list, where each item is a pipe-separated list of one project followed by a number of binary files. The following bit of code parses the data out of the config setting into a Dictionary containing a list of strings:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private Dictionary&lt;string, List&lt;string&gt;&gt; extractProjectPathMap(PipelineData data)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private Dictionary&lt;string, List&lt;string&gt;&gt; extractProjectPathMap(PipelineData data)
 {
 	Dictionary&lt;string, List&lt;string&gt;&gt; projectPathMap = new Dictionary&lt;string, List&lt;string&gt;&gt;(StringComparer.CurrentCultureIgnoreCase);
 	var projectsCfg = data.Configuration.Settings[ProjectPathMapKey].Split(',');
@@ -525,7 +525,7 @@ At least 7 characters, where one or more is a punctuation character.
 
 					</pre>
 					<p>That code is used by the core of the pipeline component to parse the configuration before it starts to process the individual items. It goes through the set of projects configured, and for each one, it checks to see if it can find any C# source changes in the input data. For any configured projects that do have changes, it adds the relevant binaries to the package:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractBinariesToDeploy : IPipelineComponent
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractBinariesToDeploy : IPipelineComponent
 {
     public const string ProjectPathMapKey = "ExtractBinariesToDeploy.ProjectPathMap";
 
@@ -576,7 +576,7 @@ At least 7 characters, where one or more is a punctuation character.
 						to the output package that holds all of the binaries that it was necessary to add.</p>
 					<h2>7: Dealing with deletions</h2>
 					<p>Since there's no direct approach to deleting individual files or items inside a Sitecore package, for the moment I'm addressing deletions by adding them as an instruction to the ReadMe section of the package metadata:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractDeletionsToDeploy : IPipelineComponent
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractDeletionsToDeploy : IPipelineComponent
 {
     public void Run(PipelineData data)
     {
@@ -724,7 +724,7 @@ At least 7 characters, where one or more is a punctuation character.
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -732,7 +732,7 @@ At least 7 characters, where one or more is a punctuation character.
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

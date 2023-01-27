@@ -183,7 +183,7 @@ I'm going to break this up into a series of posts, as it's quite a big topic. Th
 					<p>DSC is designed to support the DevOps concepts of automating infrastructure tasks and having executable code for describing server state which can also be seen as documentation of the state you require. It allows you to move towards the idea of having servers being disposable – since the process of building them is automated, creating and destroying them is easy. You can get to a state where you click a button in the management tools for Hyper-V (or your preferred Virtualisation framework) to spin up a new virtual machine and it automatically pulls the right configuration from a central location and configures itself to meet your requirements.</p>
 					<h2>What does a basic script look like?</h2>
 					<p>Here's a very basic script, which can be used to install IIS onto a machine:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIIS
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIIS
 {
     Node “WebSvr001"
     {
@@ -233,7 +233,7 @@ EnableIIS
 						which is used to pass the
 						<code>.MOF</code>
 						files to the underlying management infrastructure and run them. In a test environment, you run something like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Start-DSCConfiguration -Path .\EnableIIS -Verbose -Wait -Force 
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Start-DSCConfiguration -Path .\EnableIIS -Verbose -Wait -Force 
 
 					</pre>
 					<p>The
@@ -257,7 +257,7 @@ EnableIIS
 					<h2>Making scripts more generic</h2>
 					<p>So far, however, our script has been specific to a single server. That's nice for an example, but it's not very practical for the real world. You'd end up maintaining a separate script for each of the servers you manage and that would be a pain to keep everything up to date. Ideally we'd like to be able to write scripts which describe the state needed for a particular class of server (e.g. "Sitecore Content Deployment Webserver" or "SQL Server") and then just map those configurations to the appropriate server names for any given environment. How can we express our installation requirements in a more generic way to make them reusable?</p>
 					<p>It's actually pretty simple – we can pass configuration data into our DSC Scripts, and generalise the script to process the data. DSC expects you to pass in a dictionary object containing a tree of name-value pairs that describe your config data. For example, expanding on the IIS example above, we might pass in the following configuration data:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
     AllNodes = @(
         @{
             NodeName = "WebSvr001"
@@ -291,7 +291,7 @@ EnableIIS
 						<a href="/posts/2015/config-variables-in-powershell-dsc-can-confuse" target="_blank">accessing these nested config variables</a>
 						in a previous post)</p>
 					<p>You then need to modify your DSC Scripts to process the relevant bits of this data. The script for adding IIS doesn't actually need much of this information, but you might it to look like this:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="3,12" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIIS
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="3,12" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIIS
 {
     Node $AllNodes.where{ $_.Role.Contains(“IIS") }.NodeName 
     {
@@ -453,7 +453,7 @@ EnableIIS -ConfigurationData ".\configData.psd1"
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -461,7 +461,7 @@ EnableIIS -ConfigurationData ".\configData.psd1"
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

@@ -162,7 +162,7 @@
 						<code>Sitecore.Install.Framework.IPostStep</code>
 						interface or just have a method in your class with the signature
 						<code>public void RunPostStep()</code>. So for a trivial example you could stick the following code into your site binary:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace Testing
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace Testing
 {
     public class PackagePostStep : Sitecore.Install.Framework.IPostStep
     {
@@ -182,7 +182,7 @@
 						</a>
 					</p>
 					<p>Looking at the definition of the ITaskOutput interface, it looks like there are a few common scenarios that Sitecore were expecting us to make use of here:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace Sitecore.Install.Framework
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace Sitecore.Install.Framework
 {
 	public interface ITaskOutput
 	{
@@ -206,11 +206,11 @@
 						</a>
 					</p>
 					<p>You can access them via</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">string val = metaData["Attributes"];
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">string val = metaData["Attributes"];
 
 					</pre>
 					<p>and the value you get passed back is:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">attr1=One|attr2=Two|
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">attr1=One|attr2=Two|
 
 					</pre>
 					<p>Hence it needs parsing to be useful...</p>
@@ -223,7 +223,7 @@
 						<code>&lt;PostStep&gt;</code>
 						element which points to
 						<code>Sitecore.Form.Core.Configuration.Installation, Sitecore.Forms.Core</code>. Via your favourite decompiler, you can see that this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Run(ITaskOutput output, NameValueCollection metaData)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Run(ITaskOutput output, NameValueCollection metaData)
 {
 	SecurityPostAction securityPostAction = new SecurityPostAction();
 	securityPostAction.Run(output, metaData);
@@ -236,7 +236,7 @@
 						role for you, and then it's triggering a command. From the config include in the package, that command triggers the class
 						<code>Sitecore.Forms.Core.Commands.RestrinctingPlaceholders</code>. (note the plural of Forms - I got a bit confused initially because the Core DLL for WFfM includes both the Sitecore.Form and Sitecore.Forms namespaces) And that bit of code looks very much like the sort of "command displays some UI" implementation patterns
 						<a href="/posts/2014/confirming-sitecore-commands" target="_blank">we've discussed in earlier posts</a>:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Run(ClientPipelineArgs args)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Run(ClientPipelineArgs args)
 {
 	Item item = StaticSettings.ContextDatabase.GetItem(IDs.SettingsRoot);
 	Assert.ArgumentNotNull(item, "item");
@@ -286,7 +286,7 @@
 					<h2>I don't want my users to forget to publish my new template</h2>
 					<p>It seems like a bit of a trivial issue, but have you ever hit this scenario before: You create an update package for a client's site which includes some extra pages and the modified or added templates needed for them. The client get focussed on writing the appropriate copy, and eventually publishes just the pages that they have been editing – never realising that they needed to publish the templates too. I come across the scenario before where editors won't use "Publish Site" because they're never quite sure if there are some non-workflowed changes that someone else is working on which should not go live yet...</p>
 					<p>So how about if we could trigger a publish for just our added/changed templates as part of the package in order to prevent this issue? Well the basic code is pretty simple:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    public class PackagePostStep : Sitecore.Install.Framework.IPostStep
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    public class PackagePostStep : Sitecore.Install.Framework.IPostStep
     {
         public void Run(Sitecore.Install.Framework.ITaskOutput output, System.Collections.Specialized.NameValueCollection metaData)
         {
@@ -307,12 +307,12 @@
 					<p>If you're automatically publishing stuff, it stands to reason that you might want to automatically update a search index? Particularly if you're dealing with changes to templates, I've found in the past that it can be necessary to do a full build of an index after publishing that sort of change – the automatic updates that Sitecore tries to apply don't always spot them. According to
 						<a href="http://sdn.sitecore.net/upload/sitecore6/65/sitecore_search_and_indexing_sc60-65-usletter.pdf" target="_blank" rel="noopener noreferrer">the search documentation</a>
 						from Sitecore you can call either:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Index idx = SearchManager.GetIndex("myIndex");
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Index idx = SearchManager.GetIndex("myIndex");
 idx.Rebuild();
 
 					</pre>
 					<p>or</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">Database web = Sitecore.Configuration.Factory.GetDatabase("web");
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">Database web = Sitecore.Configuration.Factory.GetDatabase("web");
 web.Indexes["myIndex"].Rebuild(web);
 
 					</pre>
@@ -323,7 +323,7 @@ web.Indexes["myIndex"].Rebuild(web);
 					<h2>The code change in this package requires content changes to work correctly</h2>
 					<p>Another common scenario I've encountered before is that you get a change request from a client, which involves adding a new field to a template, and your code now needs that value to work correctly. In the past I've tried both defensive programming (check if the field exists – if not, don't try to use it) and manual instructions for tasks to be performed after package installation to try and get changes like this deployed. But neither of those is perfect.</p>
 					<p>But with a post install step in your package, you could write code to make the content updates automatically:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">    public class PackagePostStep : Sitecore.Install.Framework.IPostStep
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">    public class PackagePostStep : Sitecore.Install.Framework.IPostStep
     {
         public void Run(Sitecore.Install.Framework.ITaskOutput output, System.Collections.Specialized.NameValueCollection metaData)
         {
@@ -464,7 +464,7 @@ web.Indexes["myIndex"].Rebuild(web);
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -472,7 +472,7 @@ web.Indexes["myIndex"].Rebuild(web);
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

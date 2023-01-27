@@ -180,7 +180,7 @@
 					<h2>Configuration for this installation</h2>
 					<p>There are various bits of the Mongo installation that it would be useful to make configurable.</p>
 					<p>We'll need somewhere to stick temporary files used by the installation, and we'll need assorted settings for MongoDB itself. We can extend the basic configuration data with the right new things:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@{
     AllNodes = @(
         @{
             NodeName = "WIN-AQEKG7L9SE8"
@@ -212,7 +212,7 @@
 						<code>Configuration</code>, it needs the parameter for finding the dependencies, and it needs the
 						<code>Node</code>
 						that works out what servers the resources we're defining will be used on:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration MongoDBInstall
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration MongoDBInstall
 {
     param (
         [Parameter(Mandatory=$true)]
@@ -240,7 +240,7 @@ Start-DscConfiguration -Path .\MongoDBInstall -Verbose -Wait -Force
 					<p>First of all, MongoDB needs folders to store its data in. The
 						<code>File</code>
 						resource in DSC can be used both for copying files and folders, or for creating them. So combining that with the configuration above we can create the right folders:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File MongoDataFolders
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File MongoDataFolders
 {
     Type = "Directory"
     DestinationPath = "$($Node.Mongo.DataFolder)\db"
@@ -265,7 +265,7 @@ File MongoLogFolders
 					<p>The next thing we'll need is the config file for the MongoDB service. In my previous script I was generating that directly as the script ran, but for this version I've made this file a dependency of the script. Hence we can use another
 						<code>File</code>
 						resource to copy it over to our Mongo data directory:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File MongoConfigFile
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File MongoConfigFile
 {
     SourcePath = "$PackagePath\mongod.cfg"
     DestinationPath = "$($Node.Mongo.DataFolder)\mongod.cfg"
@@ -281,7 +281,7 @@ File MongoLogFolders
 						parameter to our
 						<code>Configuration</code>
 						so we can find the source file. That file includes some variables which need to be resolved though. My basic example config contains:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">systemLog:
     destination: file
     path: $MongoDataFolder\log\mongod.log
 storage:
@@ -307,7 +307,7 @@ storage:
 					<p>For the purposes of this resource, these two scripts aren't particularly important, so they're not filled in here.</p>
 					<p>The final property is
 						<code>SetScript</code>, and this is the one which does all the hard work:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script UpdateMongoConfigFile
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script UpdateMongoConfigFile
 {
     DependsOn = "[file]MongoConfigFile"
     GetScript = {
@@ -336,7 +336,7 @@ storage:
 						syntax to make sure the values are correctly processed.</p>
 					<p>Other than that the code's simple – it just reads the base config file from disk, replaces the variable names with their value, and then writes the result back out again...</p>
 					<p>So the next step is installing MongoDB itself. That needs two steps. The first is a simple one to copy the installer over from our folder full of dependencies into our local temporary folder:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File MongoMSI
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File MongoMSI
 {
     SourcePath = "$PackagePath\$($Node.Mongo.MSIFile)"
     DestinationPath = "$($Node.TempFolder)\$($Node.Mongo.MSIFile)"
@@ -352,7 +352,7 @@ storage:
 						packages. While it's a bit restrictive about the packages it can install, MongoDB plays nicely with it, so we can use the
 						<code>Package</code>
 						resource as follows:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Package MongoDB
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Package MongoDB
 {
     DependsOn = "[file]MongoMSI"
     Ensure = "Present"
@@ -381,7 +381,7 @@ storage:
 					<p>As I discussed in my previous Mongo post, running the installer gets you the executables on disk, but it doesn't install them as a service. Doing that involves two steps. The first is to instruct MongoDB to add itself into the list of services on the machine. That requires some custom code, so we need another
 						<code>Script</code>
 						resource:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script MongoService
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script MongoService
 {
     DependsOn = "[package]MongoDB", "[script]UpdateMongoConfigFile"
     GetScript = {
@@ -433,7 +433,7 @@ storage:
 					<p>Once that's done, the second step is that we need to make sure our service is configured to start automatically. Luckily, DSC has a resource called
 						<code>Service</code>
 						which can deal with changing the state of Windows services. All we have to do is specify the name of the service, how we want it to start up and what state it should be in now:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Service StartMongoService
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Service StartMongoService
 {
     DependsOn = "[script]MongoService"
     StartupType =  "Automatic"
@@ -451,7 +451,7 @@ storage:
 						resource, so this code uses the
 						<code>.ZIP</code>
 						version of RoboMongo. The first thing to do is to grab a copy of this from our dependencies folder:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File GetRobomongoZip
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File GetRobomongoZip
 {
     SourcePath = "$PackagePath\$($Node.Mongo.RoboZip)"
     DestinationPath = "$($Node.TempFolder)\$($Node.Mongo.RoboZip)"
@@ -465,7 +465,7 @@ storage:
 						can unpack a zip file. This uses the
 						<code>$Env:ProgramFiles</code>
 						variable to find the appropriate place to unpack the zip to:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Archive UnzipRobomongo
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Archive UnzipRobomongo
 {
     DependsOn =  "[file]GetRobomongoZip"
     Path = "$($Node.TempFolder)\$($Node.Mongo.RoboZip)"
@@ -477,7 +477,7 @@ storage:
 						<code>Script</code>
 						resource to add an icon to a user's desktop via the
 						<a href="https://msdn.microsoft.com/en-us/library/aew9yb99(v=vs.84).aspx" target="_blank" rel="noopener noreferrer">Windows Shell's COM API</a>:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script AddRobomongoLink
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script AddRobomongoLink
 {
     DependsOn = "[archive]UnzipRobomongo"
     GetScript = {
@@ -641,7 +641,7 @@ storage:
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -649,7 +649,7 @@ storage:
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

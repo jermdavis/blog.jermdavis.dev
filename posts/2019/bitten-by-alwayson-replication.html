@@ -146,7 +146,7 @@
 					</p>
 					<h2>The issue</h2>
 					<p>A while back I'd been invoved in rolling out some infrastructure for a Sitecore v9.1 instance. At the point the deployment was done the AlwaysOn configuration for SQL Server wasn't in place – but it was going to be fitted in afterwards. Initially, everything was working ok – but after the client did work to get the AlwaysOn configuration enabled, issues started to occur. Lots of stuff to do with Analytics stopped working. Working through the issues, the key one was that analytics data stopped being recorded, because the xConnect collection role started recording errors:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2019-11-25 03:07:05.630 +01:00 [Error] ["XdbContextLoggingPlugin"] XdbContext Batch Execution Exception
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2019-11-25 03:07:05.630 +01:00 [Error] ["XdbContextLoggingPlugin"] XdbContext Batch Execution Exception
 Sitecore.XConnect.Operations.DependencyFailedException: One or more dependencies failed ---&gt;
 Sitecore.Xdb.Collection.Failures.DataProviderException: Store Error:
 Cannot open database "ClientSite_Xdb.Collection.ShardMapManager" requested by the login.
@@ -188,12 +188,12 @@ The login failed.
 					<h2>The resolution</h2>
 					<p>The trick to making this work is that you need to have both of your machines have a user with the same SID. A pile of googling lead to a blog post
 						<a href="https://blog.sqlauthority.com/2015/04/18/sql-server-create-login-with-sid-way-to-synchronize-logins-on-secondary-server/" rel="noopener" target="_blank">which describes how you should approach to that</a>: You can create a user with a known SID, using:</p>
-					<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">CREATE LOGIN collectionuser WITH
+					<pre class="code" data-enlighter-language="sql" style="width:100%; overflow:scroll;">CREATE LOGIN collectionuser WITH
 password = 'password@123', SID = 0x59B662112A43D24585BFE2BF80D9BE19
 
 					</pre>
 					<p>So you can either make up your own SID and create the user on both machines using it, or you can create it normally on one machine, and then read the SID it used back via:</p>
-					<pre data-enlighter-language="sql" style="width:100%; overflow:scroll;">SELECT name, sid FROM sys.sysusers WHERE name = 'collectionuser'
+					<pre class="code" data-enlighter-language="sql" style="width:100%; overflow:scroll;">SELECT name, sid FROM sys.sysusers WHERE name = 'collectionuser'
 
 					</pre>
 					<p>and use that value.</p>
@@ -315,7 +315,7 @@ password = 'password@123', SID = 0x59B662112A43D24585BFE2BF80D9BE19
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -323,7 +323,7 @@ password = 'password@123', SID = 0x59B662112A43D24585BFE2BF80D9BE19
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

@@ -168,7 +168,7 @@ Having finally had a chance to work out a basic pattern for <a href=&quot;/posts
 					</p>
 					<p>We need a block of UI that contains the set of filters, and a list of the results that were generated.</p>
 					<p>Because the HTML won't include any actual data when it is downloaded from the server, we also need to have some "loading" placeholders as well:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;body&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;body&gt;
     &lt;h1&gt;Search TShirts&lt;/h1&gt;
 
     &lt;form id="filters"&gt;
@@ -191,7 +191,7 @@ Having finally had a chance to work out a basic pattern for <a href=&quot;/posts
 					<h2>Fetching configuration</h2>
 					<p>When the HTML for the page finishes loading the first thing that needs to happen is that the search configuration needs to be fetched. There needs to be a method on the search service that can take the GUID of the configuration template defined in the earlier posting, and it needs to return the display name for the facet and the HTML field name we plan to use. (And in more complex implementations it could also return data about the type of UI to display)</p>
 					<p>To do that we need some classes to represent the data, and an API method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FilterConfig
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FilterConfig
 {
     public string DisplayName { get; set; }
     public string FieldName { get; set; }
@@ -236,7 +236,7 @@ public SearchConfiguration GetConfig(string configID)
 						<code>FilterConfig</code>
 						items to return.</p>
 					<p>Then the client side code can call this method:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var config = null;
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var config = null;
 
 function getConfig() {
     var cfgID = $("#configID").val();
@@ -261,7 +261,7 @@ function getConfig() {
 					</pre>
 					<p>It fetches the value from the hidden form field for the configuration item ID and passes it across to the server. The result data then gets stored for use by future methods.</p>
 					<p>Next the code needs to create the UI controls for the set of filters defined in the configuration:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function setupUI() {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function setupUI() {
     for (i in config) {
         var filter = config[i];
 
@@ -294,7 +294,7 @@ function getConfig() {
 						<a href="http://benalman.com/projects/jquery-bbq-plugin/" title="jQuery BBQ" target="_blank" rel="noopener noreferrer">jQuery BBQ</a>]</p>
 					<p>After this is set up we can run the initial search – which I'll discuss in a second.</p>
 					<p>Once that initial search has been run, the last thing that needs to be done is to attach an event to the "hashchange" event so that whenever the URL's hash fragment changes we run a new search:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function setupHashChangeEvent() {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function setupHashChangeEvent() {
     $(window).bind('hashchange', function (e) {
         ignoreChangeEvents = true;
         copyHashParamsToFormFields();
@@ -309,7 +309,7 @@ function getConfig() {
 					<p>It stops the event handle for dropdown list changes from updating the hash fragment (so we don't get an infinite loop), updates the UI dropdowns and then runs the search...</p>
 					<h2>Running a search</h2>
 					<p>Client side, the search code needs to show the "loading" placeholder, fetch the filter values to post back, talk to the server and then update the UI:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function search(filterFunction) {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function search(filterFunction) {
     $(".loading").show();
 
     var filters = collateFilterData(filterFunction);
@@ -352,7 +352,7 @@ function collateFilterData(fn) {
 					</pre>
 					<p>Depending on where we are in the code, the place we want to take the filter parameters from changes. For the first run of the code, when the page first loads, we want to take the filter values direct from the hash fragment. But for subsequent searches the values can come from the form fields that get set up after the first search. The function that allows fetching of the correct facet values is passed in as a parameter here.</p>
 					<p>On the server side, again we need some simple classes for the return data, and similar code to the old version of the code to run the search. The server receives the facet filter values from the client request, transforms them into a Lucene query, runs it and then constructs the result set:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SearchResults
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SearchResults
 {
     public IEnumerable&lt;FilterData&gt; Filters { get; set; }
     public IEnumerable&lt;Result&gt; Results { get; set; }
@@ -449,7 +449,7 @@ private IEnumerable&lt;Result&gt; buildResults(SearchResultCollection results)
 						elements that it matches up it removes the
 						<code>&lt;option&gt;</code>
 						elements that exist and add in new ones. And for the results, a similar process removes any previous results and inserts the new ones:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function bindDropdowns(dropdownValues) {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function bindDropdowns(dropdownValues) {
     for (i in dropdownValues) {
         var dropdownValue = dropdownValues[i];
 
@@ -613,7 +613,7 @@ function bindResults(resultValues) {
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -621,7 +621,7 @@ function bindResults(resultValues) {
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

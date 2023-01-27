@@ -148,7 +148,7 @@ So here's one way it could work:">
 					</p>
 					<h2>First step is having some configuration...</h2>
 					<p>A very simple structure to store a pipeline might look like this:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;pipeline name="example"&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;pipeline name="example"&gt;
   &lt;step type="StronglyTypedPipelines.DoubleStep, StronglyTypedPipelines" /&gt;
   &lt;step type="StronglyTypedPipelines.ToStringStep, StronglyTypedPipelines" /&gt;
   &lt;step type="StronglyTypedPipelines.DuplicateStep, StronglyTypedPipelines" /&gt;
@@ -162,14 +162,14 @@ So here's one way it could work:">
 					<p>So the next task is to load the XML and get it ready for processing:</p>
 					<h2>Loading the XML</h2>
 					<p>Ideally there shouldn't be any significant differences between a "loaded from config" pipeline and a "created by code" one. So the code can start from a new abstract class that inherits from our original pipeline type:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ConfigBasedPipeline&lt;INPUT, OUTPUT&gt; : Pipeline&lt;INPUT, OUTPUT&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ConfigBasedPipeline&lt;INPUT, OUTPUT&gt; : Pipeline&lt;INPUT, OUTPUT&gt;
 {
 }
 
 					</pre>
 					<p>The functional difference between config and code based pipelines is basically how they're initialised, so the logic to do the loading can be put into the constructor of this type. Since the config will be written in XML, this code can be based on receiving the XML that describes the pipeline being loaded, and we can assume that any patching required has been done before the point that our class receives it.</p>
 					<p>So the constructor might look like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public ConfigBasedPipeline(XElement pipelineXml)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public ConfigBasedPipeline(XElement pipelineXml)
 {
     if (pipelineXml == null)
     {
@@ -188,7 +188,7 @@ So here's one way it could work:">
 						which actually runs the pipeline process that we saw described in the code-first constructor from the previous post.</p>
 					<h2>Parsing and validating</h2>
 					<p>Parsing the XML into objects is fairly simple:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IList&lt;IPipelineStep&gt; parsePipelineSteps(XElement pipelineXml)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IList&lt;IPipelineStep&gt; parsePipelineSteps(XElement pipelineXml)
 {
     var pipeline = new List&lt;IPipelineStep&gt;();
 
@@ -208,7 +208,7 @@ So here's one way it could work:">
 
 					</pre>
 					<p>The result of parsing is going to be a list of pipeline steps. In the previous post, the interface defining a step had generic parameters for the input and output. That makes it a bit difficult to handle here, as we don't know it's type parameters until after it's been created – which in turn makes defining a list to hold it harder. So to make this easier, I went back and added a base interface without type parameters that all the steps inherit from:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep
 {
 }
 
@@ -230,7 +230,7 @@ public interface IPipelineStep&lt;INPUT, OUTPUT&gt; : IPipelineStep
 					<p>That's handled by the
 						<code>validatePipelineSteps()</code>
 						method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void validatePipelineSteps(IList&lt;IPipelineStep&gt; pipelineSteps)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void validatePipelineSteps(IList&lt;IPipelineStep&gt; pipelineSteps)
 {
     int stepNumber = 0;
 
@@ -267,7 +267,7 @@ public interface IPipelineStep&lt;INPUT, OUTPUT&gt; : IPipelineStep
 					<p>If the steps validate, all that remains is to provide the code which can execute them. We can't easily express the
 						<code>Func&lt;INPUT,OUTPUT&gt;</code>
 						from the previous post because we don't know the actual step objects involve this time around. But we can iterate them and make use of reflection to get them to do their job anyway:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private OUTPUT processPipelineSteps(IList&lt;IPipelineStep&gt; pipelineSteps, INPUT input)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private OUTPUT processPipelineSteps(IList&lt;IPipelineStep&gt; pipelineSteps, INPUT input)
 {
     object output = input;
 
@@ -291,7 +291,7 @@ public interface IPipelineStep&lt;INPUT, OUTPUT&gt; : IPipelineStep
 						<code>OUTPUT</code>
 						(since we validated the steps earlier) so we know we're safe to cast to that to return the "right" data.</p>
 					<p>Finally, we need to wrap up out abstract config-based pipeline class in a concrete type that specifies what the input and output are:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleConfigBasedPipeline : ConfigBasedPipeline&lt;int, string&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleConfigBasedPipeline : ConfigBasedPipeline&lt;int, string&gt;
 {
     public ExampleConfigBasedPipeline(XElement pipelineXml) : base(pipelineXml)
     {
@@ -300,7 +300,7 @@ public interface IPipelineStep&lt;INPUT, OUTPUT&gt; : IPipelineStep
 
 					</pre>
 					<p>With that done, a config-based pipeline can be called with fairly similar code to the code-based ones:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var input = 13;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var input = 13;
 
 XDocument xd = XDocument.Load("ConfigBasedPipeline.xml");
 //
@@ -437,7 +437,7 @@ var output = pipeline.Process(input);
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -445,7 +445,7 @@ var output = pipeline.Process(input);
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

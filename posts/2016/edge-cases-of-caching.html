@@ -150,7 +150,7 @@
 					<p>Recently I was doing some performance tuning for a site, and noticed that there were some fairly high-effort calls required in layout code that couldn't be moved out to a component. For example, how can you optimise code to calculate attributes that go into the
 						<code>&lt;html&gt;</code>
 						element? I was looking at code where extension methods were injecting this data:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;!DOCTYPE html&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;!DOCTYPE html&gt;
 &lt;html lang="@Html.CurrentLanguage()" @Html.TextDirection()&gt;
   &lt;head&gt;
     &lt;!-- metadata components etc. go here --&gt;
@@ -164,7 +164,7 @@
 					<p>Now layouts are never cached by Sitecore, so these extension method calls will always run. What can be done to speed them up?</p>
 					<p>The pattern I decided to experiment with was to add these bits of data into the HTML cache with some custom code. That means the expensive bit of these calls only gets made once, but the cached values will still get cleared out by publishing operations - ensuring that pages will be updated to match any content changes.</p>
 					<p>There were a number of these extension methods in the code which could benefit from being cached, so to try and write one bit of code which could be reused for each of these methods I added helper function which each of the extensions could use:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private static string htmlCacheable(string key, Func&lt;string&gt; dataFn)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private static string htmlCacheable(string key, Func&lt;string&gt; dataFn)
 {
     string value = Sitecore.Context.Site.SiteInfo.HtmlCache.GetHtml(key);
 
@@ -181,7 +181,7 @@
 					<p>The method checks whether the current
 						<code>&lt;site/&gt;</code>‘s HTML cache contains the specified key. If it does this value is returned. But if the cache returns nothing then the value which needs to be cached is computed by calling the data generating function, before adding the result to the cache. Since the cache is found based on the context site, you don't have to worry about which site is running this code.</p>
 					<p>That means that the code for individual extension methods can go from their old structure:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CurrentLanguage(this HtmlHelper html)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CurrentLanguage(this HtmlHelper html)
 {
     // code to calculate the right value
     return value;
@@ -189,7 +189,7 @@
 
 					</pre>
 					<p>To this structure:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CurrentLanguage(this HtmlHelper html)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CurrentLanguage(this HtmlHelper html)
 {
     string key = "layout::language";
     Func&lt;string&gt; dataFn = () =&gt;
@@ -203,7 +203,7 @@
 
 					</pre>
 					<p>This works great for simple helpers, as long as you think of a unique value for your cache key. However, some of the extension methods I was looking at could take parameters. In that situation, it's important to ensure you use all the parameter values when you're creating your cache key. That means you'll get a separate cache entry for each distinct call. For example:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CalculateCorrectSiteLogoMarkup(this HtmlHelper html, int width, int height)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string CalculateCorrectSiteLogoMarkup(this HtmlHelper html, int width, int height)
 {
     string key = string.Format("layout::logo|width={0}|height={1}", width, height);
     Func&lt;string&gt; dataFn = () =&gt;
@@ -334,7 +334,7 @@
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -342,7 +342,7 @@
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

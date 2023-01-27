@@ -156,7 +156,7 @@
 						service. At a certain point our new code was making a decision based on ASP.Net's property for the requesting
 						<a href="https://msdn.microsoft.com/en-us/library/system.web.configuration.httpcapabilitiesbase.screenpixelswidth(v=vs.110).aspx" target="_blank" rel="noopener noreferrer">device's screen pixel-width</a>.</p>
 					<p>QA reported that for mobile browsers this was all fine, and the new code worked as expected, but for desktop browsers the following exception was occurring when the browser property was accessed for the first time:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">System.FormatException: Input string was not in a correct format.
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">System.FormatException: Input string was not in a correct format.
    at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer&amp; number, NumberFormatInfo info, Boolean parseDecimal)
    at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
    at System.Web.Configuration.HttpCapabilitiesBase.get_ScreenPixelsWidth()
@@ -167,7 +167,7 @@
 						<code>ScreenPixelWidth</code>
 						property with
 						<a href="http://ilspy.net/" target="_blank" rel="noopener noreferrer">ILSpy</a>, the crash was happening here:</p>
-					<pre data-enlighter-highlight="35" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public virtual int ScreenPixelsWidth
+					<pre class="code" data-enlighter-highlight="35" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public virtual int ScreenPixelsWidth
 {
 	get
 	{
@@ -214,7 +214,7 @@
 					<p>So what is the value appearing there?</p>
 					<p>Delving into
 						<a href="https://github.com/chowson/Sitecore.51Degrees.CloudDeviceDetection/blob/1a5532e436b41240250b8bbb7cb8d1915ee466b8/Sitecore.51Degrees.CloudDeviceDetection/Services/FiftyOneDegreesService.cs" target="_blank" rel="noopener noreferrer">the code for the Sitecore integration module</a>, it asks the 51 Degrees service for capabilities data for the current browser, and then calls this code to move that data into the raw data used by the .Net capabilities object:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void SetBrowserCapabilities()
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void SetBrowserCapabilities()
 {
     if (_httpContextWrapper.Items.Contains("FiftyOneDegreesService.SetBrowserCapabilities"))
     {
@@ -260,36 +260,36 @@
 						<code>ISitecoreSettingsWrapper</code>, which is used to read some settings from Sitecore's config files, via the
 						<code>GetSetting()</code>
 						method. So initially we can mock that to return nothing. If we need to add any specific behaviour to it we can do so later:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var setting = new Mock&lt;ISitecoreSettingsWrapper&gt;();
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var setting = new Mock&lt;ISitecoreSettingsWrapper&gt;();
 setting.Setup(i =&gt; i.GetSetting(It.IsAny&lt;string&gt;())).Returns(string.Empty);
 
 					</pre>
 					<p>Next up is an instance of 51Degrees'
 						<code>IHttpContextWrapper</code>. That has to wrap around the current
 						<code>HttpContext</code>‘s request, to provide access to things like the browser detection data, the Browser's agent string. Experience tells me that trying to mock this will be challenging, but that Microsoft's code is usually flexible enough to create a request using their objects. So the first thing to do is to create a bogus request and assign it to the current context:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var request = new HttpRequest("", "http://test.com", "");
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var request = new HttpRequest("", "http://test.com", "");
 HttpContext.Current = new HttpContext(request, new HttpResponse(new StringWriter()));
 
 					</pre>
 					<p>A check with the debugger shows that when you create a request like this, the Browser Capabilities data is all null – so we need to initialise that:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var capsdictionary = new Dictionary&lt;string, object&gt;(StringComparer.OrdinalIgnoreCase);
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var capsdictionary = new Dictionary&lt;string, object&gt;(StringComparer.OrdinalIgnoreCase);
 HttpContext.Current.Request.Browser = new HttpBrowserCapabilities() { Capabilities = capsdictionary };
 
 					</pre>
 					<p>Note that the dictionary created here has a case-insensitive string comparison – that's important. In creating all of this I spent some time wondering why the test didn't work as expected, all because initially I created a case-sensitive dictionary...</p>
 					<p>Then we can wrap up our context ready to give it to the 51Degrees class:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpcontextWrapper = new Sitecore.FiftyOneDegrees.CloudDeviceDetection.System.Wrappers.HttpContextWrapper(HttpContext.Current);
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpcontextWrapper = new Sitecore.FiftyOneDegrees.CloudDeviceDetection.System.Wrappers.HttpContextWrapper(HttpContext.Current);
 
 					</pre>
 					<p>Next up, the 51Degrees class needs an
 						<code>IHttpRuntimeCacheWrapper</code>. Caching isn't important to the test, so lets just provide a mock for that:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpruntimeCache = new Mock&lt;IHttpRuntimeCacheWrapper&gt;();
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpruntimeCache = new Mock&lt;IHttpRuntimeCacheWrapper&gt;();
 
 					</pre>
 					<p>So finally we need an
 						<code>IWebRequestWrapper</code>
 						object. Digging through the code, this is used to issue the web service request to the 51Degrees service. We don't really want to issue that request and deal with processing and deserialising the response. There's only one method, so let's just make a fake:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FakeWebRequestWrapper : IWebRequestWrapper
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FakeWebRequestWrapper : IWebRequestWrapper
 {
     public T GetJson&lt;T&gt;(string requestUrl)
     {
@@ -303,12 +303,12 @@ HttpContext.Current.Request.Browser = new HttpBrowserCapabilities() { Capabiliti
 					<p>The Json data there was captured from a real request (which threw the exception) using
 						<a href="http://www.telerik.com/fiddler" target="_blank" rel="noopener noreferrer">Fiddler</a>
 						to intercept the traffic. The class just ignores the input and returns the deserialised object for the captured data. And it's trivial to create an instance:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpWebRequest = new FakeWebRequestWrapper();
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var httpWebRequest = new FakeWebRequestWrapper();
 
 					</pre>
 					<p>So finally, we can create the object to test and we can test what happens when we access the
 						<code>ScreenPixelsWidth</code>:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var sut = new FiftyOneDegreesService(setting.Object, httpcontextWrapper, httpruntimeCache.Object, httpWebRequest);
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var sut = new FiftyOneDegreesService(setting.Object, httpcontextWrapper, httpruntimeCache.Object, httpWebRequest);
 sut.SetBrowserCapabilities();
 
 Assert.AreEqual(0, request.Browser.ScreenPixelsWidth);
@@ -347,7 +347,7 @@ Assert.AreEqual(0, request.Browser.ScreenPixelsWidth);
 						after it's been initialised the normal way. A bit of decompilation tells us that the
 						<code>HttpWorkerRequest</code>
 						object is stored in a field called "_wr". So:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var workerrequest = new Mock&lt;HttpWorkerRequest&gt;();
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var workerrequest = new Mock&lt;HttpWorkerRequest&gt;();
 workerrequest.Setup(w =&gt; w.GetKnownRequestHeader(39)).Returns("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36");
 
 var type = request.GetType();
@@ -359,7 +359,7 @@ field.SetValue(request, workerrequest.Object);
 					<p>But getting back to the important stuff...</p>
 					<h2>The fix</h2>
 					<p>Fixing the issue is pretty simple. We just need to ensure that if the code is copying a 51Degrees property into the .Net browser capabilities, it replaces any "Unknown" values with a value that will parse as an integer:</p>
-					<pre data-enlighter-highlight="17,18,19,20" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void SetBrowserCapabilities()
+					<pre class="code" data-enlighter-highlight="17,18,19,20" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void SetBrowserCapabilities()
 {
     if (_httpContextWrapper.Items.Contains("FiftyOneDegreesService.SetBrowserCapabilities"))
     {
@@ -516,7 +516,7 @@ field.SetValue(request, workerrequest.Object);
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -524,7 +524,7 @@ field.SetValue(request, workerrequest.Object);
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

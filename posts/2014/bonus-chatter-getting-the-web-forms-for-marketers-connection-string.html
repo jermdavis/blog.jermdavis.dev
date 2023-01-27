@@ -151,7 +151,7 @@
 						config element, but is stored in the custom provider configuration in WFfM's forms.config file:</p>
 					
 					<!--more-->
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;formsDataProvider type="Sitecore.Forms.Data.DataProviders.WFMDataProvider, Sitecore.Forms.Core"&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;formsDataProvider type="Sitecore.Forms.Data.DataProviders.WFMDataProvider, Sitecore.Forms.Core"&gt;
   &lt;param desc="connection string"&gt;user id=usr;password=pwd; Data Source=localhost;Database=WebFormsForMarketers&lt;/param&gt;
 &lt;/formsDataProvider&gt;
 
@@ -174,7 +174,7 @@
 						<code>Sitecore.Forms.Data.DataProvider</code>
 						class. And in turn, that type uses Sitecore's configuration factory classes to get an instance of the concrete class for accessing the WFfM data.</p>
 					<p>So the first task is to get access to this DataProvider class. There are two ways to go here: Use reflection to create an instance of it, or use Reflection to extract the instance created by Sitecore itself. I decided to go with the second one.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var managerType = typeof(Sitecore.Forms.Data.DataManager);
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var managerType = typeof(Sitecore.Forms.Data.DataManager);
 var managerField = managerType.GetField("provider", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
 var provider = managerField.GetValue(managerType) as Sitecore.Forms.Data.DataProvider;
 
@@ -187,7 +187,7 @@ var provider = managerField.GetValue(managerType) as Sitecore.Forms.Data.DataPro
 						on the type object itself, rather than on an instance of the type.</p>
 					<p>Now, looking at the innards of that DataProvider class, it is a bit more helpful. Once it's loaded the concrete data provider class from configuration, it exposes it in a public property called
 						<code>InnerProvider</code>. So we can take that and cast it to its real type:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var innerProvider = provider.InnerProvider as Sitecore.Forms.Data.DataProviders.WFMDataProvider;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var innerProvider = provider.InnerProvider as Sitecore.Forms.Data.DataProviders.WFMDataProvider;
 
 					</pre>
 					<p>Now note that this is one of the places where this could all go to pot in real life. What if the instance of WFfM you run this code against is using the Oracle data provider, or some other provider type? Well the answer is probably a big messy crash because the cast above will return null. So it makes sense to check if you got the right type back or not. If the cast above returns null then you know this instance of WFfM isn't configured the way you expect. What you choose to do about that is dependent on what you need this code to do – you could fail gracefully, throw an "unexpected configuration" exception or use an alternative path through the rest of this code that knows about other providers.</p>
@@ -195,7 +195,7 @@ var provider = managerField.GetValue(managerType) as Sitecore.Forms.Data.DataPro
 					<p>The internals of the
 						<code>WFMDataProvider</code>
 						class include a private field called "shortConnection" which stores the connection string value extracted from the WFfM configuration. So that's what we need to try and extract:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var innerProviderType = innerProvider.GetType();
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var innerProviderType = innerProvider.GetType();
 var field = innerProviderType.GetField("shortConnection", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 string connectionString = field.GetValue(innerProvider) as string;
 
@@ -320,7 +320,7 @@ string connectionString = field.GetValue(innerProvider) as string;
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -328,7 +328,7 @@ string connectionString = field.GetValue(innerProvider) as string;
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

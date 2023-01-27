@@ -154,7 +154,7 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 					<p>Changing how Sitecore's internal configuration framework processes config files is a bit of a tall order, so I decided to try an experiment by making this part of my deployment process. Since picking and choosing config at runtime wasn't practical, I thought I'd try to have a single configuration file where you could mark which sections were not relevant to particular server role. The release process could then examine these as it dealt with the deployment and remove configuration that was not needed...</p>
 					<h2>Markingup the config</h2>
 					<p>Since the configurtaion data for a site is XML, the most obvious way to address the need to remove bits of config that aren't relevant to a particular server is to declare a new namespace and add a "RemoveOn" attribute to any element that's not needed in certain places. So a very simple patch file might look like this:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:role="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:role="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
   &lt;sitecore&gt;
     &lt;settings&gt;
       &lt;setting name="CD-Only-Setting" role:RemoveOn="CM"&gt;
@@ -170,7 +170,7 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 					<p>So once a file gets copied to a target server the deployment needs to do something to get rid of the elements that aren't required. A bit of PowerShell can sort that out, and is easy to trigger during a deployment. The process is pretty simple: It can take a file and the roles this server performs, and search the config for elements decorated with
 						<code>RemoveOn</code>
 						attributes. These can be removed and the file saved again. That can be done with a function like so:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Update-ConfigFile
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Update-ConfigFile
 {
   param
   (
@@ -222,7 +222,7 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 						attribute, across the whole document. For each element found, it checks if that value is contained in the set of roles passed in. If there's a match, the entire element can be removed. However if there isn't a match then all that needs removing is the custom attribute.</p>
 					<p>And finally, once all the changes have been made, the file can be saved.</p>
 					<p>So running this code against the sample above on a "CM" sever gets:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:role="RemoveOn" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:role="RemoveOn" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
   &lt;sitecore&gt;
     &lt;settings&gt;
     &lt;/settings&gt;
@@ -232,7 +232,7 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 					</pre>
 					<h2>Tidying up</h2>
 					<p>In theory that should be enough to sort out the config, but in the real world life is actually a bit trickier. If you're generating the config files you deploy using XDT in your Visual Studio project than you can end up with your custom namespace messed up. You may see something like this after your XDT transform completes:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:d3p1="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:d3p1="RoleManagement" xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
   &lt;sitecore&gt;
     &lt;settings&gt;
       &lt;setting name="CD-Only-Setting" d3p1:RemoveOn="CM"&gt;
@@ -244,7 +244,7 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 
 					</pre>
 					<p>That's still perfectly valid XML, but Sitecore doesn't like having any of this left in the config files. So any left-over custom namespace stuff needs to be tidied up. Normally XML processing would be the right way to go about this, but because the custom namespace ends up with an unpredictable name if you run XDT, plain old text processing ends up easier:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Remove-UnwantedNamespaces
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Remove-UnwantedNamespaces
 {
   param
   (
@@ -271,7 +271,7 @@ Recently, however, Sitecore have started to offer a &quot;role based configurati
 						attribute no matter what namespace prefix is used. If either of these is found, the entire attribute will be removed including its value.</p>
 					<h2>Pulling it all together</h2>
 					<p>The deployment script needs to deal with running the code above across all the required set of config files. It also needs to cope with the fact that the easiest way of passing in the roles a server performs is as a string (coming from whatever release process is running this script). So the functions above can be called from something like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
   [Parameter(Mandatory=$true)]
   [string]$configFolder,
   [Parameter(Mandatory=$true)]
@@ -311,7 +311,7 @@ Write-Host "Done: Updating config files to remove instance-specific features"
 						splits that out into an array of roles. Since the logic here works on the basis removing things that match, if you have servers with mixed roles you need to name them with a special role name. Passing "CD,CM" will cause config to be deleted that match either "CD" or "CM".</p>
 					<p>The code can then fetch the set of files to process (by saying "find all files matching the supplied pattern, in any folder under the path provided). Each of these files can then be processed in turn, buy calling the main replacement function and the function to remove any left-over custom XML.</p>
 					<p>So the release process can run the code with something like:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">.\ConfigServerRole.ps1 "c:\inetpub\mysite\website\App_Config\" "*.config" "CM"
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">.\ConfigServerRole.ps1 "c:\inetpub\mysite\website\App_Config\" "*.config" "CM"
 
 					</pre>
 					<h2>Conclusions...</h2>
@@ -444,7 +444,7 @@ Write-Host "Done: Updating config files to remove instance-specific features"
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -452,7 +452,7 @@ Write-Host "Done: Updating config files to remove instance-specific features"
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

@@ -149,7 +149,7 @@
 					</p>
 					<h2>The issue</h2>
 					<p>The code in question was runing on a Sitecore 7 instance. It fell over on UAT with this error:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">[ArgumentNullException: Value cannot be null.
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">[ArgumentNullException: Value cannot be null.
 Parameter name: key]
    System.ThrowHelper.ThrowArgumentNullException(ExceptionArgument argument) +49
    System.Collections.Generic.Dictionary`2.FindEntry(TKey key) +14545882
@@ -162,7 +162,7 @@ Parameter name: key]
 						<code>IIndexable</code>
 						into a search context, but it doesn't say anything helpful about why...</p>
 					<p>And under the surface, the code which was crashing looked something like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var root = Sitecore.Context.GetItem("{08D9E0A1-BB72-48FD-AAB2-EFCD6F3B3C92}");
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var root = Sitecore.Context.GetItem("{08D9E0A1-BB72-48FD-AAB2-EFCD6F3B3C92}");
 
 using (var context = ContentSearchManager.CreateSearchContext(new SitecoreIndexableItem(root)))
 {
@@ -174,7 +174,7 @@ using (var context = ContentSearchManager.CreateSearchContext(new SitecoreIndexa
 					<p>A bit of digging with my old friend ILSpy lead to me working out that the exception being thrown here is because
 						<code>CreateSearchContext()</code>
 						above does two things:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IProviderSearchContext CreateSearchContext(IIndexable indexable)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IProviderSearchContext CreateSearchContext(IIndexable indexable)
 {
   return GetIndex(indexable).CreateSearchContext(SearchSecurityOptions.EnableSecurityCheck);
 }
@@ -198,7 +198,7 @@ using (var context = ContentSearchManager.CreateSearchContext(new SitecoreIndexa
 						<code>ContentSearchManager.CreateSearchContext()</code>
 						on from your indexes. And 2) Manage your configuration across deployments better than this... 😉</p>
 					<p>Having done some further testing, the error message above seems specific to older versions of Sitecore. I've tested this on V9.1 as well, and it still crashes in this scenario, but it shows a different exception:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">[NullReferenceException: Object reference not set to an instance of an object.]
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">[NullReferenceException: Object reference not set to an instance of an object.]
    Sitecore.ContentSearch.SitecoreItemCrawler.IsExcludedFromIndex(SitecoreIndexableItem indexable, Boolean checkLocation) +69
    Sitecore.ContentSearch.SitecoreItemCrawler.GetContextIndexRanking(IIndexable indexable) +113
    System.Linq.WhereSelectListIterator`2.MoveNext() +116
@@ -338,7 +338,7 @@ using (var context = ContentSearchManager.CreateSearchContext(new SitecoreIndexa
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -346,7 +346,7 @@ using (var context = ContentSearchManager.CreateSearchContext(new SitecoreIndexa
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

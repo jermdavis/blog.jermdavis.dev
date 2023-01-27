@@ -160,7 +160,7 @@
 						</a>
 					</p>
 					<p>So I configured an initial attempt in DevOps that waited for all the pods in my namespace to be ready, and give me output data in a json format. (So I could see what went on after the deploy completed) I also picked a pretty big timeout, since it can take a while for all the pods in a Sitecore XP deployment download and get ready. The command line equivalent of the setup in DevOps looks like:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe wait --for=condition=Ready pods --all -n client-namespace --timeout=2700s -o json
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe wait --for=condition=Ready pods --all -n client-namespace --timeout=2700s -o json
 
 					</pre>
 					<p>And I tried some command-line tests against a demo instance, where this worked. But when I used it in DevOps against my client's official Kubernetes instance it sat and waited forever. Even when the release of my new images appeared to be complete, this command didn't finish.</p>
@@ -172,7 +172,7 @@
 						<strong>So learning point #1:</strong>
 						Finished jobs are still important...</p>
 					<p>But that wasn't the only issue: I was also seeing warnings from DevOps where it complained that the wait operation was generating too much data:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2021-02-03T14:00:24.2280843Z ##[warning]Output variable not set as kubectl command output exceeded the maximum supported length. Output length: 413314, Maximum supported length: 32766
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2021-02-03T14:00:24.2280843Z ##[warning]Output variable not set as kubectl command output exceeded the maximum supported length. Output length: 413314, Maximum supported length: 32766
 2021-02-03T14:00:24.2289418Z ##[warning]Capturing deployment metadata failed with error: YAMLException: unexpected end of the stream within a double quoted scalar at line 1353, column 1:
 
 					</pre>
@@ -182,7 +182,7 @@
 						DevOps doesn't want lots of your debug data...</p>
 					<h2>Fixing that...</h2>
 					<p>So after a bit more thinking, I revised my command a bit:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe wait --for=condition=Ready pods -l app=cm -n sitecore --timeout=2700s
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe wait --for=condition=Ready pods -l app=cm -n sitecore --timeout=2700s
 
 					</pre>
 					<p>Instead of waiting for all the pods, I've changed to waiting for just the CM pod to be ready. That's the key thing for my onward deployment – in that my next step involves talking to the CM box. And the other thing is that there's now no output command. That means it's not flooding the DevOps agent log with piles of data.</p>
@@ -309,7 +309,7 @@
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -317,7 +317,7 @@
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

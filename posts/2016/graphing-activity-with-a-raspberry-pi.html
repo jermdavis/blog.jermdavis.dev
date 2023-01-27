@@ -167,7 +167,7 @@
 						<a href="https://visualstudiogallery.msdn.microsoft.com/55b357e1-a533-43ad-82a5-a88ac4b01dec" target="_blank" rel="noopener noreferrer">for creating a new "headless" project</a>. Then, on to the code:</p>
 					<h2>Counting the events</h2>
 					<p>To keep track of data for the graph we need an object that can count any incoming events over a span of time, and then keep a queue of previous counts. That history will form the data for the bar graph, and let it animate to show how time is changing the values. As we'll see later, incoming event messages are going to appear on one thread, and separately a timer will indicate when to update the graph. Because we don't know what threads will make these requests, we need to make sure that the code copes with multi-threaded access. That means we need something to base a lock on. We also need somewhere to keep track of the event count for the current span of time, as well as a queue to keep a set of historical values:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public sealed class Tracker
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public sealed class Tracker
 {
     private object _lock = new object();
     private int _currentTick = 0;
@@ -222,7 +222,7 @@
 					<p>Making a simple HTTP receiver requires us to create an HTTP listener and then raise events to the application, passing back appropriate data. There's some
 						<a href="http://ms-iot.github.io/content/en-US/win10/samples/BlinkyWebServer.htm" target="_blank" rel="noopener noreferrer">example code provided by Microsoft</a>
 						which can be adapted to meet the requirements here:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public sealed class HttpReceiver
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public sealed class HttpReceiver
 {
     private class RequestPayload
     {
@@ -336,15 +336,15 @@
 						<a href="https://github.com/emmellsoft/RPi.SenseHat" target="_blank" rel="noopener noreferrer">"RPi.SenseHat" repository by Emmellsoft</a>
 						provides all the features we need.</p>
 					<p>The whole device is wrapped up in an object you can obtain via an async call:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var _hat = await SenseHatFactory.Singleton.GetSenseHat();
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var _hat = await SenseHatFactory.Singleton.GetSenseHat();
 
 					</pre>
 					<p>And we can draw on the screen by setting individual pixels to a specific colour:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">_hat.Display.Screen[4, 2] = Windows.UI.Colours.Red;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">_hat.Display.Screen[4, 2] = Windows.UI.Colours.Red;
 
 					</pre>
 					<p>And then once all the updates are done, refresh the display:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">_hat.Display.Update();
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">_hat.Display.Update();
 
 					</pre>
 					<p>The display is represented by an 8×8 array of
@@ -353,7 +353,7 @@
 						(The library does loads more than this - but this is all we need to get started)</p>
 					<h2>Pulling it all together</h2>
 					<p>The entry-point class for our app needs to pull together the HTTP server, the event tracker and the display code. We're running asynchronous code here, so we need to make sure that the application doesn't accidentally end while it's waiting for these events – so we need to ensure we have a "Deferral" object to signal to the runtime that the app should keep running. Also, we're building a "headless" application here – one which does not require the traditional Windows UI. This is equivalent to the IoT equivalent of a Windows Service. So the main class of the application becomes:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public sealed class StartupTask : IBackgroundTask
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public sealed class StartupTask : IBackgroundTask
 {
     private BackgroundTaskDeferral _deferral;
     private Tracker _tracker = new Tracker(8);
@@ -398,7 +398,7 @@
 						handler tries to parse a number of events to record out of the data from the request, and then records that value using the tracker object.</p>
 					<p>Finally it creates a timer event which will cause the graph to be updated every second, before clearing the Sense Hat's display.</p>
 					<p>Each time that timer calls its handler, it runs the code to update the graph:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void _timer_Tick(ThreadPoolTimer timer)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void _timer_Tick(ThreadPoolTimer timer)
 {
     var ints = _tracker.Tick()
         .Reverse()
@@ -438,7 +438,7 @@ private Color colourFor(int y, int value)
 						<code>colourFor()</code>
 						returns the right colour for a pixel. The graph is drawn with green bars, topped with red.</p>
 					<p>Dynamically scaling the graph to ensure that the largest value never exceeds 8 pixels high is achieved via an extension method:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class ScaleExtension
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class ScaleExtension
 {
     public static IEnumerable&lt;int&gt; Scale(this IEnumerable&lt;int&gt; source, int max)
     {
@@ -461,7 +461,7 @@ private Color colourFor(int y, int value)
 					<h2>Testing this code...</h2>
 					<p>In order to test the code running on the Pi we need a way to generate requests. A simple way to achieve that is with a bit of HTML and jQuery to fire AJAX requests:<br>
 						(NB:  missed out for clarity)</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;body&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;body&gt;
     &lt;h1&gt;Event test page&lt;/h1&gt;
     &lt;fieldset class="config"&gt;
         &lt;legend&gt;Network config for your Raspberry Pi&lt;/legend&gt;
@@ -532,7 +532,7 @@ private Color colourFor(int y, int value)
 						pipeline, you might want to track item saves on happening on your server via the
 						<code>item:saved</code>
 						event. At it's very simplest, that could could be some code like this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TrackingEvents
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TrackingEvents
 {
     public void OnItemSaved(object sender, EventArgs args)
     {
@@ -548,7 +548,7 @@ private Color colourFor(int y, int value)
 
 					</pre>
 					<p>configured with a patch like:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8" ?&gt;
 &lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
   &lt;sitecore&gt;
     &lt;events&gt;
@@ -682,7 +682,7 @@ private Color colourFor(int y, int value)
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -690,7 +690,7 @@ private Color colourFor(int y, int value)
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

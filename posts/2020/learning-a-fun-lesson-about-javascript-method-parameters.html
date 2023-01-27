@@ -150,7 +150,7 @@
 					<h2>The issue</h2>
 					<p>The page in question contained a chunk of code to implement some "suggest as you type" functionality in a search box. The back-end code supplied a chunk of json which described the data set, and the front-end applied some filtering to this based on what the user typed, in order to show helpful suggestions. It had all been working, but after a round of PRs into the codebase it had stopped working.</p>
 					<p>Stripping away all the client-specifc noise, what it basically consisted of was a chunk of data obtained from the back-end:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var dataSet = [
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var dataSet = [
 	{ name: "One A", data: "1" },
 	{ name: "Two B", data: "2" },
 	{ name: "Three C", data: "3" },
@@ -159,7 +159,7 @@
 					</pre>
 					<p>Followed by some code that iterated this data, to do some processing and mapping. It happens that this code was recycled from elsewhere, and made use of
 						<a href="https://jquery.com/" rel="noopener" target="_blank">jQuery</a>. The actual processing logic doesn't matter here – but when I looked at the code, the iteration behaviour looked like this:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">$.each(dataSet, function(item) {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">$.each(dataSet, function(item) {
 	doSomething(item.name);
 });
 
@@ -185,7 +185,7 @@
 						A function to execute for each matched element.
 					</blockquote>
 					After a bit of thinking that explained the issue for me: one of the previous commits in the project had removed an "unused" parameter from the inner function. When the code was working, it looked like:
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">$.each(dataSet, function(index, item) {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">$.each(dataSet, function(index, item) {
 	doSomething(item.name);
 });
 
@@ -197,7 +197,7 @@
 						parameter contained the expected object. But some over-zealous refactoring had removed the apparently unused parameter. I'm guessing some sort of
 						<a href="https://jshint.com/" rel="noopener" target="_blank">jshint</a>
 						warning was being thrown up? And it was changed to:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">$.each(dataSet, function(item) {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">$.each(dataSet, function(item) {
 	doSomething(item.name);
 });
 
@@ -209,7 +209,7 @@
 						just returned nothing, as that property doesn't exist on an integer...</p>
 					<h2>What did I learn?</h2>
 					<p>I turns out that function parameters in JavaScript don't work the way my C# brain expects. This is valid code:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function test(x, y)
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">function test(x, y)
 {
 	console.log("x: " + x);
 	console.log("y: " + y);
@@ -337,7 +337,7 @@ test(10);
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -345,7 +345,7 @@ test(10);
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

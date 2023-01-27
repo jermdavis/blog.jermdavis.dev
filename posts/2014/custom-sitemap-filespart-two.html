@@ -149,7 +149,7 @@
 						<!--more-->
 					</p>
 					<p>The sitemap generation process starts when Sitecore triggers the custom event handler class we defined. When that runs we need to get the configuration defined for the module and iterate it:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Publish(object sender, EventArgs args)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void Publish(object sender, EventArgs args)
 {
     Database master = Sitecore.Configuration.Factory.GetDatabase("master");
     Item configRoot = master.GetItem(Identifiers.ConfigItemID);
@@ -173,7 +173,7 @@
 					</pre>
 					<p>Here we're fetching a reference to the Master database by using Sitecore's internal configuration factory. This is necessary because there is no context database available here. Then we use that database to load the root configuration item we talked about last week. The ID of the item we need to load is defined in a static class. (It's a common pattern in Sitecore development to define a class in which you put the IDs of items and fields that you will need to reference later. You can generate these using things like Hedgehog TDS and T4 templates, or you can maintain them manually – all of the IDs in this example code will be defined that way) We can then run a query on that item to find all its children which are either Sitemap definitions or Sitemap Index File definitions, and iterate those.</p>
 					<p>If we find an item based on the Sitemap Index File template then we need to process it:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void publishSiteIndex(Item siteIndexConfig)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void publishSiteIndex(Item siteIndexConfig)
 {
     SiteIndexConfiguration sc = new SiteIndexConfiguration(siteIndexConfig);
 
@@ -210,7 +210,7 @@
 					<p>This method gets called passing in the item that represents the Sitemap Index file configuration that an editor has set up. So the first thing to do is parse it, in order to get the configuration into a strongly typed class. In the real world this is best done with a tool like
 						<a href="http://glass.lu/" target="_blank" rel="noopener noreferrer">Glass Mapper</a>
 						but to keep things simple and avoid dependencies here I've just used a simple model class:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SiteIndexConfiguration
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SiteIndexConfiguration
 {
     public string SitemapIndexFilename { get; private set; }
     public IEnumerable&lt;item&gt; SiteConfigurations { get; private set; }
@@ -255,7 +255,7 @@
 						which we can save. Having tried to write this code using the
 						<code>XmlSerialiser</code>
 						instead initially, I came to the conclusion that the code required to get the namespaces and null-element handling correct wasn't worth the extra effort. Manually serialising the data to exactly the required format turned out simpler. The code for these data classes is as follows:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SitemapIndex
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SitemapIndex
 {
     private List&lt;sitemapindexitem&gt; _items = new List&lt;sitemapindexitem&gt;();
 
@@ -303,7 +303,7 @@ public class SitemapIndexItem
 					<p>So the next bit of code we need is the
 						<code>publishSite()</code>
 						method mentioned above – to save the data for an individual sitemap. This is a bit more complex, so we'll break it into pieces. First of all, we'll generate the data and store it:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SiteConfiguration publishSite(Item siteConfig)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SiteConfiguration publishSite(Item siteConfig)
 {
     SiteConfiguration sc = new SiteConfiguration(siteConfig);
 
@@ -322,7 +322,7 @@ public class SitemapIndexItem
 					<p>This loads the configuration data that was passed in, calls
 						<code>processSite()</code>
 						to generate the sitemap data object, serialises it, and then saves the XML to disk in the same way we did before. The config class does a bit more this time:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SiteConfiguration
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SiteConfiguration
 {
     public string SitemapFilename { get; private set; }
     public string SitemapSourceDatabaseName { get; private set; }
@@ -372,7 +372,7 @@ public class SitemapIndexItem
 					<p>So the
 						<code>processSite()</code>
 						method looks like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SitemapUrlSet processSite(SiteConfiguration sc)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SitemapUrlSet processSite(SiteConfiguration sc)
 {
     Item rootItem = sc.SitemapSourceDatabase.GetItem(sc.SitemapRootItem);
     SitemapUrlSet sitemap = new SitemapUrlSet();
@@ -388,7 +388,7 @@ public class SitemapIndexItem
 						object to gather the data and calls
 						<code>process()</code>
 						on the root item to start generating data. This code is factored out into a recursive method, as we need to transform the tree of Sitecore content into a list of entries for the sitemap file. That process is broken up into two parts – first we generate the set of URLs for the current item (it can be more than one URL due to language versions). Second we process any children this item has:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void process(SiteConfiguration sc, SitemapUrlSet urls, Item item)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private void process(SiteConfiguration sc, SitemapUrlSet urls, Item item)
 {
     IEnumerable&lt;sitemapurl&gt; u = buildSitemapUrl(sc, item);
     if (u != null &amp;&amp; u.Count() &gt; 0)
@@ -404,7 +404,7 @@ public class SitemapIndexItem
 
 					</pre>
 					<p>And then we can generate the list of URLs for an individual item:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable&lt;sitemapurl&gt; buildSitemapUrl(SiteConfiguration sc, Item item)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable&lt;sitemapurl&gt; buildSitemapUrl(SiteConfiguration sc, Item item)
 {
     if(sc.SitemapIncludeTemplates.Count() &gt; 0 &amp;&amp; !sc.SitemapIncludeTemplates.Contains(item.TemplateID))
     {
@@ -442,7 +442,7 @@ public class SitemapIndexItem
 					</pre>
 					<p>This method starts by checking if the item being processed is based on one of the templates that have been specified for inclusion into the sitemap file. If templates have been specified, but this item is not based on one of them then we skip this item by returning null. Next we check if this item includes our "should this item be included in the sitemap" flag. If it does we check its value. If it says no, then we skip the item.</p>
 					<p>Finally we need to process each of the languages our item defines. We test if this language should be included or not. If the language should be included then we re-load the item in that language and check we got a valid version. If so, we process that version to generate the Sitemap file entry data:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SitemapUrl processLanguage(SiteConfiguration sc, Item item, Language l)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private SitemapUrl processLanguage(SiteConfiguration sc, Item item, Language l)
 {
     SitemapUrl url = new SitemapUrl();
 
@@ -493,7 +493,7 @@ public class SitemapIndexItem
 						and
 						<code>SitemapUrl</code>
 						classes that we need to serialise into our sitemap xml data:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SitemapUrlSet
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SitemapUrlSet
 {
     private List&lt;sitemapurl&gt; _urls = new List&lt;sitemapurl&gt;();
 
@@ -579,7 +579,7 @@ public class SitemapUrl
 						<img alt="Default sitemap settings" src="/img/2014/DefaultSitemapSettings.png">
 					</a>
 					<p>Then we can set up a bit of test content and hit publish. What we find on disk afterwards is two XML files. First, in the index file we find:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"&gt;
   &lt;sitemap&gt;
     &lt;loc&gt;http://test/default-sitemap.xml&lt;/loc&gt;
     &lt;lastmod&gt;2014-59-12&lt;/lastmod&gt;
@@ -588,7 +588,7 @@ public class SitemapUrl
 
 					</pre>
 					<p>And then in the sitemap itself we find:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"&gt;
   &lt;url&gt;
     &lt;loc&gt;http://test/en/sitecore/content/Home&lt;/loc&gt;
     &lt;lastmod&gt;2014-10-05&lt;/lastmod&gt;
@@ -732,7 +732,7 @@ public class SitemapUrl
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -740,7 +740,7 @@ public class SitemapUrl
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

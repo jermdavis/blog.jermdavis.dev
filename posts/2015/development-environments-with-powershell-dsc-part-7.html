@@ -175,7 +175,7 @@
 					<p>Adding the REST service follows a similar pattern to last week's installations of prerequisites: Copy over the file described in the config data, and then use a
 						<code>Script</code>
 						resource to run the installation. Appending the following to last week's work can do this:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyCoveoApi
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyCoveoApi
 {
     DependsOn = "[script]InstallCoveo"
     SourcePath = "$PackagePath\$($Node.Coveo.CESAPIInstaller)"
@@ -212,7 +212,7 @@ Script InstallCoveoApi
 						<a href="https://marketplace.sitecore.net/en/Modules/Sitecore_PowerShell_console.aspx" target="_blank" rel="noopener noreferrer">Powershell Extensions for Sitecore</a>. This is a package we can install using the endpoint we added back in the
 						<a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">original Sitecore installation</a>.</p>
 					<p>To install the extension we need to copy over the package file (described in our config) and then call the remote install endpoint to trigger the installation:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File AddPSEPackage
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File AddPSEPackage
 {
     SourcePath = "$PackagePath\$($Node.Sitecore.PowerShellExtensions)"
     DestinationPath = "$($Node.WWWRoot)\$($Node.Sitecore.InstanceName)\Data\packages"
@@ -261,7 +261,7 @@ Script InstallPSE
 						resource is the
 						<a href="/posts/2015/automated-package-installs" target="_blank">DSC translation of the remote package installation from previous posts</a>.</p>
 					<p>PowerShell extensions allows for remoting - you can call run scripts from inside DSC which execute inside Sitecore. To enable this we have to add a module to PowerShell. This can be done by unzipping the remoting files from Marketplace into your PowerShell modules folder:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Archive EnableSPERemoting
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Archive EnableSPERemoting
 {
     Path = "$PackagePath\$($Node.Sitecore.PowerShellRemoting)"
     Destination = "$Env:ProgramFiles\WindowsPowerShell\Modules\SPE"
@@ -269,7 +269,7 @@ Script InstallPSE
 
 					</pre>
 					<p>With that in place, the code can copy over the Coveo for Sitecore package and use the same approach to install it:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File AddCoveoPackage
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File AddCoveoPackage
 {
     DependsOn = "[script]InstallCoveoApi"
     SourcePath = "$PackagePath\$($Node.Coveo.CoveoForSitecore)"
@@ -316,7 +316,7 @@ Script InstallCoveoPackage
 
 					</pre>
 					<p>So now the script needs to provide all the same configuration that the post-install steps. The first thing it needs to do is to create the "Top Results" folder. That can be done using the PowerShell extensions remoting:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script CreateTopResults
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script CreateTopResults
 {
     DependsOn = "[script]InstallCoveoPackage"
     GetScript = {
@@ -356,7 +356,7 @@ Script InstallCoveoPackage
 					<p>They can then be deployed to the right places with
 						<code>File</code>
 						resources:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyCoveoLicense
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">File CopyCoveoLicense
 {
     DependsOn = "[script]InstallCoveoPackage"
     SourcePath = "$PackagePath\coveolicense.xml"
@@ -390,7 +390,7 @@ File CopySearchProviderRestConfig
 					<p>With all the config in place, there's one more thing to do. The Sitecore part of Coveo configures
 						<a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">the CES services we installed in the last</a>
 						post when you first build an index. Hence we need to trigger a build of the Coveo instances to finish off. PowerShell Extensions can achive this for us:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script RebuildCoveoIndexes
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Script RebuildCoveoIndexes
 {
     DependsOn = "[file]CopySearchProviderConfig", "[file]CopySearchProviderRestConfig", "[file]CopyCoveoLicense"
     GetScript = {
@@ -544,7 +544,7 @@ File CopySearchProviderRestConfig
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -552,7 +552,7 @@ File CopySearchProviderRestConfig
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

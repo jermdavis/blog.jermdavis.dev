@@ -154,7 +154,7 @@
 					<p>I said back in the first post that I wanted to build this tool using a pipeline-style architecture. The approach is good because it's flexible – the set of pipeline components that can be run and the order that they are executed in can be configurable. That means the one tool can use config settings (and potentially extensions) to support different projects. So for this blog post I'll look at the code to configure and run the pipeline, and the set of components I've managed to come up with so far for my prototype.</p>
 					<h2>Running the components</h2>
 					<p>The code to run the pipeline is very simple:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ProcessingPipeline
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ProcessingPipeline
 {
     private ProjectConfiguration _config;
 
@@ -188,7 +188,7 @@
 					<p>The input is used to create a helper data object
 						<code>PipelineData</code>
 						- and it's this object that's handed to the individual pipeline components in turn. It's pretty trivial:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PipelineData
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PipelineData
 {
     public IDictionary&lt;string, SourceControlActions&gt; Input { get; set; }
     public PackageProject Output { get; set; }
@@ -197,7 +197,7 @@
 
 					</pre>
 					<p>All it does is store the input data, the configuration data and the output project in one convenient object. Hence each pipeline component needs to implement a simple interface:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineComponent
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineComponent
 {
     void Run(PipelineData data);
 }
@@ -209,7 +209,7 @@
 					<h2>Revisiting configuration</h2>
 					<p>Since I made the first post in this series, I've revised the configuration approach for the code a bit. And one side effect of that is that have now moved most of the Sitecore-project-specific configuration into an external XML file which is read at runtime. That allows specifying assorted settings, but the key part for today is the pipeline components and their config.</p>
 					<p>An example of the XML for the config file might be:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration&gt;
   &lt;input type="Sitecore.TFS.PackageGenerator.Inputs.TFSCommandLine,Sitecore.TFS.PackageGenerator"/&gt;
   &lt;workingFolder&gt;C:\ClientName&lt;/workingFolder&gt;
   &lt;pipelineComponents&gt;
@@ -242,7 +242,7 @@
 					<p>The config here is processed by the
 						<code>ProjectConfiguration</code>
 						class. It's created via a static method, which is called with the path of the config XML to load:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ProjectConfiguration
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ProjectConfiguration
 {
     public string WorkingFolder { get; private set; }
     public IList&lt;IPipelineComponent&gt; PipelineComponents { get; private set; }
@@ -274,7 +274,7 @@
 
 					</pre>
 					<p>Parsing the XML is done via:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    private void parse(XDocument xml)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    private void parse(XDocument xml)
     {
         XElement root = xml.Element("configuration");
 
@@ -307,7 +307,7 @@
 					<p>This uses the Linq-to-XML APIs to extract the appropriate elements, and process their values. (The non-prototype version of this code will need better error handling here, of course) In this version of the code, the input (getting changes from TFS) and the output (saving the package XML to disk) have been abstracted out to plugin types – with a view to perhaps supporting multiple input and output options in the future. the XML for both of these elements contains a .Net type descriptor – and the
 						<code>createInstance()</code>
 						method attempts to convert that from the string description into a valid object:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private T createInstance&lt;T&gt;(string type)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private T createInstance&lt;T&gt;(string type)
 {
     Type t = Type.GetType(type);
     System.Reflection.ConstructorInfo ci = t.GetConstructor(System.Type.EmptyTypes);
@@ -318,7 +318,7 @@
 					<p>It parses the type descriptor, extracts the parameterless constructor, and then invokes it to generate an object - and it uses generic type parameters to cast this object to the correct type.</p>
 					<p>For the pipeline components in the config XML, the code just repeats the same pattern looping over the elements describing each component, and adds them to a collection. For the settings, the name and value pairs are extracted to a dictionary.</p>
 					<p>So we can update some of the code from the first post in this series, and load the pipelines and settings configuration, then run the pipeline as follows:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ProjectConfiguration config = ProjectConfiguration.Load(pathToConfigFile);
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ProjectConfiguration config = ProjectConfiguration.Load(pathToConfigFile);
 
 config.Input.Initialise(config);
 var data = config.Input.ProcessWorkItems(config.WorkingFolder, cmdParams.StartChangeSet, cmdParams.EndChangeSet);
@@ -484,7 +484,7 @@ config.Output.Store(xml, cmdParams.PackageFileName);
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -492,7 +492,7 @@ config.Output.Store(xml, cmdParams.PackageFileName);
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

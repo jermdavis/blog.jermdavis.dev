@@ -160,7 +160,7 @@
 						archives.</p>
 					<h2>The main script</h2>
 					<p>To be useful, the script is going to need to receive a file to extract, and a folder to put the results into. That's easily done by declaring a couple of mandatory parameters:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">[cmdletbinding(SupportsShouldProcess=$True)]
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">[cmdletbinding(SupportsShouldProcess=$True)]
 param(
     [Parameter(Mandatory=$True)]
     [string]$FileToExtract,
@@ -180,14 +180,14 @@ param(
 						<code>.gzip</code>
 						stream - more on that later.</p>
 					<p>The logic of the script is fairly simple. First it needs to do some basic validation of the file it's going to process. First it can test the file actually exists:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if(!(Test-Path $FileToExtract))
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if(!(Test-Path $FileToExtract))
 {
     throw "Source file '$FileToExtract' does not exist"
 }
 
 					</pre>
 					<p>And then it can test that it has the right extension:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if(!$FileToExtract.EndsWith(".tar.gz", "CurrentCultureIgnoreCase"))
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if(!$FileToExtract.EndsWith(".tar.gz", "CurrentCultureIgnoreCase"))
 {
     throw "Source file '$FileToExtract' does not have a .tar.gz extension"
 }
@@ -205,7 +205,7 @@ param(
 						files is installed - by grabbing a copy of the "7Zip4PowerShell" PowerShell module if it's not available already. That can then be called to extract the data, before finally deleting the temporary
 						<code>.tar</code>
 						file:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$FileToExtract = Resolve-Path $FileToExtract
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$FileToExtract = Resolve-Path $FileToExtract
 $tarFile = Calculate-TarFileName $FileToExtract
 
 Expand-GZip $FileToExtract $tarFile $BufferSize
@@ -222,7 +222,7 @@ if ($PSCmdlet.ShouldProcess($tarFile,'Remove temporary tar file')) {
 					<p>The first step is working out the name for the output from the GZip file – which is the tar file. That's pretty trivial, as it just means stripping the final
 						<code>.gz</code>
 						off the input filename:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Calculate-TarFileName {
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Calculate-TarFileName {
     param(
         [Parameter(Mandatory=$true)]
         [string] $targzFile
@@ -239,7 +239,7 @@ if ($PSCmdlet.ShouldProcess($tarFile,'Remove temporary tar file')) {
 						and won't actually generate the new file in that scenario. And secondly it adds some code to enable a progress bar. Other than that, it's basically just processing the
 						<code>GzipStream</code>
 						using standard .Net code:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Expand-GZip {
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Expand-GZip {
     [cmdletbinding(SupportsShouldProcess=$True)]
     param(
         [Parameter(Mandatory=$true)]
@@ -285,7 +285,7 @@ if ($PSCmdlet.ShouldProcess($tarFile,'Remove temporary tar file')) {
 						<a href="https://www.codeproject.com/Tips/638039/GZipStream-length-when-uncompressed" rel="noopener" target="_blank">this CodeProject posting that describes the C# code to achieve this</a>. Turns out you just need to verify that it's actually a GZip stream (looking at the first three bytes) and the find the last four bytes to get an
 						<code>Int32</code>
 						that is the original length:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Original-GzipFileSize {
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Original-GzipFileSize {
     param(
         [Parameter(Mandatory=$true)]
         [string] $gzipFile
@@ -335,13 +335,13 @@ if ($PSCmdlet.ShouldProcess($tarFile,'Remove temporary tar file')) {
 						<code>Install-Package</code>
 						commandlet to fetch it from the public feed. For laughs I decided to combine the two, as I could see scenarios where both mught be useful.</p>
 					<p>So if you put the files for the package to the "7Zip4Powershell" folder next to the script, it'll spot them and use this local copy. To get those files you can run</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Save-Module -Name 7Zip4Powershell -Path .
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Save-Module -Name 7Zip4Powershell -Path .
 
 					</pre>
 					<p>from a prompt. This approach will be most useful on highly-secured servers where the admins want to vet all the files your work uses before you do anything with them. You can hand over both this script and the files for that module for investigation, and they just need copying to the server for use.</p>
 					<p>Alternatively, if that folder does not exist, it'll pull the module from the public feed. That's the "zero effort" approach when you're allowed to use it. You don't need to do any extra work – it'll just pull in the right code if it's not already installed for you. And as before, the logic is wrapped up to support
 						<code>-WhatIf</code>.</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Ensure-7Zip {
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Ensure-7Zip {
     param(
         [string]$pathToModule = ".\7Zip4Powershell\1.9.0\7Zip4PowerShell.psd1"
     )
@@ -371,7 +371,7 @@ if ($PSCmdlet.ShouldProcess($tarFile,'Remove temporary tar file')) {
 					</pre>
 					<p>At the moment this code is hard-coded to the current version of this module - Making that more flexible is on my backlog, if I get a chance...</p>
 					<p>Once the code installed, the actual command to run the extraction is easy:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Extract-Tar {
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Extract-Tar {
     [cmdletbinding(SupportsShouldProcess=$True)]
     param(
         [Parameter(Mandatory=$true)]
@@ -524,7 +524,7 @@ if ($PSCmdlet.ShouldProcess($tarFile,'Remove temporary tar file')) {
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -532,7 +532,7 @@ if ($PSCmdlet.ShouldProcess($tarFile,'Remove temporary tar file')) {
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

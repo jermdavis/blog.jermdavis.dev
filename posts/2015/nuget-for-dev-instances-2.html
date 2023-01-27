@@ -155,7 +155,7 @@
 					<p>The next step is to take the
 						<code>web.config</code>
 						file that we didn't move last week, and move it into the "Content" folder of the package project. Then you can add XDT files to update the web.config when the target project gets run. The key settings you need to update are the various folders that are configured:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform"&gt;
   &lt;sitecore&gt;
     &lt;sc.variable xdt:Transform="SetAttributes" xdt:Locator="Match(name)"  name="dataFolder" value="./data"/&gt;
@@ -171,7 +171,7 @@
 					<p>To do this, you need to rename the standard connection strings file to be
 						<code>ConnectionStrings.config.pp</code>
 						and then update its content a bit:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;connectionStrings&gt;
   &lt;add name="core" connectionString="Data Source=(LocalDB)\v11.0;Integrated Security=true;AttachDbFilename=|DataDirectory|\Sitecore.Core.mdf;Database=$rootnamespace$_Core" /&gt;
   &lt;add name="master" connectionString="Data Source=(LocalDB)\v11.0;Integrated Security=true;AttachDbFilename=|DataDirectory|\Sitecore.Master.mdf;Database=$rootnamespace$_Master" /&gt;
@@ -193,7 +193,7 @@
 					<p>This file can be named whatever you like, but mine is called "Sitecore-Package.psm1". It's a place to put any reusable functions that the rest of the scripts refer to:</p>
 					<p>The first function is a recursive copy operation that will transfer files from the "SitecoreFiles" folder (under the package folder) into the target website project's folder. Rather than being a simple copy, the code checks to see if any of the files already exists in the project and skips them if they do. This allows files in the target web project to override files in the package. This is important if you customise parts of Sitecore inside your project.</p>
 					<p>The code for this function is:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Copy-PackageFiles-Recursive($projectItem, $folder, $sourceFolder, $destFolder, $level)
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Copy-PackageFiles-Recursive($projectItem, $folder, $sourceFolder, $destFolder, $level)
 {
   Write-Host $level "RecursiveCopy projectItem: " $projectItem.Name " - " $folder
 
@@ -255,7 +255,7 @@
 					</pre>
 					<p>Since this has come from some exploratory work, there's a fair bit of debug output here to echo all the behaviour out to the console. But generally, it's a recursive function which processes all the child items of each folder. For the folders it checks to see if they exist at the target location (and creates it if not) and creates it if necessary. For files it only copies items which do not exist at the target.</p>
 					<p>The second function in this file is a script "commandlet" for PowerShell, which will later be added to Visual Studio's package manager console. It's job is to run the copy function above:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Refresh-Sitecore($packageName = "TestPackage") {
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Refresh-Sitecore($packageName = "TestPackage") {
   Write-Host "Refreshing Sitecore files in web project..."
 
   $project = Get-Project
@@ -281,7 +281,7 @@
 					<p>This calculates the correct source and target folder paths, and calls the recursive copy operation. Again there's a bit of debug output in there which you might not choose to keep in a non-exploratory version.</p>
 					<p>Having this available in the Visual Studio Package Manager window will mean that we can re-execute the recursive copy if necessary. The key use-case for this is if you do a get-latest on a website project you've not used before. Source Control will fetch the web project and its NuGet package definitions. The NuGet Package Restore behaviour can then re-download the package files to ensure they're available – but this won't re-run the install/initialisation scripts that we'll mention in a bit. So you need a way to re-copy the Sitecore files – and this commandlet is the way. You run it passing the name of the web project you want to copy the files to.</p>
 					<p>The final thing you need in this script file is to ensure that these two functions are public, so they can be reused by other files:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Export-ModuleMember Refresh-Sitecore
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Export-ModuleMember Refresh-Sitecore
 Export-ModuleMember Copy-PackageFiles-Recursive
 
 					</pre>
@@ -289,7 +289,7 @@ Export-ModuleMember Copy-PackageFiles-Recursive
 						<b>Second script:</b>
 						The install script called when the package is added to a project</p>
 					<p>This script needs to be named "install.ps1" so that NuGet can find and run it at when your package is added to the web project. The code it contains is:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param($installPath, $toolsPath, $package, $project)
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param($installPath, $toolsPath, $package, $project)
 
 Write-Host "install.ps1 executing for " $project.FullName
 
@@ -332,7 +332,7 @@ Write-Host "install.ps1 Done."
 						<b>Third script:</b>
 						The initialisation script called when the package is first downloaded</p>
 					<p>The final file is a simple script to register the commandlet above with the Visual Studio Package Manager window. This needs to be called "init.ps1".</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param($installPath, $toolsPath, $package)
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param($installPath, $toolsPath, $package)
 
 Import-Module (Join-Path $toolsPath Sitecore-Package.psm1) -Force -DisableNameChecking
 
@@ -465,7 +465,7 @@ Import-Module (Join-Path $toolsPath Sitecore-Package.psm1) -Force -DisableNameCh
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -473,7 +473,7 @@ Import-Module (Join-Path $toolsPath Sitecore-Package.psm1) -Force -DisableNameCh
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

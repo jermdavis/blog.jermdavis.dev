@@ -194,7 +194,7 @@ So I thought I'd invent an idea for an experimental project to test this out..."
 					<h2>First job: Parsing an item or path to operate on</h2>
 					<p>Taking a TDD type approach to this, what are the initial tests we might want for parsing a delete command? Well looking at the example above we need to parse the "delete" operation and we need to parse out the defintion of an item to delete. Sitecore usually identifies items by paths or IDs, so that tends to suggest we need to be able to parse either a path or a GUID here.</p>
 					<p>As you might expect from native .Net code, Sprache is a strongly typed parser. So if we're going to want to parse a "GUID or Path" field, we need to be able to parse the text into a type holding this data. A test case might look like this for GUIDs:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestMethod]
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestMethod]
 public void ItemIDParsesValidID()
 {
     string guid = "{582ccf36-b6e4-49f0-9c35-2d8e40b5ef3d}";
@@ -207,7 +207,7 @@ public void ItemIDParsesValidID()
 
 					</pre>
 					<p>Or this for paths:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void ItemPathParsesForValidPath()
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void ItemPathParsesForValidPath()
 {
     string path = "/alpha/bravo";
 
@@ -220,14 +220,14 @@ public void ItemIDParsesValidID()
 
 					</pre>
 					<p>So what code do we need to make these tests pass? Well, Sprache tends to have its parsing methods defined as statics to allow composing them easily. So we'll need a static class to hold our parsing code, and it's going to need our "ItemPath" parser from the test above:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class CommandTextParser
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class CommandTextParser
 {
     public static Parser&lt;ItemIdenitfier&gt; PathOrID = ??
 }
 
 					</pre>
 					<p>And we're going to need that class our test implies to encapsulate our output:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ItemIdenitfier
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ItemIdenitfier
 {
     public string Path { get; set; }
     public Guid Id { get; set; }
@@ -235,7 +235,7 @@ public void ItemIDParsesValidID()
 
 					</pre>
 					<p>So with the boilerplate out of the way, what do we actually want to do with the parsing? In English, we want to parse "A path, or a GUID, and maybe any surrounding whitespace". Sprache makes that pretty easy to express, because you can build more complex expressions out of simpler ones:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class CommandTextParser
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class CommandTextParser
 {
     public static Parser&lt;ItemIdenitfier&gt; PathOrID =
         ItemPath
@@ -248,7 +248,7 @@ public void ItemIDParsesValidID()
 						<code>Token()</code>
 						method is shorthand for telling Sprache "ignore any surrounding whitespace".</p>
 					<p>The Item ID parser is the simpler of the two, so lets start with that. A simplestic definition of a GUID is "an opening curly brace, followed by a string of letters, numbers or hyphens, and ending with a closing curly brace". That's not a particularly rigerous definition – but we can live with that for the moment. A parser for that can be written as:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ItemIdenitfier&gt; ItemId =
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ItemIdenitfier&gt; ItemId =
     from openBrace in Parse.Char('{')
     from id in Parse.LetterOrDigit.Or(Parse.Char('-')).Repeat(36).Text()
     from closeBrase in Parse.Char('}')
@@ -267,7 +267,7 @@ public void ItemIDParsesValidID()
 					<p>You could write a more rigerous version of this that makes sure that the right pattern of characters and dashes is presented - but I'll leave that as an exercise to the reader...</p>
 					<p>It's way more readable than the equivalent regular expression, eh?</p>
 					<p>Parsing a path could be done by saying "A path is any string made up of slashes and valid item name characters" but that probably allows paths with double slashes, which don't seem relevant to a Sitecore solution. Instead, the definition is probably that a path is "One or more sets of ‘A slash followed by some valid item name characters'". Following the pattern of building up complex behaviour from simpler parsers, we can define an item name as:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IEnumerable&lt;char&gt; InvalidNameCharacters = new List&lt;char&gt; { '\\', '/', ':', '?', '"', '&lt;', '&gt;', '|', '[', ']', ' ', '!', '(', ')', '%', '#', '@', '!', '£', '$', '^', '&amp;', ';', '~' };
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IEnumerable&lt;char&gt; InvalidNameCharacters = new List&lt;char&gt; { '\\', '/', ':', '?', '"', '&lt;', '&gt;', '|', '[', ']', ' ', '!', '(', ')', '%', '#', '@', '!', '£', '$', '^', '&amp;', ';', '~' };
 
 public static Parser&lt;string&gt; ItemName =
     Parse.CharExcept(InvalidNameCharacters).AtLeastOnce().Text().Token();
@@ -275,14 +275,14 @@ public static Parser&lt;string&gt; ItemName =
 					</pre>
 					<p>We declare a set of characters that aren't valid in names (your ideal set may vary – that's just an example) and we say that a name is "a string containing anything but these characters".</p>
 					<p>From there, we can say that one segment of a path is a slash followed by a name:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;string&gt; PathSegment =
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;string&gt; PathSegment =
     from slash in Parse.Chars(new char[] { '\\', '/' })
     from name in ItemName
     select name;
 
 					</pre>
 					<p>And then we can define an entire path in the following form:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ItemIdenitfier&gt; ItemPath =
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ItemIdenitfier&gt; ItemPath =
     from parts in (
         from firstSegment in PathSegment
         from otherSegments in PathSegment.Many()
@@ -301,14 +301,14 @@ public static Parser&lt;string&gt; ItemName =
 					<h2>Building on that to parse the delete operation</h2>
 					<p>Now we can parse a path, we can move on to parsing the delete operation. We're going to want a different output from the parser here – we're going to need a class to represent a deletion. However, in the future we're going to want to create a single parsing method that can parse any of our three commands – so the delete command parser will need to be defined in terms of a more generic "any command" type. To me this smells like a situation for the Command pattern, as later we're going to need this class to know how to process the deletion.</p>
 					<p>So we can define a Commmand pattern interface:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface ICommand
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface ICommand
 {
     string Execute();
 }
 
 					</pre>
 					<p>And we can then define our delete command object in terms of that:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteCommand : ICommand
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteCommand : ICommand
 {
     public ItemIdenitfier Item { get; set; }
 
@@ -320,7 +320,7 @@ public static Parser&lt;string&gt; ItemName =
 
 					</pre>
 					<p>Parsing the data for that is now pretty easy:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; DeleteCommand =
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; DeleteCommand =
     from cmd in Parse.IgnoreCase("delete").Token()
     from item in PathOrID
     select new DeleteCommand() { Item = item };
@@ -330,7 +330,7 @@ public static Parser&lt;string&gt; ItemName =
 						<code>DeleteCommand</code>
 						with that item in it, ready for processing...</p>
 					<p>And we can check this with some further tests. Things like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestMethod]
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestMethod]
 public void DeleteParsesWithPath()
 {
     var result = CommandTextParser.DeleteCommand.TryParse(@"delete \abc\def\x");
@@ -361,7 +361,7 @@ public void DeleteParsesWithID()
 						<a href="https://github.com/sergeyshushlyapin/Sitecore.FakeDb" target="_blank" rel="noopener noreferrer">Sitecore.FakeDb project</a>. This allows you to run an "in-RAM" version of the Sitecore data APIs in your test project.</p>
 					<p>It's very easy to install: All you need is the NuGet package added to your test project, a few DLLs from a valid Sitecore install (which can't go in NuGet for licensing reasons) and your Sitecore license file.</p>
 					<p>Once you have that in place, you're free to write tests against Sitecore item data like this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestMethod]
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestMethod]
 public void ValidDeleteWorks()
 {
     CommandProcessor cp = new CommandProcessor();
@@ -391,7 +391,7 @@ public void ValidDeleteWorks()
 					<p>What do we need to make that test pass? Just the implementation of the
 						<code>Execute()</code>
 						method from our Command pattern above. Something like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteCommand : ICommand
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DeleteCommand : ICommand
 {
     public ItemIdenitfier Item { get; set; }
 
@@ -416,7 +416,7 @@ public void ValidDeleteWorks()
 					<p>Easy, huh?</p>
 					<h2>Moving items</h2>
 					<p>Creating the move command is pretty similar - it just needs to parse out two item identifiers because you need the item and the target folder:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; MoveCommand =
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; MoveCommand =
     from cmd in Parse.IgnoreCase("move").Token()
     from item in PathOrID
     from to in Parse.IgnoreCase("to").Token()
@@ -427,7 +427,7 @@ public void ValidDeleteWorks()
 					<p>And the
 						<code>MoveCommand</code>
 						class is similarly easy:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class MoveCommand : ICommand
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class MoveCommand : ICommand
 {
     public ItemIdenitfier Item { get; set; }
     public ItemIdenitfier NewLocation { get; set; }
@@ -456,7 +456,7 @@ public void ValidDeleteWorks()
 					<p>Again we can write tests to validate both of these. (More of that later)</p>
 					<h2>Creating items</h2>
 					<p>The create command is a bit more complex. It needs to parse out a template identifer, a location and a name. Then it has to optionally parse any other field values that need setting. The parsing code for that is a bit more complex:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; CreateCommand =
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; CreateCommand =
     from cmd in Parse.IgnoreCase("create").Token()
     from template in PathOrID
     from named in Parse.IgnoreCase("named").Token()
@@ -498,7 +498,7 @@ public void ValidDeleteWorks()
 						string where there are no spaces in the name of the field. But some fields do have spaces, hence it needs to be able to parse a quoted field name in the format
 						<code>Field Name"="value</code>
 						too. As above, we can do that by building up smaller parsers:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;string&gt; QuotedFieldName =
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;string&gt; QuotedFieldName =
     from openQuote in Parse.Char('"')
     from value in Parse.CharExcept('"').Many().Text()
     from closeQuote in Parse.Char('"')
@@ -520,7 +520,7 @@ public static Parser&lt;Field&gt; Field =
 					<p>The
 						<code>Field</code>
 						type here just stores name / value pair to describe the field:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class Field
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class Field
 {
     public string Name { get; set; }
     public string Value { get; set; }
@@ -530,7 +530,7 @@ public static Parser&lt;Field&gt; Field =
 					<p>The
 						<code>CreateCommand</code>
 						class follows the same patterns as the other commands, but it's a bit more complex:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CreateCommand : ICommand
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CreateCommand : ICommand
 {
     public ItemIdenitfier Template { get; set; }
     public string Name { get; set; }
@@ -576,14 +576,14 @@ public static Parser&lt;Field&gt; Field =
 					<p>And as before, tests can run against all these bits of code to verify they work correctly...</p>
 					<h2>Finally, parse any command</h2>
 					<p>Now we've got parsers for each of the individual commands, it's trivial to parse "any command":</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; Any =
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; Any =
     CreateCommand
     .XOr(MoveCommand)
     .XOr(DeleteCommand);
 
 					</pre>
 					<p>Any string it parses must match exactly one of our command parsers. And you can write tests to validate this works correctly, like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestMethod]
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestMethod]
 public void AnyCanParseCreate()
 {
     var result = CommandTextParser.Any.TryParse("create \\12 named alpha under {582ccf36-b6e4-49f0-9c35-2d8e40b5ef3d} with a=\"2\"");
@@ -723,7 +723,7 @@ public void AnyCanParseCreate()
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -731,7 +731,7 @@ public void AnyCanParseCreate()
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

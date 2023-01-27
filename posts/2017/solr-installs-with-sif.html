@@ -161,7 +161,7 @@
 						extension, which you place in one of the well-known locations for module files. You can find these by typing
 						<code>$Env:PSModulePath</code>
 						into a PowerShell window. On my laptop, that gets:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">C:\Users\&lt;user&gt;\Documents\WindowsPowerShell\Modules;C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules;C:\Program Files (x86)\Microsoft SQL Server\130\Tools\PowerShell\Modules\
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">C:\Users\&lt;user&gt;\Documents\WindowsPowerShell\Modules;C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules;C:\Program Files (x86)\Microsoft SQL Server\130\Tools\PowerShell\Modules\
 
 					</pre>
 					<p>For development purposes, I went for
@@ -178,7 +178,7 @@
 						<li>The registration calls that tell SIF you have a function it should know about.</li>
 					</ul>
 					<p>The commandlets are just normal PowerShell functions with the following structure:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function AllowedVerb-YourChosenNameTask
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function AllowedVerb-YourChosenNameTask
 {
     [CmdletBinding(SupportsShouldProcess=$true)]
     param(
@@ -201,14 +201,14 @@
 						<a href="https://sitecore.stackexchange.com/questions/8187/why-does-register-sitecoreinstallextension-appear-to-do-nothing" rel="noopener noreferrer" target="_blank">I got the registration stuff a bit wrong</a>, but it turns out that as long as you put these statements into your module file, it's pretty simple. These statements just map the full name of your commandlets into a shortened names to use in the
 						<code>.json</code>
 						file later on:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Register-SitecoreInstallExtension -Command AllowedVerb-YourChosenNameTask -As YourChosenName -Type Task
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Register-SitecoreInstallExtension -Command AllowedVerb-YourChosenNameTask -As YourChosenName -Type Task
 
 					</pre>
 					<p>In terms of the overall commandlet code, it's mostly just refactoring last week's work into a set of commandlets that seemed to make sense from the SIF perspective. The only significant change is that now the code uses SIF's
 						<code>Write-TaskInfo</code>
 						commandlet to report its status, and it's been modified a bit to support
 						<code>-WhatIf</code>. All that means is that statements which actually change the state of your system have been wrapped in a block of code like this:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($pscmdlet.ShouldProcess("RelevantData", "DescriptionOfWhatWillBeDoneWithTheData"))
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($pscmdlet.ShouldProcess("RelevantData", "DescriptionOfWhatWillBeDoneWithTheData"))
 {
     # Code goes here...
 }
@@ -233,13 +233,13 @@
 						<a href="https://gist.github.com/jermdavis/49018386ae7544ce0689568edb7ca2b8#file-solrinstall-sif-extension-psm1" rel="noopener" target="_blank">full script for the module is available in a Gist</a>.</p>
 					<h2>The json data</h2>
 					<p>This file needs to define how SIF makes use of your module at runtime. Initially it looks a bit complicated, but it's actually fairly easy to get to grips with. It can be a bit tricky diagnosing what's wrong if you make a typo here, as the errors from the scripts aren't that great. I'd recommend using a json-aware editor (like Visual Studio) so that you get warnings for silly typos like missing commas – otherwise it can be hard to track down your mistake. One trick I've found helpful here, is that if you get an odd "don't like that json" error from SIF, try manually converting your json to an object and see what errors that reports:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Get-Content YourFileNameHere.json | ConvertFrom-Json
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Get-Content YourFileNameHere.json | ConvertFrom-Json
 
 					</pre>
 					<p>SIF's errors sometimes hide some useful bits of the parsing error detail from you – but this command will let you see what PowerShell thinks of your json file. You'll either see a PowerShell object (which implies successful parsing) or a parser error message. The errors aren't always helpful about the location of the problem in your file, but they generally tell you give you a hint about what sort of parsing error occurred.</p>
 					<p>So what needs to go in the json file?</p>
 					<p>The first section is for declaring parameters. These are the bits of data that might vary between each install. This is pretty similar to the set of script parameters declared for the plain PowerShell last time. For each one you declare a name, a type, a default value and a description:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">"Parameters" : {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">"Parameters" : {
     "JREVersion": {
         "Type": "string",
         "DefaultValue": "1.8.0_151",
@@ -253,21 +253,21 @@
 						rather than the PowerShell
 						<code>$true</code>.</p>
 					<p>Next, you need to say if you're using any extra modules to extend SIF:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">"Modules" : [
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">"Modules" : [
     "SolrInstall-SIF-Extensions.psm1"
 ]
 
 					</pre>
 					<p>You don't need to specify a path, as SIF assumes your extensions are stored in a module folder, as described above.</p>
 					<p>You can then declare variables. These are bits of data your commandlets need which are computed from parameters or other values that SIF has access to. Hence they're declared as a map from variable name to an expression that can be used to calculate them:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">"Variables" : {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">"Variables" : {
     "NSSMSourcePackage": "[concat('https://nssm.cc/release/nssm-', parameter('NSSMVersion'), '.zip')]"
 }
 
 					</pre>
 					<p>These are most useful where more than one commandlet requires access to a computed value – rather than having to pass lots of parameters and do the computation on multiple places, you can do it once and pass the result...</p>
 					<p>Finally there's the task declaration. This sets out the steps your SIF script needs to take, what commandlet will perform the step, and what data to pass in. For example:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">"Tasks" : {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">"Tasks" : {
     "Ensure NSSM is installed": {
         "Type": "EnsureNSSM",
         "Params": {
@@ -416,7 +416,7 @@
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -424,7 +424,7 @@
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

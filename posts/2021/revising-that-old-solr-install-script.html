@@ -149,7 +149,7 @@
 					<p>Corey pointed out that in Solr 8.8.0 the defaults in the
 						<code>solr.in.cmd</code>
 						config file have changed. When I originally wrote the script, the commented-out lines describing the location of the SSL key file looked like this:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="2,4" data-enlighter-language="text" style="width:100%; overflow:scroll;">REM Be sure to update the paths to the correct keystore for your environment
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="2,4" data-enlighter-language="text" style="width:100%; overflow:scroll;">REM Be sure to update the paths to the correct keystore for your environment
 REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.jks
 REM set SOLR_SSL_KEY_STORE_PASSWORD=secret
 REM set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.jks
@@ -157,7 +157,7 @@ REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret
 
 					</pre>
 					<p>But with v8.8.0 this file has changed to:</p>
-					<pre data-enlighter-theme="droide-text" data-enlighter-highlight="2,4" data-enlighter-language="text" style="width:100%; overflow:scroll;">REM Be sure to update the paths to the correct keystore for your environment
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="2,4" data-enlighter-language="text" style="width:100%; overflow:scroll;">REM Be sure to update the paths to the correct keystore for your environment
 REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.p12
 REM set SOLR_SSL_KEY_STORE_PASSWORD=secret
 REM set SOLR_SSL_TRUST_STORE=etc/solr-ssl.keystore.p12
@@ -168,7 +168,7 @@ REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret
 						<code>.jks</code>
 						to
 						<code>.p12</code>. And that breaks my script because when I re-wrote these lines to configure Solr with the SSL certificate file it generates, I used an exact match:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$newCfg = $cfg | % { $_ -replace "REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.jks", "set SOLR_SSL_KEY_STORE=$certStore" }
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$newCfg = $cfg | % { $_ -replace "REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore.jks", "set SOLR_SSL_KEY_STORE=$certStore" }
 
 					</pre>
 					<p>So as Corey points out, this doesn't work if you've moved to Solr v8.8...</p>
@@ -177,7 +177,7 @@ REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret
 						<a href="https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_regular_expressions?view=powershell-7.1#substitutions-in-regular-expressions" rel="noopener" target="_blank">use
 							<code>-replace</code>
 							in PowerShell</a>, it's actually expecting a regular expression. When I first wrote this I'd not been expecting any variations, but it's easy enough to account for them with some regex... So if we want to find "either .jks or .p12" we can change that replace statement to:</p>
-					<pre data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$newCfg = $cfg | % { $_ -replace "REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore\.(jks|p12)", "set SOLR_SSL_KEY_STORE=$certStore" }
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$newCfg = $cfg | % { $_ -replace "REM set SOLR_SSL_KEY_STORE=etc/solr-ssl.keystore\.(jks|p12)", "set SOLR_SSL_KEY_STORE=$certStore" }
 
 					</pre>
 					<p>(side issue – clearly I wasn't thinking about the regular expressions here when I wrote the original scrip, since it didn't escape the
@@ -187,7 +187,7 @@ REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret
 					<p>While I was investigating this, I noticed another bug: The replacement in this operation uses a PowerShell variable
 						<code>$certStore</code>
 						to inject the location of the SSL certificate file. But if you look at the code, it's possible that this variable doesn't get initialised. It gets set by this code:</p>
-					<pre data-enlighter-highlight="8" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">    # export the cert to pfx using solr's default password
+					<pre class="code" data-enlighter-highlight="8" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">    # export the cert to pfx using solr's default password
     if(!(Test-Path -Path "$solrRoot\server\etc\solr-ssl.keystore.pfx"))
     {
         Write-Host "Exporting cert for Solr to use"
@@ -204,7 +204,7 @@ REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret
 						<code>.pfx</code>
 						file does not exist. If it does, this initialisation never happens... Ooops.</p>
 					<p>It would be better to re-arrange this code slightly to:</p>
-					<pre data-enlighter-highlight="1" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">    $certStore = "$solrRoot\server\etc\solr-ssl.keystore.pfx"
+					<pre class="code" data-enlighter-highlight="1" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">    $certStore = "$solrRoot\server\etc\solr-ssl.keystore.pfx"
 
     # export the cert to pfx using solr's default password
     if(!(Test-Path -Path "$solrRoot\server\etc\solr-ssl.keystore.pfx"))
@@ -348,7 +348,7 @@ REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -356,7 +356,7 @@ REM set SOLR_SSL_TRUST_STORE_PASSWORD=secret
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

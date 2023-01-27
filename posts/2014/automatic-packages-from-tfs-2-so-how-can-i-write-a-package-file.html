@@ -155,7 +155,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 						<!--more-->
 					</p>
 					<p>If you open the XML for a package definition, you'll find a document a bit like this:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;project&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;project&gt;
 	&lt;Metadata&gt;
 		&lt;metadata&gt;
 			&lt;PackageName&gt;Your-Package-Name&lt;/PackageName&gt;
@@ -200,7 +200,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 						<code>&lt;project&gt;</code>
 						and its properties - we need some code to model this structure in a helpful way, and allow automatic creation of the XML from the data the model collects.</p>
 					<p>Describing the properties themselves is pretty simple. We can create a property for each of the parts of the XML. The complex elements from the XML can be represented by further classes, and the simple elements as basic types.</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageProject
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageProject
 {
     public PackageMetadata Metadata { get; private set; }
     public bool SaveProject { get; set; }
@@ -218,7 +218,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 
 					</pre>
 					<p>We need to be able to turn this object into XML, and then ensure that we can also repeat the same trick on the child objects to get their XML too. And that sounds like a job for an interface:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IToXml
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IToXml
 {
     XElement ToXml();
 }
@@ -227,7 +227,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 					<p>Each of the classes we define can implement this. We can add it to the
 						<code>PackageProject</code>
 						like so:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public XElement ToXml()
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public XElement ToXml()
 {
     XElement xPackage = new XElement("project");
 
@@ -259,7 +259,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 					<p>This pattern can be repeated for the
 						<code>Metadata</code>
 						class:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageMetadata : IToXml
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageMetadata : IToXml
 {
     public string Name { get; set; }
     public string Author { get; set; }
@@ -300,7 +300,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 						element. And likewise, the
 						<code>&lt;Converter&gt;</code>
 						element can be created with:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageConverter : IToXml
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageConverter : IToXml
 {
     public XElement ToXml()
     {
@@ -317,7 +317,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 					<p>The last property of the overall package is the
 						<code>Sources</code>
 						property. This is a bit different, as it represents a collection. We need to be able to add a number of different source definitions to this. It needs to store the collection and be able to serialise it:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageSources : IToXml
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageSources : IToXml
 {
     private List&lt;IPackageSource&gt; _sources = new List&lt;IPackageSource&gt;();
 
@@ -343,7 +343,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 					<p>Since there are two types of source we're interested in modelling here (Static Files and Static Items – I'm not using dynamic sources, though I'm sure those types could be modelled in a similar way if you wanted) we need a base type for our representations of these. The
 						<code>IPackageSource</code>
 						interface describes the two things we need to keep track of - their names, and a mechanism for adding new items to them:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPackageSource : IToXml
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPackageSource : IToXml
 {
     string Name { get; set; }
     void Add(string entry);
@@ -352,7 +352,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 					</pre>
 					<p>It also inherits from our serialisation interface, since as per the pattern above these package sources need to be able to represent themselves as XML.</p>
 					<p>Both concrete types for sources are similar (and to be honest I'm looking at these and thinking that there's a refactoring job for me to do here) except that they need to generate slightly different XML. The Sitecore Item source looks like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageSourceItems : IPackageSource
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageSourceItems : IPackageSource
 {
     private List&lt;string&gt; _entries = new List&lt;string&gt;();
 
@@ -395,7 +395,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 
 					</pre>
 					<p>and to generate the right XML, the converter type looks like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageItemToEntryConverter : IToXml
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageItemToEntryConverter : IToXml
 {
     public XElement ToXml()
     {
@@ -414,7 +414,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 
 					</pre>
 					<p>Similarly the disk files source looks like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageSourceFiles : IPackageSource
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageSourceFiles : IPackageSource
 {
     private List&lt;string&gt; _entries = new List&lt;string&gt;();
 
@@ -455,7 +455,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 
 					</pre>
 					<p>and its converter looks like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageFileToEntryConverter : IToXml
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PackageFileToEntryConverter : IToXml
 {
     public XElement ToXml()
     {
@@ -469,7 +469,7 @@ So this week I'll address the issue of how you can save XML for a package defini
 
 					</pre>
 					<p>With all that code slotted together, we can write some code that tries to use these assorted types to generate a package definition:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var prj = new PackageProject();
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var prj = new PackageProject();
 prj.Metadata.Name = "TestPackage";
 prj.Metadata.Version = "1.0";
 
@@ -488,7 +488,7 @@ var xml = prj.ToXml();
 
 					</pre>
 					<p>And the XML generated comes out as:</p>
-					<pre data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;project&gt;
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;project&gt;
   &lt;Metadata&gt;
     &lt;metadata&gt;
       &lt;PackageName&gt;TestPackage&lt;/PackageName&gt;
@@ -672,7 +672,7 @@ var xml = prj.ToXml();
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -680,7 +680,7 @@ var xml = prj.ToXml();
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

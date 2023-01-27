@@ -171,7 +171,7 @@
 						</a>
 					</p>
 					<p>You need to add one line to the default content of this file to get going - to tell NPM that it needs to ensure a recent version of Gulp is installed:</p>
-					<pre data-enlighter-highlight="6" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
+					<pre class="code" data-enlighter-highlight="6" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">{
   "version": "1.0.0",
   "name": "ASP.NET",
   "private": true,
@@ -191,7 +191,7 @@
 						</a>
 					</p>
 					<p>The default file contains two things:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var gulp = require('gulp');
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var gulp = require('gulp');
 
 gulp.task('default', function () {
     // place code for your default task here
@@ -216,7 +216,7 @@ gulp.task('default', function () {
 					<h3>Copy files from Sitecore to your solution</h3>
 					One example is the need to grab Sitecore binaries from a development instance to be the reference DLLs for your build. You shouldn't commit these to source control, so having a way for developers to fetch them when they first clone a solution is helpful. Copying the files out of your development Sitecore instance is one of many approaches to solving this problem. Copying the files is simple, but it raises the question of "where are the files going to and from?". And that means you need somewhere to put configuration.
 					<p>Gulp lets you specify config data via JavaScript as well. Just add another .js file to your project named something sensible, and put your configuration data into a "module". For example if we need configuration settings for the website's root folder and it's binaries folder, we could use something like:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">module.exports = function () {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">module.exports = function () {
     var config = {
         websiteRoot: "C:\\inetpub\\wwwroot\\DevTest\\Website",
         sitecoreLibraries: "C:\\inetpub\\wwwroot\\DevTest\\Website\\bin"
@@ -228,7 +228,7 @@ gulp.task('default', function () {
 					<p>And then you can import this into your Gulp file by adding the following after the
 						<code>require</code>
 						statement for Gulp itself:</p>
-					<pre data-enlighter-highlight="2" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var gulp = require('gulp');
+					<pre class="code" data-enlighter-highlight="2" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var gulp = require('gulp');
 var config = require("./gulp-config.js")();
 
 					</pre>
@@ -237,7 +237,7 @@ var config = require("./gulp-config.js")();
 						(or whatever other config declarations you make) in your tasks.</p>
 					<p>You might find your developer spider-sense tingling when you look at that configuration though: We've got basically the same path in two places. That makes me want to try and factor out the common bits.</p>
 					<p>When you declare a set of name-value pairs for config like that, you can't use a reference to another key in the same dictionary. However you can declare more than one dictionary. So we could refactor that to something like:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">module.exports = function () {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">module.exports = function () {
     var paths = {
         website: "C:\\inetpub\\wwwroot\\DevTest\\Website"
     }
@@ -265,7 +265,7 @@ var config = require("./gulp-config.js")();
 						from your website and store it in your project's
 						<code>lib</code>
 						folder, you can use the following:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">gulp.task('Copy-Sitecore-References', function () {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">gulp.task('Copy-Sitecore-References', function () {
     gulp.src(config.sitecoreLibraries + '\\Sitecore.Kernel.dll')
         .pipe(gulp.dest('.\\lib'));
 });
@@ -277,7 +277,7 @@ var config = require("./gulp-config.js")();
 					<a href="https://github.com/kamsar/Unicorn" target="_blank" rel="noopener noreferrer">Unicorn</a>
 					that are provided by NuGet can be deployed to your website when required.
 					<p>You can just write multiple copy operations when you have more than one thing to transfer, but that's probably not the best pattern. Copying multiple files can use wildcards (for both files and folders), and you can also pass a set of paths. Since there's no common patern for the naming of the binaries in Unicorn, we can give Gulp a list. Each item in the list will get processed in turn. We can add a list of the required files to our configuration data:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">module.exports = function () {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">module.exports = function () {
     var config = {
         // other configuration properties
         unicornFiles: [
@@ -294,7 +294,7 @@ var config = require("./gulp-config.js")();
 
 					</pre>
 					<p>(Yes, you could probably reduce this list a bit by using more wildcards – you're free to optimise if you feel like it) And that allows for another single-line copy operation to transfer all the relevant files:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">gulp.task('Copy-Unicorn-Binaries', function () {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">gulp.task('Copy-Unicorn-Binaries', function () {
     gulp.src(config.unicornFiles)
         .pipe(gulp.dest(config.websiteRoot + '\\bin'));
 });
@@ -307,7 +307,7 @@ var config = require("./gulp-config.js")();
 						call to
 						<a href="https://github.com/hparra/gulp-rename" target="_blank" rel="noopener noreferrer">a renaming plugin</a>
 						- which might look something like this:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var rename = require('gulp-rename');
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">var rename = require('gulp-rename');
 
 gulp.task('rename-file', function () {
     gulp.src('.\\old-file-name.xml')
@@ -321,7 +321,7 @@ gulp.task('rename-file', function () {
 						developer dependencies list)</p>
 					<h3>Running tasks on build events</h3>
 					Taking this concept a bit further, what about the need to copy files automatically after each build? A good example for this is deploying all your config patch files from the web project to your Sitecore instance. Creating a copy operation for this is just as simple as above:
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">gulp.task('Copy-Config-Patches', function () {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">gulp.task('Copy-Config-Patches', function () {
     gulp.src('.\\App_Config\\include\\**\\*.config')
         .pipe(gulp.dest(config.websiteRoot + '\\App_Config\\include'));
 });
@@ -341,11 +341,11 @@ gulp.task('rename-file', function () {
 						</a>
 					</p>
 					<p>Doing this will add an extra comment to the top of your Gulp file:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">/// &lt;binding AfterBuild='Copy-Config-Patches' /&gt;
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">/// &lt;binding AfterBuild='Copy-Config-Patches' /&gt;
 
 					</pre>
 					<p>That fragment of XML is the binding required for Visual Studio to run your task automatically. Note that the binding uses the task name, so if you rename tasks you will need to re-do the binding. You're free to bind any set of tasks to events, but you can also specify dependencies in the definition of your tasks if you need to ensure that certain tasks run in a specific order. To do that you just include an array of names of tasks which must have run first in your definition:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">gulp.task('Task-With-Dependencies', ['Task-1', 'Task-2'], function () {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">gulp.task('Task-With-Dependencies', ['Task-1', 'Task-2'], function () {
     // code here runs after Task-1 and Task-2
 });
 
@@ -360,7 +360,7 @@ gulp.task('rename-file', function () {
 						<code>node-gyp</code>
 						which appears to be used to compile native code for the Node.js framework. In theory this involves installing Python and making various configuration settings to ensure Node can find appropriate compilers - which, frankly, is way too much effort for a simple task like this.</p>
 					<p>If it didn't require all the messing about and other installs, it should be possible to write simple replacements in a fairly sensible manner:</p>
-					<pre data-enlighter-language="jscript" style="width:100%; overflow:scroll;">gulp.task('xml-transform', function () {
+					<pre class="code" data-enlighter-language="jscript" style="width:100%; overflow:scroll;">gulp.task('xml-transform', function () {
     gulp.src('.\\example.xml')
         .pipe(xeditor([
             { path: '/settings/setting[@name="changeMe"]', text: 'New text value' }
@@ -488,7 +488,7 @@ gulp.task('rename-file', function () {
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -496,7 +496,7 @@ gulp.task('rename-file', function () {
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>

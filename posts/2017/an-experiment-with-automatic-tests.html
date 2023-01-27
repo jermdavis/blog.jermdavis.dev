@@ -162,14 +162,14 @@ So as an exercise in &quot;learning something new&quot;, wondered whether I coul
 						attribute needs adding to each test.</p>
 					<h2>Implementing all that...</h2>
 					<p>The first step then, is to be able to find the set of types we want to process to make tests. That's fairly easy to achieve with reflection. You want a list of all the public classes that aren't abstract. It also seems useful to exclude any classes marked as "don't test this one". That's easy to do by tagging them with a custom attribute. That can be defined simply enough:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[AttributeUsage(AttributeTargets.Class)]
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[AttributeUsage(AttributeTargets.Class)]
 public class NoAutomaticTestAttribute : Attribute
 {
 }
 
 					</pre>
 					<p>Having spent some time experimenting with this code, I've come to the conclusion that (much like Razor or ASPX files) you should keep logic and code to a minimum in T4 files, so I'm trying to make as much of the logic as possible into functions that the T4 file can call. The function to fetch the relevant types can be something like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IEnumerable&lt;Type&gt; FetchTypesToTest(Assembly assembly)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IEnumerable&lt;Type&gt; FetchTypesToTest(Assembly assembly)
 {
     return assembly.GetTypes()
         .Where(t =&gt; t.IsClass &amp;&amp; t.IsPublic &amp;&amp; !t.IsAbstract)
@@ -179,7 +179,7 @@ public class NoAutomaticTestAttribute : Attribute
 
 					</pre>
 					<p>Calling that code requires an assembly. For the sake of completeness that can be returned via a function too:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Assembly FetchAssembly(string path)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Assembly FetchAssembly(string path)
 {
     return Assembly.LoadFrom(path);
 }
@@ -190,21 +190,21 @@ public class NoAutomaticTestAttribute : Attribute
 							<code>hostspecific</code>
 							attribute</a>
 						in the template decoration to true:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">&lt;#@ template debug="false" hostspecific="true" language="C#" #&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">&lt;#@ template debug="false" hostspecific="true" language="C#" #&gt;
 
 					</pre>
 					<p>(Note that this may cause issues with hosted builds – since they don't include Visual Studio)</p>
 					<p>And secondly you need to write your template code to ask for the values of the macros:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">string path = this.Host.ResolveAssemblyReference(@"$(ProjectDir)bin\$(ConfigurationName)");
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">string path = this.Host.ResolveAssemblyReference(@"$(ProjectDir)bin\$(ConfigurationName)");
 
 					</pre>
 					<p>To make use of the helper code in the test assembly, you need to make a reference to the DLL containing that code in your T4 file. For my test project that was:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">&lt;#@ assembly name="$(ProjectDir)bin\$(ConfigurationName)\AutoConstructorTest.Tests.dll" #&gt;
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">&lt;#@ assembly name="$(ProjectDir)bin\$(ConfigurationName)\AutoConstructorTest.Tests.dll" #&gt;
 
 					</pre>
 					<p>Note that these assembly reference declarations can make use of the path macros without need for the host-awareness change above. That is only needed if you're using the macros in the code of the T4 file.</p>
 					<p>With that in place, the basic generation of test classes in the T4 file can look like:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// **
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// **
 // ** Generated code - do not edit
 // **
 using System;
@@ -234,14 +234,14 @@ namespace AutoConstructorTest.Tests
 					<p>At this point I realised two things about T4 that irritate me. First is that it's really hard to format a T4 template so that the indenting looks right in both the template and in the generated output. I kind of gave up there, and accepted that the template file looks a bit odd. The second is a bit more of a challenge: this code works, but the reflection load of the target assembly puts a lock on it. That means you find yourself restarting Visual Studio a lot while you're working through writing code like this. Pretty much every time you hit build. And that gets frustrating.</p>
 					<p>An alternative here is to use a "<a href="https://msdn.microsoft.com/en-us/library/system.reflection.assembly.reflectiononlyloadfrom(v=vs.110).aspx" target="_blank" rel="noopener noreferrer">Reflection Only Load</a>" for the assembly you're going to process. That doesn't take the same locks, but requires slightly different code.</p>
 					<p>First up, loading the DLL to process needs adjusting to look like this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Assembly FetchAssembly(string path)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Assembly FetchAssembly(string path)
 {
     return Assembly.ReflectionOnlyLoadFrom(path);
 }
 
 					</pre>
 					<p>Making that change may cause an error though. A reflection-only load uses a different memory scope, and dependent assemblies aren't loaded automatically. I'd put my "exclude from test" attribute into a separate assembly, and that wasn't automatically loaded into the reflection-only scope. So that needed a new initialisation method before loading the assembly to be tested:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static void InitialiseTestHelper(string path)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static void InitialiseTestHelper(string path)
 {
     Assembly.ReflectionOnlyLoadFrom(path + @"\AutoConstructorTest.dll");
 }
@@ -249,7 +249,7 @@ namespace AutoConstructorTest.Tests
 					</pre>
 					<p>(Different code may need other things loaded here – it depends on what your target dll needs in memory)<br>
 						And the new method needs calling in the template as well:</p>
-					<pre data-enlighter-highlight="12" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// **
+					<pre class="code" data-enlighter-highlight="12" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// **
 // ** Generated code - do not edit
 // **
 using System;
@@ -282,7 +282,7 @@ namespace AutoConstructorTest.Tests
 						<code>typeof(NoAutomaticTestAttribute)</code>. A type loaded into a reflection-only scope
 						<i>is not the same thing</i>
 						as a type loaded into the normal execution scope. So that test can't work any more. There may well be a better way to address this, but the easiest change to make is to compare the names of the types, rather than their type objects directly:</p>
-					<pre data-enlighter-highlight="3" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">            var x = assembly.GetTypes()
+					<pre class="code" data-enlighter-highlight="3" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">            var x = assembly.GetTypes()
                 .Where(t =&gt; t.IsClass &amp;&amp; t.IsPublic &amp;&amp; !t.IsAbstract)
                 .Where(t =&gt; t.CustomAttributes.Where(a =&gt; a.AttributeType.Name == typeof(NoAutomaticTestAttribute).Name).Any() == false)
                 .AsEnumerable();
@@ -290,7 +290,7 @@ namespace AutoConstructorTest.Tests
 					</pre>
 					<p>With that change made, the code worked again.</p>
 					<p>Next step then, is to generate a test for each of the constructor parameters we want to check. Given a type, we can extract the set of constructors easily enough. We just want any public constructors for instances of the type:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IEnumerable&lt;ConstructorInfo&gt; FetchConstructorsToTest(Type type)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IEnumerable&lt;ConstructorInfo&gt; FetchConstructorsToTest(Type type)
 {
     return type
         .GetConstructors(BindingFlags.Public | BindingFlags.Instance)
@@ -299,7 +299,7 @@ namespace AutoConstructorTest.Tests
 
 					</pre>
 					<p>The template can then iterate all the constructors, and for each one iterate all of the constructor parameters, ignoring any ones which take value types. (As they won't accept null) And for each of these it can generate variables for the set of parameters and a call to the class we want to test:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    [TestClass]
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    [TestClass]
     [TestCategory("AutoGenerated")]
     public class &lt;#= typeToTest.Name #&gt;_GeneratedTests
     {
@@ -351,7 +351,7 @@ namespace AutoConstructorTest.Tests
 						<code>TestMethod</code>
 						for each one that is not a value type. These get named based on what they represent - "a test that nulling the nth parameter throws an exception". Inside that test the code iterates the set of parameters again. For each one it checks if this is the parameter we're going to set to null. If it is, it outputs a variable with the right type and a null value. If not, it calls a function to fetch a sensible default value for the variable. Finally it generates a call to the constructor of the type being tested, passing in the variables it has created.</p>
 					<p>The constructor parameters can be generated very simply – by concatenating a list of parameter names:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string GenerateConstructorParameterList(IEnumerable&lt;ParameterInfo&gt; parameters)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string GenerateConstructorParameterList(IEnumerable&lt;ParameterInfo&gt; parameters)
 {
     return String.Join(", ", parameters.Select(p =&gt; p.Name));
 }
@@ -360,7 +360,7 @@ namespace AutoConstructorTest.Tests
 					<p>You also need the names of the types you're creating. The simplest approach to that is just to use
 						<code>parameter.FullName</code>. But that only works for simple types. If you try that with something generic you'll end up code that doesn't compile. The .Net formal name for a generic type uses back-ticks numbers and square brackets to describe it. Things a bit like
 						<code>List</code>1[Int32]` – and that's not valid C#. There may be a better way of handling this, but my first stab was to generate the C#-friendly name from the type data like so:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string GenerateTypeName(Type t)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string GenerateTypeName(Type t)
 {
     if (t.IsGenericType)
     {
@@ -384,7 +384,7 @@ namespace AutoConstructorTest.Tests
 						<code>new Mock()</code>. (I'm using the
 						<a href="https://github.com/moq/moq4" target="_blank" rel="noopener noreferrer">moq</a>
 						framework here – but other mocking tools would work as well)</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string FetchDefaultValue(ParameterInfo parameter)
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static string FetchDefaultValue(ParameterInfo parameter)
 {
     string defaultValue = null;
     if (parameter.ParameterType.Name == "String")
@@ -406,7 +406,7 @@ namespace AutoConstructorTest.Tests
 
 					</pre>
 					<p>With that in place, you can generate tests for quite a wide spread of classes. They come out looking like this:</p>
-					<pre data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestClass]
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestClass]
 [TestCategory("AutoGenerated")]
 public class ValidClass2_GeneratedTests
 {
@@ -603,7 +603,7 @@ public class ValidClass2_GeneratedTests
 		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
 		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
 		<script type="text/javascript">
-        EnlighterJS.init('pre', 'code', {
+            EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
             linehover : false,
@@ -611,7 +611,7 @@ public class ValidClass2_GeneratedTests
             toolbarTop: '',
             toolbarBottom: ''
         });
-    
+        
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>
