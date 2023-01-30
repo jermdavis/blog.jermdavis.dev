@@ -1,0 +1,453 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com *.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2023/track-changes-rich-text">
+		<meta name="description" content="If you need to track changes to rich text fields in Sitecore, this post explains a config change that may be relevant to you.">
+		<meta property="og:description" content="If you need to track changes to rich text fields in Sitecore, this post explains a config change that may be relevant to you.">
+		<meta name="keywords" content="Sitecore, Configuration, Rich Text Editor, Events">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Tracking content changes for Rich Text</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Tracking content changes for Rich Text">
+		<meta property="og:publish_date" content="2023-01-30T00:00:00+00:00">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/track-changes-rich-text-social.jpg?">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Tracking content changes for Rich Text",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/track-changes-rich-text-social.jpg"
+        ],
+        "datePublished": "2023-01-30T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2023/track-changes-rich-text">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2023/track-changes-rich-text</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Tracking content changes for Rich Text
+				</h1>
+				<h2 class="text-2xl">Some config defaults aren't right for every circumstance</h2>
+				<div class="meta">Published 30 January 2023</div>
+				<div class="flex py-1">
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/configuration/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Configuration</a>
+					<a href="/tags/rich-text-editor/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Rich Text Editor</a>
+					<a href="/tags/events/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Events</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>A requirement which comes up every so often is that external systems need to know about changes to content that lives in Sitecore. As with most technical problems, there are a variety of ways that you can solve a problem like this, and they all have different pros and cons. One of my colleagues has been working on a project like this recently, and the approach required there meant we bumped up against an interesting configuration challenge. If you're writing code that monitors content changes you might need to think about this:
+						<!--more-->
+					</p>
+					<h2 id="the-challenge">The challenge</h2>
+					<p>If you find yourself needing to track changes in content from outside of your Sitecore instance, one of the possible options you have to look at are Sitecore's events database tables. Content changes that happen during editing and publishing get written into these, giving you an option to query them back from systems which don't natively know about Sitecore. Each event gets a row, and it includes a blob of json data to describe what changed.</p>
+					<p>For example, saving some changes to an item might produce a row like this:</p>
+					<p>
+						<a target="_blank" href="/img/2023/01-QueryEventsTable.png">
+							<img alt="A SQL query against the events table returning a row of change data" src="/img/2023/01-QueryEventsTable.png">
+						</a>
+					</p>
+					<p>And when you look at the data stored in the
+						<code>InstanceData</code>
+						field, the json looks like:</p>
+					<pre class="code" data-enlighter-highlight="21" data-enlighter-language="javascript" style="width:100%; overflow:scroll;">{
+  "ItemId": "3df2d3e5-5cd0-45db-a8cb-79ed5ed25236",
+  "ItemName": "Rich Example",
+  "LanguageName": "en",
+  "TemplateId": "3ef9d40b-e62f-4ac3-8f31-8f146346ec27",
+  "VersionNumber": 1,
+  "FieldChanges": [
+    {
+      "FieldId": "d9cf14b1-fa16-4ba6-9288-e8a174d4d522",
+      "OriginalValue": "20221105T191213Z",
+      "Value": "20221105T191406Z"
+    },
+    {
+      "FieldId": "8cdc337e-a112-42fb-bbb4-4143751e123f",
+      "OriginalValue": "f6380303-c646-4f12-8c01-7dfec3b58574",
+      "Value": "542ad055-06f5-4968-a2a7-25692141c9c2"
+    },
+    {
+      "FieldId": "88cfa053-b4de-45a1-b1f1-81bc712a184e",
+      "OriginalValue": "A plain text value",
+      "Value": "New plain text value!"
+    },
+    {
+      "FieldId": "badd9cf9-53e0-4d0c-bcc0-2d784c282f6a",
+      "OriginalValue": "sitecore\\Admin",
+      "Value": "sitecore\\Admin"
+    }
+  ],
+  "IsSharedFieldChanged": false,
+  "IsUnversionedFieldChanged": false,
+  "PropertyChanges": []
+}
+
+					</pre>
+					<p>It's showing the changes recorded - or so you might assume...</p>
+					<p>But if you take a look at the schema for the example item that changed here, you'll note there is more than one content field, and I changed both of them to get the data above:</p>
+					<p>
+						<a target="_blank" href="/img/2023/01-SchemaForTwoFields.png">
+							<img alt="Content Editor showing two content fields" src="/img/2023/01-SchemaForTwoFields.png">
+						</a>
+					</p>
+					<p>When I match up the field IDs, the "Simple Copy" field is present there along with some "when was the item changed" fields, but the "Fancy Copy" rich text field in the schema isn't, despite its data having changed too... So why is that?</p>
+					<h2 id="an-explanation">An explanation</h2>
+					<p>Well, for performance reasons not all fields get written into the event tables by default. If you dig into the configuration of your site, in the
+						<code>sitecore.config</code>
+						file you'll find this:</p>
+					<pre class="code" data-enlighter-highlight="17" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;sitecore&gt;
+    ...snip...
+
+    &lt;!--  EVENT SETTINGS
+    Here is a list of settings for different event types.
+    --&gt;
+    &lt;eventSettings&gt;
+        &lt;!--  SAVED ITEM REMOTE SETTINGS
+        The settings that control the item:saved:remote event.
+        --&gt;
+        &lt;savedItemRemoteSettings type="Sitecore.Events.Settings.SavedItemRemoteSettings, Sitecore.Kernel"&gt;
+            &lt;!--  EXCLUDE FIELD'S TYPES
+             This setting allows you to specify which types of fields shouldn't be serialized when the item:saved:remote event
+             is triggered and the EventQueue.SavedItemRemote.SerializeAllFields setting is set to 'true'.
+            --&gt;
+            &lt;exclude hint="list:ExcludeType"&gt;
+                &lt;Text&gt;Rich Text&lt;/Text&gt;
+                &lt;Text&gt;Word Document&lt;/Text&gt;
+                &lt;Text&gt;html&lt;/Text&gt;
+            &lt;/exclude&gt;
+        &lt;/savedItemRemoteSettings&gt;
+    &lt;/eventSettings&gt;
+
+    ...snip...
+&lt;/sitecore&gt;
+
+					</pre>
+					<p>By default the eventing framework deliberately doesn't record the changes to some fields which might have particularly large values. It makes sense as a performance improvement, to avoid spamming your databases. But there are some circumstances where you might want these things recorded. And the "monitoring content changes externally" scenario is one of them. With some planning, it's easy enough to configure your system to clear out old rows from the events tables after a sensible period of time - so you can work to reduce the impact of tracking these things if you need to.</p>
+					<p>So if you do need to track these changes, you'll need a config patch to change this...</p>
+					<p>It seems like this should be easy - patching Sitecore config is usually simple. But the structure of this bit of config is trickier than many. Having a
+						<code>&lt;Text/&gt;</code>
+						element which has no attributes makes it difficult to write a
+						<code>&lt;patch:delete/&gt;</code>
+						command. You can replace the
+						<code>&lt;exclude/&gt;</code>
+						parent to set its children, but that's a slightly inelegant solution which has the risk of overwriting changes from other patches.</p>
+					<p>But Google solved this issue for me,
+						<a href="https://jasonstcyr.com/2016/03/21/patch-delete-sitecore-elements-based-on-element-content/" target="_blank" rel="noopener">by pointing me at a post from Jason St-Cyr</a>
+						from back in 2016. By using a
+						<code>patch:instead</code>
+						command which matches the inner text of the element, you can substitute in a
+						<code>patch:delete</code>:</p>
+					<pre class="code" data-enlighter-highlight="7,8,9" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/"&gt;
+  &lt;sitecore&gt;
+    &lt;eventSettings&gt;
+      &lt;savedItemRemoteSettings type="Sitecore.Events.Settings.SavedItemRemoteSettings, Sitecore.Kernel"&gt;
+        &lt;exclude hint="list:ExcludeType"&gt;
+          &lt;Text patch:instead="Text[.='Rich Text']"&gt;
+            &lt;patch:delete/&gt;
+          &lt;/Text&gt;
+        &lt;/exclude&gt;
+      &lt;/savedItemRemoteSettings&gt;
+    &lt;/eventSettings&gt;
+  &lt;/sitecore&gt;
+&lt;/configuration&gt;
+
+					</pre>
+					<p>By applying that patch Sitecore will start to record the change data for rich text fields, and when you look at the
+						<code>InstanceData</code>
+						field in the events table you'll see those changes:</p>
+					<pre class="code" data-enlighter-highlight="11,26" data-enlighter-language="javascript" style="width:100%; overflow:scroll;">{
+  "ItemId": "3df2d3e5-5cd0-45db-a8cb-79ed5ed25236",
+  "ItemName": "Rich Example",
+  "LanguageName": "en",
+  "TemplateId": "3ef9d40b-e62f-4ac3-8f31-8f146346ec27",
+  "VersionNumber": 1,
+  "FieldChanges": [
+    {
+      "FieldId": "11e266a0-4b59-49c6-be4d-10561f9a805e",
+      "OriginalValue": "Rich text value!",
+      "Value": "New rich text value!"
+    },
+    {
+      "FieldId": "d9cf14b1-fa16-4ba6-9288-e8a174d4d522",
+      "OriginalValue": "20221105T191406Z",
+      "Value": "20221105T215505Z"
+    },
+    {
+      "FieldId": "8cdc337e-a112-42fb-bbb4-4143751e123f",
+      "OriginalValue": "542ad055-06f5-4968-a2a7-25692141c9c2",
+      "Value": "660383c0-7873-4f48-8297-5c52aabaddee"
+    },
+    {
+      "FieldId": "88cfa053-b4de-45a1-b1f1-81bc712a184e",
+      "OriginalValue": "Plain text value!",
+      "Value": "New plain text value!"
+    },
+    {
+      "FieldId": "badd9cf9-53e0-4d0c-bcc0-2d784c282f6a",
+      "OriginalValue": "sitecore\\Admin",
+      "Value": "sitecore\\Admin"
+    }
+  ],
+  "IsSharedFieldChanged": false,
+  "IsUnversionedFieldChanged": false,
+  "PropertyChanges": []
+}
+
+					</pre>
+					<p>So if you need it, there's your answer...</p>
+					<p>
+						<b>
+							<i>Footnote:</i>
+						</b>
+						This has been sitting in my post queue for a while now. Since I wrote it Sitecore 10.3 got released, including
+						<a href="/posts/2022/sitecore-10-3-webhooks-integration">Webhook connectivity for editorial events</a>. If you're considering code to track changes from outside, you might find that helps you if you can use the v10.3 release. Sitecore would argue we should avoid spelunking through their database tables for support reasons, so using the supported Webhook endpoints reduces the risk a bit. Though the config issue above likely still applies.</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-72 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2022</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img src="/img/mvp/2022.jpg" width="219" height="219" alt="2022 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (212)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (48)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (17)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (15)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Bug (13)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2023-01">2023 - January</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-12">2022 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-11">2022 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-10">2022 - October</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-09">2022 - September</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Socials</h3>
+						<div class="bg-white mb-2 p-2">
+							<div>
+								<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2023</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
