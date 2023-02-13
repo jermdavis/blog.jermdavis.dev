@@ -1,0 +1,408 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.twitter.com unpkg.com www.googletagmanager.com *.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2023/inheritance-bug-static-methods">
+		<meta name="description" content="A reminder about how inheritance in C# can lead to confusing bugs in your code, if not used correctly.">
+		<meta property="og:description" content="A reminder about how inheritance in C# can lead to confusing bugs in your code, if not used correctly.">
+		<meta name="keywords" content=".Net, C#">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - How to waste a day on an inheritance bug</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - How to waste a day on an inheritance bug">
+		<meta property="og:publish_date" content="2023-02-13T00:00:00+00:00">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/inheritance-bug-static-methods-social.jpg?">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "How to waste a day on an inheritance bug",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/inheritance-bug-static-methods-social.jpg"
+        ],
+        "datePublished": "2023-02-13T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2023/inheritance-bug-static-methods">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2023/inheritance-bug-static-methods</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					How to waste a day on an inheritance bug
+				</h1>
+				<h2 class="text-2xl">Proving to myself how much I have forgotten over the years</h2>
+				<div class="meta">Published 13 February 2023</div>
+				<div class="flex py-1">
+					<a href="/tags/net/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						.Net</a>
+					<a href="/tags/c/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						C#</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I've been migrating a big chunk of .Net 4 code to .Net 7 recently. One of the few large changes I had to make was to replace some boilerplate generation that used T4 Templates with a Source Generator. (As T4 isn't entirely supported in latest .Net) But these work very differently, so that change involved a good chunk of work. But I messed this up in a way that caused a subtle bug. And while I may well get to writing about Source Generators later, that silly bug is also worth writing up. Even if it's just to remind me not to make the same mistake in the future...
+						<!--more-->
+					</p>
+					<h2 id="the-issue">The issue</h2>
+					<p>The code I was working on was part of an event system. For each of the possible events there's an object which describes one of two possible messages around that event: A "can this event occur?" message which asks the entities in the system if they will allow the event, and then a "this event has occurred!" message which is sent if (when) the event does occur. Given there were a lot of possible events in the system, and 95% of the code in these classes followed some simple patterns, partial classes were being generated from data to save on typing boilerplate.</p>
+					<p>Making a simple example, a generated event object for
+						<code>DoThing</code>
+						might look like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DoThing
+{
+	private string _thing;
+	
+	public string Thing =&gt; _thing;
+	
+	protected DoThing(string thing)
+	{
+		_thing = thing;
+	}
+
+	public static DoThing Create(string thing)
+	{
+		return new DoThing($"DoThing: {thing}");
+	}
+	
+	public static DoThing Create(int id)
+	{
+		return new DoThing($"DoThing: {id}");
+	}
+}
+
+					</pre>
+					<p>It's got some data to record the thing being done (and the entities involved), plus some helper methods to correctly construct the event for a couple of scenarios. (In the original code that was one for "make it from live objects" and one for "make it from the IDs of objects which aren't currenly in memory")</p>
+					<p>And then the generated
+						<code>CanDoThing</code>
+						event object was pretty much the same except for its name and its helper methods:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CanDoThing : DoThing
+{
+	protected CanDoThing(string thing) : base(thing) {}
+	
+	public static new CanDoThing Create(int id)
+	{
+		return new CanDoThing($"CanDoThing: {id}");
+	}
+}
+
+					</pre>
+					<p>And then in the logic of the app, it would create the approprate objects and use them vaguely like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var canWalk = CanDoThing.Create("Walk");
+if(CurrentEntities.Query(canWalk))
+{
+   var walking = DoThing.Create("Walk");
+   CurrentEntities.Notify(walking);
+}
+
+
+					</pre>
+					<p>And that sort of pattern was used quite a lot around the codebase. Each entity would have some logic in it that made appropriate tests based on "Can<something>" events it received and if it was being asked to do something it did not want to allow it would return false, to stop the event.</something>
+					</p>
+					<p>But after the migration to Source Generators this was broken. Everything compiled fine, but its behaviour was wrong when executed. The
+						<code>Query()</code>
+						calls were always passing, even in situations where they should have prevented the event. And I'll admit I wasted a long time staring at this code and failing to see the issue...</p>
+					<h2 id="what-i-broke">What I broke</h2>
+					<p>My "aha!" moment came when I added some debuugging code to the app. I picked a place where some events were being queried and added some code to show what was happening. For the basic example above, it was effectively:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var canWalk = CanDoThing.Create("Walk");
+Console.WriteLine(canWalk.Thing);
+
+					</pre>
+					<p>Based on the hacky example above, the output of that should be
+						<code>CanDoThing: Walk</code>. The code is clearly calling a helper-constructor on
+						<code>CanDoThing</code>
+						so that is the object type I was expecting to be returned. But in reality, the output of the code was
+						<code>DoThing: Walk</code>.</p>
+					<p>That explained the code failing - the entities were all looking for
+						<code>Can&lt;something&gt;</code>
+						events but they were getting
+						<code>&lt;something&gt;</code>
+						events instead. So their "will I allow this event?" logic never saw the query events it was supposed to, and hence allowed everything.</p>
+					<p>But why was that happening? Clearly the code is calling
+						<code>CanDoThing</code>. How can it get back a different type?</p>
+					<h2 id="why-its-broken">Why it's broken</h2>
+					<p>Those of you who's brains are more switched on than mine was at the time may well already have spotted the issue here. Inheritence. It works even with static helper methods...</p>
+					<p>If you look back at my simple example above, the
+						<code>DoThing</code>
+						type defines a
+						<code>Create(string)</code>
+						helper method and a
+						<code>Create(int)</code>
+						one too. But the
+						<code>CanDoThing</code>
+						example inherits from
+						<code>DoThing</code>
+						but only provides a replacement for the
+						<code>Create(int)</code>
+						method. That means when the code said
+						<code>CanDoThing.Create("Walk")</code>
+						the compiler was actualling calling
+						<code>DoThing.Create("Walk")</code>
+						because that's the only method with the right signature.</p>
+					<p>When I'd migrated the T4 Template to the a Source Generator I'd accidentally missed the second helper method from the code that generates the
+						<code>Can&lt;something&gt;</code>
+						classes, and everywhere the code was trying to create a
+						<code>Can&lt;something&gt;</code>
+						event it was actually createing a
+						<code>&lt;something&gt;</code>
+						event.</p>
+					<p>The fix was easy - adding the logic to ensure the
+						<code>Can&lt;something&gt;</code>
+						objects look like this:</p>
+					<pre class="code" data-enlighter-highlight="10,11,12,13" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CanDoThing : DoThing
+{
+	protected CanDoThing(string thing) : base(thing) {}
+	
+	public static new CanDoThing Create(int id)
+	{
+		return new CanDoThing($"CanDoThing: {id}");
+	}
+
+	public static new CanDoThing Create(string thing)
+	{
+		return new CanDoThing($"CanDoThing: {thing}");
+	}
+}
+
+					</pre>
+					<p>With that added, everything went back to working. And I got to mull over how I'd managed to forget how objects work when I'd started looking at this bug.</p>
+					<p>Plus I had an idea for some extra unit tests, to catch any repeat of this sort of mistake in the future...</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2023</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img class="lg:mx-auto" src="/img/mvp/2023.png" width="219" height="219" alt="2023 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (212)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (49)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (17)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (15)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Bug (13)</a>
+							<a href="/tags/coveo/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Coveo (12)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2023-02">2023 - February</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-01">2023 - January</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-12">2022 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-11">2022 - November</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-10">2022 - October</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Socials</h3>
+						<div class="bg-white mb-2 p-2">
+							<div>
+								<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2023</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
