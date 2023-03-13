@@ -1,0 +1,513 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' www.youtube.com *.twitter.com unpkg.com www.googletagmanager.com *.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2023/workaround-solr-docker-issue">
+		<meta name="description" content="How to modify Sitecore's Docker Compose config to run ZooKeeper in a separate process to Solr">
+		<meta property="og:description" content="How to modify Sitecore's Docker Compose config to run ZooKeeper in a separate process to Solr">
+		<meta name="keywords" content="Docker, SolrCloud, Solr, Containers, Sitecore">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - A fix for Sitecore's developer SolrCloud containers failing to find ZooKeeper</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - A fix for Sitecore&amp;#x27;s developer SolrCloud containers failing to find ZooKeeper">
+		<meta property="og:publish_date" content="2023-03-13T00:00:00+00:00">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/workaround-solr-docker-issue-social.jpg?">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "A fix for Sitecore&#x27;s developer SolrCloud containers failing to find ZooKeeper",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/workaround-solr-docker-issue-social.jpg"
+        ],
+        "datePublished": "2023-03-13T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2023/workaround-solr-docker-issue">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2023/workaround-solr-docker-issue</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					A fix for Sitecore's developer SolrCloud containers failing to find ZooKeeper
+				</h1>
+				<h2 class="text-2xl">This fix may help you resolve startup issues with the internal ZooKeeper instance</h2>
+				<div class="meta">Published 13 March 2023</div>
+				<div class="flex py-1">
+					<a href="/tags/docker/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Docker</a>
+					<a href="/tags/solrcloud/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						SolrCloud</a>
+					<a href="/tags/solr/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Solr</a>
+					<a href="/tags/containers/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Containers</a>
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>A while back
+						<a href="/posts/2022/docker-zookeeper-solr-fail" target="_blank" rel="noopener">I wrote up some notes on a problem some people were seeing with Sitecore's SolrCloud developer container</a>
+						that I'd been unable to fix. It was the worst sort of technical problem, happening irregularly on some computers, but never rearing its head on others. So it's taken me a while to get around to coming up with a fix for this. But if you've suffered from the problems described in my previous post, this is an option for you:
+						<!--more-->
+					</p>
+					<h2 id="the-core-issue">The core issue</h2>
+					<p>The problem I was seeing was that when you started up Sitecore's SolrCloud developer container on some computers, you would end up with a broken Solr instance. And once that fails, Sitecore can't start because the initialisation container can't create the collections required, and Sitecore then cannot run any searches. The underlying error seemed to be that
+						<em>sometimes</em>
+						SolrCloud could not get a network connection to its internal ZooKeeper instance. Without that it could not start...</p>
+					<p>The error didn't make a lot of sense to me, as I couldn't see why a network connection could fail between two processes inside a single Docker Container. I've spent a chunk of time looking at the source code for both
+						<a href="https://github.com/apache/solr/tree/releases/lucene-solr/8.8.1" target="_blank" rel="noopener">Solr</a>
+						and
+						<a href="https://github.com/apache/zookeeper" target="_blank" rel="noopener">ZooKeeper</a>, and I can see where the thing is falling over, but I failed to find any reason for why. There are multiple threads involved in this code running - so part of me wonders if this is a threading issue. But I don't have the Java debugging skills to nail this down...</p>
+					<p>So falling back to the old developer's approach of "if in doubt, fiddle with stuff", I've tried different Sitecore image versions, different container isolation models, different Docker network settings, and a variety of alternative config settings for SolrCloud, ZooKeeper and Docker. But none managed any better than "make the problem a bit less likely" for me.</p>
+					<p>But it struck me the other day, that one way to fix it might be to run a separate ZooKeeper instance and ensure that was up before starting SolrCloud. In theory this should be done by adding another container to the Docker compose file (so ZooKeeper runs in one container and Solr in another), but that's changing the structure of the Sitecore instance, and wanted to try and avoid that. So I found some time to sit down and make it work with both Solr and ZooKeeper in one container.</p>
+					<p>And that meant modifying the default SolrCloud image Sitecore ship...</p>
+					<h2 id="my-approach-to-a-fix">My approach to a fix</h2>
+					<p>My thought was that getting ZooKeeper to run separately requires a few steps:</p>
+					<ol>
+						<li>Adding a "build" config that layers extra code and config on top of Sitecore's Solr image</li>
+						<li>Writing a Dockerfile for this build to install ZooKeeper and put config in the right places</li>
+						<li>Ensuring the config files for SolrCloud and ZooKeeper are right for this scenario</li>
+						<li>Modifying the container's Entrypoint to allow it to run both SolrCloud and ZooKeeper</li>
+						<li>Ensuring the Entrypoint script can wait for ZooKeeper to be running</li>
+					</ol>
+					<p>None of those is too tricky, but they all need to work together...</p>
+					<p>
+						<b>Step 1:</b>
+						To add the build config, follow the pattern for this that's already present in Sitecore's container examples. In your override file, add in an
+						<code>image</code>
+						element to specify what you want the new image to be called, and then add the
+						<code>build</code>
+						elements to say where the DockerFile is and what to base the new image on:</p>
+					<pre class="code" data-enlighter-highlight="2,3,4,5,6" data-enlighter-language="yaml" style="width:100%; overflow:scroll;">  solr:
+    image: ${REGISTRY}${COMPOSE_PROJECT_NAME}solr:8.8.2-${SITECORE_VERSION}
+    build:
+      context: ./docker/build/solr
+      args:
+        PARENT_IMAGE: ${SITECORE_DOCKER_REGISTRY}nonproduction/solr:8.8.2-${SITECORE_VERSION}
+    volumes:
+      - type: bind
+        source: .\docker\data\solr
+        target: c:\data
+
+					</pre>
+					<p>You should make the parent image the right one for your version of Sitecore, and name your own image appropriately. I was working with 10.2 - hence Solr 8.8.2. But you can determine the correct version from Sitecore's
+						<a href="https://support.sitecore.com/kb?id=kb_article_view&amp;sysparm_article=KB0227897" target="_blank" rel="noopener">compatibilty table</a>
+						and look at the image names in the
+						<a href="https://github.com/Sitecore/docker-examples/blob/d182546f7d2340888e81f95c8ac0025d2b75cc43/custom-images/docker-compose.xm1.yml#L63" target="_blank" rel="noopener">default docker compose files</a>
+						for your version to get examples.</p>
+					<p>
+						<b>Step 2:</b>
+						You'll need to create the
+						<code>solr</code>
+						folder under
+						<code>docker\build</code>
+						and put a DockerFile in it.</p>
+					<p>That file needs to acquire ZooKeeper, extract it, delete some cruft and apply the config. That can be done with:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"># escape=`
+
+ARG PARENT_IMAGE
+FROM ${PARENT_IMAGE}
+
+RUN powershell "Invoke-WebRequest https://dlcdn.apache.org/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz -OutFile c:\zk.tar.gz; `
+                New-Item -Type Directory c:\apache-zookeeper-3.7.1-bin | out-null; `
+                tar -xzf c:\zk.tar.gz; `
+                Remove-Item c:\zk.tar.gz; `
+                Rename-Item apache-zookeeper-3.7.1-bin zk; `
+                Remove-Item c:\zk\docs\ -Recurse -Force; `
+                New-Item -Type Directory c:\data\zoo_data | out-null"
+
+COPY zoo.cfg c:\zk\conf\
+COPY log4j.properties c:\zk\conf\
+
+COPY Start.ps1 c:\Start.ps1
+
+					</pre>
+					<p>The meat of this is the
+						<code>RUN powershell</code>
+						statement that's executing a series of steps to get ZooKeeper in place. It's doing the download, making sure there's a folder to put it in, extracting the archive, giving it a shorter filename and tidying up the mess. Once that completes the code for ZooKeeper is in place. And the following lines copy in some config files and the entrypoint which also need to exist in the folder for the DockerFile.</p>
+					<p>It took me a while to get this step to work though. Docker has an
+						<code>add</code>
+						command which is able to download and extract
+						<code>.tar.gz</code>
+						files. But oddly it can download from URLs, but if it does a download it will not extract them. Whereas if the file's source is the build context for your image it will extract them. Having banged my head against that for a while, I just fell back to PowerShell. And pleasingly, since the last time I tried to do a ZooKeeper install in script, that has added native support for unix archives. So no need to install an add-on like 7Zip or similar now.</p>
+					<p>
+						<b>Step 3:</b>
+						The
+						<code>zoo.cfg</code>
+						file is the basic config for a standalone instance of ZooKeeper:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">tickTime=2000
+dataDir=c:\\data\\zoo_data
+clientPort=2181
+4lw.commands.whitelist=*
+
+					</pre>
+					<p>That's pretty standard for basic ZooKeeper config, but there are two important points. Firstly the data directory points to the place that SolrCloud would have put data for its internal ZooKeeper. That isn't a requirement, but you do need to make sure this data is written to a volume saved outside the container. (For SolrCloud to survive the containers recycling, both the Solr and ZooKeeper data need to persist - and that's what this volume provides) It seemed simplest not to move it.</p>
+					<p>And secondly the
+						<code>4lw.commands.whitelist</code>
+						seems to be required in recent versions of ZooKeeper, to control which network commands it will respond to. For production you'd want something more specific, but here in a development environment (and secured inside the container) turning everything back on seemed fine.</p>
+					<p>The first time I made all this run, I realised that the default config for ZooKeeper generates a lot of logspam. It seems like this isn't of much use most of the time, so I've added the
+						<code>log4j.properties</code>
+						config file to turn the logging down. The base of this file is just the default values from the ZooKeeper download, but the important settings I modified are:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;"># near the top of the file
+zookeeper.root.logger=ERROR,CONSOLE
+zookeeper.console.threshold=ERROR
+
+# near the bottom of the file
+zookeeper.auditlog.threshold=ERROR
+audit.logger=ERROR, RFAAUDIT
+
+					</pre>
+					<p>That turns all the logging down to "errors only".</p>
+					<p>
+						<b>Steps 4 &amp; 5:</b>
+						To modify the entrypoint, I pulled a copy of
+						<code>start.ps1</code>
+						out of Sitecore's base container, and made some changes:</p>
+					<p>To allow "wait for ZooKeeper" to work, I pasted in a variation of a function I'd used in previous bits of SolrCloud automation:</p>
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Wait-ForZooKeeperInstance
+{
+    param(
+        [string]$zkHost,
+        [int]$zkPort
+    )
+
+    Write-Host "Waiting for ZooKeeper at $($zkHost):$zkPort"
+
+    $sawError = $false
+    $isUp = $false
+    while($isUp -ne $true)
+    {
+        try
+        {
+			$client = New-Object System.Net.Sockets.TcpClient
+            $client.Connect($zkHost, $zkPort)
+            $ns = [System.Net.Sockets.NetworkStream]$client.GetStream()
+        		
+            $sendBytes = [System.Text.Encoding]::ASCII.GetBytes("ruok")
+            $ns.Write($sendBytes, 0, $sendBytes.Length)
+
+            $buffer = New-Object 'byte[]' 10
+            $bytesRead = $ns.Read($buffer, 0, 10)
+
+            $receivedBytes = New-Object 'byte[]' $bytesRead
+            [System.Array]::Copy($buffer, $receivedBytes, $bytesRead)
+
+            $result = [System.Text.Encoding]::ASCII.GetString($receivedBytes)
+          			
+            if( $result -eq "imok" )
+            {
+                $isUp = $true
+                if( $sawError -eq $true )
+                {
+                    Write-Host
+                }
+            }
+
+            $ns.Dispose()
+			$client.Dispose()
+        }
+        catch
+        {		
+            $sawError = $true
+            Write-Host "." -NoNewline
+        }
+    }
+
+    $client.Dispose()
+
+    Write-Host "ZooKeeper is up"
+}
+
+					</pre>
+					<p>It looks a bit complex, but basically it tries to connect to the ZooKeeper command port and send an "are you ok?" message. If it can't connect or gets an error then likely ZooKeeper isn't up so it tries again. Once the correct "I'm ok" message comes back, ZooKeeper is ready to go, and the function can return.</p>
+					<p>That can be used as part of the logic to start ZooKeeper and Solr, which replaces the default startup in Sitecore's script:</p>
+					<pre class="code" data-enlighter-highlight="10,12,14" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$dataPathToTest = Join-Path $DataPath solr.xml
+if (Test-Path $dataPathToTest) {
+    Write-Host "INFO: Existing Solr configuration found in '$DataPath'..."
+}
+else {
+    Write-Host "INFO: Solr configuration not found in '$DataPath', copying clean configuration..."
+    Copy-Item $InstallPath\** $DataPath -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+Start-Process -FilePath "c:\zk\bin\zkServer.cmd" -NoNewWindow
+
+Wait-ForZooKeeperInstance "localhost" 2181
+
+&amp; "c:\solr\bin\solr.cmd" start -port $SolrPort -f -z localhost:2181
+
+					</pre>
+					<p>First it calls
+						<code>zkServer.cmd</code>
+						(the batch file that runs an instance of ZooKeeper) using
+						<code>Start-Process</code>. That ensures it runs in the background, so PowerShell's execution of the script continues as soon as that command is issued. The call for
+						<code>Wait-ForZooKeeperInstance</code>
+						will then block until it detects that ZooKeeper has started correctly. And finally Solr gets executed. The call to start SolrCloud now needs a new parameter though. Instead of saying "just start in Cloud mode with your internal ZooKeeper" we now pass
+						<code>-z localhost:2181</code>
+						to tell it to run in cloud mode with the external ZooKeeper connection specified.</p>
+					<p>And with all that in place you can run a
+						<code>docker-compose build</code>, followed by a
+						<code>docker-compose up</code>
+						to get a SolrCloud instance in this new model. The container logs show the startup as:</p>
+					<p>
+						<a target="_blank" href="/img/2023/03-SolrCloudContainerStartup.png">
+							<img alt="The containers logs when the new SolrCloud image starts up" src="/img/2023/03-SolrCloudContainerStartup.png">
+						</a>
+					</p>
+					<p>The first block is ZooKeeper starting in the background, the second is the script waiting for it to be ready, and then the third one is Solr starting. And with that done, the cloud UI starts up as expected:</p>
+					<p>
+						<a target="_blank" href="/img/2023/03-SolrCloudContainerStatus.png">
+							<img alt="The state display for ZooKeeper after the new SolrCloud image starts up" src="/img/2023/03-SolrCloudContainerStatus.png">
+						</a>
+					</p>
+					<p>And Sitecore's init container happily creates the correct collections...</p>
+					<h2 id="conclusions">Conclusions</h2>
+					<p>I've run this up and down a lot of times in test on both my laptops here - the work one that was broken before and my personal one which had never shown the error. With this setup it hass not failed for me once, where it failed fairly regularly with the original image. So that makes me reasonably sure it's a good fix. I've also tried applying these changes to the default Sitecore 10.3 XM docker compose setup, and it appears to work fine with that too.</p>
+					<p>I think this "fix" sits fairly well with standard Sitecore development. It doesn't change the structure of your docker setup, but it does provide a way to resolve the startup bug. Importantly for me, it doesn't change the Solr config that Sitecore needs. I'd seen some discussion in Slack of fixing this issue by going back to using basic Solr, rather than SolrCloud. But that involves changing config in Sitecore itself - something that you then probably have configured differently in production. And that seems like a source of potential release issues to me, so I feel happier avoiding that route for my projects.</p>
+					<p>I've put a bare-bones example of this
+						<a href="https://github.com/jermdavis/sitecore-solr-separate-zookeeper" target="_blank" rel="noopener">in a GitHub repo</a>, if you want to experiment. You can clone and run this, to get SolrCloud running with standard (empty) XM collections. (no license files required - Sitecore itself isn't involved) And hopefully this is enough detail for you to be able to apply these changes to your own project's docker config if you want.</p>
+					<p>So seems like a win to me.</p>
+					<p>And maybe one day I'll work out
+						<em>why</em>
+						the base images don't work reliably on some machines...</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2023</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img class="lg:mx-auto" src="/img/mvp/2023.png" width="219" height="219" alt="2023 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (214)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (49)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (19)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (16)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (15)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (14)</a>
+							<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Containers (12)</a>
+							<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Bug (12)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2023-03">2023 - March</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-02">2023 - February</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-01">2023 - January</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-12">2022 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-11">2022 - November</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Socials</h3>
+						<div class="bg-white mb-2 p-2">
+							<div>
+								<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2023</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
