@@ -1,0 +1,538 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' www.youtube.com *.twitter.com unpkg.com www.googletagmanager.com *.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2023/rendering-tweets">
+		<meta name="description" content="Example WPF / C# code for turning a tweet or toot into an image for embedding in a blog post">
+		<meta property="og:description" content="Example WPF / C# code for turning a tweet or toot into an image for embedding in a blog post">
+		<meta name="keywords" content="General, C#">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Getting tweets (and toots) as images for my blog</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Getting tweets (and toots) as images for my blog">
+		<meta property="og:publish_date" content="2023-03-27T00:00:00+00:00">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/rendering-tweets-social.jpg?">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Getting tweets (and toots) as images for my blog",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/rendering-tweets-social.jpg"
+        ],
+        "datePublished": "2023-03-27T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2023/rendering-tweets">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2023/rendering-tweets</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Getting tweets (and toots) as images for my blog
+				</h1>
+				<h2 class="text-2xl">Because those other social platforms might not be around forever</h2>
+				<div class="meta">Published 27 March 2023</div>
+				<div class="flex py-1">
+					<a href="/tags/general/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						General</a>
+					<a href="/tags/c/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						C#</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>Since the whole "Twitter's in something of a downward spiral" thing kicked off, I'd been musing over the idea that having embedded tweets in my blog might not be such a good thing long term. What happens if the mad billionaire at the helm suddenly decides that embedding tweets should be a paid feature, or the site has a long outage? The best alternative I had was to turn the tweets into images - so obviously I investigated how I could automate this. Turns out it was a fun feature to add to my blog editor...
+						<!--more-->
+					</p>
+					<h2 id="the-idea">The idea</h2>
+					<p>The broad plan was to be able to give the url of a tweet to my blog editing tool, and have it fetch the markup for the tweet, then render this as an image and insert the right image markup into the post being edited. The current embedding of the tweets into blog posts makes use of
+						<a href="https://www.statiq.dev/" target="_blank" rel="noopener">Statiq's</a>
+						shortcodes. So my starting point was to go and have a poke through the
+						<a href="https://github.com/statiqdev/Statiq.Web/blob/fe6d2e852a83e67338e76dc486ea3bd22032bd3e/src/Statiq.Web/Shortcodes/TwitterShortcode.cs#L63" target="_blank" rel="noopener">code for the Twitter shortcode</a>
+						and see how it worked.</p>
+					<p>Having a dig through that code showed the approach was to make use of the OEmbed standard. Twitter exposes an endpoint which you can pass the address of a tweet to. It returns a collection of bits of data, but the key one is a blob of HTML which is the relevant markup to embed a tweet - everything a browser needs to make a tweet look "right".</p>
+					<h2 id="getting-the-data">Getting the data</h2>
+					<p>For example, calling
+						<code>https://publish.twitter.com/oembed?url=https%3a%2f%2ftwitter.com%2fjermdavis%2fstatus%2f1630122358890528769</code>
+						returns a blob of json that looks like:</p>
+					<pre class="code" data-enlighter-language="json" style="width:100%; overflow:scroll;">{
+  "url": "https:\/\/twitter.com\/jermdavis\/status\/1630122358890528769",
+  "author_name": "Jeremy Davis",
+  "author_url": "https:\/\/twitter.com\/jermdavis",
+  "html": "\u003Cblockquote class=\"twitter-tweet\" data-width=\"350\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003EOn the blog: I&amp;#39;ve had a chance to play with demo of Workato - the technology behind \u003Ca href=\"https:\/\/twitter.com\/hashtag\/Sitecore?src=hash&amp;amp;ref_src=twsrc%5Etfw\"\u003E#Sitecore\u003C\/a\u003E&amp;#39;s future integration system for their composable products. \u003Cbr\u003E\u003Cbr\u003EIf you&amp;#39;re interested in what that might look like, read on:\u003Ca href=\"https:\/\/t.co\/K2ieIMD0i0\"\u003Ehttps:\/\/t.co\/K2ieIMD0i0\u003C\/a\u003E\u003C\/p\u003E&amp;mdash; Jeremy Davis (@jermdavis) \u003Ca href=\"https:\/\/twitter.com\/jermdavis\/status\/1630122358890528769?ref_src=twsrc%5Etfw\"\u003EFebruary 27, 2023\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n",
+  "width": 350,
+  "height": null,
+  "type": "rich",
+  "cache_age": "3153600000",
+  "provider_name": "Twitter",
+  "provider_url": "https:\/\/twitter.com",
+  "version": "1.0"
+}
+
+					</pre>
+					<p>The
+						<code>html</code>
+						field here is the key thing. Parsing that out and decoding it gives us something to render.</p>
+					<p>At this point I realised an interesting benefit of this approach - that Mastodon supports the OEmbed standard too - so you can apply a similar pattern to toots on that platform. Broadly it works the same way, with one caveat: because Mastodon is decentralised you have to call the OEmbed endpoint on the server that hosts the toot in question, rather than there being a single endpoint in the case of Twitter.</p>
+					<p>So, starting to pull some code together, first there needs to be some logic to work out what sort of message we're dealing with. If the code takes in the address of the message, it can choose based on the domain:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private OEmbedType DetermineOEmbedType(Uri messageUri)
+{
+    if(messageUri.DnsSafeHost.Contains("twitter.com"))
+    {
+        return OEmbedType.TwitterTweet;
+    }
+    else
+    {
+        return OEmbedType.MastodonToot;
+    }
+}
+
+					</pre>
+					<p>And based on that decision about what the type is, you can go on to work out the right OEmbed call to make:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string DetermineApiUrl(OEmbedType oEmbedType, Uri messageUri, int? maxHeight, int? maxWidth)
+{
+    string uri;
+
+    switch (oEmbedType)
+    {
+        case OEmbedType.TwitterTweet:
+            uri = $"https://publish.twitter.com/oembed?url={HttpUtility.UrlEncode(messageUri.ToString())}";
+            break;
+        case OEmbedType.MastodonToot:
+            uri = $"https://{messageUri.DnsSafeHost}/api/oembed?url={HttpUtility.UrlEncode(messageUri.ToString())}";
+            break;
+        default:
+            return string.Empty;
+    }
+
+    if (maxWidth.HasValue)
+    {
+        uri += $"&amp;maxwidth={maxWidth.Value}";
+    }
+
+    if (maxHeight.HasValue)
+    {
+        uri += $"&amp;maxheight={maxHeight.Value}";
+    }
+
+    return uri;
+}
+
+					</pre>
+					<p>OEmbed also lets you specify an optional max width and height for the rendering of the message - so if these values are provided they need adding to the API call. with that url, making the request and deserialising the json to get the HTML field is pretty easy.</p>
+					<p>So now it needs rendering...</p>
+					<h2 id="how-do-we-make-it-into-a-picture">How do we make it into a picture</h2>
+					<p>Rendering the message requires two things. First, some sort of web browser control needs to load the HTML and do the relevant rendering. And then that rendered markup needs saving as a picture.</p>
+					<p>My blog editing app is built in WPF, and that includes a
+						<code>WebView</code>
+						control which can render HTML. But sadly that makes use of Microsoft's old Internet Explorer era rendering engine. That is no good at all, as most modern websites either refuse it or don't render well. But a bit of research led me to the
+						<code>Microsoft.Web.WebView2</code>
+						Nuget package. That's a replacement component which makes use of the Chromium engine from Edge - and that's much more suitable for this purpose.</p>
+					<p>Once that's added to the UI of an app (as a control named
+						<code>webView</code>
+						here), there are two things which need doing. First you need to make sure that you call an initialise method on the class before you try to get it to render anything. The simplest approach I found to that was adding te relevant code to the
+						<code>OnActivated</code>
+						event for the window in question. Note that this can't go in the constructor of your window class because
+						<code>EnsureCoreWebView2Async()</code>
+						is an async method, and constructors are always synchronous.</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected async override void OnActivated(EventArgs e)
+{
+    base.OnActivated(e);
+
+    if (webView.CoreWebView2 == null)
+    {
+        await webView.EnsureCoreWebView2Async(null);
+    }
+}
+
+					</pre>
+					<p>The code checks to see if the
+						<code>CoreWebView2</code>
+						property has been given a value, and calls the init method if not. That test is necessary because
+						<code>OnActivated()</code>
+						can be called multiple times - if the window loses and regains focus for example.</p>
+					<p>With that done, you can ask the
+						<code>webView</code>
+						control to load the HTML returned by OEmbed with a call to
+						<code>webView.NavigateToString(oEmbedData.html)</code>. You can add a handler to the
+						<code>webView.NavigationCompleted</code>
+						event if you need to know once the HTML has been loaded.</p>
+					<p>And based on that, the UI can load and display a tweet:</p>
+					<p>
+						<a target="_blank" href="/img/2023/03-RenderingATweet.png">
+							<img alt="The WPF form for capturing a tweet as an image, showing a loaded tweet" src="/img/2023/03-RenderingATweet.png">
+						</a>
+					</p>
+					<p>My first though about how to save this to disk as an image was that you can ask any WPF UI component to render itself to a bitmap with the
+						<code>RenderTargetBitmap</code>
+						class. But (logically, when you think about it) this only works with native WPF components which are using WPF's internal rendering and composition framework. But the
+						<code>WebView2</code>
+						component here is an integration to a non-WPF component - so this approach gets you an attractive white rectangle rather than a tweet...</p>
+					<p>But it turns out that the Chromium engine's Dev Tools
+						<a href="https://chromedevtools.github.io/devtools-protocol/" target="_blank" rel="noopener">expose a set of APIs for browser automation</a>. And one of these can render HTML elements as images. And the
+						<code>WebView2</code>
+						component exposes methods for interacting with this API. It involves a few steps, but it's not to complciated overall...</p>
+					<p>First up, we need to get a reference to the root of the document in the
+						<code>WebView</code>. That can be done with the
+						<code>DOM.getDocument</code>
+						method. It takes in a
+						<code>depth</code>
+						parameter, which tells it how far down the DOM tree it should return data for. In this case, all we need is the ID of the root node, so we can set this to zero.</p>
+					<p>(For all of this following code you could create classes, and use proper JSON (de)serialisation - but since this began as a bit of an exploratory hack, I've started with a
+						<code>JObject</code>/<code>dynamic</code>
+						based approach because it's quicker to prototype with. Eventually I'll get around to changing that, for performance and prettier code)</p>
+					<p>So to get the ID of the root node we can call:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">dynamic getDocParams = new JObject();
+getDocParams.depth = 0;
+
+var data = getDocParams.ToString(Newtonsoft.Json.Formatting.None);
+var docData = await webView.CoreWebView2.CallDevToolsProtocolMethodAsync("DOM.getDocument", data);
+var docObj = ((dynamic)JObject.Parse(docData)).root;
+var id = (int)docObj.nodeId;
+
+					</pre>
+					<p>The call to the webview's
+						<code>CallDevToolsProtocolMethodAsync()</code>
+						is the thing doing the work here - that sends the request and gets back an answer. And that can be parsed again to get the id required.</p>
+					<p>From there, we want to find the HTML element for the message being rendered - which can be done with a selector query against the DOM. Though that involves knowing the right CSS selector to use, as Twitter and Mastodon return different HTML from their OEmbed API calls. But it's pretty trivial to investigate the HTML involved and work out the right selector once we know the type of message we're looking at:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string DetermineCssSelector(OEmbedType oEmbedType)
+{
+    switch (oEmbedType)
+    {
+        case OEmbedType.TwitterTweet:
+            return "div.twitter-tweet-rendered";
+        case OEmbedType.MastodonToot:
+            return "iframe.mastodon-embed";
+        default:
+            return string.Empty;
+    }
+}
+
+					</pre>
+					<p>But with that and the ID of the root of the DOM, another a call to the dev tools API for
+						<code>DOM.querySelector</code>
+						can return the ID of the element for the message. It's the same pattern as before, with an input object of parameters and an output object with the data to extract:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">dynamic querySelectorParams = new JObject();
+querySelectorParams.nodeId = id;
+querySelectorParams.selector = cssSelector;
+
+var data = querySelectorParams.ToString(Newtonsoft.Json.Formatting.None);
+var queryData = await webView.CoreWebView2.CallDevToolsProtocolMethodAsync("DOM.querySelector", data);
+var queryObj = (dynamic)JObject.Parse(queryData);
+var messageNodeId = queryObj.nodeId;
+
+					</pre>
+					<p>(Techically you could skip this step and just use the ID of the root element for the following steps, but that would also get any whitespace around the edges of the message from the
+						<code>&lt;body/&gt;</code>
+						element - and I didn't want that)</p>
+					<p>The next step is to take the ID of the message node and work out where it is in the flow of the HTML. A call to
+						<code>DOM.getContentQuads</code>
+						gets this location information, which will allow grabbing the right bit of the screen:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">dynamic getQuadParams = new JObject();
+getQuadParams.nodeId = messageNodeId;
+
+var data = getQuadParams.ToString(Newtonsoft.Json.Formatting.None);
+var quadData = await webView.CoreWebView2.CallDevToolsProtocolMethodAsync("DOM.getContentQuads", data);
+var quads = ((dynamic)JObject.Parse(quadData)).quads;
+
+					</pre>
+					<p>This returns a array of
+						<code>Quad</code>
+						data - though in the case of asking for a single element rectangle that will be an array of one
+						<code>Quad</code>. That provides four points - the top left, top right, bottom right and bottom left coordinates of the element in the UI. We need to work out the top-left/top-right and the height/width of our element (which we know is a rectangle) from this - so extracting the top left and bottom right elements is required:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var topLeftX = quads[0][0];
+var topLeftY = quads[0][1];
+var bottomRightX = quads[0][4];
+var bottomRightY = quads[0][5];
+
+					</pre>
+					<p>And then these can be passed to the final call, to
+						<code>Page.captureScreenshot</code>
+						which will generate the image data we want. Again, this follows the same basic code pattern:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">dynamic clipParams = new JObject();
+clipParams.x = topLeftX;
+clipParams.y = topLeftY;
+clipParams.width = bottomRightX - topLeftX;
+clipParams.height = bottomRightY - topLeftY;
+clipParams.scale = 1;
+
+dynamic captureParams = new JObject();
+captureParams.format = "png";
+captureParams.clip = clipParams;
+captureParams.fromSurface = true;
+captureParams.captureBeyondViewport = true;
+
+var data = captureParams.ToString(Newtonsoft.Json.Formatting.None);
+
+var captureData = await webView.CoreWebView2.CallDevToolsProtocolMethodAsync("Page.captureScreenshot", data);
+
+					</pre>
+					<p>There's two parts to the input here. The
+						<code>clip</code>
+						object defines the screen-space coordinates of the element to render, based on the bounds captured in the previous step. And the main part defines how we want the rendering done. The result that comes back is a base-64 string representing the bitmap data, which can be turned into a WPF bitmap:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var imgData = (string)((dynamic)JObject.Parse(captureData)).data;
+var ms = new MemoryStream(Convert.FromBase64String(imgData));
+
+return BitmapFrame.Create(ms);
+
+					</pre>
+					<p>And from there the bitmap can be sent to the clipboard or saved to disk easily - and my editor already copes with inserting images.</p>
+					<p>One interesting thing I bumped into here is that Mastodon urls often include
+						<code>@</code>
+						characters - and since my blog is rendered using a mix of Markdown and Razor syntax, its important to correctly encode this. (since the
+						<code>@</code>
+						in Razor starts a code expression and the markdown render wants to HTML-encode it - both of which can break the rendered URLs) So when inserting a link around the captured image, it's important to encode that correctly. And after a lot of messing about, that turns out to be
+						<code>\​@​\​@</code>
+						in a link.</p>
+					<p>So embedding the URL
+						<code>https://meow.social/@bennie/110022386019757198</code>
+						ends up with an image like this, and the markup that follows:</p>
+					<div class="imgBlock">
+						<a href="https://meow.social/@bennie/110022386019757198" target="_blank" rel="noopener">
+							<img src="/img/2023/3-TootImage-MastodonToot.png" width="350" alt="Give a person a program, frustrate them for a day. Teach a person to program, frustrate them for a lifetime.">
+						</a>
+						<a target="_blank" href="/img/2023/03-EncodedSource.png">
+							<img alt="Toot: Give a person a program, frustrate them for a day. Teach a person to program, frustrate them for a lifetime." src="/img/2023/03-EncodedSource.png">
+						</a>
+					</div>
+					<p>And the link works correctly... (Toot chosen carefully, owing to the level of frustration involved in getting this right...)</p>
+					<p>So now all I have to do is make sure I've replaced all the tweet shortcodes in my old blog posts with these images, and all's good.</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2023</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img class="lg:mx-auto" src="/img/mvp/2023.png" width="219" height="219" alt="2023 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (214)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (50)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (19)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (16)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (15)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (15)</a>
+							<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Containers (12)</a>
+							<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Bug (12)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2023-03">2023 - March</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-02">2023 - February</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-01">2023 - January</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-12">2022 - December</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-11">2022 - November</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Socials</h3>
+						<div class="bg-white mb-2 p-2">
+							<div>
+								<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2023</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
