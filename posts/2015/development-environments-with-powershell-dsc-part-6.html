@@ -10,7 +10,7 @@
 		<meta name="keywords" content="Coveo, PowerShell DSC, PowerShell, Installation">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
-		<title>Jeremy Davis - Development environments with PowerShell DSC – Part&nbsp;6</title>
+		<title>Jeremy Davis - Development environments with PowerShell DSC – Coveo CES</title>
 		<meta name="robots" content="index, follow">
 		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
 		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
@@ -18,7 +18,7 @@
 		<meta name="msapplication-tooltip" content="Jeremy Davis">
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.webmanifest">
-		<meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC &amp;#x2013; Part&amp;#xA0;6">
+		<meta property="og:title" content="Jeremy Davis - Development environments with PowerShell DSC &amp;#x2013; Coveo CES">
 		<meta property="og:publish_date" content="2015-11-30T00:00:00+00:00">
 		<meta property="og:modified_date" content="2016-08-25T00:00:00+00:00">
 		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-6-social.jpg?">
@@ -26,7 +26,7 @@
     {
         "@context": "https://schema.org",
         "@type": "Article",
-        "headline": "Development environments with PowerShell DSC &#x2013; Part&#xA0;6",
+        "headline": "Development environments with PowerShell DSC &#x2013; Coveo CES",
         "image": [
             "https://blog.jermdavis.dev/img/featured/development-environments-with-powershell-dsc-part-6-social.jpg"
         ],
@@ -129,7 +129,7 @@
 					<tt>https://blog.jermdavis.dev/posts/2015/development-environments-with-powershell-dsc-part-6</tt>
 				</div>
 				<h1 class="text-5xl mb-4 pb-1">
-					Development environments with PowerShell DSC – Part&nbsp;6
+					Development environments with PowerShell DSC – Coveo CES
 				</h1>
 				<div class="meta">Published 30 November 2015</div>
 				<div class="meta">Updated 25 August 2016</div>
@@ -148,26 +148,37 @@
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
 				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<blockquote>
+						<h4>This post 6 of 7 in a series titled
+							<i>Development environments with PowerShell DSC</i>
+						</h4>
+						<ul>
+							<li>
+								<a href="/posts/2015/development-environments-with-powershell-dsc-part-1">Development environments with PowerShell DSC – Introduction to DSC</a>
+							</li>
+							<li>
+								<a href="/posts/2015/development-environments-with-powershell-dsc-part-2">Development environments with PowerShell DSC – Windows Features</a>
+							</li>
+							<li>
+								<a href="/posts/2015/development-environments-with-powershell-dsc-part-3">Development environments with PowerShell DSC – Mongo DB</a>
+							</li>
+							<li>
+								<a href="/posts/2015/development-environments-with-powershell-dsc-part-4">Development environments with PowerShell DSC – SQL Server</a>
+							</li>
+							<li>
+								<a href="/posts/2015/development-environments-with-powershell-dsc-part-5">Development environments with PowerShell DSC – Sitecore</a>
+							</li>
+							<li>Development environments with PowerShell DSC – Coveo CES</li>
+							<li>
+								<a href="/posts/2015/development-environments-with-powershell-dsc-part-7">Development environments with PowerShell DSC – Coveo REST API &amp; Coveo for Sitecore</a>
+							</li>
+						</ul>
+					</blockquote>
 					<p>Getting back to the the issue of installing things for a Sitecore development environment, this week I'm going to start tackling how you can add "<a href="http://www.coveo.com/en/solutions/coveo-for-sitecore" target="_blank" rel="noopener noreferrer">Coveo for Sitecore</a>" to a machine. While Coveo have provided some documentation on how this can be achieved, (for
 						<a href="https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_ces_silently.htm" target="_blank" rel="noopener noreferrer">CES</a>
 						and
 						<a href="https://onlinehelp.coveo.com/en/ces/7.0/administrator/installing_the_coveo_search_api.htm" target="_blank" rel="noopener noreferrer">REST APIs</a>) they make they point that they don't offer support for this approach to installation. So this may not be right for everyone. But in case it's of use to you, here's the first part of my attempt at the automation: 
 						<!--more-->
-					</p>
-					<p>
-						<i>(<b>Edited to add:</b>
-							Links to all posts in this series:
-							<a href="/posts/2015/development-environments-with-powershell-dsc-part-1" target="_blank">1:Introduction to DSC</a>
-							–
-							<a href="/posts/2015/development-environments-with-powershell-dsc-part-2" target="_blank">2:Windows Features</a>
-							–
-							<a href="/posts/2015/development-environments-with-powershell-dsc-part-3" target="_blank">3:Mongo DB</a>
-							–
-							<a href="/posts/2015/development-environments-with-powershell-dsc-part-4" target="_blank">4:SQL Server</a>
-							–
-							<a href="/posts/2015/development-environments-with-powershell-dsc-part-5" target="_blank">5:Sitecore</a>
-							– 6:Coveo CES –
-							<a href="/posts/2015/development-environments-with-powershell-dsc-part-7" target="_blank">7:Coveo REST API &amp; Coveo for Sitecore</a>)</i>
 					</p>
 					<blockquote>
 						<i>Before I get going, couple of notes about the examples I'm including in this series of posts: They all have a call to `Start-DSCConfiguration` using the "-Force" flag to make DSC run this configuration immediately in "push" mode. However, the `Configuration` blocks declared should all work in pull configurations. Writing the scripts this way just makes them easier for people to try out without any other setup effort. Also the examples are all pretty much self-contained, so the overall configuration of a server using them would rely on many separate scripts. You don't necessarily need to have as many as I'm showing here. It's more to keep the examples clear and usable than to represent the "right" architecture. You're free to merge things together, or even break them apart further if that suits you.</i>
