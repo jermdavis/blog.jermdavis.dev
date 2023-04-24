@@ -1,0 +1,594 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' www.youtube.com *.twitter.com unpkg.com www.googletagmanager.com *.google-analytics.com *.twimg.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline' *.twitter.com *.twimg.com">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2023/migrating-t4-to-source-generators">
+		<meta name="description" content="Migrating a project using T4 Templates to recent .Net involves some extra work - T4 isn't well supported any more, so you need Source Generators instead.">
+		<meta property="og:description" content="Migrating a project using T4 Templates to recent .Net involves some extra work - T4 isn't well supported any more, so you need Source Generators instead.">
+		<meta name="keywords" content=".Net, C#">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Some fun migrating a T4 Template to a Source Generator</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Some fun migrating a T4 Template to a Source Generator">
+		<meta property="og:publish_date" content="2023-04-24T00:00:00+00:00">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/migrating-t4-to-source-generators-social.jpg?">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Some fun migrating a T4 Template to a Source Generator",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/migrating-t4-to-source-generators-social.jpg"
+        ],
+        "datePublished": "2023-04-24T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2023/migrating-t4-to-source-generators">
+		<meta property="og:type" content="website">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2023/migrating-t4-to-source-generators</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Some fun migrating a T4 Template to a Source Generator
+				</h1>
+				<h2 class="text-2xl">Some pros, some cons, and a change of approach</h2>
+				<div class="meta">Published 24 April 2023</div>
+				<div class="flex py-1">
+					<a href="/tags/net/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						.Net</a>
+					<a href="/tags/c/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						C#</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>My recent post about
+						<a href="/posts/2023/inheritance-bug-static-methods" target="_blank">messing up with inheritance</a>
+						came out of some work to migrate some (fairly old) T4 Template code generation to .Net's newer Source Generators feature. Excluding my own mistakes, this process wasn't as easy as I'd hoped. So it seemed like a good topic to jot some notes down about, in case others are facing similar challenges...
+						<!--more-->
+					</p>
+					<h2 id="background">Background</h2>
+					<p>A fairly common use case for T4 templates was to take some things already defined in a solution's code, and process them to generate extra code. A pattern here might be something like a developer defining a partial class that models some data:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace BlogExample
+{
+
+    [T4ToString]
+    public partial class MyDataModel
+    {
+        public int DataItemOne { get; set; }
+        public int DataItemTwo { get; set; }
+    }
+
+}
+
+					</pre>
+					<p>and then a T4 Template can generate look for some marker on existing classes (say the
+						<code>[T4ToString]</code>
+						attribute here) and generate the other half of the partial class to implement some boilerplate method:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">//
+// Generated Code - do not edit
+//
+namespace BlogExample
+{
+
+    public partial class MyDataModel
+    {
+        public override string ToString()
+        {
+            return $"MyDataModel: DataItemOne={DataItemOne}, DataItemTwo={DataItemTwo}";
+        }
+    }
+
+}
+
+					</pre>
+					<p>The T4 template code here can use reflection to look at the compiled code, and work out what classes it needs to process, and what the generated code should look like. It might look something like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">&lt;#@ template debug="false" hostspecific="false" language="C#" #&gt;
+&lt;#@ assembly name="System.Core" #&gt;
+&lt;#@ import namespace="System.Linq" #&gt;
+&lt;#@ import namespace="System.Text" #&gt;
+&lt;#@ import namespace="System.Reflection" #&gt;
+&lt;#@ import namespace="System.Collections.Generic" #&gt;
+&lt;#@ assembly name="$(SolutionDir)FrameworkExample\bin\Debug\FrameworkExample.dll" #&gt;
+&lt;#@ import namespace="FrameworkExample" #&gt;
+&lt;#@ output extension=".cs" #&gt;
+//
+// Generated Code - do not edit
+//
+namespace BlogExample
+{
+&lt;#
+    var sb = new StringBuilder();
+	
+	var attrType = typeof(T4ToStringAttribute);
+	var assembly = attrType.Assembly;
+	var types = assembly.GetTypes().Where(a =&gt; a.GetCustomAttributes(attrType, true).Length &gt; 0);
+
+    foreach(var t in types)
+	{
+		var parameters = t.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+		var propertyList = string.Empty;
+		foreach(var p in parameters)
+		{
+		    if (propertyList.Length &gt; 0)
+            {
+				propertyList += ", ";
+            }
+            propertyList += $"{p.Name}={{{p.Name}}}";
+		}
+#&gt;
+	public partial class &lt;#=t.Name#&gt;
+	{
+		public override string ToString()
+		{
+			return $"&lt;#=t.Name#&gt;: &lt;#=propertyList#&gt;";
+		}
+	}
+&lt;#
+	}
+#&gt;
+}
+
+					</pre>
+					<p>I had some code which worked broadly like this in the project I was trying to migrate to .Net 7, and I quickly realised that the T4 code wasn't going to work in the migrated codebase. T4 templates are no longer properly supported, and won't work in the build process here. The core problem seems to be that they can't load (and hence use) .Net Core DLLs. There are some hacks that can work in some circumstances, but they weren't relevant to my work.</p>
+					<p>The replacement technology is the newer "Source Generator" approach. This uses C# classes which implement the
+						<code>ISourceGenerator</code>
+						interface to generate extra source files which can then be compiled. But the migration isn't necessarily obvious...</p>
+					<h2 id="the-big-differences">The big differences</h2>
+					<p>When the T4 approach runs, this happens after the C# compiler has turned the source that you typed out into a DLL. It needs to do that because it's using reflection to decide what code to generate. On the plus side, using reflection to do this analysis is pretty easy for most developers. But on the down side it does lead to an annoying side-effect. Generally you don't commit your generated code to source control, so when you clone a copy of a solution with this pattern it won't compile without errors the first time, because you need to have run the generation first, which can't happen until a build has completed...</p>
+					<pre class="mermaid">flowchart LR
+  HSC[Human<br>provided<br>source]
+  CMP1[Compiler<br>tries to<br>generate DLLs]
+  T4[T4 generates<br>more code]
+  CMP2[Compiler<br>tries to<br>generate DLLs]
+  
+  HSC--Basic code<br>compiled--&gt;CMP1
+  CMP1--Reflection reads<br>basic code--&gt;T4
+  T4--Source for<br>enhanced<br>objects--&gt;CMP2
+  CMP2--Original source<br>references<br>enhanced objects--&gt;HSC
+
+					</pre>
+					<p>That circular reference can be a bit of a pain, but is generally sorted out by running the build twice, and by how you break up code between the projects in your solution. The heirarchy of your projects matters here.</p>
+					<p>That isn't true with the source generator approach. These don't need to wait for an initial compilation because they operate directly on the source code. Generators run after the compiler has parsed your code, but before anything has been compiled into IL. So the circular dependency above doesn't exist:</p>
+					<pre class="mermaid">flowchart LR
+  HSC[Human<br>provided<br>source]
+  GEN[Source Generator<br>adds more source]
+  CMP[Compiler<br>generates DLLs]
+
+  HSC--Parsed by<br>compiler--&gt;GEN
+  GEN--Extra source<br>now parsed--&gt;CMP
+
+					</pre>
+					<p>But this does mean the code in the generator cannot use Reflection to work out what to create...</p>
+					<h2 id="setup-for-the-new-method">Setup for the new method</h2>
+					<p>The first thing to pay attention to here is that a Source Generator has to run inside the compiler's context. That means your generators have to live in NetStandard 2 DLLs. Hence these need to be defined in a separate DLL to the project you'll be generating your code in.</p>
+					<p>If you're going to want to debug the generator code you're writing (and trust me, you will!) then you need to have installed the .Net Compiler Platform component into Visual Studio. You can do that via the Visual Studio Installer. For your relevant instance of VS, click "modify", "Individual components", then search for ".Net Compiler" and make sure it's checked:</p>
+					<p>
+						<a target="_blank" href="/img/2023/04-AddingCompilerPlatform.png">
+							<img alt="Selecting the .Net Compiler Platform in the VS Installer" src="/img/2023/04-AddingCompilerPlatform.png">
+						</a>
+					</p>
+					<p>When you create your generator project you need to ensure you've added some references and settings. At a minimum you need to add the nuget packages for
+						<code>Microsoft.CodeAnalysis.CSharp</code>
+						and
+						<code>Microsoft.CodeAnalysis.Analyzers</code>, though you may also need others. You also need a specific
+						<code>ItemGroup</code>, which I don't think there's UI for right now so you need to manually add:</p>
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;ItemGroup&gt;
+	&lt;None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" /&gt;
+&lt;/ItemGroup&gt;
+
+					</pre>
+					<p>and there are some settings which seem to be required in the
+						<code>PropertyGroup</code>
+						for controlling the project:</p>
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;EmitCompilerGeneratedFiles&gt;true&lt;/EmitCompilerGeneratedFiles&gt;
+&lt;CompilerGeneratedFilesOutputPath&gt;Generated&lt;/CompilerGeneratedFilesOutputPath&gt;
+&lt;IsRoslynComponent&gt;true&lt;/IsRoslynComponent&gt;
+
+					</pre>
+					<p>With that done you can add a basis class for your generator:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[Generator]
+public class BlogExampleGenerator : ISourceGenerator
+{
+    public void Execute(GeneratorExecutionContext context)
+    {
+    }
+
+    public void Initialize(GeneratorInitializationContext context)
+    {
+    }
+}
+
+					</pre>
+					<p>Once that's in place you can add your generator DLL to your code project, and configure it as a Source Generator. Again there doesn't seem to be an easy UI for this, so you can add the relevant XML to your project file:</p>
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;ItemGroup&gt;
+	&lt;ProjectReference Include="..\SourceGenerator\SourceGenerator.csproj"
+						OutputItemType="Analyzer"
+						ReferenceOutputAssembly="false" /&gt;
+&lt;/ItemGroup&gt;
+
+					</pre>
+					<p>It needs to reference the project (or the DLL) for your analyser and it needs to have the
+						<code>OutputItemType="Analyzer"</code>
+						attribute. If your project also depends on classes defined in the generator project for compiling (if you defined a marker attribute there for example) then you need the
+						<code>ReferenceOutputAssembly</code>
+						set to true. Otherwise, this can be false.</p>
+					<p>With all that set up, you can build your solution, and you should be able to compile everything...</p>
+					<h2 id="debugging-your-code">Debugging your code</h2>
+					<p>In your source generator project, you need to set up a debug profile which knows what the generator should run against. This is the bit the .Net Compiler Platform is needed for - it adds the debug approach used here. So if you can't set this bit up, it's because that module is missing.</p>
+					<p>Open the properties dialog for your source generator project and scroll down to the debug section near the bottom, then click the "Open debug launch profiles UI" link. Click the "new" button, and add a "Roslyn Component" entry, and pick your main project in the dropdown to set the source data used to run the generator for debugging:</p>
+					<p>
+						<a target="_blank" href="/img/2023/04-EnableSourceGenDebug.png">
+							<img alt="The UI for configuring source generator debugging, showing the 'Roslyn Component' debug profile, and the relevant settings to make" src="/img/2023/04-EnableSourceGenDebug.png">
+						</a>
+					</p>
+					<p>With that done, you can set your generator project as the Startup Project, and click play to debug it. Breakpoints etc should work as normal, and all the context data will be from the project you picked in the dialog above.</p>
+					<h2 id="the-alternative-code">The alternative code</h2>
+					<p>But the real meat of this is how you replace the reflection code from T4 with parsing of the source tree for the generator. When it's invoked during the build process, a generator gets an instance of the
+						<code>GeneratorExecutionContext</code>
+						- which
+						<a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.generatorexecutioncontext?view=roslyn-dotnet-4.3.0" target="_blank" rel="noopener">provides a lot of state</a>
+						about the current build. But the key thing for this task is the
+						<code>Compilation</code>
+						object, and its
+						<code>SyntaxTrees</code>
+						collection. Each
+						<code>SyntaxTree</code>
+						is a structure representing one file being compiled that has been parsed. That includes the stuff you think about as your code, as well as things like
+						<code>AssemblyInfo.cs</code>
+						which may be generated for you.</p>
+					<p>Each of the
+						<code>SyntaxTree</code>
+						objects is the complete parsed model of a source file, so it includes all of the tokens, keywords and aspects of the language syntax. So to find "all classes tagged with an attribute" you need to look through it to find the nodes which describe a class, and then look for the nodes which describe the attributes added to that class.</p>
+					<p>So the revised code ends up being a LINQ query on all the descendants of the syntax tree to find any class declarations. Each of those has a list of attributes, which can then be searched for the name of the attribute. Note, however, that since we're working with the C# and not the .Net IL here the attribute is referred to without the usual
+						<code>&lt;something&gt;Attribute</code>
+						suffix.</p>
+					<p>That ends up looking something like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var classesWithAttribute = context.Compilation.SyntaxTrees
+        .SelectMany(st =&gt; st.GetRoot()
+                .DescendantNodes()
+                .Where(n =&gt; n is ClassDeclarationSyntax)
+                .Select(n =&gt; n as ClassDeclarationSyntax)
+                .Where(r =&gt; r.AttributeLists
+                    .SelectMany(al =&gt; al.Attributes)
+                    .Any(a =&gt; a.Name.GetText().ToString() == "T4ToString")));
+
+					</pre>
+					<p>Once those
+						<code>ClassDeclarationSyntax</code>
+						objects have been pulled out, they can be searched for things like properties or methods by looking for their child items which have the right type, such as
+						<code>PropertyDeclarationSyntax</code>
+						for a property.</p>
+					<p>Depending on what you're doing here, you may find you have to pay more attention to the variations which C# allows in declarations here. If you're extracting data from a property, you may have to consider whether the one you're looking at has a "normal" get/set body with braces, or an expression body using a
+						<code>=&gt;</code>
+						for example. That's not the case with the previous reflection approach though - because all of those end up with broadly the same IL structure after compilation.</p>
+					<p>But with the changes made, the logic for a generator to replace the T4 template above looks something like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
+using System.Linq;
+using System.Text;
+
+namespace SourceGenerator
+{
+
+    [Generator]
+    public class BlogExampleGenerator : ISourceGenerator
+    {
+        public void Execute(GeneratorExecutionContext context)
+        {
+            var sb = new StringBuilder();
+
+            var classesWithAttribute = context.Compilation.SyntaxTrees
+                    .SelectMany(st =&gt; st.GetRoot()
+                            .DescendantNodes()
+                            .Where(n =&gt; n is ClassDeclarationSyntax)
+                            .Select(n =&gt; n as ClassDeclarationSyntax)
+                            .Where(r =&gt; r.AttributeLists
+                                .SelectMany(al =&gt; al.Attributes)
+                                .Any(a =&gt; a.Name.GetText().ToString() == "T4ToString")));
+
+            foreach (var c in classesWithAttribute)
+            {
+                var name = c.Identifier.ValueText;
+
+                var props = c.DescendantNodes().Where(n =&gt; n is PropertyDeclarationSyntax)
+                    .Select(n =&gt; n as PropertyDeclarationSyntax)
+                    .Select(n =&gt; n.Identifier.ValueText);
+
+                var propertyList = string.Empty;
+
+                foreach(var p in props)
+                {
+                    if (propertyList.Length &gt; 0)
+                    {
+                        propertyList += ", ";
+                    }
+                    propertyList += $"{p}={{{p}}}";
+                }
+
+                context.AddSource($"{name}.g.cs", SourceText.From($@"""
+// &lt;auto-generated/&gt;
+namespace CoreExample
+{{
+
+	public partial class {name}
+	{{
+		public override string ToString()
+		{{
+			return $""{name}: {propertyList}"";
+		}}
+	}}
+
+}}
+""", Encoding.UTF8));
+            }
+        }
+
+        public void Initialize(GeneratorInitializationContext context)
+        {
+        }
+    }
+
+}
+
+					</pre>
+					<h2 id="conclusions">Conclusions</h2>
+					<p>While it's great that this approach gets away from the old "circular reference" problem, you do need to think differently about how you go about reading the parsed source here. It's much more flexible and enables some interesting new approaches, but understanding the structure of the parsed source tree is definitely harder than the old Reflection model.</p>
+					<p>Another nice difference here is that Source Generators know how to output multiple files. So it's much easier to have a situation where you generate one file per class you extend, if that's your preference.</p>
+					<p>And it's kind of nice to step away from using Razor syntax here, and the challenges that can pose for structure and layout of your work. While I've not made use of it in the examples above, I think the addition of
+						<a href="https://devblogs.microsoft.com/dotnet/csharp-11-preview-updates/#raw-string-literals" target="_blank" rel="noopener">Raw String Literals</a>
+						in C# 11 could make writing the code "template" in your generator much easier than it's been in the past...</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2023</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img class="lg:mx-auto" src="/img/mvp/2023.png" width="219" height="219" alt="2023 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (214)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (52)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (19)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (16)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (15)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (15)</a>
+							<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Containers (12)</a>
+							<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Bug (12)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2023-04">2023 - April</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-03">2023 - March</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-02">2023 - February</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-01">2023 - January</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2022-12">2022 - December</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Socials</h3>
+						<div class="bg-white mb-2 p-2">
+							<div>
+								<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2023</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script src="/vendor/Mermaid/mermaid.min.js"></script>
+		<script type="text/javascript">
+            var config = {
+                logLevel: "fatal",
+                startOnLoad: true,
+                htmlLabels: true,
+                theme: "neutral",
+                flowchart: {
+                    useMaxWidth: false
+                }
+            };
+            mermaid.initialize(config);
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
