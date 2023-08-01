@@ -1,0 +1,496 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2023/driving-browsers-1-browser">
+		<meta name="description" content="Using C# to control browsers using the Chromium DevTools API">
+		<meta property="og:description" content="Using C# to control browsers using the Chromium DevTools API">
+		<meta name="keywords" content="C#, HTML, Browsers">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Driving browsers: #1 The Browser</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Driving browsers: #1 The Browser">
+		<meta property="og:publish_date" content="2023-05-20T00:00:00+00:00">
+		<meta property="og:type" content="article">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/driving-browsers-1-browser-social.jpg">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Driving browsers: #1 The Browser",
+        "url": "https://blog.jermdavis.dev/posts/2023/driving-browsers-1-browser",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/driving-browsers-1-browser-social.jpg"
+        ],
+        "datePublished": "2023-05-20T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2023/driving-browsers-1-browser">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2023/driving-browsers-1-browser</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Driving browsers: #1 The Browser
+				</h1>
+				<h2 class="text-2xl">Because sometimes reinventing the wheel is fun!</h2>
+				<div class="meta">Published 20 May 2023</div>
+				<div class="flex py-1">
+					<a href="/tags/c/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						C#</a>
+					<a href="/tags/html/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						HTML</a>
+					<a href="/tags/browsers/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Browsers</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<blockquote>
+						<h4>This post 1 of 3 in a series titled
+							<i>Driving browsers</i>
+						</h4>
+						<ul>
+							<li>Driving browsers: #1 The Browser</li>
+							<li>
+								<a href="/posts/2023/driving-browsers-2-statemachine">Driving browsers: #2 The state machine</a>
+							</li>
+							<li>
+								<a href="/posts/2023/driving-browsers-3-states">Driving browsers: #3 The states</a>
+							</li>
+						</ul>
+					</blockquote>
+					<p>I bumped into an issue recently where I needed to write some code to scrape a bit of HTML. The usual .Net approach of using an
+						<code>HttpClient</code>
+						didn't work here - the web site in question made use of some "bot detection" code which relied on requests running JavaScript to validate them. So I needed a different approach to fetch the correct HTML. A while back I'd written some code to
+						<a href="https://blog.jermdavis.dev/posts/2023/rendering-tweets" target="_blank" rel="noopener">grab images of rendered HTML using the Chromium DevTools APIs</a>, and I figured I could play a similar game here...
+						<!--more-->
+					</p>
+					<p>Now, some of you are probably thinking "why not just use
+						<a href="https://www.selenium.dev/" target="_blank" rel="noopener">Selenium</a>
+						or
+						<a href="https://playwright.dev/" target="_blank" rel="noopener">Playwright</a>
+						for this?" and you're right - I absolutely could. But this is one of those places where I was writing the code for me (not work) so the learning experience of how to make this work was more interesting than reusing someone else's code. But YYMV...</p>
+					<p>So I set to work trying to make some better (and perhaps more reusable) code for driving a browser and fetching the resulting markup using the Chromium APIs. Something that could work in a console app and be more flexible than the WPF control I'd used in my previous work...</p>
+					<h2 id="step-one-find-yourself-a-browser">Step one - Find yourself a browser</h2>
+					<p>I wanted this code to be able to work on a couple of machines - one which had Chrome installed and one which only had Edge. But they're both based on the same engine, so this isn't too tricky. A factory class that could create the right browser object for a particular machine seemed a sensible apprach.</p>
+					<p>To make use of the Chromium developer tools APIs you need to be able to run the browser, so we need code that can find and execute the browser. The registry can tell us where a browser is, and we can make use of that data to work out what we can run. A base class for this might look like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class BrowserDetector : IBrowserDetector
+{
+    public string Name { get; init; }
+    public string AppFolder { get; init; } = string.Empty;
+    public string AppExecutable { get; init; } = string.Empty;
+    public bool Installed { get; init; } = false;
+
+    public BrowserDetector(string name, string regKey)
+    {
+        Name = name;
+
+        var k = Registry.LocalMachine.OpenSubKey(regKey);
+
+        if (k == null)
+        {
+            return;
+        }
+
+        var exec = k.GetValue(string.Empty) as string;
+        var path = k.GetValue("Path") as string;
+
+        if (string.IsNullOrEmpty(exec) || string.IsNullOrEmpty(path))
+        {
+            return;
+        }
+
+        Installed = true;
+        AppExecutable = exec;
+        AppFolder = path;
+    }
+}
+
+					</pre>
+					<p>Given a registry key, it can decide if that browser is installed, and extract the appropriate folder and executable to use later. So for Edge, the concrete class might look like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class EdgeBrowser : BrowserDetector
+{
+    public const string RegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe";
+
+    public EdgeBrowser() : base("Edge", RegKey)
+    {
+    }
+}
+
+					</pre>
+					<p>Chrome just needs a different registry key and name. And a factory class can take a set of these objects, find the first one that's installed, and create an instance of it:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class BrowserFactory
+{
+    public static readonly IBrowserDetector[] Browsers = new IBrowserDetector[] { new ChromeBrowser(), new EdgeBrowser() };
+
+    public static Browser Create()
+    {
+        foreach(var browser in Browsers)
+        {
+            if(browser.Installed)
+            {
+                return new Browser(browser);
+            }
+        }
+
+        throw new ApplicationException("No browser detected - unable to create an instance.");
+    }
+}
+
+					</pre>
+					<p>This tries Chrome first and falls back to Edge, returning an object that describes the required browser - or throws if neither of those exist.</p>
+					<h2 id="step-two-connect-to-the-browser">Step two - Connect to the browser</h2>
+					<p>The
+						<code>Browser</code>
+						object mentioned above is going to act as a wrapper to Chromium for us. To talk to the DevTools API we need to spawn an instance with some specific command-line parameters, and then talk to that over WebSockets. So the first step is to take the data we got from
+						<code>BrowserDetector</code>
+						that matched above, and get ready to spawn a browser. That involves a this object holding a few bits of data:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class Browser : IDisposable
+{
+    private static readonly HttpClient _client = new();
+
+    public string Name { get; init; }
+    public string Folder { get; init; }
+    public string Executable { get; init; }
+    public int DebuggerPort { get; set; } = 9222;
+    public string UserFolder { get; set; }
+    public string Arguments { get; set; } = "--new-window {0} --remote-debugging-port={1} --user-data-dir={2}";
+
+    private Process? _process = null;
+
+    public Browser(IBrowserDetector detector)
+    {
+        Name = detector.Name;
+        Folder = detector.AppFolder;
+        Executable = detector.AppExecutable;
+
+        UserFolder = Path.Combine(Path.GetTempPath(), $"Browser-{detector.Name}");
+    }
+}
+
+					</pre>
+					<p>The constructor takes the matched detector and stores the info we got from the registry. It also computes a path for a temporary profile folder. If you don't give this to Chrome it will use the profile of the current user - which may or may not work for your scenario. I chose to keep it separate. Note the need to have a browser-type-specific folder here. I did some testing with both browsers on one machine and got odd problems if they didn't use separate temp folders.</p>
+					<p>We also need to specify the port that we'll be connecting to the API on later, and a template for the command line parameters to be sent when starting an instance of Chromium.</p>
+					<p>And finally, we're going to need to make a data request via HTTP so we need an
+						<code>HttpClient</code>
+						here (we'll get to the WebSockets later) and we need to control the behaviour of some JSON serialisation too.</p>
+					<p>So then we need to execute the browser:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    public void Open(string initialUrl)
+    {
+        if (_process != null)
+        {
+            throw new ApplicationException("Browser process is already running.");
+        }
+
+        if (!Directory.Exists(UserFolder))
+        {
+            Directory.CreateDirectory(UserFolder);
+        }
+
+        var psi = new ProcessStartInfo()
+        {
+            WorkingDirectory = Folder,
+            FileName = Executable,
+            Arguments = string.Format(Arguments, initialUrl, DebuggerPort, UserFolder)
+        };
+
+        _process = Process.Start(psi);
+    }
+
+					</pre>
+					<p>That does a test to see if we already have a browser process running, creates the temp folder if needed and then executes the browser with the right command line parameters. The properties discussed above are used to start the process and format the command line. The
+						<code>initialUrl</code>
+						is the page the browser will open to first up, but I'll get to navigating the browser about later on.</p>
+					<p>Once that process is started we should have an instance of Chromium, listening on the debugging port for connections.</p>
+					<p>So the next task is to connect to that port:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    public async Task&lt;BrowserConnection&gt; Connect()
+    {
+        var result = await _client.GetAsync($"http://localhost:{DebuggerPort}/json");
+        var content = await result.Content.ReadAsStringAsync();
+        var sessions = JsonSerializer.Deserialize&lt;BrowserConnection[]&gt;(content, Json.Options);
+
+        if (sessions == null || sessions.Length &lt; 1)
+        {
+            throw new ApplicationException("Did not get a valid debug session back from json endpoint");
+        }
+
+        return sessions[0];
+    }
+
+					</pre>
+					<p>This uses the
+						<code>HttpClient</code>
+						to make a request to the
+						<code>/json</code>
+						page exposed on the browser's port. That returns a blob of json describing the available debugging sessions we can connect to. The data returned can be deserialised (<code>Json.Options</code>
+						here is some standard format settings for the serialiser, shared across all the classes) using this structure:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class BrowserConnection
+{
+    public string? Id { get; init; }
+    public string? Title { get; init; }
+    public string? Url { get; init; }
+    public string? WebSocketDebuggerUrl { get; init; }
+}
+
+					</pre>
+					<p>And that gets us the data we'll need in a bit for executing commands against this session. (Note that the JSON here returns a few other properties including the page's FavIcon URL, a description, and the URL for the DevTools UI. But those aren't relevant to this process so I ignored them.</p>
+					<p>At this point we'll be able to issue commands to the debugger. But at some point we'll be finished with the browser process we're controlling here. So the
+						<code>Browser</code>
+						class is
+						<code>IDisposable</code>
+						and when it's disposed it will tidy up the process:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    public void Dispose()
+    {
+        if (_process != null)
+        {
+            _process.Kill();
+            _process.Dispose();
+        }
+    }
+
+					</pre>
+					<p>So a
+						<code>using</code>
+						block gets us convenient lifetime management of the browser we're talking to.</p>
+					<h2 id="wrap-up">Wrap up</h2>
+					<p>That's enough code to get a browser up and running. In the next part of this series we'll make a start on how to to control the browser once it's started.</p>
+					<p>If you can't wait, the code to go with this series is
+						<a href="???" target="_blank" rel="noopener">available on GitHub</a>.</p>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2023</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img class="lg:mx-auto" src="/img/mvp/2023.png" width="219" height="219" alt="2023 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (3)</a>
+							<a href="/tags/html/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								HTML (3)</a>
+							<a href="/tags/browsers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Browsers (3)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (2)</a>
+							<a href="/tags/design-patterns/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Design Patterns (2)</a>
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (1)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2023-08">2023 - August</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-05">2023 - May</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-03">2023 - March</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Socials</h3>
+						<div class="bg-white mb-2 p-2">
+							<div>
+								<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2023</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script src="/vendor/Mermaid/mermaid.min.js"></script>
+		<script type="text/javascript">
+            var config = {
+                logLevel: "fatal",
+                startOnLoad: true,
+                htmlLabels: true,
+                theme: "neutral",
+                flowchart: {
+                    useMaxWidth: false
+                }
+            };
+            mermaid.initialize(config);
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>

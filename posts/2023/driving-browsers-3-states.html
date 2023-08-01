@@ -1,0 +1,628 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2023/driving-browsers-3-states">
+		<meta name="description" content="Using C# to control browsers using the Chromium DevTools API">
+		<meta property="og:description" content="Using C# to control browsers using the Chromium DevTools API">
+		<meta name="keywords" content="C#, HTML, Design Patterns, Browsers">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Driving browsers: #3 The states</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Driving browsers: #3 The states">
+		<meta property="og:publish_date" content="2023-05-20T00:00:00+00:00">
+		<meta property="og:type" content="article">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/driving-browsers-3-states-social.jpg">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Driving browsers: #3 The states",
+        "url": "https://blog.jermdavis.dev/posts/2023/driving-browsers-3-states",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/driving-browsers-3-states-social.jpg"
+        ],
+        "datePublished": "2023-05-20T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2023/driving-browsers-3-states">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2023/driving-browsers-3-states</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Driving browsers: #3 The states
+				</h1>
+				<h2 class="text-2xl">Because sometimes reinventing the wheel is fun!</h2>
+				<div class="meta">Published 20 May 2023</div>
+				<div class="flex py-1">
+					<a href="/tags/c/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						C#</a>
+					<a href="/tags/html/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						HTML</a>
+					<a href="/tags/design-patterns/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Design Patterns</a>
+					<a href="/tags/browsers/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Browsers</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<blockquote>
+						<h4>This post 3 of 3 in a series titled
+							<i>Driving browsers</i>
+						</h4>
+						<ul>
+							<li>
+								<a href="/posts/2023/driving-browsers-1-browser">Driving browsers: #1 The Browser</a>
+							</li>
+							<li>
+								<a href="/posts/2023/driving-browsers-2-statemachine">Driving browsers: #2 The state machine</a>
+							</li>
+							<li>Driving browsers: #3 The states</li>
+						</ul>
+					</blockquote>
+					<p>Time for the final part of my series on controlling a web browser. With code to load a browser, and the overarching State Machine to control it, this part finishes off with the code for some states to load a page and extract its markup. Plus a few conclusions...</p>
+					
+					<!--more-->
+					<p>So with the framework in place, now we need to implement some states the code is going to work through. Having done a bit of digging into how DevTools API allows the browser to be controlled, the flow for fetching all the HTML from a page might look like:</p>
+					<pre class="mermaid">flowchart LR
+  A[Enable Page<br>Events in the<br>browser]
+  B[Navigate to<br>the target page]
+  C[Fetch the root<br>ID of the document's<br>markup]
+  D[Get the<br>outer HTML]
+  A--&gt;B
+  B--&gt;C
+  C--&gt;D
+
+					</pre>
+					<h2 id="state-one-enabling-event-monitoring">State one: Enabling event monitoring</h2>
+					<p>First thing is the browser needs to be told to return state events so that we can detect when page loading has finished. Then it can tell the browser to navigate to a page. Once that completes you need to get the internal ID of the document root, and then use that ID to fetch the outer HTML of that node.</p>
+					<p>(There are
+						<a href="https://chromedevtools.github.io/devtools-protocol/1-3/" target="_blank" rel="noopener">loads of other commands and events that you can deal with</a>, but these are enough for a demo)</p>
+					<p>As noted above, all the states are instances of the
+						<code>State</code>
+						class, so the code for the first "Enable Page Events" state looks like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PageEventEnableState : State
+{
+    public static State Instance { get; } = new PageEventEnableState();
+    private static readonly int _id = 1;
+
+    public override async Task Enter(StateMachine owner)
+    {
+        var request = new PageEventEnableParameters();
+        await owner.SendCommand(request, _id);
+    }
+
+    public override async Task Update(StateMachine owner, DebuggerResult data)
+    {
+        if (data != null &amp;&amp; data.Id == _id)
+        {
+            owner.TransitionToNewState(PageNavigateState.Instance);
+        }
+    }
+
+    public override async Task Leave(StateMachine owner)
+    {
+    }
+}
+
+					</pre>
+					<p>This defines a static instance of the state which is used to select states. (As noted before, these classes have no internal data, so they're safe to reuse across operations) It also defines an integer "id" for this operation. That gets passed into any command we send, and comes back in the response, to help us decide which responses come from which calls.</p>
+					<p>The
+						<code>Enter()</code>
+						method creates the data for the call, and then asks the owning
+						<code>StateMachine</code>
+						to issue the command to the connected browser. As mentioned before, we need an instance of the
+						<code>IDebuggerCommandProperties</code>
+						interface to help format the parameters for sending. In this case it's trivially simple as there are no extra parameters to the "<a href="https://chromedevtools.github.io/devtools-protocol/1-3/Page/#method-enable" target="_blank" rel="noopener">Page.enable</a>" call:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PageEventEnableParameters : IDebuggerCommandProperties
+{
+    public string CommandName =&gt; "Page.enable";
+}
+
+					</pre>
+					<p>With that sent, any messages received by the
+						<code>StateMachine</code>
+						get routed to the
+						<code>Update()</code>
+						call. And to decide when we're done with this state we wait for a response which has data, and where the returned
+						<code>Id</code>
+						equals the one we passed in. When we see that, the
+						<code>StateMachine</code>
+						can be instructed to move to the next state.</p>
+					<p>And
+						<code>Leave()</code>
+						has nothing to do here...</p>
+					<h2 id="state-two-navigating-the-browser">State two: Navigating the browser</h2>
+					<p>Now that our code will be notified of navigation events like "the page is loaded now", it can move on to loading the right page. The code for this adds a few extra bits:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PageNavigateState : State
+{
+    public static State Instance { get; } = new PageNavigateState();
+    private static readonly int _id = 2;
+
+    public override async Task Enter(StateMachine owner)
+    {
+        var nextUrl = (string)owner.State["nextUrl"];
+
+        var request = new PageNavigateParameters() { Url = nextUrl };
+        await owner.SendCommand(request, _id);
+    }
+
+    public override async Task Update(StateMachine owner, DebuggerResult data)
+    {
+        if (data != null &amp;&amp; data?.Method == "Page.loadEventFired")
+        {
+            owner.TransitionToNewState(FetchDocumentRootState.Instance);
+        }
+    }
+
+    public override async Task Leave(StateMachine owner)
+    {
+    }
+}
+
+					</pre>
+					<p>So again we define the instance of the state, and an ID. Turns out that step ID isn't so important here, however.</p>
+					<p>The
+						<code>Enter()</code>
+						command needs to send the URL and a Referrer for the navigation request. This code is ignoring Referrer as it's not really relevant for this operation. But since the state can't store its own data, it needs some help to fetch the URL it should be navigating too. There are multiple ways to solve this, but for simplicity I picked the "give the
+						<code>StateMachine</code>
+						a dictionary of state data which the
+						<code>State</code>
+						objects can access" approach. So the URL to use gets picked out of there, and stuck into the
+						<code>IDebuggerCommandProperties</code>
+						instance for this call:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PageNavigateParameters : IDebuggerCommandProperties
+{
+    public string CommandName =&gt; "Page.navigate";
+
+    public required string Url { get; set; }
+    public string Referrer { get; set; } = string.Empty;
+}
+
+					</pre>
+					<p>The "<a href="https://chromedevtools.github.io/devtools-protocol/1-3/Page/#method-navigate" target="_blank" rel="noopener">Page.navigate</a>" call does have some other optional parameters, but they weren't relevant here.</p>
+					<p>The
+						<code>Update()</code>
+						behaviour here is a little different, because navigation triggers a boat-load of responses to the WebSocket. The response we care about is "the page has finished loading" however, and not "I have accepted the navigation request ok" or any of the other "stuff is changing" messages which get sent back. Hence the test for moving to the next state doesn't actually care about the ID of the request we sent originally. Instead it looks for a message of type "<a href="https://chromedevtools.github.io/devtools-protocol/1-3/Page/#event-loadEventFired" target="_blank" rel="noopener">Page.loadEventFired</a>" being returned. That does return some data (the time for the event) but that's not relevant so isn't processed.</p>
+					<p>But that event arriving means the browser has a new document loaded, and the
+						<code>StateMachine</code>
+						can move on:</p>
+					<h2 id="state-three-getting-the-documents-root-id">State three: Getting the Document's root ID</h2>
+					<p>Inside the browser's model for the DOM, individual nodes get an ID assigned, which this API can use to access specific bits of data. So if the code wants to retrieve data for a specific node, it first needs to find the node's ID. There are
+						<a href="https://chromedevtools.github.io/devtools-protocol/1-3/DOM/#method-querySelector" target="_blank" rel="noopener">methods for searching the DOM to find nodes</a>, but in this case the root is all we need, and that has a specific command.</p>
+					<p>So the next
+						<code>State</code>
+						can issue that request, and wait for a response:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FetchDocumentRootState : State
+{
+    public static State Instance { get; } = new FetchDocumentRootState();
+    private static readonly int _id = 3;
+
+    public override async Task Enter(StateMachine owner)
+    {
+        var request = new FetchDocumentRootParameters() { };
+        await owner.SendCommand(request, _id);
+    }
+
+    public override async Task Update(StateMachine owner, DebuggerResult data)
+    {
+        if (data != null &amp;&amp; data.Id == _id)
+        {
+            var nodeId = data.Result?["root"]?["children"]?[1]?["nodeId"]?.GetValue&lt;int&gt;() ?? -1;
+
+            owner.State["NodeID"] = nodeId;
+            owner.TransitionToNewState(GetOuterHtmlState.Instance);
+        }
+    }
+
+    public override async Task Leave(StateMachine owner)
+    {
+    }
+}
+
+					</pre>
+					<p>So as before
+						<code>Enter()</code>
+						is sending off a
+						<code>IDebuggerCommandProperties</code>
+						object that specfies we want to run the "<a href="https://chromedevtools.github.io/devtools-protocol/1-3/DOM/#method-getDocument" target="_blank" rel="noopener">DOM.getDocument</a>" command. This returns basic internal data about nodes in the DOM, and has a couple of extra parameters:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FetchDocumentRootParameters : IDebuggerCommandProperties
+{
+    [JsonIgnore]
+    public string CommandName =&gt; "DOM.getDocument";
+
+    public int Depth { get; set; } = 1;
+    public bool Pierce { get; set; } = false;
+}
+
+					</pre>
+					<p>The
+						<code>Depth</code>
+						property lets us specify how many layers of children to get data for. We only care about the root item, so that means we want one layer. The
+						<code>Pierce</code>
+						property lets you specify the browser should look into things like
+						<code>IFrame</code>
+						elements when processing - which isn't relevant here, so is left turned off.</p>
+					<p>Here the
+						<code>Update()</code>
+						method is looking for the
+						<code>ID</code>
+						sent in again, it cares about the response to the specific request sent. And it gets back some data as a
+						<code>JObject</code>. The code here is extracting the
+						<code>int</code>
+						value of the
+						<code>nodeId</code>
+						property for the item we want. That's probably not the safest way of working here, but it gets the job done for a demo...</p>
+					<p>The next step is going to need this ID, so it gets written into the
+						<code>StateMachine</code>
+						object's data store for the next operation to pick up.</p>
+					<h2 id="state-four-get-the-html">State four: Get the HTML</h2>
+					<p>Now that the code has an ID for an element it can ask for the HTML for it:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class GetOuterHtmlState : State
+{
+    public static State Instance { get; } = new GetOuterHtmlState();
+    private static readonly int _id = 4;
+
+    public override async Task Enter(StateMachine owner)
+    {
+        var nodeId = (int)owner.State["NodeID"];
+
+        var request = new GetOuterHtmlParameters() { NodeId = nodeId };
+        await owner.SendCommand(request, _id);
+    }
+
+    public override async Task Update(StateMachine owner, DebuggerResult data)
+    {
+        if (data != null &amp;&amp; data.Id == _id)
+        {
+            var html = data?.Result?["outerHTML"]?.GetValue&lt;string&gt;() ?? string.Empty;
+            owner.State["HTML"] = html;
+
+            owner.TransitionToNewState(NullState.Instance);
+        }
+    }
+    public override async Task Leave(StateMachine owner)
+    {
+    }
+}
+
+					</pre>
+					<p>And this is very similar to the previous states. It sends the
+						<code>IDebuggerCommandProperties</code>
+						which specify a call to the "<a href="https://chromedevtools.github.io/devtools-protocol/1-3/DOM/#method-getOuterHTML" target="_blank" rel="noopener">DOM.getOuterHtml</a>" method, passing the
+						<code>NodeId</code>
+						from the previous step, retrieved from the
+						<code>StateMachine</code>
+						data.</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class GetOuterHtmlParameters : IDebuggerCommandProperties
+{
+    [JsonIgnore]
+    public string CommandName =&gt; "DOM.getOuterHTML";
+
+    public required int NodeId { get; set; }
+}
+
+					</pre>
+					<p>And when the correct response ID comes back, the resultant HTML gets passed back to the
+						<code>StateMachine</code>.</p>
+					<h2 id="state-five-the-null-state">State five: The null state</h2>
+					<p>The final state needs to signal "done now" to the
+						<code>StateMachine</code>, and as mentioned in the previous episode, that's done with the "null" state:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    public class NullState : State
+    {
+        public static State Instance { get; } = new NullState();
+
+        public override async Task Enter(StateMachine owner) { }
+        public override async Task Update(StateMachine owner, DebuggerResult data) { }
+        public override async Task Leave(StateMachine owner) { }
+    }
+
+					</pre>
+					<p>It's an instance of a
+						<code>State</code>
+						but it does nothing, and lets the
+						<code>StateMachine</code>
+						detect that the state flow is done.</p>
+					<h2 id="step-five-controlling-code">Step five - Controlling code</h2>
+					<p>So all that's left now is a bit of controlling code which makes use of all the stuff discussed so far. And that's fairly simple:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">using (var browser = BrowserFactory.Create())
+{
+    browser.Open("about:blank");
+
+    var connection = await browser.Connect();
+
+    var stateMachine = new StateMachine(PageEventEnableState.Instance, connection);
+    stateMachine.State["nextUrl"] = "https://bbc.co.uk/news/";
+
+    await stateMachine.Start();
+    await stateMachine.Wait();
+
+    var html = stateMachine.State["HTML"] as string;
+    Console.WriteLine($"HTML: {html}");
+}
+
+					</pre>
+					<p>It creates the
+						<code>Browser</code>
+						object, opens the window and connects to the DevTools API. Then it passes in the URL to request and sets the state machine going. After waiting for it to complete, it gets back the resultant markup.</p>
+					<p>So running this code gets a browser window to pop up briefly:</p>
+					<p>
+						<a target="_blank" href="/img/2023/06-ControlledBrowserWindow.png">
+							<img alt="The browser which the code above loaded and navigated to the BBC website" src="/img/2023/06-ControlledBrowserWindow.png">
+						</a>
+					</p>
+					<p>And the console window will list out the HTML from the page that got loaded:</p>
+					<p>
+						<a target="_blank" href="/img/2023/06-ConsoleWithHtml.png">
+							<img alt="The console window for the code in this article, showing the HTML loaded from the BBC" src="/img/2023/06-ConsoleWithHtml.png">
+						</a>
+					</p>
+					<p>Success!</p>
+					<p>The code for all this is available in a
+						<span style="color:red">GitHub repository, if you want to play with it.</span>
+					</p>
+					<h2 id="conclusions">Conclusions</h2>
+					<p>This has been an interesting coding diversion - and one that's solved a real-world problem for me. The markup I needed to scrape that didn't work with a plain
+						<code>HttpClient</code>
+						does work with this approach.</p>
+					<p>But there are a couple of down-sides to this approach:</p>
+					<ul>
+						<li>Firstly it's noticably slower. Firing up a whole browser process, with all its script sandboxes and rendering engines etc does take a lot more time. That's especially noticable if you have a list of pages to work through downloading.</li>
+						<li>And secondly it requires the process running the code to have the ability to interact with the Desktop. That's not an issue for a console app. But I'm pretty sure it means this code wouldn't be much good running as part of a Windows Service. That's a fairly niche issue - but one which probably does limit its use.</li>
+					</ul>
+					<p>I've also noticed one interesting problem with this code. In some circumstances the code above will fail to automate the browser correctly. If the browser starts up in some sort of "ask questions to set up your profile" mode (particularly likely with Edge if it creates a new profile folder or if it gets a big security update) then it doesn't seem to allow connections to the DevTools API. Answering the questions and re-running the code seems to sort this - but it's not ideal for an automation situation. I've not found an automatic way around this issue yet - but it's possible one exists.</p>
+					<p>But implementing this has certainly given me some interesting insight into how code for front-end testing frameworks gets built. And it shows an interesting example of how the
+						<a href="https://en.wikipedia.org/wiki/State_pattern" target="_blank" rel="noopener">state-based</a>
+						design patterns can be used in the real world.</p>
+					<p>Is it the best way? Probably not. But it's an interesting demo of one way to keep logic for individual steps in a process separate from the overall orchestration of the process. And it does this in a very different way to the more
+						<a href="https://blog.jermdavis.dev/posts/2016/an-alternative-approach-to-pipelines" target="_blank" rel="noopener">pipeline-based approaches</a>
+						I've written about before.</p>
+					<p>Though in getting to the end of this I realise the
+						<code>Leave()</code>
+						step isn't really relevant to the particular work I was doing...</p>
+					<h1 id="todo">TODO</h1>
+					<ul>
+						<li>Get rid of the "step" headings? Generally improve headings across the posts</li>
+						<li>Link to GitHub example</li>
+						<li>Tag pipelines code with "Design Patterns"</li>
+						<li>First post should explain console app vs wpf thing</li>
+					</ul>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2023</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img class="lg:mx-auto" src="/img/mvp/2023.png" width="219" height="219" alt="2023 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (3)</a>
+							<a href="/tags/html/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								HTML (3)</a>
+							<a href="/tags/browsers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Browsers (3)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (2)</a>
+							<a href="/tags/design-patterns/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Design Patterns (2)</a>
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (1)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2023-08">2023 - August</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-05">2023 - May</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-03">2023 - March</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Socials</h3>
+						<div class="bg-white mb-2 p-2">
+							<div>
+								<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2023</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script src="/vendor/Mermaid/mermaid.min.js"></script>
+		<script type="text/javascript">
+            var config = {
+                logLevel: "fatal",
+                startOnLoad: true,
+                htmlLabels: true,
+                theme: "neutral",
+                flowchart: {
+                    useMaxWidth: false
+                }
+            };
+            mermaid.initialize(config);
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
