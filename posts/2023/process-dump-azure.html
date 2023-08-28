@@ -1,0 +1,383 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2023/process-dump-azure">
+		<meta name="description" content="Useful advice if you need to generate process dumps for Azure AppServices, including some pitfalls to avoid">
+		<meta property="og:description" content="Useful advice if you need to generate process dumps for Azure AppServices, including some pitfalls to avoid">
+		<meta name="keywords" content="Azure, Performance">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Getting process dumps on Azure AppServices</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Jeremy Davis - Getting process dumps on Azure AppServices">
+		<meta property="og:publish_date" content="2023-08-28T00:00:00+00:00">
+		<meta property="og:type" content="article">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/process-dump-azure-social.jpg">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Getting process dumps on Azure AppServices",
+        "url": "https://blog.jermdavis.dev/posts/2023/process-dump-azure",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/process-dump-azure-social.jpg"
+        ],
+        "datePublished": "2023-08-28T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2023/process-dump-azure">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2023/process-dump-azure</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Getting process dumps on Azure AppServices
+				</h1>
+				<h2 class="text-2xl">When you need the hardcode diagnostics</h2>
+				<div class="meta">Published 28 August 2023</div>
+				<div class="flex py-1">
+					<a href="/tags/azure/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Azure</a>
+					<a href="/tags/performance/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Performance</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>Some time back I did a load of work on performance diagnostic work on some poorly performing Sitecore websites. (Which was the basis of
+						<a href="/posts/2017/measure-if-you-want-to-go-faster" target="_blank" rel="noopener">a talk I gave a few times</a>) I've recently had to look at some similar issues - but the world has moved on. I now have Visual Studio 2022 as my diagnostic tool of choice, and the websites are commonly hosted in Azure PaaS web apps. So what do you have to do these days to diagnose likely places for your code to be stuck? 
+						<!--more-->
+					</p>
+					<h2 id="the-basic-approach">The basic approach</h2>
+					<p>Broadly, when you're looking at a slow or unresponsive server where there are not obvious issues like "the database is overloaded with requests" or "the logs are full of exceptions", a good tactic for working out why is to get a process dump of the server and investigate it to find out what the code is doing. You can't directly attach your debugger to a production website, because debuggers stop threads from running - which would disrupt a production site. But you can save the state of a production server and analyse it locally, without causing that side-effect.</p>
+					<p>You can manually trigger process dumps in Azure. As well as the command-line tools available, you can launch the "Advanced Tools" page, click "Process explorer" and right-click the correct process:</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-AdvancedTools.png">
+							<img alt="" src="/img/2023/08-AdvancedTools.png">
+						</a>
+					</p>
+					<p>But if you're dealing with occasional slow-downs or crashes that's not always very helpful. You don't want to have to sit and watch the website all the time until it breaks - what you want is for the website to dump itself if some useful metric goes out of the range you want. That lets you go do something else helpful while it gathers data for you.</p>
+					<p>And Azure has you covereded here...</p>
+					<p>There are a few requirements for how you set up your site for this though. Firstly you have to ensure that your App Service Plan is using one of the "production ready" service levels:</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-AppServicePlans.png">
+							<img alt="" src="/img/2023/08-AppServicePlans.png">
+						</a>
+					</p>
+					<p>Anything above an S1 should work here.</p>
+					<p>Secondly you need to ensure that your app is configured to be "always on" so that it's not dumped out of memory for inactivity. That's set up in the "Configuration" section of your App Service, on the "General Settings" tab:</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-AlwaysOnConfig.png">
+							<img alt="" src="/img/2023/08-AlwaysOnConfig.png">
+						</a>
+					</p>
+					<p>And you also need to ensure you have a Storage Account available to record this data into.</p>
+					<h2 id="configuring-dumps">Configuring dumps</h2>
+					<p>If you go to the "Diagnose and solve problems" section of your App Service there's a tile for "Diagnostic tools":</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-DiagnosticTools.png">
+							<img alt="" src="/img/2023/08-DiagnosticTools.png">
+						</a>
+					</p>
+					<p>Clicking that gets you a menu of a load of diagnostic options. And "Auto Heal" hides the relevant options here:</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-DiagnosticDetails.png">
+							<img alt="" src="/img/2023/08-DiagnosticDetails.png">
+						</a>
+					</p>
+					<p>Auto-heal covers a variety of things relating to restarting your app if stuff goes wrong, but you also have the option to dump state when this happens. You want to create a "Custom Auto-Heal" rule, and triggering it on "Request Duration" was the right choice for my situation - where every so often requests would slow down and start taking many seconds rather than milliseconds:</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-RequestDuration.png">
+							<img alt="" src="/img/2023/08-RequestDuration.png">
+						</a>
+					</p>
+					<p>When you click that, you need to add a new "Slow Request" rule:</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-SlowRequest.png">
+							<img alt="" src="/img/2023/08-SlowRequest.png">
+						</a>
+					</p>
+					<p>There are a few questions to deal with here. First is "how many requests need to break the rule before a something happens". Depending on how critical your problem is you'll likely want to make this smaller, so you get an action sooner. The second question here is how long does a request need to take for the rule to kick in. You'll likely have some metrics that tell you when a request is "bad" for your site, and things have gone badly wrong. Depending on what you do with the recycle options later, you may want to set this for a "my site is basically broken now" timescale, rather than "the request took a bit too long". The third question is how long is the time window for the bad request criteria to be met. Remember that this needs to be a minimum of "the number of rule breaking requests multiplied by the time a request has to take" in order to work. And finally you can add a path filter here if you want, if you need the bad request to be a certain page.</p>
+					<p>With that configured and "Ok" clicked, you need to pick an action to trigger when the conditions above fail:</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-CustomAction.png">
+							<img alt="" src="/img/2023/08-CustomAction.png">
+						</a>
+					</p>
+					<p>Collecting a memory dump requires a "Custom Action" and whe you select that you need to choose what happens when the dump is triggered. For "the site is broken" situations Microsoft recommed the "CollectKillAnalyze" option which will generate the dump and recycle the app. Depending on your underlying problem that might fix your issue (for a while) but in certain situations (say app startup hammers your database server) it could be a bad thing. And you're doing this on production - so you need to think about this one for your site and your issues.</p>
+					<p>You also need to provide details of your storage account here, to give it somewhere to save the data. With that done, you can save this step.</p>
+					<p>Finally, you need to save your overall settings. It's worth paying attention to the messages here:</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-SaveWarning.png">
+							<img alt="" src="/img/2023/08-SaveWarning.png">
+						</a>
+					</p>
+					<p>Saving these settings recycles your app. So you probably don't want to do this when the site's under load. Ask me how I know...</p>
+					<p>But once that's saved, you can sit back and wait until something goes wrong.</p>
+					<h2 id="looking-at-the-data">Looking at the data</h2>
+					<p>When the rule triggers two things will happen. Firstly (if you chose "CollectKillAnalzyse" above) your site will recycle and users may see errors. When I test this (on a site with no custom error pages) I see:</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-ErrorMessage.png">
+							<img alt="" src="/img/2023/08-ErrorMessage.png">
+						</a>
+					</p>
+					<p>And the second thing is that you'll find a new container in your storage account called "memorydumps". Under that there will be a folders under that for your website's DNS name, the date/time the dump was triggered and then the Azure instance id. And in there will be a ".dmp" file.</p>
+					<p>You'll want to download that. Load your code solution and then use "File / Open" in Visual Studio to load the dump file as well. That gets you a big screen of information, and some options for how to continue:</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-LoadedDump.png">
+							<img alt="" src="/img/2023/08-LoadedDump.png">
+						</a>
+					</p>
+					<p>I've had best results clicking teh "Debug with mixed" option. That will fire up a debugger capable of looking at both managed code (your .Net app) and native code (Windows itself). It often takes quite a while to load all the symbols for this, but tells you the most about what's up.</p>
+					<p>From there, find (or open) the "Call Stack" window, and click the "View all threads" option:</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-ViewAllThreads.png">
+							<img alt="" src="/img/2023/08-ViewAllThreads.png">
+						</a>
+					</p>
+					<p>That will open up the "Parallel threads" window, which gives you a big tree diagram of the running threads in the dump. There's probably a load of noise here, so disabling "Show External Code" via the button a the top of this window can help it be more readable. And from there you can search for call-stack entries that are part of your codebase:</p>
+					<p>
+						<a target="_blank" href="/img/2023/08-ParallelStacks.png">
+							<img alt="" src="/img/2023/08-ParallelStacks.png">
+						</a>
+					</p>
+					<p>The number of threads here will likely vary with how many request your server was handling. Some are irrelevant, because they're not part of the websiite. But threads that include your code are the ones which are part of your website, and probably the ones you care about.</p>
+					<p>From here I tend to right-click the line(s) for the project's code, and select "Go to source code" so I can see what part fo my app is the culprit. If that points you at something like a nastly looking Sitecore data API query then good times, you have a pretty good clue as to what's up. If not you may find that re-enabling "Show External Code" helps. That may give further clues about what's up.</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<section class="mvp">
+						<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2023</h3>
+						<div class="bg-white mb-2 p-2">
+							<a href="/mvp">
+								<img class="lg:mx-auto" src="/img/mvp/2023.png" width="219" height="219" alt="2023 MVP Badge">
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Top Tags</h3>
+						<div class="bg-white p-2 flex flex-wrap">
+							<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Sitecore (217)</a>
+							<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								C# (54)</a>
+							<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								PowerShell (31)</a>
+							<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Installation (23)</a>
+							<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Solr (19)</a>
+							<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								General (16)</a>
+							<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Docker (16)</a>
+							<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								UI (15)</a>
+							<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Containers (13)</a>
+							<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								Bug (12)</a>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/tags" role="button">All Tags
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Recent Months</h3>
+						<div class="bg-white p-2">
+							<div>
+								<a class="text-lg" href="/posts/2023-08">2023 - August</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-07">2023 - July</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-06">2023 - June</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-05">2023 - May</a>
+							</div>
+							<div>
+								<a class="text-lg" href="/posts/2023-04">2023 - April</a>
+							</div>
+						</div>
+						<div class="bg-white mb-2 p-2">
+							<a class="" href="/posts" role="button">All Posts
+								<i class="fas fa-angle-double-right"></i>
+							</a>
+						</div>
+					</section>
+					<section>
+						<h3 class="bg-gray-300 p-2">Socials</h3>
+						<div class="bg-white mb-2 p-2">
+							<div>
+								<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+							</div>
+							<div>
+								<a rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2023</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
