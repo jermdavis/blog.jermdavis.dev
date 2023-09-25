@@ -1,0 +1,429 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2023/sitecore-rss-utm">
+		<meta name="description" content="An example for generating custom links in a Sitecore RSS feed">
+		<meta property="og:description" content="An example for generating custom links in a Sitecore RSS feed">
+		<meta name="keywords" content="Sitecore, RSS">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Adding UTM codes to RSS links in Sitecore</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Adding UTM codes to RSS links in Sitecore [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2023-09-25T00:00:00+00:00">
+		<meta property="og:type" content="article">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/sitecore-rss-utm-social.jpg">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Adding UTM codes to RSS links in Sitecore",
+        "url": "https://blog.jermdavis.dev/posts/2023/sitecore-rss-utm",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/sitecore-rss-utm-social.jpg"
+        ],
+        "datePublished": "2023-09-25T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2023/sitecore-rss-utm">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2023/sitecore-rss-utm</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Adding UTM codes to RSS links in Sitecore
+				</h1>
+				<h2 class="text-2xl">An nice little example of extending Sitecore's default RSS Feed implementation</h2>
+				<div class="meta">Published 25 September 2023</div>
+				<div class="flex py-1">
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/rss/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						RSS</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>There aren't that many places where RSS gets used these days (Shame! It's still good!), but that doesn't stop the occasional requirement for it coming up in projects. Recently I was having some discussions about how a client's site could offer RSS for their content which included custom UTM codes in the feed links. That's not too tricky to achieve with Sitecore, so here's an example of what you might do.
+						<!--more-->
+					</p>
+					<h2 id="basic-config">Basic config</h2>
+					<p>Out of the box, Sitecore lets you create RSS feeds for your content fairly easily. There is
+						<a href="https://doc.sitecore.com/xp/en/users/103/sitecore-experience-platform/rss-feeds.html" target="_blank" rel="noopener">documentation for this</a>, but to summarise: You can create an item based on the
+						<code>/sitecore/templates/System/Feeds/RSS Feed</code>
+						data template to put a feed into your content tree. That item's location and name sets the URL for the feed you're creating. The item lets you set metadata for lots of feed properties like titles and copyrights etc. But it also gives you a field to specify what content to list in the feed. You either pick a folder (to put its descendants into the feed) or you specifying a data query to pick out a set of items to use.</p>
+					<p>
+						<a target="_blank" href="/img/2023/09-FeedItemConfig.png">
+							<img alt="Creating a feed in the content tree, and specifying a folder of source items" src="/img/2023/09-FeedItemConfig.png">
+						</a>
+					</p>
+					<p>But to make the feed work, you also have to teach Sitecore how to render the data template(s) that might appear in your feed. You can select an item of each of the types your feed needs to show, and click the "Design" button on the "Presentation" ribbon. That gives you a dialog which allows you to map the key fields you need in your feed:</p>
+					<p>
+						<a target="_blank" href="/img/2023/09-MapItemsForFeeds.png">
+							<img alt="Clicking the 'Design' button to open the RSS item mapping dialog" src="/img/2023/09-MapItemsForFeeds.png">
+						</a>
+					</p>
+					<p>Under the surface this is a shortcut for configuring an RSS Device in the presentation details, which maps configures a
+						<code>FeedRenderer</code>
+						rendering and lets you specify mappings from your source fields to the result. The Rendering Parameters for this have some pre-defined common fields RSS fields you can map, plus it allows further fields to be mapped by the Additional Parameters dictionary:</p>
+					<p>
+						<a target="_blank" href="/img/2023/09-RssDeviceSettings.png">
+							<img alt="Sitecore Content Editor showing the Layout Details for an RSS feed item, and the Rendering Parameters which map the item's data to RSS fields" src="/img/2023/09-RssDeviceSettings.png">
+						</a>
+					</p>
+					<p>Once you set this up and publish changes your feed is ready to go - but there is another issue you need to consider. The way these feeds are implemented in code requires you to be an authenticated user to fetch the data. But since most uses of feeds need them to be accessible to anonymous users (like feed readers) you'll need to
+						<a href="https://support.sitecore.com/kb?id=kb_article_view&amp;sysparm_article=KB0582960" target="_blank" rel="noopener">follow the instructions in this support article</a>, to update your
+						<code>web.config</code>
+						and enable anonymous access.</p>
+					<p>And once you've done all that you can browse a feed:</p>
+					<p>
+						<a target="_blank" href="/img/2023/09-ResultingFeed.png">
+							<img alt="The XML of an example RSS feed generated by Sitecore" src="/img/2023/09-ResultingFeed.png">
+						</a>
+					</p>
+					<p>For many situations that's all that needs doing. But it won't handle the custom UTM codes I was interested in...</p>
+					<h2 id="adding-custom-stuff">Adding custom stuff</h2>
+					<p>The scenario I was looking at needed to add
+						<a href="https://en.wikipedia.org/wiki/UTM_parameters" target="_blank" rel="noopener">a UTM query string</a>
+						based on fields from the item and from some constants. While it's not covered in Sitecore's official docs, the RSS Feed Item created above has a field to specify a custom class for processing your feed. Here you can specify a type of your own which inherits from
+						<code>Sitecore.Syndication.PublicFeed</code>
+						and this will get called for each item your feed is rendering. You specify this as a .Net type name in the usual "type-name, dll-name" format:</p>
+					<p>
+						<a target="_blank" href="/img/2023/09-AddingCustomFeedCode.png">
+							<img alt="The Sitecore Content Editor showing the field for specifying a custom processing type in an RSS Feed definition" src="/img/2023/09-AddingCustomFeedCode.png">
+						</a>
+					</p>
+					<p>To match that definition, the class definition looks like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">using Sitecore.Syndication;
+
+namespace Blog.RSS
+{
+    public class CustomFeed : PublicFeed
+    {
+    }
+}
+
+					</pre>
+					<p>In that class you override the
+						<code>RenderItem()</code>
+						method and put in your own logic. You can use this to generate the feed item entirely yourself (ignore the base method entirely), or you can call the base method and them modify the resulting item. The data this method generates is an object based on Microsoft's
+						<code>SyndicationItem</code>
+						type, which includes fields for all the common data you need for a feed item.</p>
+					<p>For my scenario where I wanted to extend the URL with a UTM code, the simplest approach to the custom code is to call the base, grab the link it generates and then update that to include the extra querystring fields. Something like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected override SyndicationItem RenderItem(Item item)
+{
+    var result = base.RenderItem(item);
+
+    var link = result.Links[0];
+
+    var queryToAppend = GenerateUtmFields(item, "mySite","rss");
+    var newUri = new UriBuilder(link.Uri);
+    newUri.AppendQuery(queryToAppend);
+
+    result.Links[0].Uri = newUri.Uri;
+
+    return result;
+}
+
+					</pre>
+					<p>Real-world code would probably want to iterate the
+						<code>Links</code>
+						collection rather than just processing the first one. (Or actually test that there is a link at all for safety...) But this is good enough for a quick demo.</p>
+					<p>The
+						<code>GenerateUtmFields()</code>
+						method can take whatever data is relevant to the logic required, and produce a set of querystring fields to match. As a very simple example, that might be:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string GenerateUtmFields(Item item, string source, string medium)
+{
+    var term = item.Fields[UtmTermFieldId].Value;
+
+    return $"utm_source={source}&amp;utm_medium={medium}&amp;utm_term={term}";
+}
+
+					</pre>
+					<p>The
+						<code>UtmTermFieldId</code>
+						field would be a constant ID for the relevant Sitecore field on your data item.</p>
+					<p>If your feeds would be processing multiple data templates you'd need something more complex here to look at what type of item was currently being processed and make sure you access the relevant fields. But overall, you'd make use of whatever your own business logic was here.</p>
+					<p>And the call to
+						<code>AppendQuery()</code>
+						above is an extension method to ensure that adding the querystring is applied correctly:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class UriBuilderExtensions
+{
+    public static void AppendQuery(this UriBuilder builder, string queryToAppend)
+    {
+        if (builder.Query != null &amp;&amp; builder.Query.Length &gt; 1)
+        {
+            builder.Query = builder.Query.Substring(1) + "&amp;" + queryToAppend;
+        }
+        else
+        {
+            builder.Query = queryToAppend;
+        }
+    }
+}
+
+					</pre>
+					<p>If the URI already has a querystring you need to append to it, and if not you need to just set the
+						<code>Query</code>
+						field to your generated UTM data. But this code has to work around an oddity of (bug in?) how the
+						<code>UriBuilder</code>
+						in .Net 4.8 works. The
+						<code>Query</code>
+						property returns the
+						<code>?</code>
+						from the querystring when you read it, but when you set a new value you mustn't include the
+						<code>?</code>
+						or it ends up doubled up. This little LinqPad example shows that:</p>
+					<p>
+						<a target="_blank" href="/img/2023/09-LinqPadUriBuilderBug.png">
+							<img alt="LinqPad showing example code for how UriBuilder incorrectly handles the '?' in querystrings" src="/img/2023/09-LinqPadUriBuilderBug.png">
+						</a>
+					</p>
+					<p>This has been fixed in the .Net Core version of this object, but we have to handle it here alas.</p>
+					<p>So once that code is in place and you've published the item change to add the custom class for the feed, the changes it makes to the data will be reflected in your feed:</p>
+					<p>
+						<a target="_blank" href="/img/2023/09-UpdatedFeedWithUtm.png">
+							<img alt="An example RSS feed showing UTM fields added to the querystrings of the feed items" src="/img/2023/09-UpdatedFeedWithUtm.png">
+						</a>
+					</p>
+					<p>Success.</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (221)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (54)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (31)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (16)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (16)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (14)</a>
+								<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Bug (12)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2023-09">2023 - September</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-08">2023 - August</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-07">2023 - July</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-06">2023 - June</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-05">2023 - May</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Posts
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+								</div>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
+							<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2023</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/2023.png" width="219" height="219" alt="2023 MVP Badge">
+								</a>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2023</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
