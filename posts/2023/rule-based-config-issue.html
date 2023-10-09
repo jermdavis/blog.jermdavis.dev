@@ -1,0 +1,577 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2023/rule-based-config-issue">
+		<meta name="description" content="A gotcha with Rule-Based Config in Sitecore: Boolean values don't behave the way you expect.">
+		<meta property="og:description" content="A gotcha with Rule-Based Config in Sitecore: Boolean values don't behave the way you expect.">
+		<meta name="keywords" content="Sitecore, Configuration">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Tripped up by boolean values in Rule-Based Config</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:title" content="Tripped up by boolean values in Rule-Based Config [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2023-10-09T00:00:00+00:00">
+		<meta property="og:type" content="article">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/rule-based-config-issue-social.jpg">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Tripped up by boolean values in Rule-Based Config",
+        "url": "https://blog.jermdavis.dev/posts/2023/rule-based-config-issue",
+        "image": [
+            "https://blog.jermdavis.dev/img/featured/rule-based-config-issue-social.jpg"
+        ],
+        "datePublished": "2023-10-09T00:00:00+00:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2023/rule-based-config-issue">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2023/rule-based-config-issue</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Tripped up by boolean values in Rule-Based Config
+				</h1>
+				<h2 class="text-2xl">I thought this just did string matching, but it seems not...</h2>
+				<div class="meta">Published 09 October 2023</div>
+				<div class="flex py-1">
+					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Sitecore</a>
+					<a href="/tags/configuration/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Configuration</a>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I wasted a few hours recently when I did something which seemed entirely reasonable with Rule-Based Config in Sitecore and it did not work the way I thought it would. Here's an explanation of what I did and what happened as a result, so you can avoid making the same mistake as me... 
+						<!--more-->
+					</p>
+					<h2 id="what-i-tried">What I tried...</h2>
+					<p>I was working in adding some custom configuration for a docker-based Sitecore site. I needed to add a new config rule to enable and disable some configuration based on an environment variable. This is a fairly common development pattern for Sitecore, so it's usually not too tricky to set up.</p>
+					<p>I added an AppSetting for the rule definition variable in the
+						<code>web.config</code>
+						and gave it a default value. The config was to enable or disable a particular behaviour, so using "true" and "false" seemed sensible.</p>
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">  &lt;appSettings&gt;
+	&lt;add key="testVariable:define" value="True"/&gt;
+  &lt;/appSettings&gt;
+
+					</pre>
+					<p>And I added a config patch that would use this variable: (This isn't the config I was using - but it's a "minimal recreation of the issue" instead - to keep this post more readable)</p>
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/" xmlns:testVariable="http://www.sitecore.net/xmlconfig/testVariable/"&gt;
+	&lt;sitecore&gt;
+		&lt;testIsTrue testVariable:require="True"  /&gt;
+		&lt;testIsFalse testVariable:require="False"  /&gt;
+	&lt;/sitecore&gt;
+&lt;/configuration&gt;
+
+					</pre>
+					<p>I added an environment variable mapping to the
+						<code>docker-compose.override.yml</code>
+						using the
+						<code>SITECORE_APPSETTINGS_</code>
+						prefix which means this value gets mapped automatically into the corresponding App Setting:</p>
+					<pre class="code" data-enlighter-language="yaml" style="width:100%; overflow:scroll;">  cm:
+    environment:
+      SITECORE_APPSETTINGS_testVariable:define: ${TESTVARIABLE}
+
+					</pre>
+					<p>And then added a value to the
+						<code>.env</code>
+						file to set a value for this variable so Docker would get a value suitable for developers:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">TESTVARIABLE=False
+
+					</pre>
+					<p>All pretty run-of-the-mill config for Sitecore in containers I thought...</p>
+					<h2 id="what-happened">What happened?</h2>
+					<p>I fired up the containers and loaded
+						<code>showconfig.aspx</code>
+						to check what my config patch had done. My expectation was that I'd see a
+						<code>&lt;testIsFalse/&gt;</code>
+						element in the config because the environment value had overridden the default and set my flag to false. But what I saw was this:</p>
+					<p>
+						<a target="_blank" href="/img/2023/10-OddResultFromPatch.png">
+							<img alt="The output of Sitecore's ShowConfig.aspx page, showing that both of the patch elements are included in the final configuration." src="/img/2023/10-OddResultFromPatch.png">
+						</a>
+					</p>
+					<p>The result of the config patch was that
+						<em>both</em>
+						of the values appeared in the config:</p>
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;testIsTrue patch:source="Test.config"/&gt;
+&lt;testIsFalse patch:source="Test.config"/&gt;
+
+					</pre>
+					<p>This
+						<a href="https://tenor.com/en-GB/view/brain-explosion-gif-18355735" target="_blank" rel="noopener">did not make a great deal of sense to me</a>
+						initially. So my first instinct was to check what had happened with the environment variable. Was that wrong? So I tried running some PowerShell in the CM container to check:</p>
+					<p>
+						<a target="_blank" href="/img/2023/10-EnvironmentValue.png">
+							<img alt="A powershell session inside the Sitecore CM container, showing that the SITECORE_APPSETTINGS_testVariable:define App Setting value is false." src="/img/2023/10-EnvironmentValue.png">
+						</a>
+					</p>
+					<p>Which looked correct. And to see what had happened with the actual
+						<code>web.config</code>
+						value I tried a bit of ASP.Net code to show the value of the
+						<code>testVariable:define</code>
+						AppSetting. And this bit of code:</p>
+					<pre class="code" data-enlighter-language="aspx" style="width:100%; overflow:scroll;">&lt;%=ConfigurationManager.AppSettings["testVariable:define"] %&gt;
+
+					</pre>
+					<p>Gave the expected response based on the
+						<code>.env</code>
+						file above overriding the default in the
+						<code>web.config</code>:</p>
+					<p>
+						<a target="_blank" href="/img/2023/10-ValueOfAppSetting.png">
+							<img alt="A browser window showing the runtime output of the code above - the value 'False'." src="/img/2023/10-ValueOfAppSetting.png">
+						</a>
+					</p>
+					<p>This continued not to make a great deal of sense to me. These values matched what the environment file contained.</p>
+					<p>So I tried varying the value a bit and checking what happened:</p>
+					<table>
+						<thead>
+							<tr>
+								<th>testVariable Value</th>
+								<th>testIsTrue element</th>
+								<th>testIsFalse element</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Empty string</td>
+								<td>In config file</td>
+								<td>Not in config file</td>
+							</tr>
+							<tr>
+								<td>True</td>
+								<td>In config file</td>
+								<td>Not in config file</td>
+							</tr>
+							<tr>
+								<td>False</td>
+								<td>In config file</td>
+								<td>In config file</td>
+							</tr>
+						</tbody>
+					</table>
+					<p>So passing "true" looks like it worked ok, but both empty string and "false" gave unexpected results.</p>
+					<h2 id="confusion-reigns">Confusion reigns...</h2>
+					<p>At this point I scratched my head and decided to try a test. I changed my config to use "yes/no" instead of "true/false". The config patch changed to look like:</p>
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;configuration xmlns:patch="http://www.sitecore.net/xmlconfig/" xmlns:testVariable="http://www.sitecore.net/xmlconfig/testVariable/"&gt;
+	&lt;sitecore&gt;
+		&lt;testIsTrue testVariable:require="Yes"  /&gt;
+		&lt;testIsFalse testVariable:require="No"  /&gt;
+	&lt;/sitecore&gt;
+&lt;/configuration&gt;
+
+					</pre>
+					<p>And tried my tests again:</p>
+					<table>
+						<thead>
+							<tr>
+								<th>testVariable Value</th>
+								<th>testIsTrue element</th>
+								<th>testIsFalse element</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Empty string</td>
+								<td>Not in config file</td>
+								<td>Not in config file</td>
+							</tr>
+							<tr>
+								<td>True</td>
+								<td>In config file</td>
+								<td>Not in config file</td>
+							</tr>
+							<tr>
+								<td>False</td>
+								<td>Not in config file</td>
+								<td>In config file</td>
+							</tr>
+						</tbody>
+					</table>
+					<p>And that looks like exactly the behaviour I would expect from rule-based config.</p>
+					<p>So my rules weren't wrong - but there was something odd about how the patching engine was handling my original rules.</p>
+					<h2 id="digging-into-this-a-bit">Digging into this a bit...</h2>
+					<p>I had always assumed that these config rules just used basic string matching - It looked for fairly literal matches between the value in the App Settings and the values you used in your rules. But this suggests that may not be true.</p>
+					<p>So I put on my nerd hat, and dropped
+						<code>Sitecore.Kernel.dll</code>
+						onto
+						<a href="https://github.com/icsharpcode/ILSpy" target="_blank" rel="noopener">IL Spy</a>
+						and started digging into how this code actually works.</p>
+					<p>At the top of the tree is
+						<code>Sitecore.Configuration.ConfigReader.DoGetConfiguration()</code>. That goes through and applies all the patches you have in your
+						<code>App_Config/Include</code>
+						folder in turn. Drilling down from there, it's doing stuff like loading individual patch files and looking for rules to evaluate. And eventually the logic appears to end up in the
+						<code>RuleBasedXmlPatchHelper</code>
+						class, and its
+						<code>MatchesConfiguredRoles()</code>
+						method:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected virtual bool MatchesConfiguredRoles(string requiredRoleStatement, string[] rules)
+{
+	if (rules == null || rules.Length == 0 || string.IsNullOrEmpty(requiredRoleStatement))
+	{
+		return true;
+	}
+	IEnumerable&lt;Token&gt; tokens = GetTokenizer(requiredRoleStatement, rules).Tokenize();
+	return new Parser(tokens).Parse();
+}
+
+					</pre>
+					<p>Each time the code hits a rule-based config attribute in the form
+						<code>variable:require="&lt;something&gt;"</code>, the value of that attribute gets passed into this method as the
+						<code>requiredRoleStatement</code>
+						parameter. And the
+						<code>rules</code>
+						array contains the set of defined variable values for running rules from the App Setting named
+						<code>variable:define</code>. And when this runs, the boolean result that comes back from this is passed to the
+						<code>ShouldPatchNode()</code>
+						method, which controls if this rule gets applied or not.</p>
+					<p>The call to
+						<code>GetTokenizer().Tokenize()</code>
+						seems to be the interesting bit here. It takes in our element's rule-based config attribute, plus the array of values for the related config variable. And then it transforms your rule attribute into a list of tokens which describe the boolean logic of the expression. That's probably not wildly clear, but it works like this:</p>
+					<p>If your
+						<code>variable:define</code>
+						App Setting contains the value "A, B", and your XML config element has the rule
+						<code>variable:require="A OR C"</code>
+						then you get the following:</p>
+					<p>The call to
+						<code>GetTokenizer()</code>
+						receives "A OR C" for
+						<code>requiredRoleStatement</code>
+						and an array of "A" and "B" for
+						<code>rules</code>. And the return value's set of
+						<code>Token</code>
+						objects looks like:</p>
+					<p>
+						<a target="_blank" href="/img/2023/10-HowTokenizerWorks.png">
+							<img alt="LinqPad running the call to Tokenizer.Tokenize(), showing the resulting tokens for the rule 'A OR C' when the AppSetting is 'A, B'" src="/img/2023/10-HowTokenizerWorks.png">
+						</a>
+					</p>
+					<p>So "tokenizing" has taken each of the "tokens" in the phrase "A OR C" and turned them into one of two things: A true/false value to say if the value exists in the "rules", or tokens for any boolean logic operators (like brackets and and/or/not). So you end up with a set of tokens which can be evaluated into a single boolean value.</p>
+					<p>The screen grab above has three tokens:</p>
+					<ul>
+						<li>A
+							<code>TrueToken</code>
+							that says "The value A does exist in the collection of App Setting values"</li>
+						<li>An
+							<code>OrToken</code>
+						</li>
+						<li>A
+							<code>FalseToken</code>
+							that says "The value C does not exist in the collection of App Settings values"</li>
+					</ul>
+					<p>And then this gets sent to the
+						<code>Parser</code>
+						object, which will evaluate "True Or False" to get "True" - and our config patch will be applied.</p>
+					<p>And hidden in here is the reason why we get the odd behaviour I found at the top of this post...</p>
+					<h2 id="an-answer">An answer!</h2>
+					<p>Looking deeper into the behaviour of
+						<code>GetTokenzier()</code>
+						I found an answer. The parsing loop here has a call to a
+						<code>ParseKeyword()</code>
+						where it finds a string that could be a token and then has a
+						<code>switch</code>
+						statement to decide what to do with it:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">switch (potentialKeyword)
+{
+	case "true":
+		return new TrueToken();
+	case "false":
+		return new FalseToken();
+	case "and":
+		return new AndToken();
+	case "or":
+		return new OrToken();
+}
+
+					</pre>
+					<p>So if you use the string token
+						<code>"true"</code>
+						or
+						<code>"false"</code>
+						in your
+						<code>variable:require</code>
+						expression, it doesn't get treated as a string! It gets turned into one of the
+						<code>TrueToken</code>
+						or
+						<code>FalseToken</code>
+						objects we saw in the screen-grab above. And that breaks the logic we'd expect from string matching, because now it's not evaluating "does the
+						<code>variable:require</code>
+						token match the
+						<code>variable:define</code>
+						token", it's evaluating "is this value boolean true" instead.</p>
+					<p>If I change my code test above to have a "variable:require" rule that says "true OR false" but leave the App Setting for "variable" as "A, B" then the tokenizer does this:</p>
+					<p>
+						<a target="_blank" href="/img/2023/10-TokenizerIsUnexpected.png">
+							<img alt="LinqPad running the call to Tokenizer.Tokenize(), showing the resulting tokens for the rule 'True OR False' when the AppSetting is 'A, B'" src="/img/2023/10-TokenizerIsUnexpected.png">
+						</a>
+					</p>
+					<p>This rule should
+						<em>absolutely</em>
+						evalueate as false - our
+						<code>variable:require</code>
+						tokens do not exist in the App Setting. But because the parser treats "True" and "False" as actual boolean values not strings, we get a tokenizer result that is
+						<code>TrueToken</code>
+						<code>OrToken</code>
+						<code>FalseToken</code>
+						- which will evaluate as true!</p>
+					<p>And when I test this with the specific values I'd used in my original example, I see this:</p>
+					<p>
+						<a target="_blank" href="/img/2023/10-RecreateOriginalSettings.png">
+							<img alt="LinqPad running the call to Tokenizer.Tokenize() twice, showing the resulting tokens for the rule 'True' when the AppSetting is 'False' and when the rule is 'False' and the AppSetting is 'False'" src="/img/2023/10-RecreateOriginalSettings.png">
+						</a>
+					</p>
+					<p>And that odd behaviour seems to match up with exactly the odd behaviour that started me off down this path.</p>
+					<h2 id="conclusions">Conclusions...</h2>
+					<p>I raised a support ticket about this, and Sitecore Support have confirmed this as a bug. If this is a problem for you too, you can use the reference
+						<code>599521</code>
+						to refer to this when you're talking to support. I've also raised this with the documentation team, as it may be worth updating the public docs to help others avoid this issue.</p>
+					<p>Despite this issue having popped up for me in a container-based site, I don't believe this has anything to do with containers. I'm pretty sure that you'll see exactly this behaviour in a non-container site too. And likely in any version of Sitecore which includes the rule base config too.</p>
+					<p>So having dug into this I have a simple recommendation to make for now:</p>
+					<p>
+						<strong>Don't use "true" or "false" in your Rule-Based Config expressions.</strong>
+						You want to give things names that are not boolean literals - so something like "yes" and "no" or "active" and "inactive" instead will work the way you expect.</p>
+					<p>Otherwise there's a good chance your config will not get evaluated the way you expect...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (222)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (54)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (31)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (16)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (16)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (14)</a>
+								<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Bug (12)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2023-10">2023 - October</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-09">2023 - September</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-08">2023 - August</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-07">2023 - July</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-06">2023 - June</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Posts
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+								</div>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
+							<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2023</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/2023.png" width="219" height="219" alt="2023 MVP Badge">
+								</a>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2023</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.7.1.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
