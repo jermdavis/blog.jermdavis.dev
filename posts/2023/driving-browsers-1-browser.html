@@ -4,13 +4,13 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2015/patterns-for-navigation-controls-1">
-		<meta name="description" content="Most websites need some sort of navigation UI. If you have a site with more than a handful of pages then you're likely to need to create some components for rendering sets of links that show the structure of your site. So continuing my theme of simple patterns for Sitecore code, here is the first of a few posts on some approaches to navigation. ">
-		<meta property="og:description" content="Most websites need some sort of navigation UI. If you have a site with more than a handful of pages then you're likely to need to create some components for rendering sets of links that show the structure of your site. So continuing my theme of simple patterns for Sitecore code, here is the first of a few posts on some approaches to navigation. ">
-		<meta name="keywords" content="C#, Navigation, Sitecore">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2023/driving-browsers-1-browser">
+		<meta name="description" content="Using C# to control browsers using the Chromium DevTools API">
+		<meta property="og:description" content="Using C# to control browsers using the Chromium DevTools API">
+		<meta name="keywords" content="C#, HTML, Browsers">
 		<meta name="author" content="Jeremy Davis">
 		<meta name="copyright" content="Jeremy Davis">
-		<title>Jeremy Davis - Patterns for navigation controls - Basics</title>
+		<title>Jeremy Davis - Driving browsers: #1 The Browser</title>
 		<meta name="robots" content="index, follow">
 		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
 		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
@@ -18,22 +18,20 @@
 		<meta name="msapplication-tooltip" content="Jeremy Davis">
 		<meta name="msapplication-starturl" content="/">
 		<link rel="manifest" href="/manifest.webmanifest">
-		<meta property="og:title" content="Patterns for navigation controls - Basics [by Jeremy Davis]">
-		<meta property="og:publish_date" content="2015-01-05T00:00:00+00:00">
+		<meta property="og:title" content="Driving browsers: #1 The Browser [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2023-10-23T00:00:00+00:00">
 		<meta property="og:type" content="article">
-		<meta property="og:modified_date" content="2016-08-25T00:00:00+00:00">
-		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/patterns-for-navigation-controls-1-social.jpg">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/driving-browsers-1-browser-social.jpg">
 		<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "article",
-        "headline": "Patterns for navigation controls - Basics",
-        "url": "https://blog.jermdavis.dev/posts/2015/patterns-for-navigation-controls-1",
+        "headline": "Driving browsers: #1 The Browser",
+        "url": "https://blog.jermdavis.dev/posts/2023/driving-browsers-1-browser",
         "image": [
-            "https://blog.jermdavis.dev/img/featured/patterns-for-navigation-controls-1-social.jpg"
+            "https://blog.jermdavis.dev/img/featured/driving-browsers-1-browser-social.jpg"
         ],
-        "datePublished": "2015-01-05T00:00:00+00:00",
-        "dateModified": "2016-08-25T00:00:00+00:00",
+        "datePublished": "2023-10-23T00:00:00+00:00",
         "author": [{
             "@type": "Person",
             "name": "Jeremy Davis",
@@ -42,7 +40,7 @@
     }
     
 		</script>
-		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2015/patterns-for-navigation-controls-1">
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2023/driving-browsers-1-browser">
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
 		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
@@ -127,193 +125,223 @@
 		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
 			<div class="post-heading">
 				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
-					<tt>https://blog.jermdavis.dev/posts/2015/patterns-for-navigation-controls-1</tt>
+					<tt>https://blog.jermdavis.dev/posts/2023/driving-browsers-1-browser</tt>
 				</div>
 				<h1 class="text-5xl mb-4 pb-1">
-					Patterns for navigation controls - Basics
+					Driving browsers: #1 The Browser
 				</h1>
-				<div class="meta">Published 05 January 2015</div>
-				<div class="meta">Updated 25 August 2016</div>
+				<h2 class="text-2xl">Because sometimes reinventing the wheel is fun!</h2>
+				<div class="meta">Published 23 October 2023</div>
 				<div class="flex py-1">
 					<a href="/tags/c/" class="p-1 mr-1 bg-gray-100 rounded-md">
 						C#</a>
-					<a href="/tags/navigation/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Navigation</a>
-					<a href="/tags/sitecore/" class="p-1 mr-1 bg-gray-100 rounded-md">
-						Sitecore</a>
+					<a href="/tags/html/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						HTML</a>
+					<a href="/tags/browsers/" class="p-1 mr-1 bg-gray-100 rounded-md">
+						Browsers</a>
 				</div>
 			</div>
 		</header>
 		<div class="py-2 lg:pl-3">
 			<div class="lg:flex">
 				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
-					<blockquote>
-						<h4>This is post 1 of 5 in a series titled
-							<i>Patterns for navigation controls</i>
-						</h4>
-						<ul>
-							<li>Patterns for navigation controls - Basics</li>
-							<li>
-								<a href="/posts/2015/patterns-for-navigation-controls-part-2">Patterns for navigation controls - Breadcrumbs</a>
-							</li>
-							<li>
-								<a href="/posts/2015/patterns-for-navigation-controls-part-3">Patterns for navigation controls - Varied styles</a>
-							</li>
-							<li>
-								<a href="/posts/2015/patterns-for-navigation-controls-part-4">Patterns for navigation controls - Language versions</a>
-							</li>
-							<li>
-								<a href="/posts/2015/patterns-for-navigation-controls-part-5">Patterns for navigation controls - Language trees</a>
-							</li>
-						</ul>
-					</blockquote>
-					<p>Most websites need some sort of navigation UI. If you have a site with more than a handful of pages then you're likely to need to create some components for rendering sets of links that show the structure of your site. So continuing my theme of simple patterns for Sitecore code, here is the first of a few posts on some approaches to navigation. 
+					<p>I bumped into an issue recently where I needed to write some code to scrape a bit of HTML. The usual .Net approach of using an
+						<code>HttpClient</code>
+						didn't work here - the web site in question made use of some client-side JavaScript to generate mark-up at runtime. So I needed a different approach to fetch the resulting HTML. A while back I'd written some code to
+						<a href="https://blog.jermdavis.dev/posts/2023/rendering-tweets" target="_blank" rel="noopener">grab images of rendered HTML using the Chromium DevTools APIs</a>, and I figured I could play a similar game here...
 						<!--more-->
 					</p>
-					<h2>Basic top-level navigation</h2>
-					<p>The primary navigation on many sites is a fixed set of links showing the top level pages of the site. A very simple control for displaying this can start from the following markup in a user control:</p>
-					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;asp:Repeater runat="server" ID="navRepeater"&gt;
-    &lt;HeaderTemplate&gt;&lt;ul&gt;&lt;/HeaderTemplate&gt;
-    &lt;ItemTemplate&gt;
-        &lt;li&gt;&lt;asp:HyperLink runat="server" ID="navLink" /&gt;&lt;/li&gt;
-    &lt;/ItemTemplate&gt;
-    &lt;FooterTemplate&gt;&lt;/ul&gt;&lt;/FooterTemplate&gt;
-&lt;/asp:Repeater&gt;
-
-					</pre>
-					<p>With some simple code to fill in the data:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Page_Load(object sender, EventArgs e)
+					<p>Now, some of you are probably thinking "why not just use
+						<a href="https://www.selenium.dev/" target="_blank" rel="noopener">Selenium</a>
+						or
+						<a href="https://playwright.dev/" target="_blank" rel="noopener">Playwright</a>
+						for this?" and you're right - I absolutely could. But this is one of those places where I was writing the code for me (not work) so the learning experience of how to put this together was more interesting than reusing someone else's code. But YYMV...</p>
+					<p>So I set to work trying to make some useful (and perhaps reusable?) code for driving a browser and fetching the resulting markup using the Chromium APIs. Something that could work in a console app and be more flexible than the WPF control I'd used in my previous work... (I wanted this as a console app, as I needed the tool that would use this approach to be run from a scheduled task)</p>
+					<h2 id="find-yourself-a-browser">Find yourself a browser</h2>
+					<p>I wanted this code to be able to work on a couple of machines - one which had Chrome installed and one which had Edge. But they're both based on the same engine, so this isn't too tricky. A factory class that could create the right browser object for a particular machine seemed a sensible apprach.</p>
+					<p>To make use of the Chromium developer tools APIs you need to be able to run the browser, so we need code that can find and execute the browser. The registry can tell us where a browser is, and we can make use of that data to work out what we can run. A base class for this might look like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class BrowserDetector : IBrowserDetector
 {
-    var rootItem = Sitecore.Context.Database.GetItem(Sitecore.Context.Site.ContentStartPath);
-    navRepeater.DataSource = rootItem.Children;
-    navRepeater.ItemDataBound += navRepeater_ItemDataBound;
-    navRepeater.DataBind();
-}
+    public string Name { get; init; }
+    public string AppFolder { get; init; } = string.Empty;
+    public string AppExecutable { get; init; } = string.Empty;
+    public bool Installed { get; init; } = false;
 
-void navRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
-{
-    if(e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+    public BrowserDetector(string name, string regKey)
     {
-        var item = e.Item.DataItem as Item;
-        var navLink = e.Item.FindControl("navLink") as HyperLink;
+        Name = name;
 
-        navLink.Text = item.DisplayName;
-        navLink.NavigateUrl = Sitecore.Links.LinkManager.GetItemUrl(item);
+        var k = Registry.LocalMachine.OpenSubKey(regKey);
+
+        if (k == null)
+        {
+            return;
+        }
+
+        var exec = k.GetValue(string.Empty) as string;
+        var path = k.GetValue("Path") as string;
+
+        if (string.IsNullOrEmpty(exec) || string.IsNullOrEmpty(path))
+        {
+            return;
+        }
+
+        Installed = true;
+        AppExecutable = exec;
+        AppFolder = path;
     }
 }
 
 					</pre>
-					<p>The root item of the current site is specified in the
-						<code>&lt;sites&gt;</code>
-						config of your site, which can be accessed via the
-						<code>Sitecore.Context.Site.ContentStartPath</code>
-						property. (Generally this is the right starting place for primary navigation - but if your site's IA doesn't follow that pattern you can employ alternative rules, or just use the component's Data Source here if you want to give editors the power to change this) Loading that item and binding its children to a repeater lets us display a list of links which can be formatted with some CSS.</p>
-					<h2>Adding a second level</h2>
-					<p>Commonly, however, you want your primary nav to be able to show a bit more of the site's structure. Commonly that means being able to show the immediate children of each of your top level items. This can be achieved by nesting the same behaviour above, to find the children of each of the top level items as it goes through them. The mark-up can be adjusted to add the second level:</p>
-					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;asp:Repeater runat="server" ID="navRepeater"&gt;
-    &lt;HeaderTemplate&gt;&lt;ul&gt;&lt;/HeaderTemplate&gt;
-    &lt;ItemTemplate&gt;
-        &lt;li&gt;
-            &lt;asp:HyperLink runat="server" ID="navLink" /&gt;
-            &lt;asp:Repeater runat="server" ID="childRepeater"&gt;
-                &lt;HeaderTemplate&gt;&lt;ul&gt;&lt;/HeaderTemplate&gt;
-                &lt;ItemTemplate&gt;
-                    &lt;li&gt;&lt;asp:HyperLink runat="server" ID="childLink" /&gt;&lt;/li&gt;
-                &lt;/ItemTemplate&gt;
-                &lt;FooterTemplate&gt;&lt;/ul&gt;&lt;/FooterTemplate&gt;
-                &lt;/asp:Repeater&gt;
-            &lt;/asp:Repeater&gt;
-        &lt;/li&gt;
-    &lt;/ItemTemplate&gt;
-    &lt;FooterTemplate&gt;&lt;/ul&gt;&lt;/FooterTemplate&gt;
-&lt;/asp:Repeater&gt;
-
-					</pre>
-					<p>And the code similarly:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected void Page_Load(object sender, EventArgs e)
+					<p>Given a registry key, it can decide if that browser is installed, and extract the appropriate folder and executable to use later. So for Edge, the concrete class might look like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class EdgeBrowser : BrowserDetector
 {
-    var rootItem = Sitecore.Context.Database.GetItem(Sitecore.Context.Site.ContentStartPath);
-    navRepeater.DataSource = rootItem.Children;
-    navRepeater.ItemDataBound += navRepeater_ItemDataBound;
-    navRepeater.DataBind();
-}
+    public const string RegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe";
 
-void navRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
-{
-    if(e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+    public EdgeBrowser() : base("Edge", RegKey)
     {
-        var item = e.Item.DataItem as Item;
-
-        var navLink = e.Item.FindControl("navLink") as HyperLink;
-        var childRepeater = e.Item.FindControl("childRepeater") as Repeater;
-
-        navLink.Text = item.DisplayName;
-        navLink.NavigateUrl = Sitecore.Links.LinkManager.GetItemUrl(item);
-
-        childRepeater.DataSource = item.Children;
-        childRepeater.ItemDataBound += childRepeater_ItemDataBound;
-        childRepeater.DataBind();
-    }
-}
-
-void childRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
-{
-    if (e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
-    {
-        var item = e.Item.DataItem as Item;
-        var childLink = e.Item.FindControl("childLink") as HyperLink;
-
-        childLink.Text = item.DisplayName;
-        childLink.NavigateUrl = Sitecore.Links.LinkManager.GetItemUrl(item);
     }
 }
 
 					</pre>
-					<p>It's fairly common to add a bit of CSS and/or jQuery behaviour to make the second level of this data appear and disappear as a hover or click effect. And that behaviour can be applied on top of this mark-up using whatever patterns and styles are appropriate to your site.</p>
-					<h2>Filtering out pages that shouldn't be shown</h2>
-					<p>One issue this code doesn't address is that there may be some pages that you need on your site which should not appear in the navigation. Things like login forms, or error pages need to exist in your content tree, but should probably not be shown in the navigation listings. This can be solved fairly simply with a field added to your pages to flag which pages should be shown in navigation. You can create a template to define it like so:</p>
-					<p>
-						<a href="/img/2014/2014-12-navmetadata.png" target="_blank">
-							<img alt="Navigation Metadata" src="/img/2014/2014-12-navmetadata.png">
-						</a>
-					</p>
-					<p>You can then add this template to the inheritance tree for your own page templates.</p>
-					<p>The code can then be adapted to filter out any items which don't have the "show in nav" field checked with a simple query instead of processing the
-						<code>Children</code>
-						property of the items:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string ShowInNavigationQuery = "*[@ShowInNavigation='1']";
-
-protected void Page_Load(object sender, EventArgs e)
+					<p>Chrome just needs a different registry key and name. And a factory class can take a set of these objects, find the first one that's installed, and create an instance of it:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class BrowserFactory
 {
-    var rootItem = Sitecore.Context.Database.GetItem(Sitecore.Context.Site.ContentStartPath);
-    navRepeater.DataSource = rootItem.Axes.SelectItems(ShowInNavigationQuery);
-    navRepeater.ItemDataBound += navRepeater_ItemDataBound;
-    navRepeater.DataBind();
-}
+    public static readonly IBrowserDetector[] Browsers = new IBrowserDetector[] { new ChromeBrowser(), new EdgeBrowser() };
 
-void navRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
-{
-    if(e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+    public static Browser Create()
     {
-        var item = e.Item.DataItem as Item;
+        foreach(var browser in Browsers)
+        {
+            if(browser.Installed)
+            {
+                return new Browser(browser);
+            }
+        }
 
-        var navLink = e.Item.FindControl("navLink") as HyperLink;
-        var childRepeater = e.Item.FindControl("childRepeater") as Repeater;
-
-        navLink.Text = item.DisplayName;
-        navLink.NavigateUrl = Sitecore.Links.LinkManager.GetItemUrl(item);
-
-        childRepeater.DataSource = item.Axes.SelectItems(ShowInNavigationQuery);
-        childRepeater.ItemDataBound += childRepeater_ItemDataBound;
-        childRepeater.DataBind();
+        throw new ApplicationException("No browser detected - unable to create an instance.");
     }
 }
 
 					</pre>
+					<p>This tries Chrome first and falls back to Edge, returning an object that describes the required browser - or throws if neither of those exist.</p>
+					<h2 id="connect-to-the-browser">Connect to the browser</h2>
 					<p>The
-						<code>ShowInNavigationQuery</code>
-						finds all the children of an item which have the "show" flag set to true. This is applied to the two repeater bindings in place of the previous reference to the child items collection.</p>
-					<p>More on navigation next week.</p>
+						<code>Browser</code>
+						object mentioned above is going to act as a wrapper to Chromium for us. To talk to the DevTools API we need to spawn an instance with some specific command-line parameters, and then talk to that over WebSockets. So the first step is to take the data we got from
+						<code>BrowserDetector</code>
+						that matched above, and get ready to spawn a browser. That involves a this object holding a few bits of data:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class Browser : IDisposable
+{
+    private static readonly HttpClient _client = new();
+
+    public string Name { get; init; }
+    public string Folder { get; init; }
+    public string Executable { get; init; }
+    public int DebuggerPort { get; set; } = 9222;
+    public string UserFolder { get; set; }
+    public string Arguments { get; set; } = "--new-window {0} --remote-debugging-port={1} --user-data-dir={2}";
+
+    private Process? _process = null;
+
+    public Browser(IBrowserDetector detector)
+    {
+        Name = detector.Name;
+        Folder = detector.AppFolder;
+        Executable = detector.AppExecutable;
+
+        UserFolder = Path.Combine(Path.GetTempPath(), $"Browser-{detector.Name}");
+    }
+}
+
+					</pre>
+					<p>The constructor takes the matched detector and stores the info we got from the registry. It also computes a path for a temporary profile folder. If you don't give this to Chrome it will use the profile of the current user - which may or may not work for your scenario. I chose to keep it separate. Note the need to have a browser-type-specific folder here. I did some testing with both browsers on one machine and got odd problems if they didn't use separate temp folders. I guess their common engine means they save some similar data, but not similar enough to avoid problems sharing...</p>
+					<p>We also need to specify the port that we'll be connecting to the API on later, and a template for the command line parameters to be sent when starting an instance of Chromium.</p>
+					<p>And finally, we're going to need to make a data request via HTTP so we need an
+						<code>HttpClient</code>
+						here (we'll get to the WebSockets later) and we need to control the behaviour of some JSON serialisation too.</p>
+					<p>So then we need to execute the browser:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    public void Open(string initialUrl)
+    {
+        if (_process != null)
+        {
+            throw new ApplicationException("Browser process is already running.");
+        }
+
+        if (!Directory.Exists(UserFolder))
+        {
+            Directory.CreateDirectory(UserFolder);
+        }
+
+        var psi = new ProcessStartInfo()
+        {
+            WorkingDirectory = Folder,
+            FileName = Executable,
+            Arguments = string.Format(Arguments, initialUrl, DebuggerPort, UserFolder)
+        };
+
+        _process = Process.Start(psi);
+    }
+
+					</pre>
+					<p>That does a test to see if we already have a browser process running, creates the temp folder if needed and then executes the browser with the right command line parameters. The properties discussed above are used to start the process and format the command line. The
+						<code>initialUrl</code>
+						is the page the browser will open to first up, but I'll get to navigating the browser about later on.</p>
+					<p>Once that process is started we should have an instance of Chromium, listening on the debugging port for connections.</p>
+					<p>So the next task is to connect to that port:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    public async Task&lt;BrowserConnection&gt; Connect()
+    {
+        var result = await _client.GetAsync($"http://localhost:{DebuggerPort}/json");
+        var content = await result.Content.ReadAsStringAsync();
+        var sessions = JsonSerializer.Deserialize&lt;BrowserConnection[]&gt;(content, Json.Options);
+
+        if (sessions == null || sessions.Length &lt; 1)
+        {
+            throw new ApplicationException("Did not get a valid debug session back from json endpoint");
+        }
+
+        return sessions[0];
+    }
+
+					</pre>
+					<p>This uses the
+						<code>HttpClient</code>
+						to make a request to the
+						<code>/json</code>
+						endpoint exposed on the browser's port. That returns a blob of json describing the available debugging sessions we can connect to. The data returned can be deserialised (<code>Json.Options</code>
+						here is some standard format settings for the serialiser, shared across all the classes) using this structure:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class BrowserConnection
+{
+    public string? Id { get; init; }
+    public string? Title { get; init; }
+    public string? Url { get; init; }
+    public string? WebSocketDebuggerUrl { get; init; }
+}
+
+					</pre>
+					<p>And that gets us the data we'll need in a bit for executing commands against this session. (Note that the JSON here returns a few other properties including the page's FavIcon URL, a description, and the URL for the DevTools UI. But those aren't relevant to this process so I ignored them.</p>
+					<p>At this point we'll be able to issue commands to the debugger. But at some point we'll be finished with the browser process we're controlling here. So the
+						<code>Browser</code>
+						class is
+						<code>IDisposable</code>
+						and when it's disposed it will tidy up the process:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">    public void Dispose()
+    {
+        if (_process != null)
+        {
+            _process.Kill();
+            _process.Dispose();
+        }
+    }
+
+					</pre>
+					<p>So a
+						<code>using</code>
+						block gets us convenient lifetime management of the browser we're talking to.</p>
+					<h2 id="part-one-wrap-up">Part one wrap up</h2>
+					<p>That's enough code to get a browser up and running. In the next part of this series we'll make a start on how to to control the browser once it's started.</p>
+					<p>If you can't wait, the code to go with this series is
+						<a href="https://github.com/jermdavis/BrowserDriver" target="_blank" rel="noopener">available on GitHub</a>.</p>
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
@@ -442,6 +470,20 @@ void navRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
             toolbarTop: '',
             toolbarBottom: ''
         });
+        
+		</script>
+		<script src="/vendor/Mermaid/mermaid.min.js"></script>
+		<script type="text/javascript">
+            var config = {
+                logLevel: "fatal",
+                startOnLoad: true,
+                htmlLabels: true,
+                theme: "neutral",
+                flowchart: {
+                    useMaxWidth: false
+                }
+            };
+            mermaid.initialize(config);
         
 		</script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
