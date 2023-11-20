@@ -38,3 +38,7 @@ function updateProgressBar() {
 document.addEventListener("DOMContentLoaded", function(event) { 
   initProgressBar();
 });
+
+window.addEventListener("resize", function(event) {
+	initProgressBar();
+}, true);
