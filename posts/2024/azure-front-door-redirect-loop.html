@@ -1,0 +1,378 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2024/azure-front-door-redirect-loop">
+		<meta name="description" content="Fixing an issue where a site under Azure PaaS gets into a redirect loop thanks to the default behaviour of Front Door Premium">
+		<meta property="og:description" content="Fixing an issue where a site under Azure PaaS gets into a redirect loop thanks to the default behaviour of Front Door Premium">
+		<meta name="keywords" content="Azure, Sitecore">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - A fun gotcha with Azure Front Door Premium</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="A fun gotcha with Azure Front Door Premium [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2024-01-29T00:00:00+0000">
+		<meta property="article:published_time" content="2024-01-29T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/azure-front-door-redirect-loop-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'A fun gotcha with Azure Front Door Premium' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "A fun gotcha with Azure Front Door Premium",
+        "url": "https://blog.jermdavis.dev/posts/2024/azure-front-door-redirect-loop",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/azure-front-door-redirect-loop-social.jpg",
+                "caption": "Logo image showing post title 'A fun gotcha with Azure Front Door Premium' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2024-01-29T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2024/azure-front-door-redirect-loop">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2024/azure-front-door-redirect-loop</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					A fun gotcha with Azure Front Door Premium
+				</h1>
+				<h2 class="text-2xl">How the config of a PaaS App Service can get into a loop with Front Door</h2>
+				<div class="meta">Published 29 January 2024</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/azure/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Azure</a>
+					<a href="/tags/sitecore/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Sitecore</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~3 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I bumped into an interesting redirect-loop issue with a Sitecore instance sitting behind Azure Front Door recently. It's not a product I know a great deal about, so this seemed worth writing down in case I come across it again, or others bump into the same challenge. Turns out it wasn't a Sitecore-specific issue, but its definitely something which could affect other Sitecore sites...
+						<!--more-->
+					</p>
+					<h2 id="the-issue">The issue</h2>
+					<p>The site in question was a Sitecore instance running in PaaS on Azure. It happened to be the UAT instance of the site, but this could equally affect production I suspect. It wasn't a site my team had built - we'd taken it on from another agency - and it had been running fine for some time. But for business reasons the client was in the process of moving from using a "standard" instance of Front Door to using a Premium instance. That involved a chunk of setup, and binding the DNS names / SSL certificates etc for this site's various endpoints to the new Front Door instance. But it didn't involve any changes to Sitecore itself.</p>
+					<p>After the change to Premium Front Door had been made for this UAT instance, trying to browse to the site in question failed. Azure said the App Service was up, The logs were showing it responding to things like health check messages with
+						<code>200 OK</code>. But when you pointed your browser at the public url of the site, the request failed with a redirect loop error in the browser.</p>
+					<p>Looking at the browser's network trace, this was odd. We were seeing something along the lines of:</p>
+					<pre class="mermaid">sequenceDiagram
+  Web Browser--&gt;&gt;Server: Request: GET https://www.mysite.com/
+  loop Repeats until browser gives up
+     Server--&gt;&gt;Web Browser: Response: REDIRECT TO https://www.mysite.com/
+     Web Browser--&gt;&gt;Server: Request: GET https://www.mysite.com/
+  end
+
+					</pre>
+					<p>The redirect was instructing the client to request exactly the url it originally asked for. That was definitely a reason for a loop, but an odd one...</p>
+					<h2 id="finding-the-cause">Finding the cause</h2>
+					<p>There was quite a lot of digging about, focused on "what did we change recently" initially. But the thing which gave away the underlying cause was the IIS logs. While you can get at these via FTP or the debug console in Azure, the "easiest" view is the Log Stream UI:</p>
+					<p>
+						<a target="_blank" href="/img/2024/01-iis-logs-azure.png">
+							<img alt="A screenshot showing the Log Stream UI in the Azure Portal for this App Service - a console window with log messages in the web portal view" src="/img/2024/01-iis-logs-azure.png">
+						</a>
+					</p>
+					<p>When I spent some time looking at these logs while the issue was happening I noticed an important thing: The requests which were succeeding were coming in with the public name of the site as the requested host. But the requests which were being redirected were coming in with the private DNS name of the App Service as the requested host.</p>
+					<p>Digging into the config of the App Service, there was a redirect for this hiding in
+						<code>web.config</code>:</p>
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;rule name="Redirect from Azure Websites" stopProcessing="true"&gt;
+  &lt;match url="(.*)"/&gt;
+  &lt;conditions&gt;
+    &lt;add input="{HTTP_HOST}" pattern="^my-app-service-cd.azurewebsites.net$"/&gt;
+  &lt;/conditions&gt;
+  &lt;action type="Redirect" url="https://uat-www.mysite.com/{R:1}" appendQueryString="true" redirectType="Permanent"/&gt;
+&lt;/rule&gt;
+
+					</pre>
+					<p>It looks like that was put into the site some time back to make sure that things like the CSP always worked. If you were able to request the private URL of the site, that name would need to be included in the CSP as well, or things like JavaScript would break. This can be a Sitecore-specific thing in sites which need to be configured with absolute URLs from the
+						<code>LinkManager</code>
+						too - you can configure a single site to respond to multiple URLs, but it only generates these URLs with one configured DNS name. So I've found a few sites over the years with this sort of redirect because of this.</p>
+					<p>So thinking about this for a config while, I realised what was happening under the surface was:</p>
+					<pre class="mermaid">sequenceDiagram
+  Web Browser--&gt;&gt;Front Door: Request: GET https://www.mysite.com/
+  loop Repeats until browser gives up
+    Front Door--&gt;&gt;Server: Rewrite request to: GET https://my-app-service-cd.azurewebsites.net/
+    Server--&gt;&gt;Front Door: Response: REDIRECT TO https://www.mysite.com/
+    Front Door--&gt;&gt;Web Browser: Response: REDIRECT TO https://www.mysite.com/
+    Web Browser--&gt;&gt;Front Door: Request: GET https://www.mysite.com/
+  end
+
+					</pre>
+					<p>So the key to my problem was that Premium Front Door was rewriting requests, and in the past the Standard Front Door wasn't doing that.</p>
+					<h2 id="fixing-the-issue">Fixing the issue</h2>
+					<p>My experience wasn't good enough to work out why this rewrite was happening on my own. But with some advice from helpful Azure experts at
+						<a href="https://www.rackspace.com/" target="_blank" rel="noopener">Rackspace</a>
+						(Thanks Andrew!), the fix turned out to be simple.</p>
+					<p>In the Premium Front Door instance you have to
+						<a href="https://learn.microsoft.com/en-us/azure/frontdoor/origin?pivots=front-door-standard-premium" target="_blank" rel="noopener">configure an "origin"</a>
+						for the sites you're providing services for. The setup for that includes a "Host name" field where you pick your app service's name, and picking a value for this sets a default value for the following field "Origin host header" to be the private name of your site too.</p>
+					<p>When both of these are set, Front Door will rewrite requests from the public name to the private name. I expect for a lot of situations this default makes sense, but here it was causing the problem. So to fix the rewriting issue, you have to manually change this "Origin host header" field to be blank:</p>
+					<p>
+						<a target="_blank" href="/img/2024/01-front-door-origin-config.png">
+							<img alt="The config page in the Azure Portal for an 'origin' in Azure Front Door, showing the 'Origin Host Header' field which needed to be cleared" src="/img/2024/01-front-door-origin-config.png">
+						</a>
+					</p>
+					<p>Once you save the change to remove that value, Front Door stops doing the rewriting. And that fixed my redirect loop issue.</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (224)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (58)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (31)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (16)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (16)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (14)</a>
+								<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Bug (12)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2024-01">2024 - January</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-12">2023 - December</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-11">2023 - November</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-10">2023 - October</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-09">2023 - September</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Posts
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+								</div>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
+							<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2023</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/2023.png" width="219" height="219" alt="2023 MVP Badge">
+								</a>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2024</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script src="/vendor/Mermaid/mermaid.10.6.1.min.js"></script>
+		<script type="text/javascript">
+            var config = {
+                logLevel: "fatal",
+                startOnLoad: true,
+                htmlLabels: true,
+                theme: "neutral",
+                flowchart: {
+                    useMaxWidth: false
+                }
+            };
+            mermaid.initialize(config);
+
+            setTimeout(function () {
+                initProgressBar();
+            }, 250);
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
