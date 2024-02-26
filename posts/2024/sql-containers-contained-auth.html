@@ -1,0 +1,457 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2024/sql-containers-contained-auth">
+		<meta name="description" content="Running in containers, database authentication is set up differently in Sitecore, and this can trip you up.">
+		<meta property="og:description" content="Running in containers, database authentication is set up differently in Sitecore, and this can trip you up.">
+		<meta name="keywords" content="Sitecore, Containers, SQL Server">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Confusing myself with Sitecore's database authentication</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Confusing myself with Sitecore&amp;#x27;s database authentication [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2024-02-26T00:00:00+0000">
+		<meta property="article:published_time" content="2024-02-26T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/sql-containers-contained-auth-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Confusing myself with Sitecore&amp;#x27;s database authentication' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Confusing myself with Sitecore&#x27;s database authentication",
+        "url": "https://blog.jermdavis.dev/posts/2024/sql-containers-contained-auth",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/sql-containers-contained-auth-social.jpg",
+                "caption": "Logo image showing post title 'Confusing myself with Sitecore&#x27;s database authentication' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2024-02-26T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2024/sql-containers-contained-auth">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2024/sql-containers-contained-auth</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Confusing myself with Sitecore's database authentication
+				</h1>
+				<h2 class="text-2xl">Containers are set up differently, and that can bite...</h2>
+				<div class="meta">Published 26 February 2024</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/sitecore/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Sitecore</a>
+					<a href="/tags/containers/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Containers</a>
+					<a href="/tags/sql-server/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						SQL Server</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~5 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>Sometimes things you think you know turn out not to be right. I got bitten by this issue recently, and it seemed like something to write down. Because being wrong is fine, as long as you learn something...
+						<!--more-->
+					</p>
+					<h2 id="the-issue">The issue</h2>
+					<p>I was looking at a project that my company was taking on, which was set up to use containers for development. Where this was different to other projects I'd worked on was that it included custom databases which were added to the SQL container. That's a scenario that Sitecore's base images support. Your DockerFile can copy your own
+						<code>.dacpac</code>
+						files into the
+						<code>c:\resources</code>
+						folder in the SQL Initialisation image, and on start-up they should get attached in the same way the standard Sitecore ones are. And similarly to the Sitecoer DBs, the underlying files for these end up in the data folder mapped for your SQL container.</p>
+					<p>When I ran
+						<code>docker compose up</code>
+						for the first time (so the SQL container's mapped data folder was empty) this worked fine, and the site started correctly. But if I shut down the containers and started them again (with the SQL data files present in the mapped data folder) it would fail. The site would throw a an exception saying that it could not log in to one of the custom databases:</p>
+					<p>
+						<a target="_blank" href="/img/2024/02-DatabaseException.png">
+							<img alt="A yellow screen of death from the ASP.Net application, showing an 'cannot open database' error" src="/img/2024/02-DatabaseException.png">
+						</a>
+					</p>
+					<p>That error was reliable for these subsequent starts, and if I cleared the mapped data folder it would start once, but then go back to the broken state once there were files present there on start-up.</p>
+					<h2 id="digging-a-bit">Digging a bit</h2>
+					<p>Why couldn't it open the DB? Well that answer turned out to be easy: When the containers started for the first time this custom database was present and available. But for second and subsequent starts it wasn't there in the list of databases for the SQL Server when I looked with SQL Management tools. So the error message was a bit misleading - it didn't really mean "can't log in" it meant "not present!" instead. (That's a common issue with SQL Server - it deliberately tries not to give away risky information in its error messages, so they tend to be a bit generic when you're debugging)</p>
+					<p>Looking at the data folder for the SQL role, the database files (<code>.mdf</code>
+						and
+						<code>.ldf</code>) were present for the missing database when the site was broken, so underlying issue seemed to be that the database had not been attached at start-up. I did some digging at this point, and looked at what appeared in the SQL container's logs while it started up. And what caught my attention was this message at the point it tried to attach the missing database:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2024-02-23 20:57:44 Msg 12824, Level 16, State 1, Server A40EE98587EC, Line 1
+2024-02-23 20:57:44 The sp_configure value 'contained database authentication' must be set to 1 in order to create a contained database.  You may need to use RECONFIGURE to set the value_in_use.
+
+					</pre>
+					<p>Well that explained why it wasn't attached. But what was causing that?</p>
+					<p>I tried using SQL Management Studio to reattach the database, and that failed:</p>
+					<p>
+						<a target="_blank" href="/img/2024/02-FailedDBAttach.png">
+							<img alt="A SQL Server error dialog saying that the server was unable to attach a database." src="/img/2024/02-FailedDBAttach.png">
+						</a>
+					</p>
+					<p>Clicking the relevant link for details also gave a "<a href="https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/contained-database-authentication-server-configuration-option?view=sql-server-ver16" target="_blank" rel="noopener">Contained Authentication</a>" error as above. So I looked at the properties for the server itself, and it showed that this setting was indeed disabled:</p>
+					<p>
+						<a target="_blank" href="/img/2024/02-SqlServerAuthProperties.png">
+							<img alt="The SQL Server properties dialog showing Contained Authentication set to 'false'" src="/img/2024/02-SqlServerAuthProperties.png">
+						</a>
+					</p>
+					<p>So I tried running the following SQL to enable it:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">sp_configure 'contained database authentication', 1;  
+GO  
+RECONFIGURE;  
+GO
+
+					</pre>
+					<p>(You can also make this change in the properties dialog for your database server shown above, if you prefer)</p>
+					<p>And having done that, trying to reattach the database worked and refreshing the website got rid of the error and ran OK. So clearly the contained authentication was the problem...</p>
+					<p>But this confused me. My experience of working with Sitecore outside of containers was that all the databases apart from the xConnect collection shards, have contained users. That was definitely the pattern in PaaS / IaaS, because I've had to use exactly the SQL commands above to prepare an IaaS SQL Server for a Sitecore install in the past.</p>
+					<h2 id="flailing-about-for-an-answer">Flailing about for an answer</h2>
+					<p>So at this point I went diving down a rabbit hole of trying to work out why the Contained Authentication setting was failing.</p>
+					<p>I looked at the state of the Contained Authentication setting at various states in the start-up process. I noted that on first start (with an empty data folder) SQL Server was indeed configured to allow contained auth. But when I restarted it, it was disabled again. That seemed to fit with the behaviour I was seeing: The custom database attached ok first time because the setting was on, but failed the second time because it was off.</p>
+					<p>And with a bit of spelunking through the container data I could see in the PowerShell scripts of the init container that it did in fact enable Contained Authentication when attaching databases. If you look in the
+						<code>DeployDatabases.ps1</code>
+						script that is called by the SQL init's entrypoint when there are no databases in the data folder, you'll see:</p>
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">if($EnableContainedDatabaseAuth) {
+    $sqlcmd = Add-SqlAzureConditionWrapper -SqlQuery "DECLARE @containedAuthenticationEnabled int = CONVERT(int, (SELECT [value] FROM sys.configurations WHERE name = 'contained database authentication'));
+    IF @containedAuthenticationEnabled = 0
+    BEGIN
+        EXEC sys.sp_configure N'contained database authentication', N'1'
+        exec ('RECONFIGURE WITH OVERRIDE')
+    END"
+
+    Invoke-Sqlcmd -SqlServer:$SqlServer -SqlAdminUser:$SqlAdminUser -SqlAdminPassword:$SqlAdminPassword -Query $sqlcmd
+    if($LASTEXITCODE -ne 0) {
+        throw "sqlcmd exited with code $LASTEXITCODE"
+    }
+    Write-Verbose "Enabled contained databases"
+}
+
+					</pre>
+					<p>And that is indeed enabling the setting.</p>
+					<p>I sat at the bottom of my rabbit hole of thought for a while, wondering why the Sitecore databases all worked when this setting was clearly not persisted between in the SQL Server container, but this one custom database did not...</p>
+					<h2 id="the-solution">The solution</h2>
+					<p>As is often the case, I came up with the answer after walking away from the problem for a while. After asking about this on the weekly
+						<a href="https://www.linkedin.com/feed/update/urn:li:activity:7166861507018874880/" target="_blank" rel="noopener">Sitecore Lunch</a>
+						zoom call, I went off to cook some dinner and relax for a bit in front of the TV.</p>
+					<p>And when I came back to it, I figured I should check Sitecore's databases and verify my assumption that they did require Contained Authentication. And when I looked at the core and master databases I saw this:</p>
+					<p>
+						<a target="_blank" href="/img/2024/02-SitecoreDBProperties.png">
+							<img alt="The SQL properties dialog for the core database, with the 'Containment' property highlighed, showing it is set to 'None'" src="/img/2024/02-SitecoreDBProperties.png">
+						</a>
+					</p>
+					<p>They do not have Contained Auth turned on! My working assumptions on this issue were wrong! Container-based Sitecore instances are set up differently to PaaS/IaaS ones.</p>
+					<p>So that lead me to deciding that the underlying problem was really that the copy of this custom database I'd been given had been exported with Contained Authentication turned on, but I needed this turned off for everything to work.</p>
+					<p>You can check if this setting is in place if you look inside the
+						<code>.dacpac</code>
+						file. They're zips internally, so if you change their extension you can open them up and inside you'll find a file named
+						<code>model.xml</code>. If that includes an XML
+						<code>&lt;Property/&gt;</code>
+						element for
+						<code>Containment</code>
+						set to
+						<code>1</code>
+						then Contained Authentication is required. Set to
+						<code>0</code>
+						or missing and it's not required:</p>
+					<pre class="code" data-enlighter-highlight="12" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;DataSchemaModel FileFormatVersion="1.2" SchemaVersion="2.9" DspName="Microsoft.Data.Tools.Schema.Sql.Sql140DatabaseSchemaProvider" CollationLcid="1033" CollationCaseSensitive="False" xmlns="http://schemas.microsoft.com/sqlserver/dac/Serialization/2012/02"&gt;
+	&lt;Model&gt;
+		&lt;Element Type="SqlDatabaseOptions" Disambiguator="1"&gt;
+			&lt;Property Name="Collation" Value="SQL_Latin1_General_CP1_CI_AS" /&gt;
+			&lt;Property Name="IsAnsiPaddingOn" Value="False" /&gt;
+			&lt;Property Name="IsQuotedIdentifierOn" Value="False" /&gt;
+			&lt;Property Name="IsCursorDefaultScopeGlobal" Value="True" /&gt;
+			&lt;Property Name="IsTornPageProtectionOn" Value="False" /&gt;
+			&lt;Property Name="IsFullTextEnabled" Value="True" /&gt;
+			&lt;Property Name="IsReadCommittedSnapshot" Value="True" /&gt;
+			&lt;Property Name="Containment" Value="1" /&gt;
+			&lt;Property Name="DefaultLanguage" Value="us_english" /&gt;
+			&lt;Property Name="DefaultFullTextLanguage" Value="us_english" /&gt;
+			&lt;Property Name="TargetRecoveryTimePeriod" Value="60" /&gt;
+			&lt;Property Name="QueryStoreDesiredState" Value="2" /&gt;
+			&lt;Property Name="QueryStoreCaptureMode" Value="2" /&gt;
+			&lt;Property Name="QueryStoreMaxStorageSize" Value="1000" /&gt;
+			&lt;Relationship Name="DefaultFilegroup"&gt;
+				&lt;Entry&gt;
+					&lt;References ExternalSource="BuiltIns" Name="[PRIMARY]" /&gt;
+				&lt;/Entry&gt;
+			&lt;/Relationship&gt;
+		&lt;/Element&gt;
+... snip ...
+	&lt;/Model&gt;
+&lt;/DataSchemaModel&gt;
+
+					</pre>
+					<h2 id="fixing-this">Fixing this</h2>
+					<p>So the overall solution is "don't have Contained Authentication enabled for your custom databases in a Sitecore container solution!"</p>
+					<p>Easy, huh? The steps for fixing this on my development instance were:</p>
+					<ul>
+						<li>Enable Contained Authentication on the SQL instance.</li>
+						<li>Attach the problematic database.</li>
+						<li>Check if the database has any users defined in it, and if so delete them from the database.</li>
+						<li>Change the database's Contained Authentication setting to "None".</li>
+						<li>Turn Contained Authentication back off for the SQL instance to verify the previous change was ok.</li>
+						<li>Export the
+							<code>.dacpac</code>
+							file of the database from this state.</li>
+					</ul>
+					<p>That seems like a few steps - and you might think that just editing the data in the
+						<code>.dacpac</code>
+						would be quicker and simpler here. But that approach doesn't work. SQL Server checksums the data in the model in the
+						<code>Origin.xml</code>
+						file:</p>
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;Checksums&gt;
+    &lt;Checksum Uri="/model.xml"&gt;9D3B45E9FDE300019AEDDF6F82FCC15247D04581887E17D3194BA7A5C7C2B149&lt;/Checksum&gt;
+&lt;/Checksums&gt;
+
+					</pre>
+					<p>And the code verifies this hash of the data when importing it. So if you edit the model data, the
+						<code>.dacpac</code>
+						install will raise errors.</p>
+					<p>But with the change made "the right way", I could replace the problematic
+						<code>.dacpac</code>
+						file in the Docker build folder for the SQL Init image, empty the SQL Server data folder and re-run
+						<code>docker compose build</code>. With that done,
+						<code>docker compose up</code>
+						works reliably, and I can get back to productive work.</p>
+					<p>Problem solved!</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (225)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (59)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (31)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (16)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (16)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (15)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+								<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Bug (12)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2024-02">2024 - February</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-01">2024 - January</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-12">2023 - December</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-11">2023 - November</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2023-10">2023 - October</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Posts
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://twitter.com/jermdavis">Twitter</a>
+								</div>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
+							<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2024</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
