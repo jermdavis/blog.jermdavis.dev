@@ -161,7 +161,7 @@
 						<code>.dacpac</code>
 						files into the
 						<code>c:\resources</code>
-						folder in the SQL Initialisation image, and on start-up they should get attached in the same way the standard Sitecore ones are. And similarly to the Sitecoer DBs, the underlying files for these end up in the data folder mapped for your SQL container.</p>
+						folder in the SQL Initialisation image, and on start-up they should get attached in the same way the standard Sitecore ones are. And similarly to the Sitecore DBs, the underlying files for these end up in the data folder mapped for your SQL container.</p>
 					<p>When I ran
 						<code>docker compose up</code>
 						for the first time (so the SQL container's mapped data folder was empty) this worked fine, and the site started correctly. But if I shut down the containers and started them again (with the SQL data files present in the mapped data folder) it would fail. The site would throw a an exception saying that it could not log in to one of the custom databases:</p>
@@ -226,7 +226,7 @@ GO
 
 					</pre>
 					<p>And that is indeed enabling the setting.</p>
-					<p>I sat at the bottom of my rabbit hole of thought for a while, wondering why the Sitecore databases all worked when this setting was clearly not persisted between in the SQL Server container, but this one custom database did not...</p>
+					<p>I sat at the bottom of my rabbit hole of thought for a while, wondering why the Sitecore databases all worked when this setting was clearly not persisted in the SQL Server container, but this one custom database did not...</p>
 					<h2 id="the-solution">The solution</h2>
 					<p>As is often the case, I came up with the answer after walking away from the problem for a while. After asking about this on the weekly
 						<a href="https://www.linkedin.com/feed/update/urn:li:activity:7166861507018874880/" target="_blank" rel="noopener">Sitecore Lunch</a>
@@ -234,7 +234,7 @@ GO
 					<p>And when I came back to it, I figured I should check Sitecore's databases and verify my assumption that they did require Contained Authentication. And when I looked at the core and master databases I saw this:</p>
 					<p>
 						<a target="_blank" href="/img/2024/02-SitecoreDBProperties.png">
-							<img alt="The SQL properties dialog for the core database, with the 'Containment' property highlighed, showing it is set to 'None'" src="/img/2024/02-SitecoreDBProperties.png">
+							<img alt="The SQL properties dialog for the core database, with the 'Containment' property highlighted, showing it is set to 'None'" src="/img/2024/02-SitecoreDBProperties.png">
 						</a>
 					</p>
 					<p>They do not have Contained Auth turned on! My working assumptions on this issue were wrong! Container-based Sitecore instances are set up differently to PaaS/IaaS ones.</p>
