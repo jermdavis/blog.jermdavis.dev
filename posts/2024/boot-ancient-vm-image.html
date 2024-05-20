@@ -1,0 +1,402 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2024/boot-ancient-vm-image">
+		<meta name="description" content="Some notes on getting a very old Windows 2000 Server VM image to run on a modern laptop">
+		<meta property="og:description" content="Some notes on getting a very old Windows 2000 Server VM image to run on a modern laptop">
+		<meta name="keywords" content="VirtualBox, HyperV, Windows Server">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Booting up an ancient VM image</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Booting up an ancient VM image [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2024-05-20T00:00:00+0000">
+		<meta property="article:published_time" content="2024-05-20T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/boot-ancient-vm-image-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Booting up an ancient VM image' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Booting up an ancient VM image",
+        "url": "https://blog.jermdavis.dev/posts/2024/boot-ancient-vm-image",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/boot-ancient-vm-image-social.jpg",
+                "caption": "Logo image showing post title 'Booting up an ancient VM image' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2024-05-20T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2024/boot-ancient-vm-image">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2024/boot-ancient-vm-image</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Booting up an ancient VM image
+				</h1>
+				<h2 class="text-2xl">This feels a bit like archaeology...</h2>
+				<div class="meta">Published 20 May 2024</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/virtualbox/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						VirtualBox</a>
+					<a href="/tags/hyperv/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						HyperV</a>
+					<a href="/tags/windows-server/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Windows Server</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~4 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>A very long time ago I managed a server with some websites on it. So long ago, in fact, that this "cutting edge" deployment was on Windows 2000 Server. I made a virtual machine backup of this server at the time, burned the files onto a DVD and filed this away in case I ever needed it. And recently I had reason to want some data off this ancient machine. I was able to get it fired up, but it took a little effort to get there. It feels like a minor miracle that I was able to make this run, so I wanted to write down some of the things I messed about with - partly so I'll remember if I ever have to do something similar again, and partly because this might be of interest to (a small number of) others too...
+						<!--more-->
+					</p>
+					<h2 id="what-i-had">What I had...</h2>
+					<p>The DVD I'd filed away had three files on it. Two were
+						<a href="https://en.wikipedia.org/wiki/VHD_(file_format)" target="_blank" rel="noopener">VHDs</a>
+						- binary images of the hard drives from the old server. And the third was a
+						<a href="https://en.wikipedia.org/wiki/Virtual_PC" target="_blank" rel="noopener">VirtualPC</a>
+						config file which I'd been using to run this VM when it was originally created.</p>
+					<p>My first thought was "head off to MSDN Downloads, and see if I can coax VirtualPC into life on a modern PC". If that could work I already had all the relevant config to make sure the VM was set up the same way the original was. And remarkably after all these years, you can still download it:</p>
+					<p>
+						<a target="_blank" href="/img/2024/05-DownloadVirtalPC.png">
+							<img alt="The MSDN downloads page, showing that VirtualPC is still available for download" src="/img/2024/05-DownloadVirtalPC.png">
+						</a>
+					</p>
+					<p>But trying to install that was not successful:</p>
+					<p>
+						<a target="_blank" href="/img/2024/05-FailedVBInstall.png">
+							<img alt="A windows error dialog showing 0x80096002 - The certificate for the signer of the message is invalid or not found" src="/img/2024/05-FailedVBInstall.png">
+						</a>
+					</p>
+					<p>A "certificate for the signer is invalid" error doesn't sound like one I'm likely to be able to resolve. I suspect that's down to Microsoft, and they way security tech has advanced. When I look at the installer's details it shows a
+						<a href="https://en.wikipedia.org/wiki/SHA-1" target="_blank" rel="noopener">SHA1</a>
+						hash in the code signing certificate:</p>
+					<p>
+						<a target="_blank" href="/img/2024/05-OldCodeCert.png">
+							<img alt="Property dialogs from the VirtualPC installer - showing that a SHA1 digest was used" src="/img/2024/05-OldCodeCert.png">
+						</a>
+					</p>
+					<p>And that's old signing tech. It looks like Microsoft
+						<a href="https://blogs.windows.com/msedgedev/2016/11/18/countdown-to-sha-1-deprecation/" target="_blank" rel="noopener">stopped supporting this back in 2017</a>
+						because these hashes were no longer strong enough to be safe with modern hardware...</p>
+					<p>So just using VirtualPC didn't look like it would work.</p>
+					<h2 id="second-attempt">Second attempt...</h2>
+					<p>So what replaces VirtualPC for modern virtualisation? The first thing I thought of was
+						<a href="https://www.virtualbox.org/" target="_blank" rel="noopener">VirtualBox</a>. That's a similar concept to the older VirtualPC, but it's modern tech and able to run happily on my current computer. And I had it installed anyway. So I tried creating a new VM using that tool.</p>
+					<p>I created a default VM by attaching my VHD files, telling VirtualBox I had a Windows 2000 VM to run, and turning the video device down to the basic VGA that the UI recommended for Win2k. And initially VirtualBox was happy to create this:</p>
+					<p>
+						<a target="_blank" href="/img/2024/05-DefaultVirtualBox.png">
+							<img alt="The VirtualBox UI showing the VM I configured for this test, and its top level settings" src="/img/2024/05-DefaultVirtualBox.png">
+						</a>
+					</p>
+					<p>Unfortunately though, starting that would initially boot, briefly show the Windows 2000 boot screen and then crash:</p>
+					<p>
+						<a target="_blank" href="/img/2024/05-DiskBSOD.png">
+							<img alt="The VirtualBox window showing that the VM has thrown a kernel error - 0x0000007B and stopped" src="/img/2024/05-DiskBSOD.png">
+						</a>
+					</p>
+					<p>That's a kernel error about "INACCESSIBLE BOOT DEVICE". While that sounds nasty (Kernel errors can't be good, right?) it's not as bad as it sounds. Back in the Windows 2000 era, the kernel was much less good at dealing with hardware changes. Nowadays Windows can reconfigure itself more easily at boot time, so it's much better at dealing with "I had a device configured, but the hardware changed since last time I booted" - but back then many hardware changes would cause a crash by default.</p>
+					<p>Thinking about the error, I figured this probably means something along the lines of "the drivers configured on the boot VHD cannot provide the boot device Windows was expecting". Given that VirtualBox allows a variety of different disk drivers, I wondered if that might be a setting to tweak. And looking at the default config that the setup wizard had created I could see an issue:</p>
+					<p>
+						<a target="_blank" href="/img/2024/05-DodgyDiskDevice.png">
+							<img alt="The VirtualBox settings dialog for my VM, showing that the disk controller is a SATA device" src="/img/2024/05-DodgyDiskDevice.png">
+						</a>
+					</p>
+					<p>The default here has created a
+						<a href="https://en.wikipedia.org/wiki/SATA" target="_blank" rel="noopener">SATA</a>
+						device, but I know that back in the day the actual server had
+						<a href="https://en.wikipedia.org/wiki/Parallel_ATA#IDE_and_ATA-1" target="_blank" rel="noopener">IDE</a>
+						controllers not SATA. So I tried updating that config to use VirtualBox's PIIX4 device:</p>
+					<p>
+						<a target="_blank" href="/img/2024/05-BetterDiskDevice.png">
+							<img alt="The Virtualbox settings dialog for the VM again, with the disk controller changed to a PIIX4 IDE device" src="/img/2024/05-BetterDiskDevice.png">
+						</a>
+					</p>
+					<p>And that worked better. Restarting the VM now booted:</p>
+					<p>
+						<a target="_blank" href="/img/2024/05-VirtualBoxBoots.png">
+							<img alt="The Windows 2000 boot logo screen, followed by the login page. It is also showing at 'one or more device drivers failed at startup' warning dialog" src="/img/2024/05-VirtualBoxBoots.png">
+						</a>
+					</p>
+					<p>Though while I did now have the Windows login page for Win2k, it was also showing a "one or more service or drivers failed during system startup" message.</p>
+					<p>But in this state, I found I couldn't make it respond to the mouse or keyboard. Even though VirtualBox thought it had captured the mouse, no cursor was visible. And neither hitting real keys, using VirtualBox's virtual keyboard or using its menu shortcuts for sending keystrokes like
+						<code>Ctrl-Alt-Delete</code>
+						had any effect on the VM either.</p>
+					<p>I tried a variety of settings in VirtualBox to attempt to address this. There are options for the mouse and chipset settings which seemed relevant. But changing these didn't resolve the issue:</p>
+					<p>
+						<a target="_blank" href="/img/2024/05-VirtualBoxInputOptions.png">
+							<img alt="The system settings dialog box in VirtualBox, showing the motherboard and pointing device settings I tried changing" src="/img/2024/05-VirtualBoxInputOptions.png">
+						</a>
+					</p>
+					<p>The VM continued to boot, but still showed the "can't start device driver or service" message and did not respond to the mouse or keyboard.</p>
+					<p>I spent a chunk of time in Google looking for answers to this, but failed to find anything which would resolve the issue.</p>
+					<h2 id="third-attempt">Third attempt...</h2>
+					<p>At the back of my mind was the idea that while VirtualBox is good, it's not Microsoft tech. Maybe trying Microsoft's newer virtualisation software would help me. And what is Microsoft's replacement for VirtualPC? That's
+						<a href="https://en.wikipedia.org/wiki/Hyper-V" target="_blank" rel="noopener">Hyper-V</a>. While this was originally server-only tech, it is possible to run this on Windows 10 these days. If you don't have that installed, it can be added via the "Turn Windows Features on or off" dialog:</p>
+					<p>
+						<a target="_blank" href="/img/2024/05-AddHyperV.png">
+							<img alt="The 'add windows features' dialog, showing the options to enable for Hyper-V" src="/img/2024/05-AddHyperV.png">
+						</a>
+					</p>
+					<p>For my first pass at this there was only one interesting setting in the "add a VM" process that I thought I needed to be careful of:</p>
+					<p>
+						<a target="_blank" href="/img/2024/05-GenerationSetting.png">
+							<img alt="Hyper-V's VM setup dialog box asking about which VM Generation is required. For something as old as Windows 2000 you need Gen 1" src="/img/2024/05-GenerationSetting.png">
+						</a>
+					</p>
+					<p>Hyper-V supports both "old" and "new" style VMs, and I guessed that this would need to be the "old" style for an ancient VM to work. And having given this a chunk of RAM, and attached my VHDs as I did for VirtualBox it worked:</p>
+					<p>
+						<a target="_blank" href="/img/2024/05-WorkingVM.png">
+							<img alt="The Hyper-V client window, showing the Win2K server logged in and running" src="/img/2024/05-WorkingVM.png">
+						</a>
+					</p>
+					<p>The keyboard and mouse worked fine here - and I didn't see the "failed to start a driver or service" message on the lock screen. (which makes me fairly confident that the broken thing in VirtualBox must have been something to do with the keyboard / mouse stuff) So it seems Hyper-V has some more backward-compatible emulated devices available here.</p>
+					<p>And with that working I was able to start up the software installed on the VM - an ancient homebrew CMS originally written in .Net 1.0 - and extract the data I needed. Remarkable how it's possible to run a 20yr old VM still - that level of back-compatibility impresses me, given how much the hardware and software have changed in nearly 20 years...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (229)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (60)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (31)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (17)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (17)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (16)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+								<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Bug (12)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2024-05">2024 - May</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-04">2024 - April</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-03">2024 - March</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-02">2024 - February</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-01">2024 - January</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Posts
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">Bluesky</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+								</div>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
+							<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2024</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
