@@ -1,0 +1,603 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2024/csharp-code-with-roslyn">
+		<meta name="description" content="Using Roslyn APIs to output C# code from Source Generators">
+		<meta property="og:description" content="Using Roslyn APIs to output C# code from Source Generators">
+		<meta name="keywords" content="C#, .Net">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Generating C# code with Roslyn APIs</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Generating C# code with Roslyn APIs [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2024-06-03T00:00:00+0000">
+		<meta property="article:published_time" content="2024-06-03T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/csharp-code-with-roslyn-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Generating C# code with Roslyn APIs' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Generating C# code with Roslyn APIs",
+        "url": "https://blog.jermdavis.dev/posts/2024/csharp-code-with-roslyn",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/csharp-code-with-roslyn-social.jpg",
+                "caption": "Logo image showing post title 'Generating C# code with Roslyn APIs' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2024-06-03T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2024/csharp-code-with-roslyn">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2024/csharp-code-with-roslyn</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Generating C# code with Roslyn APIs
+				</h1>
+				<h2 class="text-2xl">Do you have to litter your generator code with literal strings of C#?</h2>
+				<div class="meta">Published 03 June 2024</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/c/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						C#</a>
+					<a href="/tags/net/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						.Net</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~7 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>A while back I wrote about
+						<a href="/posts/2023/migrating-t4-to-source-generators" target="_blank" rel="noopener">the transition from T4 templates to using Roslyn Source Generators</a>
+						for generating code in .Net Core solutions. While that worked for me, and I was able to get it to do what I needed, I was never really happy with all the output source as literal strings in the generator code. Recently I had another potential use for generated code, so I decided to try and fix this issue...
+						<!--more-->
+					</p>
+					<h2 id="the-problem-i-was-looking-at">The problem I was looking at</h2>
+					<p>Working through some "migrate old code to .Net 8", I was looking at a huge pile of nullability warnings for an API surface. I was considering how I might fix this, and as well as "just rewrite the code to not have nulls", I was considering having a "<a href="https://en.wikipedia.org/wiki/Null_object_pattern" target="_blank" rel="noopener">null object</a>" approach. But there were a good collection of interfaces which would need that null object, so I found myself wondering if it would be possible to generate these objects without the need for me to write them all manually.</p>
+					<p>If the code contained an interface something like this, marked with an attribute to indicate it should be used to generate a new class:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[GenerateNullObject]
+public interface INetwork
+{
+    List&lt;IConnection&gt; CurrentConns { get; }
+    IConnection[] ConnectionSet { get; }
+    int Id { get; }
+
+    void Disconnect();
+    IConnection CreateConnection(int count, Regex r);
+}
+
+					</pre>
+					<p>Perhaps it would be possible to construct a source generator which could read that and then output an appropriate null-object class that looked something like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">// &lt;auto-generated /&gt;
+namespace NullObjExperiment
+{
+    using System.Text.RegularExpressions;
+
+    public class NullNetwork : INetwork
+    {
+        public static NullNetwork Instance { get; } = new NullNetwork();
+
+        public List&lt;IConnection&gt; CurrentConns { get; } = new List&lt;IConnection&gt;();
+        public IConnection[] ConnectionSet { get; } = Array.Empty&lt;IConnection&gt;();
+        public int Id { get; } = 0;
+
+        public void Disconnect()
+        {
+            return;
+        }
+
+        public IConnection CreateConnection(int count, Regex r)
+        {
+            return new NullConnection();
+        }
+    }
+}
+
+					</pre>
+					<p>An object with a static "null object instance", and an implementation of all the other properties and methods which do nothing, but don't include any nulls.</p>
+					<p>The broad pattern here is pretty similar what I'd done previously with source generators. But I really wanted to experiment with not having big chunks of output source-code text in the generator for string concatenation. There are too many opportunities for mistakes and badly formatted output when the generator is littered with lines like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">                outputString = $$"""
+// &lt;auto-generated/&gt;
+{{usingsList}}
+namespace {{namespaceName}}
+{
+    public class Null{{className}} : {{interfaceName}}
+    {
+        private static Null{{className}} _instance = new();
+        public static Null{{className}} Instance =&gt; _instance;
+        
+        private Null{{className}}() {}
+    }
+}
+""";
+
+					</pre>
+					<p>I did a bit more googling about how to write source generators with this issue in mind. But I didn't find much content - all the examples I came across just did the string concatenation thing. So I had to do some digging to work out what to do next.</p>
+					<h2 id="using-the-apis-to-generate-code">Using the APIs to generate code</h2>
+					<p>Turns out that the parsed code model you get given when you're executing your source generator works both ways. These objects form the basis for the input to the generator via the
+						<code>context.Compilation.SyntaxTrees</code>
+						parser results. But they can also be used to build up the structure you want to output from your generator, and then work out the correct source code for you.</p>
+					<p>The object
+						<code>Microsoft.CodeAnalysis.CSharp.SyntaxFactory</code>
+						provides a collection of helper methods to help you build up your own tree, which can be used to output code. For example, if you wanted just a namespace in a file output by your source generator, you could write something like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class JustWriteANamespaceGenerator: ISourceGenerator
+{
+    public void Execute(GeneratorExecutionContext context)
+    {
+        // Generate a namespace
+        var newTree = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.IdentifierName("ExampleNamespace"));
+	 
+        // Turn the namespace into text
+        var source = newTree.NormalizeWhitespace().ToFullString();
+
+        // Output it into the compilation process
+        context.AddSource($"ExampleNamespace.g.cs", SourceText.From(source, Encoding.UTF8));
+    }
+    
+    public void Initialize(GeneratorInitializationContext context)
+    {
+    }
+}
+
+					</pre>
+					<p>And the file output would contain:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace ExampleNamespace
+{
+}
+
+					</pre>
+					<p>(<em>Note that most documentation examples of using these APIs make use of a
+							<code>using static</code>
+							statement to get rid of the need for
+							<code>SyntaxFactory.</code>
+							before each of the helper methods. While that does make the code shorter, I've skipped it here because it makes small examples less obvious I think</em>)</p>
+					<p>So that solves the problem of messy string processing, but it does hint that the code might get pretty verbose for generating anything complicated. The model in the syntax tree is detailed, and it's not necessarily easy to work out what structure you actually want to be building up...</p>
+					<h2 id="tools-to-help">Tools to help</h2>
+					<p>Step forward helpful tooling! Some of my googling around this came up with this website:
+						<a href="https://roslynquoter.azurewebsites.net/" target="_blank" rel="noopener">https://roslynquoter.azurewebsites.net/</a>. One of the features of this is that it can take a chunk of code (which doesn't have to be a complete compilable file) and generate the syntax tree for it. That lets you see what structure the compiler generates for the code you want, which can be very helpful to work out what you want to construct for your output code...</p>
+					<p>So for example, the simple generated above gives:</p>
+					<p>
+						<a target="_blank" href="/img/2024/06-RoslynQuoter.png">
+							<img alt="A screengrab of the RoslynQuoter website showing it parsing an empty namespace declaration into the syntax tree code to declare it" src="/img/2024/06-RoslynQuoter.png">
+						</a>
+					</p>
+					<p>It does tend to show a chunk of stuff you don't necessarily need in a given situation - Like the
+						<code>CompilationUnit</code>
+						and
+						<code>SingletonList&lt;&gt;</code>
+						in the example above compared to the example code previously. But it definitely makes working out the core of the code required much easier.</p>
+					<h2 id="making-it-work">Making it work</h2>
+					<p>So sitting and working through an example, the broad pattern for the code is:</p>
+					<ul>
+						<li>Extract the set of marked interfaces</li>
+						<li>For each discovered interface
+							<ul>
+								<li>Work out the correct
+									<code>using</code>
+									statements required</li>
+								<li>Work out the correct namespace</li>
+								<li>Work out the name for the concrete class to build from this interface</li>
+								<li>Generate the properties the interface requires</li>
+								<li>Generate the methods the interface requires</li>
+								<li>Generate the static instance of the class</li>
+								<li>Generate the concrete class</li>
+								<li>Generate the source</li>
+								<li>Add the source to the compilation process</li>
+							</ul>
+						</li>
+					</ul>
+					<p>Tasks like extracting the right
+						<code>using</code>
+						and
+						<code>namespace</code>
+						declarations can basically copy these things from the input code. It can take the discovered interface's declaration, and look up the syntax tree to find the right elements:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IEnumerable&lt;UsingDirectiveSyntax&gt; FetchUsings(InterfaceDeclarationSyntax mi)
+{
+    return mi.Ancestors().Last().ChildNodes()
+            .Where(n =&gt; n is UsingDirectiveSyntax)
+            .Select(n =&gt; n as UsingDirectiveSyntax);
+}
+
+					</pre>
+					<p>but other tasks require generating code more directly. For example the static instance:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private PropertyDeclarationSyntax GenerateStaticInstance(string className)
+{
+    return SyntaxFactory.PropertyDeclaration(
+        SyntaxFactory.IdentifierName(className),
+        SyntaxFactory.Identifier("Instance")
+    ).WithModifiers(
+        SyntaxFactory.TokenList([SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.StaticKeyword)])
+    ).WithAccessorList(SyntaxFactory.AccessorList(
+        SyntaxFactory.SingletonList&lt;AccessorDeclarationSyntax&gt;(
+            SyntaxFactory
+                .AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
+        ))
+    ).WithInitializer(
+        SyntaxFactory.EqualsValueClause(
+            SyntaxFactory.ObjectCreationExpression(
+                SyntaxFactory.IdentifierName(className)
+            ).WithArgumentList(SyntaxFactory.ArgumentList())
+        )
+    ).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+}
+
+					</pre>
+					<p>And that's a fairly good example of what the code can end up looking like - lots of nested business. So putting sensible chunks into separate methods  that return parts of the required syntax tree can help to make the overall code a bit more readable. I suspect there's would be some mileage in creating extension methods to encapsulate some of the more common operations.</p>
+					<p>It's worth noting that while this approach does make it possible to write code without typos and spacing issues, you can absolutely still generate stuff where the generator compiles but the output doesn't. I bumped into this a few times while I was working through this example. Generating properties was the first place where it tripped me up. I was aiming to output something along the lines of:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public int SomeProperty { get; set; }
+
+					</pre>
+					<p>Initially I went down a bit of a rabit hole of "how do you generate this", because I could see how you create the accessors if you want a block of code attached to each (so
+						<code>get { return something; }</code>) but I could not see what to do if you wanted an auto-implemented property. The
+						<code>SyntaxFactory</code>
+						methods for creating property accessors has overloads which allow passing a semi-colon:</p>
+					<p>
+						<a target="_blank" href="/img/2024/06-Creating-Accessors.png">
+							<img alt="A screengrab from LinqPad showing the parameter help for the AccessDeclaration() factory method - and its 'semicolonToken' property" src="/img/2024/06-Creating-Accessors.png">
+						</a>
+					</p>
+					<p>But that didn't do what I wanted, and caused me a good chunk of confusion. But the tooling above came to the rescue, as it helped me see that rather than this overload, what was missing was another extension method called
+						<code>WithSemicolonToken()</code>. That gets appended after the accessor (and in quite a few other places) to add in the correct data. An accessor ends up being created more like:</p>
+					<pre class="code" data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var setAccessor = SyntaxFactory.AccessorDeclaration(
+            SyntaxKind.SetAccessorDeclaration,
+            new SyntaxList&lt;AttributeListSyntax&gt;(),
+            new SyntaxTokenList(SyntaxFactory.Token(SyntaxKind.PrivateKeyword)),
+            null,
+            null
+        ).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+
+					</pre>
+					<p>But the other thing I realised was that this didn't actually need doing at all. Since these syntax tree structures are immutable, they've been designed with fairly easy to use copy-and-modify behaviours. (Like I was doing with
+						<code>using</code>
+						/
+						<code>namespace</code>
+						above) So in reality I can could declare a concrete property by taking the parsed propery from the input interface, and modifying a copy using some
+						<code>.WithSomething()</code>
+						methods:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private PropertyDeclarationSyntax GenerateProperty(PropertyDeclarationSyntax p)
+{
+    return p
+        .WithModifiers(new SyntaxTokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)))
+        .WithInitializer(SyntaxFactory.EqualsValueClause(FetchInitialiser(p)))
+        .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+}
+
+					</pre>
+					<p>The
+						<code>.WithModifiers()</code>
+						method adds in the
+						<code>public</code>
+						modifier that the concrete property needs. The
+						<code>.WithInitializer()</code>
+						adds the initialised value for the property, so it doesn't start out null. And there's another example of
+						<code>.WithSemicolon()</code>
+						to round it off. And that (with the
+						<code>FetchInitialiser()</code>
+						method I'll get to later, can end up with a property that looks like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public IConnection[] ConnectionSet { get; } = Array.Empty&lt;IConnection&gt;();
+
+					</pre>
+					<p>Now that
+						<code>FetchInitialiser()</code>
+						bit there is perhaps one of the places where this whole approach becomes a bit tricky. It's there to look at the type of a property and work out the right initialiser expression. It's generating the
+						<code>= Array.Empty&lt;IConnection&gt;()</code>
+						bit of the property above - where the default value of the property is being set.</p>
+					<p>The fun bit of this is that it has to cope with a big old range of possible types, and what different initialisers they need. As examples, you might have numeric types, strings, simple objects, objects with constructor parameters, collections and objects which use generics. Plus some of these may be "normal" objects and some might be things which the code is also generating null-objects for.</p>
+					<p>My first pass through this code (which ignored some of these possibilities) ended up as a bit of a mess of
+						<code>switch</code>
+						and
+						<code>if</code>
+						statements:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private ExpressionSyntax FetchInitialiser(PropertyDeclarationSyntax p)
+{
+    var type = p.Type;
+
+    if(p.Type is PredefinedTypeSyntax pdt)
+    {
+        switch(pdt.Keyword.Kind())
+        {
+            case SyntaxKind.StringKeyword:
+                return SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(""));
+            case SyntaxKind.IntKeyword:
+                return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0));
+            default:
+                break;
+        }
+        
+    }
+    else if(p.Type is GenericNameSyntax gns)
+    {
+        return SyntaxFactory.ObjectCreationExpression(
+            SyntaxFactory
+                .GenericName(gns.Identifier)
+                .WithTypeArgumentList(
+                    gns.TypeArgumentList
+                )
+        ).WithArgumentList(SyntaxFactory.ArgumentList());
+    }
+    else if (p.Type is ArrayTypeSyntax ats)
+    {
+        return SyntaxFactory.InvocationExpression(
+            SyntaxFactory.MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                SyntaxFactory.IdentifierName("Array"),
+                SyntaxFactory
+                    .GenericName(SyntaxFactory.Identifier("Empty"))
+                    .WithTypeArgumentList(
+                        SyntaxFactory.TypeArgumentList(
+                            SyntaxFactory.SingletonSeparatedList&lt;TypeSyntax&gt;(
+                                ats.ElementType
+                            )
+                        )
+                    )
+            )
+        );
+    }
+
+    return SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression, SyntaxFactory.Token(SyntaxKind.DefaultKeyword));
+}
+
+					</pre>
+					<p>That's covering "predefined types" like string and integer, Generic types with a parameterless constructor and only one generic parameter, and single dimensional arrays. Anything else just gets a value of
+						<code>default</code>
+						- which works for some things (like
+						<code>float</code>
+						or
+						<code>double</code>) but doesn't work for
+						<code>int[,]</code>
+						or other more complex types. Since this was a hacky experiment, I only looked at the ones that were relevant to my test.</p>
+					<p>Now this code could definitely be tidied up - the different return statements should really be broken out into functions to neaten things up for a start) but it shows the complexity fairly well. The challenge is that there are a lot of possibilities to cover. And this is only one location where it's needed - the return values of method declarations need something fairly similar too. (Which again, I kind of skipped over in my tests)</p>
+					<p>The code above is just extracts from my experiments. I've put a more complete example
+						<a href="https://github.com/jermdavis/NullObjExperiment" target="_blank" rel="noopener">in a github repository</a>, if you want to look at it in more detail, as this post would have been way too long with all that included.</p>
+					<h2 id="conclusions">Conclusions</h2>
+					<p>Does it work? Yes, sort of. I got a subset of my null objects to build and compile. Could it work properly? Yes, with effort I could have added the rest of the logic required I think.</p>
+					<p>But the code to achieve this does end up pretty complex and it would be quite a lot of effort to produce. Between the wordy code to generate output, and the need to cover all the possible data types it might process in my scenario, it's not a simple bit of code.</p>
+					<p>Overall I think that writing the code-generation with factory methods rather than strings does have advantages in terms of quality, and the ability to "nest" processing of elements by passing syntax trees around. Plus I think this approach would be better if you wanted to unit test your code properly. But it takes a lot longer than just writing the strings. So there's an effort trade-off there. I suspect this is why all the example code I read stuck with the strings - it's just easier to do and read if you're aiming for something quick and easy.</p>
+					<p>In the end I decided not to pursue this approach in the code I'd been working on - but it was an educational diversion none the less...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (229)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (61)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (31)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (17)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (17)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (16)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+								<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Bug (12)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2024-06">2024 - June</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-05">2024 - May</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-04">2024 - April</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-03">2024 - March</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-02">2024 - February</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Posts
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">Bluesky</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+								</div>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
+							<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2024</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
