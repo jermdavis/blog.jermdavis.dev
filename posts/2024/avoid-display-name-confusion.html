@@ -1,0 +1,350 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2024/avoid-display-name-confusion">
+		<meta name="description" content="A quick tip for how to hide Display Names in Sitecore Content Editor, which can help avoid confusion">
+		<meta property="og:description" content="A quick tip for how to hide Display Names in Sitecore Content Editor, which can help avoid confusion">
+		<meta name="keywords" content="Sitecore">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Avoiding Display Name confusion</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Avoiding Display Name confusion [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2024-06-17T00:00:00+0000">
+		<meta property="article:published_time" content="2024-06-17T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/avoid-display-name-confusion-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Avoiding Display Name confusion' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Avoiding Display Name confusion",
+        "url": "https://blog.jermdavis.dev/posts/2024/avoid-display-name-confusion",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/avoid-display-name-confusion-social.jpg",
+                "caption": "Logo image showing post title 'Avoiding Display Name confusion' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2024-06-17T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2024/avoid-display-name-confusion">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2024/avoid-display-name-confusion</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Avoiding Display Name confusion
+				</h1>
+				<h2 class="text-2xl">A trick to rememeber in Content Editor</h2>
+				<div class="meta">Published 17 June 2024</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/sitecore/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Sitecore</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~2 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I had a moment of frustration recently, when I spent a while looking for a Data Template in a particular Sitecore site and couldn't find it because a previous developer had set a Display Name. As a result of moaning about this Corey Smith reminded me of a way I could have helped myself here, and it seemed like something to share...
+						<!--more-->
+					</p>
+					<h2 id="the-issue">The issue</h2>
+					<p>I was debugging an issue in the startup of a developer instance of a client site. In this particular setup something had gone wrong, and rather than starting up normally the site was failing with a
+						<code>NullReferenceException</code>. When I dug into the code, the place it was failing was processing the value of a particular content field.</p>
+					<p>My first thought was to got and check that field and verify that it was present and correctly configured, so I browsed the content tree looking for the particular Data Template mentioned in the code. For the sake of an example, lets say it was called
+						<code>ImportantDataTemplate</code>. And when I went to the relevant bit of the content tree, I couldn't see this template at all:</p>
+					<p>
+						<a target="_blank" href="/img/2024/06-MissingDataTemplate.png">
+							<img alt="A fragment of content tree, showing a folder containing Data Templates - none of which appear to be the one I'm looking for" src="/img/2024/06-MissingDataTemplate.png">
+						</a>
+					</p>
+					<p>I compared this with the QA instance, and that didn't have it either. That confused me a lot, as QA was running ok. I couldn't see how that instance could run at all if it had the same problem as the dev instance?</p>
+					<p>So I wasted a chunk of time scratching my head in confusion, before having an epiphany: The template was there, but at some point in the past, someone had set a Display Name on it which didn't match the item name:</p>
+					<p>
+						<a target="_blank" href="/img/2024/06-UseOfDisplayName.png">
+							<img alt="The Quick Info section of the Content Editor showing the Item Name I had been looking for, but that it had a Display Name set to something else" src="/img/2024/06-UseOfDisplayName.png">
+						</a>
+					</p>
+					<p>And that's why I'd not been able to find the template - I was looking for one name (from the code), but it was showing up in the tree with something unrelated.</p>
+					<p>I may have uttered a few choice words when I realised this...</p>
+					<h2 id="the-fix">The fix</h2>
+					<p>Venting to
+						<a href="https://www.linkedin.com/in/smithdev/" target="_blank" rel="noopener">Corey</a>, he reminded me that hiding in Sitecore's Content Editor UI there's a setting which lets you disable the use of Display Names entirely. And sometimes as a developer that's useful. Especially in the situation where a site has been built with Display Names on data templates.</p>
+					<p>The setting isn't necessarily where you't think to look though. When I think "change the way the Content Editor UI displays data" I tend to go to the View ribbon's options:</p>
+					<p>
+						<a target="_blank" href="/img/2024/06-ViewRibbon.png">
+							<img alt="Sitecore's Content Editor View ribbon, showing the set of checkbox view options like raw values, standard fields and hidden items" src="/img/2024/06-ViewRibbon.png">
+						</a>
+					</p>
+					<p>But there's nothing there which helps - even "Raw Values", which you might think would do this based on what it does to individual fields.</p>
+					<p>The real answer is hiding in the burger menu for the Content Editor window. There's an "Application Options" entry hiding there:</p>
+					<p>
+						<a target="_blank" href="/img/2024/06-OptionsMenu.png">
+							<img alt="The burger menu expanded in Content Editor, showing the Application Options entry" src="/img/2024/06-OptionsMenu.png">
+						</a>
+					</p>
+					<p>That pops up a window which has a "View" tab. And under there is a radio button for using "Item Name" for the content tree:</p>
+					<p>
+						<a target="_blank" href="/img/2024/06-ItemNameSetting.png">
+							<img alt="The Application Options dialog's View tab, showing the radio button options for showing Display Name and Item Key" src="/img/2024/06-ItemNameSetting.png">
+						</a>
+					</p>
+					<p>And once you've selected that, any item in the content tree that has a Display Name will be shown using its Item Name instead - so it'll match up with any programatic access by name that may be in your code.</p>
+					<p>Note that when you turn this on your Display Names aren't lost (the field and its value are still on your item) but as well as not showing them in the content tree, it no longer shows the Display Name override value in the Quick Info section of the Content Editor. But clicking the "Display Name" button in the Home ribbon still shows it:</p>
+					<p>
+						<a target="_blank" href="/img/2024/06-EffectOnQuickInfo.png">
+							<img alt="The Quick Info section of Content Editor again, showing that after the Display Names are turned off they are not shown here, alongside the Display Name dialog showing the value is still present even if it's not shown." src="/img/2024/06-EffectOnQuickInfo.png">
+						</a>
+					</p>
+					<p>If you compare that to the equivalent screen grab above with the setting off, you'll notice that missing override display. Remember that - it might cause confusion itself.</p>
+					<h2 id="conclusion">Conclusion</h2>
+					<p>This is a fairly obscure Content Editor feature - but a useful one none the less. One to file away in the back of your mind for those occasions when it will help. And I should think about "Display Names" more often - if I'd considered that earlier in this process it would have saved me wasting a chunk of time.</p>
+					<p>But maybe think hard before you set Display Names on Data Templates? Do you
+						<em>really</em>
+						need to do that?</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (230)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (61)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (31)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (17)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (17)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (16)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+								<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Bug (12)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2024-06">2024 - June</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-05">2024 - May</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-04">2024 - April</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-03">2024 - March</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-02">2024 - February</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Posts
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">Bluesky</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+								</div>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
+							<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2024</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
