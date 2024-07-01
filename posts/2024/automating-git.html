@@ -1,0 +1,456 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2024/automating-git">
+		<meta name="description" content="A couple of approaches to simple source control automation with Git">
+		<meta property="og:description" content="A couple of approaches to simple source control automation with Git">
+		<meta name="keywords" content="C#, Git">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Automating Git</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Automating Git [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2024-07-01T00:00:00+0000">
+		<meta property="article:published_time" content="2024-07-01T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/automating-git-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Automating Git' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Automating Git",
+        "url": "https://blog.jermdavis.dev/posts/2024/automating-git",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/automating-git-social.jpg",
+                "caption": "Logo image showing post title 'Automating Git' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2024-07-01T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2024/automating-git">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2024/automating-git</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Automating Git
+				</h1>
+				<h2 class="text-2xl">Because sometimes it's helpful to have code to push for you...</h2>
+				<div class="meta">Published 01 July 2024</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/c/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						C#</a>
+					<a href="/tags/git/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Git</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~5 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I've written a
+						<a href="https://blog.jermdavis.dev/tags/statiq/" target="_blank" rel="noopener">few times before</a>
+						about trying to smooth out the rougher edges of the process of blogging with some custom tooling. Both the site generator I'm using these days, and the simple editor tool I hacked together to suit my writing process. I realised recently that one of those rough edges that remained in the process was the need to manually commit my writing to source control, so I wondered what it might take to wire that into my editing tool...
+						<!--more-->
+					</p>
+					<h2 id="the-challenge">The challenge</h2>
+					<p>I have two separate git repos for my blog:</p>
+					<p>One is in Github, to provide the Github Pages site that I publish to. This repo contains only the output of my static site generator, and I automated the process of updating this early in my migration, with a "build and publish the site" PowerShell script which I can run from the command line.</p>
+					<p>The second repo is a self-hosted one which holds the source for the blog, the editor and the static site generator. The basic markdown for the pages, the Razor and custom C# code for the theme, and the WPF app that I write most of the posts in. This one doesn't have any automation right now. When I do some writing and am ready to commit the changes I've usually just opened Visual Studio to commit and push.</p>
+					<p>And that's the thing I was interested in improving. Could I add the Git process to the editing tool, so I didn't have to load VS in order to save changes to my repo?</p>
+					<h2 id="what-needs-automating">What needs automating?</h2>
+					<p>It's three operations:</p>
+					<ul>
+						<li>An "add" operation<br>New files may have been created during editing for posts or for images, and these need to be tracked.</li>
+						<li>A "commit" operation<br>All the changes that have been tracked need to be written to a new commit with a suitable message.</li>
+						<li>A "push" operation<br>And finally any changes committed need to be sent to the remote repo.</li>
+					</ul>
+					<p>Maybe there's some other stuff too - my writing is usually just committed direct to the "main" branch, but it's not uncommon for me also to have some live side branches for code changes, or more significate site layout changes that I need to spend more time working on. So potentially the tooling needs to be able to cope with making sure that we're using the right branch.</p>
+					<p>And with the heavy heart of an experienced developer, there will need to be a way to detect (and maybe handle) error conditions. From the trivial "what happens if the computer is offline, but it's trying to push to a remote" to the less simple but important "the remote is ahead of local, and you won't be able to push".</p>
+					<p>And those needs got me thinking about possible approaches.</p>
+					<h2 id="the-simplest-way">The simplest way</h2>
+					<p>My first instinct was a simple but hacky one: Git is a command line tool, so can spawn it using the
+						<code>System.Diagnostics.Process</code>
+						class. It's a fair assumption that the git tooling will be available via the system Path, so it's easy to get the current changes:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var psi = new ProcessStartInfo(){
+   FileName = "git",
+   Arguments = "status -s -uall",
+   WorkingDirectory = "\Your\Project\Folder"
+};
+using var p = Process.Start(psi);
+
+					</pre>
+					<p>That's setting up the execution of Git, and running the
+						<code>status -s -uall</code>
+						command. That will get the current changes with two important settings. Firstly
+						<code>-s</code>
+						outputs the simplest status data, avoiding all the cruft that Git will show by default, and secondly
+						<code>-uall</code>
+						makes sure it lists any untracked file changes as well as tracked ones, so you can see new files need adding. From the command line, running that gets you something like:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">?? SomeFolder/MyFeature/SomeNewFile.cs
+ M SomeFolder/Notes.txt
+
+					</pre>
+					<p>The
+						<code>M</code>
+						indicates a tracked file was modified, and the
+						<code>??</code>
+						indicates a new untracked file has been created.</p>
+					<p>But running that as-is isn't wildly helpful. It'll flash up a console window, show the output and then it'll vanish again - likely too fast to see. We need the output to be available to our calling program though, and we probably don't want to actually show the console window. That involves a few extra lines:</p>
+					<pre class="code" data-enlighter-highlight="5-6,10,12" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var psi = new ProcessStartInfo(){
+   FileName = "git",
+   Arguments = "status -s -uall",
+   WorkingDirectory = "\Your\Project\Folder",
+   RedirectStandardOutput = true,
+   CreateNoWindow = true
+};
+using var p = Process.Start(psi);
+
+p.WaitForExit();
+
+var outputStream = new System.IO.StreamReader(p.StandardOutput.BaseStream);
+var result = outputStream.ReadToEnd();
+
+					</pre>
+					<p>In the
+						<code>ProcessStartInfo</code>
+						declaration, adding the
+						<code>CreateNoWindow</code>
+						setting means that Git will get run in the background, rather than popping up a console briefly. And the
+						<code>RedirectStandardOutput</code>
+						setting will send whatever Git writes to the console window to a stream that our code can read. Then the call to
+						<code>WaitForExit()</code>
+						pauses your program until the spawned instance of Git finishes executing, and then the
+						<code>StreamReader</code>
+						allows the data captured for the standard output to be read as a string.</p>
+					<p>That gets the same text as shown in the console, but now it's sitting in the
+						<code>result</code>
+						variable for onward processing.</p>
+					<p>With that in place, you can also make calls with the arguments set to
+						<code>add .</code>,
+						<code>commit -m "&lt;a message&gt;"</code>
+						and
+						<code>push</code>
+						complete the basic process of sending a commit to a remote.</p>
+					<p>But what this doesn't handle is error conditions. Git is a well behaved console app, so you can capture these fairly easily. You can also use
+						<code>RedirectStandardError = true</code>
+						in the setup of
+						<code>ProcessStartInfo</code>
+						to send any error text to another stream, and read it out inside the same way that the code above gets the
+						<code>StandardOutput</code>
+						stream.</p>
+					<p>And other things like swapping branches can be handled in a similar manner by using the appropriate Git commands.</p>
+					<p>But the basic challenge with this approach is the need to parse all the results out of the output or error streams. And that tends to be a bit of a pain, and it's also quite sensitive to whether different versions of Git change the structure of the text they output.</p>
+					<p>And that made me think about more structured ways of doing this...</p>
+					<h2 id="a-more-formal-way">A more formal way</h2>
+					<p>Would an API do better? It should allow for an easier way of handling results at least. A bit of googling pointed me towards the
+						<a href="https://github.com/libgit2/libgit2sharp" target="_blank" rel="noopener">libgit2sharp</a>
+						project. That's a .Net wrapper around the native
+						<code>libgit2</code>
+						library.</p>
+					<p>Adding the Nuget package to a project allows fetching changes fairly simply:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">using LibGit2Sharp;
+
+var repoPath = @"&lt;path to your repo&gt;";
+
+using (var repo = new Repository(repoPath))
+{
+    foreach (var item in repo.RetrieveStatus(new LibGit2Sharp.StatusOptions()))
+    {
+        if (item.State != FileStatus.Ignored)
+        {
+            // do something with the changed item
+        }
+    }
+}
+
+					</pre>
+					<p>The
+						<code>item</code>
+						here has
+						<a href="https://github.com/libgit2/libgit2sharp/blob/master/LibGit2Sharp/StatusEntry.cs" target="_blank" rel="noopener">a collection of relevant properties</a>
+						which can be used for display or filtering.</p>
+					<p>And similarly this library has methods for the
+						<a href="https://github.com/libgit2/libgit2sharp/wiki/git-add" target="_blank" rel="noopener">add</a>,
+						<a href="https://github.com/libgit2/libgit2sharp/wiki/git-commit" target="_blank" rel="noopener">commit</a>
+						and
+						<a href="https://github.com/libgit2/libgit2sharp/wiki/git-push" target="_blank" rel="noopener">push</a>
+						commands. So it can clearly achieve the same behaviour as the command line, but without the need to do the parsing of text.</p>
+					<p>But where this approach becomes more complex is with things like commit. Example code for this might look like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">using LibGit2Sharp;
+
+var repoPath = @"&lt;path to your repo&gt;";
+var userName = "Jeremy";
+var userEmail = "jeremy@email.net";
+var commitMessage = "&lt;your commit message&gt;";
+
+using (var repo = new Repository(repoPath))
+{
+    // do whatever is needed to add the changes
+
+    Signature author = new Signature(userName, userEmail, DateTime.Now);
+    Signature committer = author;
+
+    // Commit to the repository
+    Commit commit = repo.Commit(commitMessage, author, committer);
+}
+
+					</pre>
+					<p>Unlike the command line (which just remembers this stuff), this code needs to know who you're committing as each time you call it. And similarly, attempting to push changes requires knowing credentials for the remote, which Git would have handled for you.</p>
+					<p>So while this approach gives you data in an easier format to process, it still has some challenges...</p>
+					<h2 id="conclusions">Conclusions</h2>
+					<p>After some fun hacking, I have a basic experiment that works: A prototype window my the editor looks like this:</p>
+					<p>
+						<a target="_blank" href="/img/2024/07-TestUi.png">
+							<img alt="A bit of test UI showing the current branch and changes, and with an option to commit them" src="/img/2024/07-TestUi.png">
+						</a>
+					</p>
+					<p>And whilst this definitely needs some revision, I can see if the branch is right (though not change it yet) and can commit/push the changes outstanding. I still need to get to a place where I'm happy with error handling though, as currently it just reports output rather than understanding what happened.</p>
+					<p>Learning from messing about with this, I'm coming to the conclusion that for me the "right" answer for me is a hybrid of these approaches. I don't want to add the complexity to my app of managing credentials, but for some operations it's easier to parse data from the API. For example, getting the current branch with an API call to
+						<code>repo.Branches</code>, but committing and pushing is easier via the command line.</p>
+					<p>So I'm still experimenting with the UI and code I want here. But it's useful to know that you have choices, and I have a feeling the API surface for Git may be useful for other tools too...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (230)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (62)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (31)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (17)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (17)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (16)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+								<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Bug (12)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2024-07">2024 - July</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-06">2024 - June</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-05">2024 - May</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-04">2024 - April</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-03">2024 - March</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Posts
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">Mastodon</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">Bluesky</a>
+								</div>
+								<div>
+									<a class="text-lg" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">LinkedIn</a>
+								</div>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
+							<h3 class="bg-gray-300 p-2">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2024</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
