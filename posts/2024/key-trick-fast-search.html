@@ -1,0 +1,507 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2024/key-trick-fast-search">
+		<meta name="description" content="A very high-level discussion of how website search can query lots of pages quickly">
+		<meta property="og:description" content="A very high-level discussion of how website search can query lots of pages quickly">
+		<meta name="keywords" content="General">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - A key trick that makes search fast</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="A key trick that makes search fast [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2024-07-29T00:00:00+0000">
+		<meta property="article:published_time" content="2024-07-29T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/key-trick-fast-search-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'A key trick that makes search fast' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "A key trick that makes search fast",
+        "url": "https://blog.jermdavis.dev/posts/2024/key-trick-fast-search",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/key-trick-fast-search-social.jpg",
+                "caption": "Logo image showing post title 'A key trick that makes search fast' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2024-07-29T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2024/key-trick-fast-search">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+						<a class="text-base font-medium" href="/search">Search</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+							<a class="block mt-5 text-base font-medium" href="/search">Search</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2024/key-trick-fast-search</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					A key trick that makes search fast
+				</h1>
+				<h2 class="text-2xl">It's interesting to think about internals sometimes</h2>
+				<div class="meta">Published 29 July 2024</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/general/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						General</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~4 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>Recently I added a basic
+						<a href="/search" target="_blank" rel="noopener">search page</a>
+						to my blog. This is a pure static site, hosted on Github Pages, so there's no Solr or Algolia here. Just some clever JavaScript (<a href="https://lunr.js/" target="_blank" rel="noopener">Lunr.js</a>) acting on data generated by
+						<a href="https://www.statiq.dev/" target="_blank" rel="noopener">Statiq</a>. Setting that up made me think about the internals of how a search can work efficiently, and I figured others might be interested in this...
+						<!--more-->
+					</p>
+					<h2 id="the-challenge">The challenge</h2>
+					<p>The absolutely simplest approach to searching for some text is basically the approach of "find in files"
+						<a href="https://learn.microsoft.com/en-us/visualstudio/ide/find-in-files" target="_blank" rel="noopener">from Visual Studio</a>. The pseudocode for that goes something like:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">FOR EACH file to be searched
+  FOR EACH word in the file
+    IF this word is the word we want
+      RETURN position
+    END IF
+  END FOR
+END FOR
+
+					</pre>
+					<p>It's very simple and requires no pre-processing of the data, but it's not really very fast. (As you will probably have noticed if you've ever needed to find a particular word across a large solution) It's linearly looking through all the data to find a match. It does work, though it's really only good for finding literal phrases. A query like
+						<code>+law -computer</code>
+						(match documents which have the word "law" but do not have the word "computer") is more difficult to manage here, because you end up having to repeat that inner loop to evaluate each term of the query. So that processing can really mount up for large data sets, or complex queries.</p>
+					<p>Fairly obviously this is no good for something like Google. If you have 10bn web pages to look through, that sort of complexity absolutely out of the question. And it's not great in my scenario either - 300 pages is enough make this seem slow. So what can you do in that situation?</p>
+					<p>You need an index! Some flavour of that is usually the solution to "speed of finding" issues in computing.</p>
+					<h2 id="the-solution">The solution</h2>
+					<p>We want to easily work out if a particular word is in any of our documents, so the structure we want to have is a list of unique words which can tell us quickly which document(s) the word exists in. This is technically known as an
+						<a href="https://en.wikipedia.org/wiki/Inverted_index" target="_blank" rel="noopener">inverted index</a>.</p>
+					<p>So we can process all our web page data to generate two fairly simple structures:</p>
+					<p>The first is a list of the documents we have, giving each a unique ID plus any other metadata we need to be able to show in a results list. So on my blog that might be the ID, URL, Title, Excerpt and Tags. A structure something like:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">[
+  {
+    "id": 1,
+    "title": "Test document",
+    "url": "/posts/2024/test",
+    "excerpt": "Lorem ipsum dolor sit amet. Fulcrum amcordio latens.",
+    "tags": ["Test", "General"]
+  },
+  {
+    "id": 3,
+    "title": "Another test",
+    "url": "/posts/2024/test2",
+    "excerpt": "",
+    "tags": ["Test"]
+  },
+  ...
+]
+
+					</pre>
+					<p>And then secondly there's a list of all the words in across all the documents, with the IDs of which document(s) each word appears in:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">[
+  {
+    "word": "another",
+    "docs": [3]
+  },
+  {
+    "word": "ipsum",
+    "docs": [1,2]
+  },
+  {
+    "word": "test",
+    "docs": [1,3,4]
+  },
+  ...
+]
+
+					</pre>
+					<p>And these files can be generated by iterating all the available documents:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">FOR EACH document to be indexed
+  Generate an ID
+  FOR EACH metadata field in current document
+    ADD field to results data for this ID
+  END FOR  
+  FOR EACH word in the document
+    IF word IS NOT in words data
+      ADD word TO words data
+    END IF
+    IF the documment ID is not recorded for this word
+      ADD the document ID to this word
+    END IF
+  END FOR
+END FOR
+
+					</pre>
+					<p>However we probably don't want to index every word we find. Very common worlds like "and", "or", "the", "if" etc. are unlikely to be helpful in the index, so it's common to ignore them during processing. These are often referred to as "stop words".</p>
+					<p>Also it's usually worth storing all the words in lower case, to make later comparisons easier.</p>
+					<h2 id="the-results">The results</h2>
+					<p>How do we use this index that's been built?</p>
+					<p>Well if a query like
+						<code>+ipsum -test</code>
+						is issued using the example index data above:</p>
+					<ul>
+						<li>Start with an empty result set</li>
+						<li>For the first term, find all the IDs which do include the word "ipsum"
+							<ul>
+								<li>That is #1 and #2 based on test data above.</li>
+								<li>The term has "+" (includes) so add these IDs to the overall result set.</li>
+								<li>So results are "#1, #2" at this point, as these are the IDs found for this word.</li>
+							</ul>
+						</li>
+						<li>For the second term, find all the IDs which include the word "test"
+							<ul>
+								<li>That is #1, #3 and #4 based on the data above</li>
+								<li>The term has "-" (does not include) so remove these IDs from the overall results set.</li>
+								<li>So results are "#2" at this point, as this is the result of removing any instances of #1, #3 and #4 from the previous result set.</li>
+							</ul>
+						</li>
+						<li>There are no more search terms, so use the current set of IDs in the results to look up entries in the list of documents.</li>
+						<li>Display the document metadata for these results to the user</li>
+					</ul>
+					<p>As you can see, all the work of iterating files and words has moved to the indexing phase. The searching phase becomes much simpler (and hence
+						<em>much</em>
+						faster) because all it's doing is looking at the IDs in the index. Generating the results is just matching the words, and using the IDs found to pick results out of the set of documents.</p>
+					<h2 id="extra-credit">Extra credit</h2>
+					<p>There are a few other interesting things that help a simple search work, which are worth mentioning here.</p>
+					<p>Some words exist in multiple forms. Verbs are a great example here. "Run", "ran", "running" and "runs" can all be treated as the same thing for the purposes of the index, so reducing these words back to their basic form makes it easier to match variations across document.</p>
+					<p>This process is referred to as
+						<a href="https://en.wikipedia.org/wiki/Stemming" target="_blank" rel="noopener">Stemming</a>. You can apply this when you generate your index, and also apply it to the query. So the query
+						<code>+running</code>
+						can match any document that has "run", "ran", "running" or "runs" in it. Usually this is the behaviour we'd want. There are
+						<a href="https://github.com/nemec/porter2-stemmer" target="_blank" rel="noopener">open source implemnetations</a>
+						you can make use of here.</p>
+					<p>Also, when you have queries that have optional query terms rather that just "must have" and "must no have" then you can get into the concept of scoring results. A query like
+						<code>+fish -rod</code>
+						can only every match documents precisely. A document either fits this criteria or does not. But if your query is
+						<code>fish rod</code>
+						(an
+						<code>or</code>
+						is implied here) then there are more options. A document may match one of these words, or both of these words. The documents with two matches should come further up the result sent than those with only one. Hence assigning a score, to each result so you can sort results by it.</p>
+					<p>You might also involve scoring in queries that use stemming. An exact match for "running" is a better hit than a match for "ran". And you can also weight these scores based on how many times a word appears in a document.</p>
+					<h2 id="conclusions">Conclusions</h2>
+					<p>You can build a surprisingly powerful search quite easily using these techniques. Granted it won't scale to Google's level, but it's perfectly good running in a browser to find documents across this blog. In fact after a bit of testing the search is way faster than the result rendering itself - a query that matches all the documents in the index is still pretty snappy. It just takes a while to add all that mark-up to the DOM and render 300-odd results... I am considering applying pagination to the results UI to handle this.</p>
+					<p>And there's plenty more to look into here if the topic interests you. For example you can add ordering and location data to the "words in a document" index so that you can do
+						<code>&lt;a&gt; near &lt;b&gt;</code>
+						queries, or show highlighted extracts in the results too. I may have a go at implementing that myself one day.</p>
+					<p>But for the moment, I think this fairly simple bit of code has added a useful feature to this site...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General
+								</a>
+								<a href="/tags/data-templates/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Data Templates
+								</a>
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore
+								</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell
+								</a>
+								<a href="/tags/graphql/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									GraphQL
+								</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C#
+								</a>
+								<a href="/tags/git/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Git
+								</a>
+								<a href="/tags/net/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									.Net
+								</a>
+								<a href="/tags/virtualbox/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									VirtualBox
+								</a>
+								<a href="/tags/hyperv/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									HyperV
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (231)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (62)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (32)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (18)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (17)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (16)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+								<a href="/tags/bug/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Bug (12)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2024-07">2024 - July</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-06">2024 - June</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-05">2024 - May</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-04">2024 - April</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-03">2024 - March</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Months
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<table>
+									<tbody>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2024</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
