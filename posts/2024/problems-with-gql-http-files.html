@@ -1,0 +1,629 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2024/problems-with-gql-http-files">
+		<meta name="description" content="An explanation of a couple of challenges found using Visual Studio's .http file support to call Sitecore GraphQL APIs">
+		<meta property="og:description" content="An explanation of a couple of challenges found using Visual Studio's .http file support to call Sitecore GraphQL APIs">
+		<meta name="keywords" content="Visual Studio, GraphQL, Sitecore">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Fun gotchas with Sitecore GraphQL and .http files</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Fun gotchas with Sitecore GraphQL and .http files [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2024-08-26T00:00:00+0000">
+		<meta property="article:published_time" content="2024-08-26T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/problems-with-gql-http-files-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Fun gotchas with Sitecore GraphQL and .http files' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Fun gotchas with Sitecore GraphQL and .http files",
+        "url": "https://blog.jermdavis.dev/posts/2024/problems-with-gql-http-files",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/problems-with-gql-http-files-social.jpg",
+                "caption": "Logo image showing post title 'Fun gotchas with Sitecore GraphQL and .http files' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2024-08-26T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2024/problems-with-gql-http-files">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+						<a class="text-base font-medium" href="/search">Search</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+							<a class="block mt-5 text-base font-medium" href="/search">Search</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2024/problems-with-gql-http-files</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Fun gotchas with Sitecore GraphQL and .http files
+				</h1>
+				<h2 class="text-2xl">Learn from my pain if you're using this tool to test queries</h2>
+				<div class="meta">Published 26 August 2024</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/visual-studio/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Visual Studio</a>
+					<a href="/tags/graphql/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						GraphQL</a>
+					<a href="/tags/sitecore/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Sitecore</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~5 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I was having a chat recently about alternatives to
+						<a href="https://www.postman.com/" target="_blank" rel="noopener">Postman</a>
+						if you needed to send HTTP requests to arbitrary web endpoints. I mentioned using Visual Studio's support for
+						<code>.http</code>
+						files for this during that discussion, and then found myself trying it out for some work too. But it seems there's a couple of tricky little bugs hiding in here, which tripped me up when I tried to set up a call to one of Sitecore's XM Cloud GraphQL endpoints.
+						<!--more-->
+					</p>
+					<h2 id="background">Background</h2>
+					<p>The theory here is pretty simple. If you create a text file with a
+						<code>.http</code>
+						extension in Visual Studio it gets some magic extra behaviour over a regular text file. You can use a predefined syntax to write out HTTP requests in the file, and when it sees this Visual Studio adds in
+						<a href="https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/adorners-overview" target="_blank" rel="noopener">an adorner</a>
+						above your URI for a "Send request" button so you can make this call and see the response. It's kind of like using something like Postman, but a bit more barebones and simple.</p>
+					<p>
+						<a target="_blank" href="/img/2024/08-ExampleRestRequest.png">
+							<img alt="An example HTTP request in Visual Studio showing the basic .http file UI" src="/img/2024/08-ExampleRestRequest.png">
+						</a>
+					</p>
+					<p>In the left pane you can specify the HTTP Verb, the URL and any headers or data. And when a URL is recognised the "Send request" adorner appears and you can click that to get results data in the right pane. You can do fancier stuff like have multiple requests in one file, click "debug" to attach the debugger to the current project in order to test what it does for the request, or use variables and environment settings.</p>
+					<p>There's
+						<a href="https://learn.microsoft.com/en-us/aspnet/core/test/http-files?view=aspnetcore-8.0#variables" target="_blank" rel="noopener">a whole documentation page to explain the details</a>
+						of this.</p>
+					<h2 id="setting-up-my-query">Setting up my query</h2>
+					<p>So I wanted to try a Sitecore GraphQL query via this route. In theory that's fairly simple:</p>
+					<ul>
+						<li>You need to know the URL of the GraphQL service to query</li>
+						<li>You need to know the security key to send with the request</li>
+						<li>And you need a GraphQL query to send</li>
+					</ul>
+					<p>So I tried a first pass: There's a local development endpoint at
+						<code>https://xmcloudcm.localhost/sitecore/api/graph/edge</code>, in a vanilla XM Cloud project. The key is sitting in the content tree as the Item ID of
+						<code>/sitecore/system/Settings/Services/API Keys/xmcloudpreview</code>, and the docs have some example queries to try. So I stuck this into my
+						<code>.http</code>
+						file:</p>
+					<pre class="code" data-enlighter-language="graphql" style="width:100%; overflow:scroll;">POST https://xmcloudcm.localhost/sitecore/api/graph/edge
+sc_apikey: {09DA42A1-E647-4192-8D4D-1F2102DECEEB}
+
+query { 
+  layout(language: "en", routePath: "/", site: "site1") { 
+    item { 
+      rendered 
+    } 
+  } 
+  site { 
+    siteInfoCollection { 
+      name 
+      routes(first: 10, language: "en") { 
+        results { 
+          routePath 
+          route { 
+            id 
+          } 
+        } 
+      } 
+    } 
+  } 
+}
+
+					</pre>
+					<p>But alas it's not that simple. The response for that came back with this blob of json:</p>
+					<pre class="code" data-enlighter-language="json" style="width:100%; overflow:scroll;">{
+  "errors": [
+    {
+      "message": "Unable to bind request; unexpected Content-Type. Expected content types for a POST are either application/json or application/graphql. See http://graphql.org/learn/serving-over-http/   at Sitecore.Services.GraphQL.Hosting.Transports.Http.GraphQLHttpRequestParser.&lt;ParseRequest&gt;d__0.MoveNext()\r\n--- End of stack trace from previous location where exception was thrown ---\r\n   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()\r\n   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)\r\n   at Sitecore.Services.GraphQL.Hosting.Transports.HttpRequestHandler.&lt;ProcessRequestAsync&gt;d__4.MoveNext()"
+    }
+  ]
+}
+
+					</pre>
+					<p>But like all good programmers should do, the devs here put the answer in the error message: My example is missing the right content type header! It wants us to specify if we're sending json or GraphQL so it knows how to parse the request. Now the answer here for my request is GraphQL, but it's worth noting that if you do send json as the content type with the style of query above you get a different error:</p>
+					<pre class="code" data-enlighter-language="json" style="width:100%; overflow:scroll;">{
+  "errors": [
+    {
+      "message": "GraphQL query parsing failed. Ensure the query is sent as a valid JSON object with 'query' and optionally 'operationName', 'variables', and 'extensions' elements. See http://graphql.org/learn/serving-over-http/   at Sitecore.Services.GraphQL.Hosting.Transports.Http.GraphQLHttpRequestParser.ProcessJsonRequest(String content, IHttpRequest context)\r\n   at Sitecore.Services.GraphQL.Hosting.Transports.Http.GraphQLHttpRequestParser.&lt;ParseRequest&gt;d__0.MoveNext()\r\n--- End of stack trace from previous location where exception was thrown ---\r\n   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()\r\n   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)\r\n   at Sitecore.Services.GraphQL.Hosting.Transports.HttpRequestHandler.&lt;ProcessRequestAsync&gt;d__4.MoveNext()"
+    }
+  ]
+}
+
+					</pre>
+					<p>That's a bit messier - but it's basically saying "your query needs to be wrapped up in a proper json structure to use this approach". I'll not delve into it too much here, but the right structure for json looks more like:</p>
+					<pre class="code" data-enlighter-language="json" style="width:100%; overflow:scroll;">{
+  "query": "...",
+  "operationName": "...",
+  "variables": { "var": "val", ... }
+}
+
+					</pre>
+					<p>But my original query can be modified to pass the GraphQL content type easily:</p>
+					<pre class="code" data-enlighter-highlight="3" data-enlighter-language="graphql" style="width:100%; overflow:scroll;">POST https://xmcloudcm.localhost/sitecore/api/graph/edge
+sc_apikey: {09DA42A1-E647-4192-8D4D-1F2102DECEEB}
+Content-Type: application/graphql
+
+query { 
+  layout(language: "en", routePath: "/", site: "site1") { 
+    item { 
+      rendered 
+    } 
+  } 
+  site { 
+    siteInfoCollection { 
+      name 
+      routes(first: 10, language: "en") { 
+        results { 
+          routePath 
+          route { 
+            id 
+          } 
+        } 
+      } 
+    } 
+  } 
+}
+
+					</pre>
+					<p>And that returns valid data:</p>
+					<pre class="code" data-enlighter-language="json" style="width:100%; overflow:scroll;">{
+  "data": {
+    "layout": null,
+    "site": {
+      "siteInfoCollection": [
+        {
+          "name": "website",
+          "routes": {
+            "results": [
+              {
+                "routePath": "/",
+                "route": {
+                  "id": "110D559FDEA542EA9C1C8A5DF7E70EF9"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+
+					</pre>
+					<p>Another note here is that if you've done low-level HTTP stuff before you might be expecting to need a content length header into this request because you're sending a body. And you're right - one does need to be sent. But helpfully Visual Studio magically does that for us. You can see this in the request details available in the right column of the UI:</p>
+					<p>
+						<a target="_blank" href="/img/2024/08-ContentLength.png">
+							<img alt="Visual Studio's Request data for the above query - showing that the Content-Length header was sent despite it not being specified in the .http file" src="/img/2024/08-ContentLength.png">
+						</a>
+					</p>
+					<p>Note that you can manually add that header and Visual Studio will use your value, but if you get the number wrong you're going to see odd errors. If your length is too short you'll see something like:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Unable to write content to request stream; content would exceed Content-Length.
+
+					</pre>
+					<p>And if you give too big a length then:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Sent 339 request content bytes, but Content-Length promised 450.
+
+					</pre>
+					<p>So probably best to leave that to Visual Studio unless you have very specific needs.</p>
+					<p>It also magically handles adding an HTTP version to your request as well, defaulting to HTTP/1.1 - but you can override that too by adding your version after the URL if required.</p>
+					<h2 id="the-main-problems-i-hit">The main problems I hit...</h2>
+					<p>(<strong>NB:</strong>
+						<em>I'm using VS 17.10.6 - hopefully this will be resolved in newer versions</em>)</p>
+					<p>So it's all grand that you can send requests like this for testing. But then I got my developer head on and started trying to neaten stuff up with variables for multiple queries in a single
+						<code>.http</code>
+						file. That seemed like a common scenario for an XM Cloud project - you'd likely have a set of GraphQL queries to test or prototype for your UI components - and having them all in one place could make life easier than having to find each rendering and use the GQL Playground separately. I figured the domain to call, the overall URL and the security key would be worth abstracting out if I was writing multiple queries. So I refactored my example above to:</p>
+					<pre class="code" data-enlighter-language="graphql" style="width:100%; overflow:scroll;">@server = xmcloudcm.localhost
+@previewapi = https://xmcloudcm.localhost/sitecore/api/graph/edge
+@apikey = {09DA42A1-E647-4192-8D4D-1F2102DECEEB}
+
+POST {{previewapi}}
+sc_apikey: {{apikey}}
+Content-Type: application/graphql
+
+query { 
+  layout(language: "en", routePath: "/", site: "site1") { 
+    item { 
+      rendered 
+    } 
+  } 
+  site { 
+    siteInfoCollection { 
+      name 
+      routes(first: 10, language: "en") { 
+        results { 
+          routePath 
+          route { 
+            id 
+          } 
+        } 
+      } 
+    } 
+  } 
+}
+
+					</pre>
+					<p>Variables in these files are defined using
+						<code>@name</code>
+						and assigned a string value. And then you can use those variables in your request with a Mustache template inspired
+						<code>{{name}}</code>
+						string. (And the UI colours variable declarations light blue, and variable references in red to make them obvious)</p>
+					<p>But this did not work. The "Send request" adorner disappeared from my request, and the
+						<code>@apikey</code>
+						variable didn't get coloured in like the others:</p>
+					<p>
+						<a target="_blank" href="/img/2024/08-ParseIssues.png">
+							<img alt="The .http file in Visual Studio showing how variable parsing has messed up when braces are present in the data for a variable" src="/img/2024/08-ParseIssues.png">
+						</a>
+					</p>
+					<p>After some head-scratching I realised that the parsing in these files is not very clever. If you paste in GUIDs with curly braces, parsing gets confused. And removing the braces from above fixed the parsing again. Luckily server-side GUID parsing doesn't care if the braces are present or not:</p>
+					<p>
+						<a target="_blank" href="/img/2024/08-FixedParsing.png">
+							<img alt="The .http file in Visual Studio showing variable parsing working after the braces were removed from the example above" src="/img/2024/08-FixedParsing.png">
+						</a>
+					</p>
+					<p>But after fixing this, sending the request still did not work. It would run and return an error:</p>
+					<pre class="code" data-enlighter-language="html" style="width:100%; overflow:scroll;">&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN""http://www.w3.org/TR/html4/strict.dtd"&gt;
+&lt;HTML&gt;&lt;HEAD&gt;&lt;TITLE&gt;Bad Request&lt;/TITLE&gt;
+&lt;META HTTP-EQUIV="Content-Type" Content="text/html; charset=us-ascii"&gt;&lt;/HEAD&gt;
+&lt;BODY&gt;&lt;h2&gt;Bad Request - Invalid URL&lt;/h2&gt;
+&lt;hr&gt;&lt;p&gt;HTTP Error 400. The request URL is invalid.&lt;/p&gt;
+&lt;/BODY&gt;&lt;/HTML&gt;
+
+					</pre>
+					<p>And an interesting error at that - this looks more like Traefik or maybe something low-level in IIS having issues rather than the GraphQL API rejecting the query. What could that mean?</p>
+					<p>But we're looking at a tool for debugging HTTP requests - so lets use it! Changing to the "Request" tab of the right hand pane in Visual Studio gives an interesting clue:</p>
+					<p>
+						<a target="_blank" href="/img/2024/08-BrokenRequest.png">
+							<img alt="The request data tab in Visual Studio for this .http request showing that the URL for the call has become broken - it has an HTTP header appended onto its end" src="/img/2024/08-BrokenRequest.png">
+						</a>
+					</p>
+					<p>Look at the URL it requested - the API Key header has ended up appended on to the end. That's clearly a bad request, but why?</p>
+					<p>Well looking back at the original query we can see that the POST request and that header are on adjacent lines with no text in between other than the newline's whitespace:</p>
+					<pre class="code" data-enlighter-language="graphql" style="width:100%; overflow:scroll;">POST {{previewapi}}
+sc_apikey: {{apikey}}
+Content-Type: application/graphql
+
+					</pre>
+					<p>After a bit of messing about I realised that this is actually another issue caused by how
+						<code>.http</code>
+						files in Visual Studio parse their variables. If I add any valid URL character after the end of
+						<code>{{previewapi}}</code>
+						then the query works. So a trailing space, or a trailing
+						<code>/</code>
+						both fix this problem and get back the same results we saw for this query originally.</p>
+					<p>Clearly parsing the variable is messing up the CR/LF/whatever at the end of this line when it makes the HTTP request - causing the API Key header to get smooshed onto the URI. But if there's a character after the closing
+						<code>}}</code>
+						the parsing doesn't break.</p>
+					<p>Related to this, when I was testing adding a specific HTTP version to a request I found that
+						<code>POST {{previewapi}} HTTP/2</code>
+						did not work either - despite having something coming after the URL. In this case I found you needed to add a trailing slash to make the request parse properly:
+						<code>POST {{previewapi}}/ HTTP/2</code>.</p>
+					<p>So be warned people - this is a useful tool for making requests, but it can trip over the unwary at present...</p>
+					<blockquote>
+						<b>Note:</b>
+						Since writing the draft of this post I've had a chance to test with the latest preview version of Visual Studio - that's v17.12.0 Preview 1.0 as I type. It appears that this release fixes the issues with "needing whitespace or `/` characters after the `{{previewapi}}` variable usage" issue above. But it has not fixed the issue with curly braces in variable declarations. So we're getting there, but it's not sorted yet...
+					</blockquote>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Visual Studio
+								</a>
+								<a href="/tags/graphql/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									GraphQL
+								</a>
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore
+								</a>
+								<a href="/tags/sql-server/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									SQL Server
+								</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General
+								</a>
+								<a href="/tags/data-templates/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Data Templates
+								</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell
+								</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C#
+								</a>
+								<a href="/tags/git/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Git
+								</a>
+								<a href="/tags/net/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									.Net
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (232)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (62)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (32)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (18)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (17)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (16)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+								<a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Visual Studio (12)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2024-08">2024 - August</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-07">2024 - July</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-06">2024 - June</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-05">2024 - May</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-04">2024 - April</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Months
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<table>
+									<tbody>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2024</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
