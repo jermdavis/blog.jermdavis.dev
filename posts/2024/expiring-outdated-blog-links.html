@@ -146,7 +146,7 @@
 						Statiq</a>
 					<a href="/tags/blog/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
 						Blog</a>
-					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~6 min. read</span>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~8 min. read</span>
 				</div>
 			</div>
 		</header>
@@ -159,7 +159,7 @@
 					<h2 id="how-could-this-work">How could this work?</h2>
 					<p>The idea that I had was this: If I know links would expire in a certain timeframe, I could add some metadata about those dates to the links in my blog's source data. Then each time I republish my blog, the site generator code could look for this metadata, and filter out the links if they had expired. Not an instant fix - but given publishing schedules, likely good enough for my scenarios.</p>
 					<p>So I could write content like:</p>
-					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">This is &lt;a href="test.com" until="2024/04/16"&gt;a link which should have gone&lt;/a&gt; by now.
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">This is &lt;span class="rx"&gt;a link which should have gone&lt;a class="expired" href="#expired"&gt;**1&lt;/a&gt;&amp;ZeroWidthSpace;&lt;a name="removed1"&gt; &amp;ZeroWidthSpace;&lt;/a&gt;&amp;ZeroWidthSpace;&lt;/span&gt;by now.
 But &lt;a href="test.com"&gt;this one should always stay&lt;/a&gt; visible.
 
 					</pre>
@@ -325,9 +325,9 @@ a.expired[href] {
 					<p>So with that code in place, it's time for some test data. I created a test page with some testing content in it. The important bit was this, but I wrapped some more general content around it to make sure the test was valid:</p>
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">## Test links:
 
-* Firstly, a link which &lt;a href="https://test.com" until="2024/04/16" target="_blank" rel="noopener"&gt;expired yesterday&lt;/a&gt;.
-* Here's a paragraph with a link that &lt;a href="https://test.com" until="2024/04/18" target="_blank" rel="noopener"&gt;expires tomorrow&lt;/a&gt;.
-* This link &lt;a href="https://test.com" until="2024/04/17" target="_blank" rel="noopener"&gt;expires today&lt;/a&gt;.
+* Firstly, a link which &lt;span class="rx"&gt;expired yesterday&lt;a class="expired" href="#expired"&gt;**2&lt;/a&gt;&amp;ZeroWidthSpace;&lt;a name="removed2"&gt;&amp;ZeroWidthSpace;&lt;/a&gt;&amp;ZeroWidthSpace;&lt;/span&gt;.
+* Here's a paragraph with a link that &lt;span class="rx"&gt;expires tomorrow&lt;a class="expired" href="#expired"&gt;**3&lt;/a&gt;&amp;ZeroWidthSpace;&lt;a name="removed3"&gt;&amp;ZeroWidthSpace;&lt;/a&gt;&amp;ZeroWidthSpace;&lt;/span&gt;.
+* This link &lt;span class="rx"&gt;expires today&lt;a class="expired" href="#expired"&gt;**4&lt;/a&gt;&amp;ZeroWidthSpace;&lt;a name="removed4"&gt;&amp;ZeroWidthSpace;&lt;/a&gt;&amp;ZeroWidthSpace;&lt;/span&gt;.
 
 					</pre>
 					<p>Publishing that page looks good:</p>
@@ -352,6 +352,31 @@ a.expired[href] {
 					<p>In writing this up, I realise one edge case that this code doesn't cover is links which are in the snippet shown on listing pages. Making links expire there may be more of a challenge. But I'm tempted to make a validator so my editor says "don't put expiring links here" in the short term, as that would be the easiest fix for a potentially tricky case.</p>
 					<p>And while this general approach works, I think it could probably have better UI for people browsing the site. On longer pages it might make sense to make the individual footnote links connect to specific entries in the main footnote, and vice-versa? So you can move back and forth?</p>
 					<p>So I'll tinker with further changes later...</p>
+					<blockquote>
+						<h4>Expired links:</h4>
+						<div>
+							<a class="expired" name="expired">**</a>
+							Some links in this page have expired. The originals are listed here, but they may no longer point to working pages or the correct content:</div>
+						<ul>
+							<li>
+								<a href="#removed1">Link #1</a>:
+								<a href="test.com" until="2024/04/16">a link which should have gone</a>
+							</li>
+							<li>
+								<a href="#removed2">Link #2</a>:
+								<a href="https://test.com" until="2024/04/16" target="_blank" rel="noopener">expired yesterday</a>
+							</li>
+							<li>
+								<a href="#removed3">Link #3</a>:
+								<a href="https://test.com" until="2024/04/18" target="_blank" rel="noopener">expires tomorrow</a>
+							</li>
+							<li>
+								<a href="#removed4">Link #4</a>:
+								<a href="https://test.com" until="2024/04/17" target="_blank" rel="noopener">expires today</a>
+							</li>
+						</ul>
+					</blockquote>
+					<p></p>
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
