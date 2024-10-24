@@ -167,25 +167,29 @@
 						<a href="https://twitter.com/jammykam" rel="noopener" target="_blank">Kamruz Jaman</a>,
 						<a href="https://twitter.com/jflh" rel="noopener" target="_blank">Jeff L'Heureux</a>
 						and the people of SitecoreLunch who have helped me work out answers to my questions about all this. Maybe these points will be helpful to others who are trying to work out what the right approach for their projects are too.</p>
-					<h2>Point one: What OS version should your base containers use?</h2>
-					<p>
-						<a href="/img/2020/2020-11-logos-1.png" target="_blank">
-							<img alt="logos" src="/img/2020/2020-11-logos-1.png">
-						</a>
-					</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">Point one: What OS version should your base containers use?</a>
+					</h2>
+					<a href="/img/2020/2020-11-logos-1.png" target="_blank">
+						<img alt="logos" src="/img/2020/2020-11-logos-1.png">
+					</a>
 					<p>There seem to be some conflicting priorities for choosing the version of Windows your images are based on. On one hand, you have your development docker images, which run on your local computer. Here you really want to optimise for "best local compatibility" and "lowest impact on your PC". That tends to suggest that you should run the latest versions of Docker Desktop, Windows and the newest versions of the Sitecore base containers. So it feels like the newest Windows "<a href="https://docs.microsoft.com/en-us/windows-server/get-started-19/servicing-channels-19#semi-annual-channel" rel="noopener" target="_blank">SAC</a>" release would be the best bet here. And Sitecore have recently added containers for this to their feed.</p>
 					<p>(As I type this, the current SAC release Sitecore support is 2004, but Microsoft already have a newer release, which Sitecore should support soon, I'm told)</p>
 					<p>But then there's Kubernetes. When look at the config files you can download for configuring a production Kubernetes cluster, you'll see that these only describe using images based on the "<a href="https://searchwindowsserver.techtarget.com/definition/Microsoft-Windows-Server-LTSC-Long-Term-Servicing-Channel" rel="noopener" target="_blank">LTSC</a>" version of Windows. Which version should you be deploying to Production?</p>
 					<p>I did a pile of googling, but didn't really find a good answer. But Sitecore Slack to the rescue – Bart Plasmeijer explained the answer I missed:</p>
 					<p>According to Microsoft, Azure Kubernetes Service currently only supports with the LTSC version of Windows. So if you're deploying to AKS for production use, you have to use whatever the current LTSC release is right now.</p>
-					<h2>Point two: Do you really only ever have "one set" of containers?</h2>
-					<p>Knowing the answer to the first point brings up a new issue. If we know we have to have LTSC images for production, should we use the same for local development, or might it make sense to build different images for local development vs onward deployment? A single set of images would seem to offer the simplest overall compatibility, but it would lead to loss of the latest Docker features on your development images.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Point two: Do you really only ever have "one set" of containers?</a>
+					</h2>
+					Knowing the answer to the first point brings up a new issue. If we know we have to have LTSC images for production, should we use the same for local development, or might it make sense to build different images for local development vs onward deployment? A single set of images would seem to offer the simplest overall compatibility, but it would lead to loss of the latest Docker features on your development images.
 					<p>I have a local development setup where developers build some custom images that include a few project-specific things, but do not include any of the main project's code. The devs start up Docker and publish that code from Visual Studio on top of the containers. That lets them run the site locally and do their development without worrying about any solution files being baked into their containers. But it's no good for onward deployment.</p>
 					<p>So when I sat and thought about this, it seemed to make sense that my project actually needs some different Dockerfiles for two scenarios here. I need CM / CD Dockerfiles to make my developer images, to drop code in development on top of. (Which might also be targeted to the 2004 version of  Windows on my developer's machines) And I also need CM / CD Dockerfiles for onward deployment, and they need to include the compiled code by default.</p>
 					<p>When you look at the examples available, they always seem to have just a single set of Dockerfiles, and they run the same containers locally as they go on to deploy. So this made me wonder if my thinking was wrong here...</p>
 					<p>But having raised this issue with on Slack and discussed with Rob Ahnemann and the Sitecore Lunch people, it seems I'm not barking up the wrong tree there. Other people follow a similar model to optimise their image builds for different scenarios. And Kamruz Jaman pointed out that "build an image per windows release" is also a common approach – ensuring there's an image optimised for whichever O/S your developers and production servers are using.</p>
-					<h2>Point three: If you didn't change a Sitecore image, should you still build a custom version?</h2>
-					<p>And (again) the answer to #2 lead me to a new question. In my developer setup, I have a folder of Dockerfiles for all the roles in an XP deployment. So when docker-compose starts up an XP instance of the site, it's using custom images for all the roles. However the Dockerfiles for the xConnect role imagess don't actually do anything right now. The Dockerfiles exist in case I need to make custom changes to them later, but they don't currently add anything meaningful to the images.</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Point three: If you didn't change a Sitecore image, should you still build a custom version?</a>
+					</h2>
+					And (again) the answer to #2 lead me to a new question. In my developer setup, I have a folder of Dockerfiles for all the roles in an XP deployment. So when docker-compose starts up an XP instance of the site, it's using custom images for all the roles. However the Dockerfiles for the xConnect role imagess don't actually do anything right now. The Dockerfiles exist in case I need to make custom changes to them later, but they don't currently add anything meaningful to the images.
 					<p>So I stated wondering about whether it was necessary for my Kubernetes image build to do anything with these Dockerfiles. Might it just be easier to not bother building them, save myself some disk space on my Azure Container Registry and stick with the default Sitecore images for xConnect when I deploy onwards? (At least until a requirement comes up for customising xConnect somehow, that is)</p>
 					<p>Asking this on Sitecore Lunch got a couple of useful responses about why it's right to build all the roles each time. Jeff L'Heureux pointed out that it's simpler to have all your images share the same version tag for onward deployment – which seems like a key reason why building images for roles you're not customising still makes sense. The other key point is that due to the nature of Docker's layered file system, the image you'd be adding to your Azure Container Registry should be very small here – so the convenience of the common tags won't cost much in storage.</p>
 					<p></p>
@@ -194,7 +198,23 @@
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">Point one: What OS version should your base containers use?</a>
+									</li>
+									<li>
+										<a href="#heading2">Point two: Do you really only ever have "one set" of containers?</a>
+									</li>
+									<li>
+										<a href="#heading3">Point three: If you didn't change a Sitecore image, should you still build a custom version?</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

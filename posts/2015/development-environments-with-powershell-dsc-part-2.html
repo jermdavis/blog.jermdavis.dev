@@ -193,13 +193,17 @@
 					<blockquote>
 						<i>Before I get going, couple of notes about the examples I'm including in this series of posts: They all have a call to `Start-DSCConfiguration` using the "-Force" flag to make DSC run this configuration immediately in "push" mode. However, the `Configuration` blocks declared should all work in pull configurations. Writing the scripts this way just makes them easier for people to try out without any other setup effort. Also the examples are all pretty much self-contained, so the overall configuration of a server using them would rely on many separate scripts. You don't necessarily need to have as many as I'm showing here. It's more to keep the examples clear and usable than to represent the "right" architecture. You're free to merge things together, or even break them apart further if that suits you.</i>
 					</blockquote>
-					<h2>Operating systems</h2>
-					<p>The beginning of the setup for any machine involves getting the basic O/S installed. I'm going to leave this step out of this post, as it's so dependent on your particular flavour of virtualisation technology or hardware. You can install Windows on physical machines from a CD, from an ISO image, or from a USB drive. If you're virtualising your machine you can use most VM software to clone an existing base VM image, use tools like
-						<a href="https://www.packer.io/" target="_blank" rel="noopener noreferrer">Packer</a>
-						to build images for you, or just install from a CD/ISO/USB as well.</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">Operating systems</a>
+					</h2>
+					The beginning of the setup for any machine involves getting the basic O/S installed. I'm going to leave this step out of this post, as it's so dependent on your particular flavour of virtualisation technology or hardware. You can install Windows on physical machines from a CD, from an ISO image, or from a USB drive. If you're virtualising your machine you can use most VM software to clone an existing base VM image, use tools like
+					<a href="https://www.packer.io/" target="_blank" rel="noopener noreferrer">Packer</a>
+					to build images for you, or just install from a CD/ISO/USB as well.
 					<p>Whichever way you choose to go, the rest of my write-up assumes you have a base install of Windows Server 2012. Many of these techniques will work on other versions of Windows (client and server) – you just need to ensure that your base install includes PowerShell 4 and WMI 4.</p>
-					<h2>Getting your OS Features sorted out</h2>
-					<p>When you set up a copy of Windows Server, the default behaviour these days is to install the basics, but to leave the setup of any specific features you need to the Server Manager UI after your first boot.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Getting your OS Features sorted out</a>
+					</h2>
+					When you set up a copy of Windows Server, the default behaviour these days is to install the basics, but to leave the setup of any specific features you need to the Server Manager UI after your first boot.
 					<p>So in order to sort this out for things like IIS and .Net frameworks, we need to have a core setup script. As we saw with last week's post, asking DSC to install a Windows Feature for us is pretty easy with the
 						<code>WindowsFeature</code>
 						resource. You just need to know Windows' internal code name for the feature you want to add. So how do we work those out?</p>
@@ -469,10 +473,12 @@ Start-DscConfiguration -Path .\WindowsFeatureInstall -Verbose -Wait -Force
 					<p>Future posts will extend this with more data. But for the moment, that can be saved as
 						<code>configData.psd1</code>
 						and the examples here will consume it.</p>
-					<h2>Windows Feature edge cases</h2>
-					<p>Some features are a little bit more tricky however. One specific one that's an issue for Sitecore developers is the "Desktop Experience" feature. This seems a bit oddly named, but if you're
-						<a href="https://divamatrix.wordpress.com/2011/10/10/sitecore-install-error-web-client-service-is-unavailable/" target="_blank" rel="noopener noreferrer">running Sitecore on a Windows Server OS it is required to make the WebDAV-based drag-and drop uploading of Media Library resources</a>
-						work. As the linked post suggests, you can just ignore it. But if you need WebDAV to work, beware that this feature seems to always require a reboot.</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Windows Feature edge cases</a>
+					</h2>
+					Some features are a little bit more tricky however. One specific one that's an issue for Sitecore developers is the "Desktop Experience" feature. This seems a bit oddly named, but if you're
+					<a href="https://divamatrix.wordpress.com/2011/10/10/sitecore-install-error-web-client-service-is-unavailable/" target="_blank" rel="noopener noreferrer">running Sitecore on a Windows Server OS it is required to make the WebDAV-based drag-and drop uploading of Media Library resources</a>
+					work. As the linked post suggests, you can just ignore it. But if you need WebDAV to work, beware that this feature seems to always require a reboot.
 					<p>In the short time I've spent with DSC so far, I have not managed to work out a "nice" DSC-based approach to handling this reboot work. There are a variety of tricks you can use, mostly based around breaking out these reboot-requiring features to a separate script. It only requires one feature, so it's a trivial script:</p>
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration DesktopExperienceInstall
 {
@@ -493,8 +499,10 @@ Start-DscConfiguration -Path .\DesktopExperienceInstall -Verbose -Wait -Force
 					<p>You can execute this, trigger a reboot (either manually or via the
 						<code>Restart-Computer</code>
 						CommandLet) and then run your other scripts to finish the process. A colleague of mine has put together some interesting script that makes use of workflows to enable this without user-interaction. However I plan to come back to this issue to discover the "proper DSC" approach when I've had some more time to work on it.</p>
-					<h2>Adding 3rd party extensions to DSC</h2>
-					<p>Sometimes DSC can't do all the things you need it to by default.</p>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">Adding 3rd party extensions to DSC</a>
+					</h2>
+					Sometimes DSC can't do all the things you need it to by default.
 					<p>The default install of Windows Server has Internet Explorer configured in a strongly locked-down state. (Referred to as IE's "<a href="https://msdn.microsoft.com/en-us/library/ms537180(v=vs.85).aspx" target="_blank" rel="noopener noreferrer">Enhanced Security Configuration</a>") This makes sense if the machine is going to run as a proper server, as it helps to reduce the surface area for attacks. But it's a bit of a pain if you're using a server for development tasks, as it makes IE very difficult to use to test your websites. Hence turning this feature off can be helpful for setting up a development machine.</p>
 					<p>Now, out of the box DSC doesn't have a resource for making this config change. But an extension exists to enable it. So this is a good example for showing how you can add 3rd party resources into your DSC-based processes. These extensions are just PowerShell Modules that implement a DSC Resource, so they can be installed simply via DSC. For example, the extension that contains the resource for disabling IE's security config is called
 						<code>xSystemSecurity</code>. Generally DSC extensions prefixed with "x" are "experimental" bits of code that Microsoft are considering adding into the core of DSC in future versions. The module
@@ -557,8 +565,10 @@ Start-DscConfiguration -Path .\SetupInstall -Verbose -Wait -Force
 							<code>System.Management.Automation.PSCredential</code>
 							object</a>
 						for a user account which does have permissions to access the share.</p>
-					<h2>Back to IE Enhanced Security Configuration</h2>
-					<p>So now we've added the extra DSC feature required to modify the security settings in IE, how do we actually change them? Simple. You just need to tell DSC you're importing an external Resource and then use it:</p>
+					<h2 class="anchor">
+						<a href="#heading5" name="heading5">Back to IE Enhanced Security Configuration</a>
+					</h2>
+					So now we've added the extra DSC feature required to modify the security settings in IE, how do we actually change them? Simple. You just need to tell DSC you're importing an external Resource and then use it:
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIEEsc
 {
     Import-DSCResource -Module xSystemSecurity -Name xIEEsc
@@ -594,7 +604,29 @@ Start-DscConfiguration -Path .\EnableIEEsc -Verbose -Wait -Force
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">Operating systems</a>
+									</li>
+									<li>
+										<a href="#heading2">Getting your OS Features sorted out</a>
+									</li>
+									<li>
+										<a href="#heading3">Windows Feature edge cases</a>
+									</li>
+									<li>
+										<a href="#heading4">Adding 3rd party extensions to DSC</a>
+									</li>
+									<li>
+										<a href="#heading5">Back to IE Enhanced Security Configuration</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

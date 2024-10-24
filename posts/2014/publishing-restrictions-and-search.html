@@ -161,17 +161,21 @@
 						search code recently, relating to items with publishing restrictions not disappearing from search results until another publish occurred. It struck me that there's not much written about how publishing restrictions interact with search, so I figured I should take a bit of time to write down what I'd found while sorting the bug.
 						<!--more-->
 					</p>
-					<h2>How publishing restrictions work</h2>
-					<p>There's a fair bit
-						<a href="http://www.sitecore.net/en-gb/learn/blogs/technical-blogs/john-west-sitecore-blog/posts/2013/01/all-about-publishing-restrictions-in-the-sitecore-aspnet-cms.aspx" title="Publishing Restrictions" target="_blank" rel="noopener noreferrer">written about publishing restrictions in general</a>, but the idea is that you can define a time and date range during which either the whole item, or a specific version of the item is valid for publishing. The settings are made via a dialog in Page Editor:</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">How publishing restrictions work</a>
+					</h2>
+					There's a fair bit
+					<a href="http://www.sitecore.net/en-gb/learn/blogs/technical-blogs/john-west-sitecore-blog/posts/2013/01/all-about-publishing-restrictions-in-the-sitecore-aspnet-cms.aspx" title="Publishing Restrictions" target="_blank" rel="noopener noreferrer">written about publishing restrictions in general</a>, but the idea is that you can define a time and date range during which either the whole item, or a specific version of the item is valid for publishing. The settings are made via a dialog in Page Editor:
 					<p>
 						<a href="/img/2014/2014-11-restrictions.png" target="_blank">
 							<img alt="Restrictions" src="/img/2014/2014-11-restrictions.png">
 						</a>
 					</p>
 					<p>Clicking the "Change" button on the "Publish" ribbon opens the dialog. The editor can choose between the "version" and "item" tabs depending on which sort of restriction they wish to set. In both cases, the editor can choose if the item should ever be published (with the checkbox) or set a date/time range for publishing with the date and time selectors.</p>
-					<h2>How this interacts with search</h2>
-					<p>Lucene indexes items as a result of events which update the Sitecore databases. This can be when you click "save" in the Content Editor (to index the Master version) or when a publish operation copies the data to the Web database (or potentially another publishing target).</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">How this interacts with search</a>
+					</h2>
+					Lucene indexes items as a result of events which update the Sitecore databases. This can be when you click "save" in the Content Editor (to index the Master version) or when a publish operation copies the data to the Web database (or potentially another publishing target).
 					<p>If you set "do not publish" on an item via the Publishing Restrictions dialog then you will not get a version in the Web Database – hence you won't get an index entry for that item. Also, items with future publishing dates appear to be ignored by the indexer.</p>
 					<p>The items that are added to an index can also be affected by the configuration for indexing – you may set up an index to receive items from only one database for example.</p>
 					<p>When indexing is applied, the restriction fields get indexed into the following Lucene fields:</p>
@@ -194,8 +198,10 @@
 						</a>
 					</p>
 					<p>No times go into Lucene - so you can only filter search results on a "per day" basis. It's also worth noting that if you don't set a value for a publishing restriction then the value added to the index is "00010101" – which is 01/01/0001 in Lucene's format.</p>
-					<h2>Filtering results on Publishing Restriction</h2>
-					<p>If you need code to filter out results that have passed their unpublish date, you can extra clauses to your search query. Something along these lines:</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Filtering results on Publishing Restriction</a>
+					</h2>
+					If you need code to filter out results that have passed their unpublish date, you can extra clauses to your search query. Something along these lines:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">string _unpublishedField = "__unpublish";
 string _validToField = "__valid to";
         
@@ -244,7 +250,23 @@ public void AddPublishingRestrictionsTerm(this BooleanQuery query)
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">How publishing restrictions work</a>
+									</li>
+									<li>
+										<a href="#heading2">How this interacts with search</a>
+									</li>
+									<li>
+										<a href="#heading3">Filtering results on Publishing Restriction</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

@@ -158,7 +158,10 @@
 					<p>Sometimes things you think you know turn out not to be right. I got bitten by this issue recently, and it seemed like something to write down. Because being wrong is fine, as long as you learn something...
 						<!--more-->
 					</p>
-					<h2 id="the-issue">The issue</h2>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The issue
+						</a>
+					</h2>
 					<p>I was looking at a project that my company was taking on, which was set up to use containers for development. Where this was different to other projects I'd worked on was that it included custom databases which were added to the SQL container. That's a scenario that Sitecore's base images support. Your DockerFile can copy your own
 						<code>.dacpac</code>
 						files into the
@@ -173,7 +176,10 @@
 						</a>
 					</p>
 					<p>That error was reliable for these subsequent starts, and if I cleared the mapped data folder it would start once, but then go back to the broken state once there were files present there on start-up.</p>
-					<h2 id="digging-a-bit">Digging a bit</h2>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Digging a bit
+						</a>
+					</h2>
 					<p>Why couldn't it open the DB? Well that answer turned out to be easy: When the containers started for the first time this custom database was present and available. But for second and subsequent starts it wasn't there in the list of databases for the SQL Server when I looked with SQL Management tools. So the error message was a bit misleading - it didn't really mean "can't log in" it meant "not present!" instead. (That's a common issue with SQL Server - it deliberately tries not to give away risky information in its error messages, so they tend to be a bit generic when you're debugging)</p>
 					<p>Looking at the data folder for the SQL role, the database files (<code>.mdf</code>
 						and
@@ -205,7 +211,10 @@ GO
 					<p>(You can also make this change in the properties dialog for your database server shown above, if you prefer)</p>
 					<p>And having done that, trying to reattach the database worked and refreshing the website got rid of the error and ran OK. So clearly the contained authentication was the problem...</p>
 					<p>But this confused me. My experience of working with Sitecore outside of containers was that all the databases apart from the xConnect collection shards, have contained users. That was definitely the pattern in PaaS / IaaS, because I've had to use exactly the SQL commands above to prepare an IaaS SQL Server for a Sitecore install in the past.</p>
-					<h2 id="flailing-about-for-an-answer">Flailing about for an answer</h2>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Flailing about for an answer
+						</a>
+					</h2>
 					<p>So at this point I went diving down a rabbit hole of trying to work out why the Contained Authentication setting was failing.</p>
 					<p>I looked at the state of the Contained Authentication setting at various states in the start-up process. I noted that on first start (with an empty data folder) SQL Server was indeed configured to allow contained auth. But when I restarted it, it was disabled again. That seemed to fit with the behaviour I was seeing: The custom database attached ok first time because the setting was on, but failed the second time because it was off.</p>
 					<p>And with a bit of spelunking through the container data I could see in the PowerShell scripts of the init container that it did in fact enable Contained Authentication when attaching databases. If you look in the
@@ -229,7 +238,10 @@ GO
 					</pre>
 					<p>And that is indeed enabling the setting.</p>
 					<p>I sat at the bottom of my rabbit hole of thought for a while, wondering why the Sitecore databases all worked when this setting was clearly not persisted in the SQL Server container, but this one custom database did not...</p>
-					<h2 id="the-solution">The solution</h2>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">The solution
+						</a>
+					</h2>
 					<p>As is often the case, I came up with the answer after walking away from the problem for a while. After asking about this on the weekly
 						<a href="https://www.linkedin.com/feed/update/urn:li:activity:7166861507018874880/" target="_blank" rel="noopener">Sitecore Lunch</a>
 						zoom call, I went off to cook some dinner and relax for a bit in front of the TV.</p>
@@ -282,7 +294,10 @@ GO
 &lt;/DataSchemaModel&gt;
 
 					</pre>
-					<h2 id="fixing-this">Fixing this</h2>
+					<h2 class="anchor">
+						<a href="#heading5" name="heading5">Fixing this
+						</a>
+					</h2>
 					<p>So the overall solution is "don't have Contained Authentication enabled for your custom databases in a Sitecore container solution!"</p>
 					<p>Easy, huh? The steps for fixing this on my development instance were:</p>
 					<ul>
@@ -319,7 +334,34 @@ GO
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The issue
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">Digging a bit
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">Flailing about for an answer
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">The solution
+										</a>
+									</li>
+									<li>
+										<a href="#heading5">Fixing this
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

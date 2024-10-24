@@ -164,7 +164,10 @@
 						that I'd been unable to fix. It was the worst sort of technical problem, happening irregularly on some computers, but never rearing its head on others. So it's taken me a while to get around to coming up with a fix for this. But if you've suffered from the problems described in my previous post, this is an option for you:
 						<!--more-->
 					</p>
-					<h2 id="the-core-issue">The core issue</h2>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The core issue
+						</a>
+					</h2>
 					<p>The problem I was seeing was that when you started up Sitecore's SolrCloud developer container on some computers, you would end up with a broken Solr instance. And once that fails, Sitecore can't start because the initialisation container can't create the collections required, and Sitecore then cannot run any searches. The underlying error seemed to be that
 						<em>sometimes</em>
 						SolrCloud could not get a network connection to its internal ZooKeeper instance. Without that it could not start...</p>
@@ -175,7 +178,10 @@
 					<p>So falling back to the old developer's approach of "if in doubt, fiddle with stuff", I've tried different Sitecore image versions, different container isolation models, different Docker network settings, and a variety of alternative config settings for SolrCloud, ZooKeeper and Docker. But none managed any better than "make the problem a bit less likely" for me.</p>
 					<p>But it struck me the other day, that one way to fix it might be to run a separate ZooKeeper instance and ensure that was up before starting SolrCloud. In theory this should be done by adding another container to the Docker compose file (so ZooKeeper runs in one container and Solr in another), but that's changing the structure of the Sitecore instance, and wanted to try and avoid that. So I found some time to sit down and make it work with both Solr and ZooKeeper in one container.</p>
 					<p>And that meant modifying the default SolrCloud image Sitecore ship...</p>
-					<h2 id="my-approach-to-a-fix">My approach to a fix</h2>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">My approach to a fix
+						</a>
+					</h2>
 					<p>My thought was that getting ZooKeeper to run separately requires a few steps:</p>
 					<ol>
 						<li>Adding a "build" config that layers extra code and config on top of Sitecore's Solr image</li>
@@ -375,7 +381,10 @@ Wait-ForZooKeeperInstance "localhost" 2181
 						</a>
 					</p>
 					<p>And Sitecore's init container happily creates the correct collections...</p>
-					<h2 id="conclusions">Conclusions</h2>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Conclusions
+						</a>
+					</h2>
 					<p>I've run this up and down a lot of times in test on both my laptops here - the work one that was broken before and my personal one which had never shown the error. With this setup it hass not failed for me once, where it failed fairly regularly with the original image. So that makes me reasonably sure it's a good fix. I've also tried applying these changes to the default Sitecore 10.3 XM docker compose setup, and it appears to work fine with that too.</p>
 					<p>I think this "fix" sits fairly well with standard Sitecore development. It doesn't change the structure of your docker setup, but it does provide a way to resolve the startup bug. Importantly for me, it doesn't change the Solr config that Sitecore needs. I'd seen some discussion in Slack of fixing this issue by going back to using basic Solr, rather than SolrCloud. But that involves changing config in Sitecore itself - something that you then probably have configured differently in production. And that seems like a source of potential release issues to me, so I feel happier avoiding that route for my projects.</p>
 					<p>I've put a bare-bones example of this
@@ -388,7 +397,26 @@ Wait-ForZooKeeperInstance "localhost" 2181
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The core issue
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">My approach to a fix
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">Conclusions
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

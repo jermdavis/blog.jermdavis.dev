@@ -153,8 +153,10 @@
 					<p>I've been spending a bit of time helping out a client who's working through an upgrade project recently, and the work to move from v9.1 to v9.3 raised an interesting issue I wasn't aware of. So in the spirit of making life easier for others, here's what happened:
 						<!--more-->
 					</p>
-					<h2>The scenario</h2>
-					<p>The project in question had a distributed instance of Sitecore. Because of the distance between master and the web database, Publishing Service was in use. Plus there were multiple web databases set up as Publishing Targets.</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The scenario</a>
+					</h2>
+					The project in question had a distributed instance of Sitecore. Because of the distance between master and the web database, Publishing Service was in use. Plus there were multiple web databases set up as Publishing Targets.
 					<p>After some initial work on the upgrade, Sitecore would start up and Content Editor ran. However when you looked at the public site, all the images were broken. They didn't load in the pages, and if you requested one directly you'd see something like:</p>
 					<p>
 						<a href="/img/2020/2020-08-error.png" target="_blank">
@@ -184,22 +186,20 @@ Source: Sitecore.Kernel
 							<img alt="Desktop Error" src="/img/2020/2020-08-desktoperror.png">
 						</a>
 					</p>
-					<h2>The issue</h2>
-					<p>After a certain amount of googling and frustration, I came across
-						<a href="http://www.zitecore.com/2020/05/sitecore-93-publishing-error-when.html" rel="noopener" target="_blank">a blog post relating to a similar error</a>, which gave me the hint I needed to get to the bottom of this: It describes the need for a
-						<code>&lt;BlobStorage/&gt;</code>
-						element in config. That post then lead on to Sitecore's
-						<a href="https://doc.sitecore.com/developers/93/sitecore-experience-manager/en/enable-the-azure-blob-storage-module-for-sitecore-blobs.html" rel="noopener" target="_blank">documentation of v9.3's new Azure Blob Storage module</a>.</p>
-					<h2>Resolution</h2>
-					<p>So it seems that v9.3 has added a new extension point for customising how the binary data for Media Items is stored. Historically that was always in the
-						<code>Blobs</code>
-						table inside your content databases. But now it's configurable – so each database definition in your config needs a
-						<code>&lt;BlobStorage/&gt;</code>
-						element.</p>
-					<p>The documentation largely describes setting this up for Azure Blob Storage, but it also covers the settings required for the old SQL database approach (which is also what the blog post above mentioned).</p>
-					<p>So the installation of Sitecore v9.3 for this project was working ok, except for the fact that the extra publishing targets were created with config patches written for Sitecore v9.1. So they did not have this extra config.</p>
-					<p>Based on the blog post above and the Sitecore docs, the solution is to add a blob storage provider to each of the publishing targets:</p>
-					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;database id="custom-publishing-target"&gt;
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">The issue</a>
+					</h2>
+					After a certain amount of googling and frustration, I came across
+					<a href="http://www.zitecore.com/2020/05/sitecore-93-publishing-error-when.html" rel="noopener" target="_blank">a blog post relating to a similar error</a>, which gave me the hint I needed to get to the bottom of this: It describes the need for a `<blobstorage>` element in config. That post then lead on to Sitecore's
+						<a href="https://doc.sitecore.com/developers/93/sitecore-experience-manager/en/enable-the-azure-blob-storage-module-for-sitecore-blobs.html" rel="noopener" target="_blank">documentation of v9.3's new Azure Blob Storage module</a>.
+						<h2 class="anchor">
+							<a href="#heading3" name="heading3">Resolution</a>
+						</h2>
+						So it seems that v9.3 has added a new extension point for customising how the binary data for Media Items is stored. Historically that was always in the `Blobs` table inside your content databases. But now it's configurable – so each database definition in your config needs a `<blobstorage>` element.
+							<p>The documentation largely describes setting this up for Azure Blob Storage, but it also covers the settings required for the old SQL database approach (which is also what the blog post above mentioned).</p>
+							<p>So the installation of Sitecore v9.3 for this project was working ok, except for the fact that the extra publishing targets were created with config patches written for Sitecore v9.1. So they did not have this extra config.</p>
+							<p>Based on the blog post above and the Sitecore docs, the solution is to add a blob storage provider to each of the publishing targets:</p>
+							<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;database id="custom-publishing-target"&gt;
   &lt;BlobStorage&gt;
     &lt;providers default="classic"&gt;
       &lt;provider name="classic" type="Sitecore.Data.Blobs.ClassicSqlBlobProvider, Sitecore.Kernel"&gt;
@@ -209,18 +209,36 @@ Source: Sitecore.Kernel
   &lt;/BlobStorage&gt;
 &lt;/database&gt;
 
-					</pre>
-					<p>And once that's in place, Sitecore knows where to find the blobs for these databases, getting rid of the error.</p>
-					<p>So that covered Sitecore – but a load of googling didn't bring up anything about how this might affect Publishing Service. I ended up discussing this with Sitecore Support, who filled in the last bits of the puzzle for me. Given I'd had to add specific config for this to Sitecore I was concerned that there might be some sort of config change required to ensure Publishing Service knew where the blobs were, so it could know what to do with them.</p>
-					<p>But according to Support, Publishing Service doesn't actually care what your blob provider is. If the blobs are in SQL Server tables in your content database, then they'll get published because that's how blobs used to be dealt with. But if the blobs are in Azure, then there are no records in the content database blob table – so Publishing Service will have nothing to do there – and the images are already sat in Azure Blob Storage, ready to be served...</p>
-					<p>So, as long as you remember to add the default SQL blob provider to all your custom Publishing Targets when you're upgrading, everything will work.</p>
-					<p>And big thanks to
-						<a href="https://www.blogger.com/profile/05043142874098063911" rel="noopener" target="_blank">Colin Cooper</a>, for the blog post that unlocked this for me.</p>
-					<a class="gotop" href="#top">↑ Back to top</a>
+							</pre>
+							<p>And once that's in place, Sitecore knows where to find the blobs for these databases, getting rid of the error.</p>
+							<p>So that covered Sitecore – but a load of googling didn't bring up anything about how this might affect Publishing Service. I ended up discussing this with Sitecore Support, who filled in the last bits of the puzzle for me. Given I'd had to add specific config for this to Sitecore I was concerned that there might be some sort of config change required to ensure Publishing Service knew where the blobs were, so it could know what to do with them.</p>
+							<p>But according to Support, Publishing Service doesn't actually care what your blob provider is. If the blobs are in SQL Server tables in your content database, then they'll get published because that's how blobs used to be dealt with. But if the blobs are in Azure, then there are no records in the content database blob table – so Publishing Service will have nothing to do there – and the images are already sat in Azure Blob Storage, ready to be served...</p>
+							<p>So, as long as you remember to add the default SQL blob provider to all your custom Publishing Targets when you're upgrading, everything will work.</p>
+							<p>And big thanks to
+								<a href="https://www.blogger.com/profile/05043142874098063911" rel="noopener" target="_blank">Colin Cooper</a>, for the blog post that unlocked this for me.</p>
+							<a class="gotop" href="#top">↑ Back to top</a>
+						</blobstorage>
+					</blobstorage>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The scenario</a>
+									</li>
+									<li>
+										<a href="#heading2">The issue</a>
+									</li>
+									<li>
+										<a href="#heading3">Resolution</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

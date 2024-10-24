@@ -169,14 +169,13 @@
 							<a href="https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes#docker-windows-attach" rel="noopener" target="_blank">updates the "attach debugger" dialog to include "attach to a docker container"</a>, along with UI for picking the right container. But I'll leave this here for anyone who can't upgrade, and for historical interest...</em>
 					</blockquote>
 					<p>Well so far I've thought of two:</p>
-					<h2>One: Add a bit of automation</h2>
-					<p>Why not magically send the right IP / port to the clipboard to make the attach process easier? PowerShell can sort that out for us pretty easily. You can pipe the output of the
-						<code>docker-inspect &lt;container&gt;</code>
-						through a
-						<code>json</code>
-						parser. That lets you extract the IP address and send it (plus a port) to the clipboard.</p>
-					<p>Adding a few config options to that, I ended up with something like:</p>
-					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">One: Add a bit of automation</a>
+					</h2>
+					Why not magically send the right IP / port to the clipboard to make the attach process easier? PowerShell can sort that out for us pretty easily. You can pipe the output of the `docker-inspect
+					<container>` through a `json` parser. That lets you extract the IP address and send it (plus a port) to the clipboard.
+						<p>Adding a few config options to that, I ended up with something like:</p>
+						<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">param(
     [Parameter(Mandatory)]
     [string]$containerName,
     [string]$role = "cm",
@@ -195,36 +194,36 @@ $debugTarget = "$($ip):$($port)"
 $debugTarget | Set-Clipboard
 Write-Host "Debug target $($debugTarget) sent to clipboard..."
 
-					</pre>
-					<p>This assumes that you've kept the default name for Docker's network settings in your compose file – if you don't you'd need to change how the network name is worked out above. Then you can save that as "Get-DebugTarget.ps1" and you can pop up a PowerShell window, and run that against your container:</p>
-					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">.\Get-DebugTarget.ps1 demo
+						</pre>
+						<p>This assumes that you've kept the default name for Docker's network settings in your compose file – if you don't you'd need to change how the network name is worked out above. Then you can save that as "Get-DebugTarget.ps1" and you can pop up a PowerShell window, and run that against your container:</p>
+						<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">.\Get-DebugTarget.ps1 demo
 
-					</pre>
-					<p>and see:</p>
-					<p>
-						<a href="/img/2020/2020-02-getdebugtarget.png" target="_blank">
-							<img alt="Get-DebugTarget" src="/img/2020/2020-02-getdebugtarget.png">
-						</a>
-					</p>
-					<p>And you can paste that straight into your Visual Studio "attach debugger" window:</p>
-					<p>
-						<a href="/img/2020/2020-02-pasteandattach.png" target="_blank">
-							<img alt="Paste and Attach" src="/img/2020/2020-02-pasteandattach.png">
-						</a>
-					</p>
-					<p>And attach to your web process. Bingo...</p>
-					<p>
-						<strong>
-							<em>Note:</em>
-						</strong>
-						I found I had to type a space after pasting into that dialog in VS2019, because otherwise it doesn't seem to recognise that you typed the text, and defaults to closing the dialog when I hit enter. I guess they didn't expect you to just paste into that field...</p>
-					<h2>Two: What if we didn't need to know the IP address?</h2>
-					<p>The reason the business with
-						<code>docker inspect</code>
-						is necessary is that Docker will assign a different IP address each time you bring up your containers. You can tell it to use a fixed IP Address in your compose file – but googling tells me that's not a great idea. So how can we get around the need to know the specific address Docker used?</p>
-					<p>Well, when you browse to your Sitecore website you're able to use
-						<code>localhost</code>. That's because the default compose file maps the IIS port inside your container to a specific port on your default network outside the container:</p>
-					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="9,10" data-enlighter-language="text" style="width:100%; overflow:scroll;">  cm:
+						</pre>
+						<p>and see:</p>
+						<p>
+							<a href="/img/2020/2020-02-getdebugtarget.png" target="_blank">
+								<img alt="Get-DebugTarget" src="/img/2020/2020-02-getdebugtarget.png">
+							</a>
+						</p>
+						<p>And you can paste that straight into your Visual Studio "attach debugger" window:</p>
+						<p>
+							<a href="/img/2020/2020-02-pasteandattach.png" target="_blank">
+								<img alt="Paste and Attach" src="/img/2020/2020-02-pasteandattach.png">
+							</a>
+						</p>
+						<p>And attach to your web process. Bingo...</p>
+						<p>
+							<strong>
+								<em>Note:</em>
+							</strong>
+							I found I had to type a space after pasting into that dialog in VS2019, because otherwise it doesn't seem to recognise that you typed the text, and defaults to closing the dialog when I hit enter. I guess they didn't expect you to just paste into that field...</p>
+						<h2 class="anchor">
+							<a href="#heading2" name="heading2">Two: What if we didn't need to know the IP address?</a>
+						</h2>
+						The reason the business with `docker inspect` is necessary is that Docker will assign a different IP address each time you bring up your containers. You can tell it to use a fixed IP Address in your compose file – but googling tells me that's not a great idea. So how can we get around the need to know the specific address Docker used?
+						<p>Well, when you browse to your Sitecore website you're able to use
+							<code>localhost</code>. That's because the default compose file maps the IIS port inside your container to a specific port on your default network outside the container:</p>
+						<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="9,10" data-enlighter-language="text" style="width:100%; overflow:scroll;">  cm:
     image: ${REGISTRY}sitecore-xp-spe-standalone:${SITECORE_VERSION}-windowsservercore-${WINDOWSSERVERCORE_VERSION}
     entrypoint: powershell.exe -Command "&amp; C:\\tools\\entrypoints\\iis\\Development.ps1 -WatchDirectoryParameters @{ Path = 'C:\\src'; Destination = 'C:\\inetpub\\wwwroot'; ExcludeFiles = @(); }"
     volumes:
@@ -238,9 +237,9 @@ Write-Host "Debug target $($debugTarget) sent to clipboard..."
       - sql
       - solr
 
-					</pre>
-					<p>If we add the debug port to that mapping, then we could attach the debugger to localhost too:</p>
-					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="11" data-enlighter-language="text" style="width:100%; overflow:scroll;">  cm:
+						</pre>
+						<p>If we add the debug port to that mapping, then we could attach the debugger to localhost too:</p>
+						<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="11" data-enlighter-language="text" style="width:100%; overflow:scroll;">  cm:
     image: ${REGISTRY}sitecore-xp-spe-standalone:${SITECORE_VERSION}-windowsservercore-${WINDOWSSERVERCORE_VERSION}
     entrypoint: powershell.exe -Command "&amp; C:\\tools\\entrypoints\\iis\\Development.ps1 -WatchDirectoryParameters @{ Path = 'C:\\src'; Destination = 'C:\\inetpub\\wwwroot'; ExcludeFiles = @(); }"
     volumes:
@@ -255,35 +254,49 @@ Write-Host "Debug target $($debugTarget) sent to clipboard..."
       - sql
       - solr
 
-					</pre>
-					<p>Run
-						<code>docker-compose down</code>, save that change and then run
-						<code>docker-compose up</code>
-						again, and now we can attach to localhost:</p>
-					<p>
-						<a href="/img/2020/2020-02-localhostattach.png" target="_blank">
-							<img alt="Localhost Attach" src="/img/2020/2020-02-localhostattach.png">
-						</a>
-					</p>
-					<p>I've stuck with the standard port of 4024 here – but  you can use whatever port mapping you like.</p>
-					<p>I'll bet there are other ways – maybe better ones – but that's investigation for another day...</p>
-					<blockquote>
-						<b>
-							<i>
-								<u>Edited to add:</u>
-							</i>
-						</b>
-						Yes, there are other ways! On Twitter
-						<a href="https://twitter.com/retohugi" rel="noopener" target="_blank">Reto Hugi</a>
-						pointed me at this interesting post by
-						<a href="https://twitter.com/RAhnemann" rel="noopener" target="_blank">Rob Ahnemann</a>, which takes another approach:
-						<a href="http://rockpapersitecore.com/2020/01/maintain-your-hosts-file-with-a-docker-container/" rel="noopener" target="_blank">Using another container to dynamically rewrite your hosts file</a>.
-					</blockquote>
-					<a class="gotop" href="#top">↑ Back to top</a>
+						</pre>
+						<p>Run
+							<code>docker-compose down</code>, save that change and then run
+							<code>docker-compose up</code>
+							again, and now we can attach to localhost:</p>
+						<p>
+							<a href="/img/2020/2020-02-localhostattach.png" target="_blank">
+								<img alt="Localhost Attach" src="/img/2020/2020-02-localhostattach.png">
+							</a>
+						</p>
+						<p>I've stuck with the standard port of 4024 here – but  you can use whatever port mapping you like.</p>
+						<p>I'll bet there are other ways – maybe better ones – but that's investigation for another day...</p>
+						<blockquote>
+							<b>
+								<i>
+									<u>Edited to add:</u>
+								</i>
+							</b>
+							Yes, there are other ways! On Twitter
+							<a href="https://twitter.com/retohugi" rel="noopener" target="_blank">Reto Hugi</a>
+							pointed me at this interesting post by
+							<a href="https://twitter.com/RAhnemann" rel="noopener" target="_blank">Rob Ahnemann</a>, which takes another approach:
+							<a href="http://rockpapersitecore.com/2020/01/maintain-your-hosts-file-with-a-docker-container/" rel="noopener" target="_blank">Using another container to dynamically rewrite your hosts file</a>.
+						</blockquote>
+						<a class="gotop" href="#top">↑ Back to top</a>
+					</container>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">One: Add a bit of automation</a>
+									</li>
+									<li>
+										<a href="#heading2">Two: What if we didn't need to know the IP address?</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

@@ -161,8 +161,10 @@
 					<p>An issue I've bumped into a number of times over the years, is that sometimes developers want to be able to look at the query that got generated when they did something with Sitecore's ContentSearch APIs. The traditional answer of "go look in the logs" is one way to deal with this, but some recent project work got me wondering if there were alternatives...
 						<!--more-->
 					</p>
-					<h2>What's the issue?</h2>
-					<p>When you fire up some code for a query, you're generally using something vaguely along the lines of:</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">What's the issue?</a>
+					</h2>
+					When you fire up some code for a query, you're generally using something vaguely along the lines of:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name");
 using (var context = index.CreateSearchContext())
 {
@@ -202,20 +204,19 @@ using (var context = index.CreateSearchContext())
 					</p>
 					<p>The grouping code example provided wants the query as text to perform grouping on – not as an
 						<code>IQueryable</code>. And that's how I got wrapped up in this: is it possible to take a query object and extract its query text?</p>
-					<h2>Working towards an answer...</h2>
-					<p>When you're looking at your code in Visual Studio, the query you generate by calling
-						<code>GetQueryable&lt;T&gt;()</code>
-						is of type
-						<code>IQuerable&lt;T&gt;</code>. But because that's an interface, it can't be the actual type that's used at runtime. What happens if you look at the query while the code is running?</p>
-					<p>
-						<a href="/img/2021/2021-01-datatype.png" target="_blank">
-							<img alt="Data Type" src="/img/2021/2021-01-datatype.png">
-						</a>
-					</p>
-					<p>Well at runtime has we have
-						<code>GenericQueryable&lt;T, SolrCompositeQuery&gt;</code>
-						as it's concrete type. That looks like it might be more helpful. What does that give us?</p>
-					<pre class="code" data-enlighter-highlight="17" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class GenericQueryable&lt;TElement, TQuery&gt; : IOrderedQueryable&lt;TElement&gt;, IQueryable&lt;TElement&gt;, IEnumerable&lt;TElement&gt;, IEnumerable, IQueryable, IOrderedQueryable, IQueryProvider, IHasNativeQuery&lt;TQuery&gt;, IHasNativeQuery, IHasTraceWriter, IContentSearchQueryable
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Working towards an answer...</a>
+					</h2>
+					When you're looking at your code in Visual Studio, the query you generate by calling `GetQueryable<t>()` is of type `IQuerable<t>`. But because that's an interface, it can't be the actual type that's used at runtime. What happens if you look at the query while the code is running?
+							<p>
+								<a href="/img/2021/2021-01-datatype.png" target="_blank">
+									<img alt="Data Type" src="/img/2021/2021-01-datatype.png">
+								</a>
+							</p>
+							<p>Well at runtime has we have
+								<code>GenericQueryable&lt;T, SolrCompositeQuery&gt;</code>
+								as it's concrete type. That looks like it might be more helpful. What does that give us?</p>
+							<pre class="code" data-enlighter-highlight="17" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class GenericQueryable&lt;TElement, TQuery&gt; : IOrderedQueryable&lt;TElement&gt;, IQueryable&lt;TElement&gt;, IEnumerable&lt;TElement&gt;, IEnumerable, IQueryable, IOrderedQueryable, IQueryProvider, IHasNativeQuery&lt;TQuery&gt;, IHasNativeQuery, IHasTraceWriter, IContentSearchQueryable
 {
     public GenericQueryable(Index&lt;TElement, TQuery&gt; index, QueryMapper&lt;TQuery&gt; queryMapper, IQueryOptimizer queryOptimizer, FieldNameTranslator fieldNameTranslator, IExpressionParser parser);
     protected GenericQueryable(Index&lt;TQuery&gt; index, QueryMapper&lt;TQuery&gt; queryMapper, IQueryOptimizer queryOptimizer, Expression expression, Type itemType, FieldNameTranslator fieldNameTranslator, IExpressionParser parser);
@@ -237,28 +238,28 @@ using (var context = index.CreateSearchContext())
     protected virtual void Trace(Expression expression, string title);
 }
 
-					</pre>
-					<p>There's a lot going on there... But one thing stands out: the
-						<code>GetQuery()</code>
-						method. It's returning an object of the
-						<code>SolrCompositeQuery</code>
-						type, and poking about inside that shows it has a very interesting looking
-						<code>ToString()</code>
-						method:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public override string ToString()
+							</pre>
+							<p>There's a lot going on there... But one thing stands out: the
+								<code>GetQuery()</code>
+								method. It's returning an object of the
+								<code>SolrCompositeQuery</code>
+								type, and poking about inside that shows it has a very interesting looking
+								<code>ToString()</code>
+								method:</p>
+							<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public override string ToString()
 {
 	DefaultQuerySerializerEx defaultQuerySerializerEx = new DefaultQuerySerializerEx((ISolrFieldSerializer)(object)new DefaultFieldSerializer());
 	return defaultQuerySerializerEx.Serialize(Query);
 }
 
-					</pre>
-					<p>A query serialiser seems like exactly what would help...</p>
-					<p>So what happens if we pull that together into a code snippet and give it a try? Well you need to
-						<a href="https://sitecore.myget.org/feed/sc-packages/package/nuget/Sitecore.ContentSearch.Linq.Solr/10.0.0" rel="noopener" target="_blank">add a reference to
-							<code>Sitecore.ContentSearch.Linq.Solr.dll</code>
-						</a>
-						in order to do this, but it works out fairly simply:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name");
+							</pre>
+							<p>A query serialiser seems like exactly what would help...</p>
+							<p>So what happens if we pull that together into a code snippet and give it a try? Well you need to
+								<a href="https://sitecore.myget.org/feed/sc-packages/package/nuget/Sitecore.ContentSearch.Linq.Solr/10.0.0" rel="noopener" target="_blank">add a reference to
+									<code>Sitecore.ContentSearch.Linq.Solr.dll</code>
+								</a>
+								in order to do this, but it works out fairly simply:</p>
+							<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">ISearchIndex index = ContentSearchManager.GetIndex("your_index_name");
 using (var context = index.CreateSearchContext())
 {
     var q = context.GetQueryable&lt;SearchResultItem&gt;();
@@ -274,27 +275,42 @@ using (var context = index.CreateSearchContext())
     return queryText;
 }
 
-					</pre>
-					<p>And when you run that you do get back something that looks like a query. For example, the test above returns
-						<code>_name:(test) AND _val_:__boost</code>. And pasting that into Solr's UI gives results:</p>
-					<p>
-						<a href="/img/2021/2021-01-querytest.png" target="_blank">
-							<img alt="Query Test" src="/img/2021/2021-01-querytest.png">
-						</a>
-					</p>
-					<p>That looks like success...</p>
-					<p>I've not tested this with Azure search, but based on a bit of poking around with
-						<a href="https://github.com/icsharpcode/ILSpy" rel="noopener" target="_blank">ILSpy</a>
-						it looks like
-						<code>Sitecore.ContentSearch.Azure.Query.CloudQuery</code>
-						is the equivalent of
-						<code>SolrCompositeQuery</code>
-						if you're not using Solr. That type returns a string that looks like it should be the query text.</p>
-					<a class="gotop" href="#top">↑ Back to top</a>
+							</pre>
+							<p>And when you run that you do get back something that looks like a query. For example, the test above returns
+								<code>_name:(test) AND _val_:__boost</code>. And pasting that into Solr's UI gives results:</p>
+							<p>
+								<a href="/img/2021/2021-01-querytest.png" target="_blank">
+									<img alt="Query Test" src="/img/2021/2021-01-querytest.png">
+								</a>
+							</p>
+							<p>That looks like success...</p>
+							<p>I've not tested this with Azure search, but based on a bit of poking around with
+								<a href="https://github.com/icsharpcode/ILSpy" rel="noopener" target="_blank">ILSpy</a>
+								it looks like
+								<code>Sitecore.ContentSearch.Azure.Query.CloudQuery</code>
+								is the equivalent of
+								<code>SolrCompositeQuery</code>
+								if you're not using Solr. That type returns a string that looks like it should be the query text.</p>
+							<a class="gotop" href="#top">↑ Back to top</a>
+						</t>
+					</t>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">What's the issue?</a>
+									</li>
+									<li>
+										<a href="#heading2">Working towards an answer...</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

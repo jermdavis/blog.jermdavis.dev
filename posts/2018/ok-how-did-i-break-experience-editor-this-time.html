@@ -155,29 +155,22 @@
 						that lead to difficult to diagnose failures in the WYSIWYG editor. I came across one such issue recently that seemed like just the sort of thing Google needs to know about to save future developers (and probably Future Me as well) from the pain of debugging it. 
 						<!--more-->
 					</p>
-					<h2>Bug reports...</h2>
-					<p>I was assigned two QA bug reports for a site I've been building. They were both related to one particular rendering – which allowed editors to pull in external content via
-						<code>&lt;iframe/&gt;</code>
-						tags injected into the page:</p>
-					<ul>
-						<li>The first bug report said that trying to add this rendering to a page on the QA server caused Experience Editor to throw up a modal dialog with the cryptic `An error occurred.` as its message. The rendering did not end up on the page, but Experience Editor kept working after the dialog was dismissed:<br>
-							<a href="/img/2018/2018-09-firsterror.png" target="_blank">
-								<img alt="First Error" src="/img/2018/2018-09-firsterror.png">
-							</a>
-						</li>
-						<li>The second report said that on a page that already had this component, Experience Editor was now failing to render the component in edit mode, and displaying an exception from its parent container component instead:<br>
-							<a href="/img/2018/2018-09-seconderror.png" target="_blank">
-								<img alt="Second Error" src="/img/2018/2018-09-seconderror.png">
-							</a>
-							However the page was working fine in Preview and Published mode.<br>
-							For Google's benifit, the key parts of the two exceptions here are:
-							<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Error Rendering View: /Views/PageLayout/66-33.cshtml: Error while rendering view: '/Views/PageLayout/66-33.cshtml' (model: 'Sitecore.Mvc.Presentation.RenderingModel, Sitecore.Mvc').
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">Bug reports...</a>
+					</h2>
+					I was assigned two QA bug reports for a site I've been building. They were both related to one particular rendering – which allowed editors to pull in external content via  `<iframe>` tags injected into the page:
+<ul>
+<li>The first bug report said that trying to add this rendering to a page on the QA server caused Experience Editor to throw up a modal dialog with the cryptic `An error occurred.` as its message. The rendering did not end up on the page, but Experience Editor kept working after the dialog was dismissed:<br />
+<a href="/img/2018/2018-09-firsterror.png" target="_blank"><img alt="First Error" src="/img/2018/2018-09-firsterror.png"/></a></li>
+<li>The second report said that on a page that already had this component, Experience Editor was now failing to render the component in edit mode, and displaying an exception from its parent container component instead:<br />
+<a href="/img/2018/2018-09-seconderror.png" target="_blank"><img alt="Second Error" src="/img/2018/2018-09-seconderror.png"/></a> However the page was working fine in Preview and Published mode.<br />
+For Google's benifit, the key parts of the two exceptions here are:
+<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Error Rendering View: /Views/PageLayout/66-33.cshtml: Error while rendering view: &#39;/Views/PageLayout/66-33.cshtml&#39; (model: &#39;Sitecore.Mvc.Presentation.RenderingModel, Sitecore.Mvc&#39;).
    at Sitecore.Mvc.Presentation.ViewRenderer.Render(TextWriter writer)
    at Sitecore.Mvc.Pipelines.Response.RenderRendering.ExecuteRenderer.Render(Renderer renderer, TextWriter writer, RenderRenderingArgs args)
-
-							</pre>
-							<p>and</p>
-							<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Inner Exception: Fields field cannot contain any of the following symbols: ():=
+</pre>
+<p>and</p>
+<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Inner Exception: Fields field cannot contain any of the following symbols: ():=
    at Sitecore.Diagnostics.Assert.IsFalse(Boolean condition, String message)
    at Sitecore.Pipelines.GetChromeData.GetChromeDataProcessor.GetFieldEditorButton(Item item)
    at System.Linq.Enumerable.WhereSelectArrayIterator`2.MoveNext()
@@ -186,244 +179,205 @@
    at Sitecore.Pipelines.GetChromeData.GetRenderingChromeData.GetCustomButtons(RenderingItem renderingItem)
    at Sitecore.Pipelines.GetChromeData.GetRenderingChromeData.Process(GetChromeDataArgs args)
    at (Object , Object[] )
+</pre>
+</li>
+</ul>
+<h2 class="anchor"><a href="#heading2" name="heading2">Digging in...</a></h2>
+My initial reading of these issues made me think that the two bugs were probably related, and that giving editors the ability to use raw markup to add in `<iframe/>` elements is a really good way of allowing them to accidentally break the page's markup in some way. I also noted that I could not reproduce the problems on my development instance. They only happened on QA. So that started me thinking that dodgy markup can cause issues in Experience Editor, because so much of its behaviour relies on being able to inject all the "chrome" that editors use to control renderings. So I went through some basic checks to try and spot any obvious errors:
+<ul>
+<li>I looked at the content in the DataSource items available for this component, to check that they were not injecting badly formed HTML.</li>
+<li>I looked at the Razor file for the rendering, to make sure it did not include any badly formed HTML.</li>
+<li>I looked at the Placeholder Settings, to make sure the component was allowed in the placeholders being used</li>
+<li>I checked the item security on the renderings, placeholder settings, data sources and pages, just in case those had been messed up</li>
+</ul>
+<p>None of those came up with anything looking wrong... And to be honest, that was not surprising, as the same code and content from the Master database was working without issues on my development machine.</p>
+<p>Next stop on my debugging voyage was the old &quot;pull it all appart and put bits back until it breaks&quot; ploy. So:</p>
+<ul>
+<li>I created a new Rendering Definition that pointed at the original CSHTML file, but didn't have any other settings applied. When placed on a page, that worked fine.</li>
+<li>I create a new Placeholder Settings entry for the new Rendering Definition. I was able to add that via Experience Editor without issue.</li>
+<li>I added the DataSource Template settings from the original rendering to the new one. The new one still worked.</li>
+<li>I added the DataSource Location settings from the original rendering to the new one. And it still worked.</li>
+<li>I added the caching settings from the original rendering to the new one. The new one still worked.</li>
+<li>I compared all the other settings on the original rendering with the new one, and found only one other difference: Experience Editor Buttons. So I added the custom button from the old one to the new one. And <a href="https://media.giphy.com/media/d0NnEG1WnnXqg/giphy.gif" rel="noopener" target="_blank">BOOM</a>! The new one broke in the same way as the old one...</li>
+</ul>
+<h2 class="anchor"><a href="#heading3" name="heading3">An answer!</a></h2>
+With that in mind, I re-read the exception messages I'd been seeing, and noted two things: Firstly the stack trace included the type `Sitecore.Pipelines.GetChromeData.GetChromeDataProcessor.GetFieldEditorButton` so it had been giving me a hint about this all along, and secondly the main error was `Fields field cannot contain any of the following symbols: ():=` – which gave me a big hint.
+<p>So I switched over to the Core database, and drilled down to the custom Experience Editor Button definition that I'd added to my new Rendering. Looking through the fields I spotted:</p>
+<p><a href="/img/2018/2018-09-fieldissue.png" target="_blank"><img alt="Field Issue" src="/img/2018/2018-09-fieldissue.png"/></a></p>
+<p>Bingo: On the QA server, the field where you can specify what DataSource-Fields are edited by this button had acquired a rogue colon at the end of the name it was specifying. And the exception message did say that colons (as well as brackets and equals-signs) were not allowed. I'm guessing a copy/paste error was responsible for that.</p>
+<p>Interestingly, I did not have the custom button item in Core on my dev machine (I'd not synched items in Core for a while, and hence didn't have other people's changes) and instead of failing with a &quot;you are missing the item defining this button&quot; error, my development instance was just carrying on happily anyway... Which explains why I could not reproduce the bug reports locally.</p>
+<p>And once that colon was removed, and the item saved, everything went back to working properly on QA.</p>
 
-							</pre>
-						</li>
-					</ul>
-					<h2>Digging in...</h2>
-					<p>My initial reading of these issues made me think that the two bugs were probably related, and that giving editors the ability to use raw markup to add in
-						<code>&lt;iframe/&gt;</code>
-						elements is a really good way of allowing them to accidentally break the page's markup in some way. I also noted that I could not reproduce the problems on my development instance. They only happened on QA. So that started me thinking that dodgy markup can cause issues in Experience Editor, because so much of its behaviour relies on being able to inject all the "chrome" that editors use to control renderings. So I went through some basic checks to try and spot any obvious errors:</p>
-					<ul>
-						<li>I looked at the content in the DataSource items available for this component, to check that they were not injecting badly formed HTML.</li>
-						<li>I looked at the Razor file for the rendering, to make sure it did not include any badly formed HTML.</li>
-						<li>I looked at the Placeholder Settings, to make sure the component was allowed in the placeholders being used</li>
-						<li>I checked the item security on the renderings, placeholder settings, data sources and pages, just in case those had been messed up</li>
-					</ul>
-					<p>None of those came up with anything looking wrong... And to be honest, that was not surprising, as the same code and content from the Master database was working without issues on my development machine.</p>
-					<p>Next stop on my debugging voyage was the old "pull it all appart and put bits back until it breaks" ploy. So:</p>
-					<ul>
-						<li>I created a new Rendering Definition that pointed at the original CSHTML file, but didn't have any other settings applied. When placed on a page, that worked fine.</li>
-						<li>I create a new Placeholder Settings entry for the new Rendering Definition. I was able to add that via Experience Editor without issue.</li>
-						<li>I added the DataSource Template settings from the original rendering to the new one. The new one still worked.</li>
-						<li>I added the DataSource Location settings from the original rendering to the new one. And it still worked.</li>
-						<li>I added the caching settings from the original rendering to the new one. The new one still worked.</li>
-						<li>I compared all the other settings on the original rendering with the new one, and found only one other difference: Experience Editor Buttons. So I added the custom button from the old one to the new one. And
-							<a href="https://media.giphy.com/media/d0NnEG1WnnXqg/giphy.gif" rel="noopener" target="_blank">BOOM</a>! The new one broke in the same way as the old one...</li>
-					</ul>
-					<h2>An answer!</h2>
-					<p>With that in mind, I re-read the exception messages I'd been seeing, and noted two things: Firstly the stack trace included the type
-						<code>Sitecore.Pipelines.GetChromeData.GetChromeDataProcessor.GetFieldEditorButton</code>
-						so it had been giving me a hint about this all along, and secondly the main error was
-						<code>Fields field cannot contain any of the following symbols: ():=</code>
-						– which gave me a big hint.</p>
-					<p>So I switched over to the Core database, and drilled down to the custom Experience Editor Button definition that I'd added to my new Rendering. Looking through the fields I spotted:</p>
-					<p>
-						<a href="/img/2018/2018-09-fieldissue.png" target="_blank">
-							<img alt="Field Issue" src="/img/2018/2018-09-fieldissue.png">
-						</a>
-					</p>
-					<p>Bingo: On the QA server, the field where you can specify what DataSource-Fields are edited by this button had acquired a rogue colon at the end of the name it was specifying. And the exception message did say that colons (as well as brackets and equals-signs) were not allowed. I'm guessing a copy/paste error was responsible for that.</p>
-					<p>Interestingly, I did not have the custom button item in Core on my dev machine (I'd not synched items in Core for a while, and hence didn't have other people's changes) and instead of failing with a "you are missing the item defining this button" error, my development instance was just carrying on happily anyway... Which explains why I could not reproduce the bug reports locally.</p>
-					<p>And once that colon was removed, and the item saved, everything went back to working properly on QA.</p>
-					<a class="gotop" href="#top">↑ Back to top</a>
-				</div>
-				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
-							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
-							<div class="bg-white p-2 flex flex-wrap">
-								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Symposium
-								</a>
-								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Sitecore
-								</a>
-								<a href="/tags/xm-cloud/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									XM Cloud
-								</a>
-								<a href="/tags/stream/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Stream
-								</a>
-								<a href="/tags/composable/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Composable
-								</a>
-								<a href="/tags/entra/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Entra
-								</a>
-								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Docker
-								</a>
-								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Containers
-								</a>
-								<a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Visual Studio
-								</a>
-								<a href="/tags/graphql/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									GraphQL
-								</a>
-							</div>
-						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
-							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
-							<div class="bg-white p-2 flex flex-wrap">
-								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Sitecore (236)</a>
-								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									C# (62)</a>
-								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									PowerShell (32)</a>
-								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Installation (23)</a>
-								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Solr (19)</a>
-								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Docker (18)</a>
-								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									General (18)</a>
-								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Containers (17)</a>
-								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									UI (15)</a>
-								<a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
-									Visual Studio (12)</a>
-							</div>
-							<div class="bg-white mb-2 p-2">
-								<a class="text-lg" href="/tags" role="button">All Tags
-									<i class="fas fa-angle-double-right"></i>
-								</a>
-							</div>
-						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
-							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
-							<div class="bg-white p-2">
-								<div>
-									<a class="text-lg" href="/posts/2024-10">2024 - October</a>
-								</div>
-								<div>
-									<a class="text-lg" href="/posts/2024-09">2024 - September</a>
-								</div>
-								<div>
-									<a class="text-lg" href="/posts/2024-08">2024 - August</a>
-								</div>
-								<div>
-									<a class="text-lg" href="/posts/2024-07">2024 - July</a>
-								</div>
-								<div>
-									<a class="text-lg" href="/posts/2024-06">2024 - June</a>
-								</div>
-							</div>
-							<div class="bg-white mb-2 p-2">
-								<a class="text-lg" href="/posts" role="button">All Months
-									<i class="fas fa-angle-double-right"></i>
-								</a>
-							</div>
-						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
-							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
-							<div class="bg-white mb-2 p-2">
-								<table>
-									<tbody>
-										<tr>
-											<td class="border-0">
-												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
-													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
-												</a>
-											</td>
-											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
-												<a class="text-lg ml-2" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
-													Mastodon
-												</a>
-											</td>
-										</tr>
-										<tr>
-											<td class="border-0">
-												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
-													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
-												</a>
-											</td>
-											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
-												<a class="text-lg ml-2" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
-													Bluesky
-												</a>
-											</td>
-										</tr>
-										<tr>
-											<td class="border-0">
-												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
-													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
-												</a>
-											</td>
-											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
-												<a class="text-lg ml-2" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
-													LinkedIn
-												</a>
-											</td>
-										</tr>
-										<tr>
-											<td class="border-0">
-												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
-													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
-												</a>
-											</td>
-											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
-												<a class="text-lg ml-2" rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
-													Sitecore Slack
-												</a>
-											</td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
-							</div>
-						</section>
-					</div>
-				</div>
-			</div>
-		</div>
-		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-			<div class="flex-1 lg:flex-1 text-center lg:text-left">
-				<div>©
-					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
-					2014-2024</div>
-			</div>
-			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-				<a class="font-medium" href="/tools">Published using Statiq</a>
-				<br>
-			</div>
-			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-				<li class="inline-block">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-					</svg>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
-				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
-				</li>
-			</ul>
-		</footer>
-		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-				<div class="w-full text-lg">
-					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
-				</div>
-				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
-			</div>
-		</div>
-		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
-		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
-		<script type="text/javascript">
+                    <a class="gotop" href="#top">&uarr; Back to top</a>
+
+            </div>
+            <div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+                <div class="md:flex-row md:flex lg:flex-col">
+        <section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+            <h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+            <div class="bg-white p-2 flex flex-wrap">
+                <ol class="headings"><li><a href="#heading1">Bug reports...</a></li><li><a href="#heading2">Digging in...</a></li><li><a href="#heading3">An answer!</a></li></ol>
+            </div>
+        </section>
+    <section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+        <h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
+        <div class="bg-white p-2 flex flex-wrap">
+                    <a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Symposium </a>
+                    <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore </a>
+                    <a href="/tags/xm-cloud/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> XM Cloud </a>
+                    <a href="/tags/stream/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Stream </a>
+                    <a href="/tags/composable/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Composable </a>
+                    <a href="/tags/entra/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Entra </a>
+                    <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker </a>
+                    <a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Containers </a>
+                    <a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio </a>
+                    <a href="/tags/graphql/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> GraphQL </a>
+        </div>
+    </section>
+
+    <section class="md:flex-2 md:flex-grow md:flex-shrink">
+        <h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
+        <div class="bg-white p-2 flex flex-wrap">
+                        <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (236)</a>
+                        <a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> C# (62)</a>
+                        <a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> PowerShell (32)</a>
+                        <a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Installation (23)</a>
+                        <a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Solr (19)</a>
+                        <a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Docker (18)</a>
+                        <a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> General (18)</a>
+                        <a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Containers (17)</a>
+                        <a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> UI (15)</a>
+                        <a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Visual Studio (12)</a>
+        </div>
+        <div class="bg-white mb-2 p-2">
+            <a class="text-lg" href="/tags" role="button">All Tags <i class="fas fa-angle-double-right"></i></a>
+        </div>
+    </section>
+
+    <section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+        <h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
+        <div class="bg-white p-2">
+                    <div><a class="text-lg" href="/posts/2024-10">2024 - October</a></div>
+                    <div><a class="text-lg" href="/posts/2024-09">2024 - September</a></div>
+                    <div><a class="text-lg" href="/posts/2024-08">2024 - August</a></div>
+                    <div><a class="text-lg" href="/posts/2024-07">2024 - July</a></div>
+                    <div><a class="text-lg" href="/posts/2024-06">2024 - June</a></div>
+        </div>
+        <div class="bg-white mb-2 p-2">
+            <a class="text-lg" href="/posts" role="button">All Months <i class="fas fa-angle-double-right"></i></a>
+        </div>
+    </section>
+
+    <section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+        <h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
+        <div class="bg-white mb-2 p-2">
+            <table>
+                    <tr>
+                        <td class ="border-0">
+                            <a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+                                <img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo" />
+                            </a>
+                        </td>
+                        <td class="border-0 md:hidden sm:table-cell lg:table-cell">
+                            <a class="text-lg ml-2" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+                                Mastodon
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class ="border-0">
+                            <a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+                                <img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo" />
+                            </a>
+                        </td>
+                        <td class="border-0 md:hidden sm:table-cell lg:table-cell">
+                            <a class="text-lg ml-2" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+                                Bluesky
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class ="border-0">
+                            <a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+                                <img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo" />
+                            </a>
+                        </td>
+                        <td class="border-0 md:hidden sm:table-cell lg:table-cell">
+                            <a class="text-lg ml-2" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+                                LinkedIn
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class ="border-0">
+                            <a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+                                <img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo" />
+                            </a>
+                        </td>
+                        <td class="border-0 md:hidden sm:table-cell lg:table-cell">
+                            <a class="text-lg ml-2" rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+                                Sitecore Slack
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+        </div>
+    </section>
+
+    <section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
+        <h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+        <div class="bg-white mb-2 p-2"><a href="/mvp"><img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge" /></a></div>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+    <div class="flex-1 lg:flex-1 text-center lg:text-left">
+        <div>&copy; <a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a> 2014-2024</div>
+    </div>
+
+    <div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+        <a class="font-medium" href="xref:tools">Published using Statiq</a><br/>
+    </div>
+
+    <ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+        <li class="inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z" />
+            </svg>
+        </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+            </li>
+            <li class="inline-block ml-4">
+                <a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+            </li>
+    </ul>
+</footer>
+
+    <div
+      class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12"
+      x-data="{ hide_banner: true }"
+      x-init="hide_banner = docCookies.hasItem('hide_banner');"
+      x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }" >
+        <div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+            <div class="w-full text-lg">
+                <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank" >This website uses Google Analytics, and its cookies.</a>
+            </div>
+            <button
+              type="button"
+              @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');"
+              class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none"
+              aria-label="Dismiss">Understood</button>
+        </div>
+    </div>
+
+    <script src="/vendor/Alpine/alpine.3.13.3.min.js" defer></script>
+
+        <script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+        <script type="text/javascript">
             EnlighterJS.init('pre.code', 'code', {
             theme: 'droide',
             indent : 4,
@@ -432,17 +386,28 @@
             toolbarTop: '',
             toolbarBottom: ''
         });
-        
-		</script>
-		<script src="/vendor/rp/rpbar-1.0.js"></script>
-		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
-		<script>
+        </script>
+
+        <script src="/vendor/rp/rpbar-1.0.js"></script>
+
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+    <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-JQ44ZR47YX');
+    </script>
+
     
-		</script>
+
+    
+</body>
+
+</html></iframe>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>

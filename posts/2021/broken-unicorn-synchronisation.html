@@ -157,25 +157,31 @@
 					<p>Ever had a tool that works reliably suddenly not work? I had a problem like that recently, and it lead to some experimentation that I think I may need to come back to later. So this is mostly so I can remember what I was doing when I get back to this. But as we move toward a more "platform agnostic" with more use of .Net Core on Linux, maybe there's something here that might help you too...
 						<!--more-->
 					</p>
-					<h2>Setting the scene</h2>
-					<p>I'm working on a client project right now, which has a pile of "new to me" technology in it. The big ones have been
-						<a href="https://www.docker.com/" rel="noopener" target="_blank">Docker</a>
-						and
-						<a href="https://kubernetes.io/" rel="noopener" target="_blank">Kubernetes</a>. But the client doesn't own
-						<a href="https://www.teamdevelopmentforsitecore.com/" rel="noopener" target="_blank">TDS</a>
-						licenses, so serialisation for the solution uses
-						<a href="https://github.com/SitecoreUnicorn/Unicorn" rel="noopener" target="_blank">Unicorn</a>. Development has been chugging away quietyly for a while – and the deployments to our internal QA infrastructure were working fine. Our
-						<a href="https://azure.microsoft.com/en-gb/services/devops/?nav=min" rel="noopener" target="_blank">DevOps</a>
-						build was collecting up all the Unicorn serialised items, ensuring they got to the target server, and then using the PowerShell script for "remote sync" to ask Unicorn on the CM box to pull in all the changed items.</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">Setting the scene</a>
+					</h2>
+					I'm working on a client project right now, which has a pile of "new to me" technology in it. The big ones have been
+					<a href="https://www.docker.com/" rel="noopener" target="_blank">Docker</a>
+					and
+					<a href="https://kubernetes.io/" rel="noopener" target="_blank">Kubernetes</a>. But the client doesn't own
+					<a href="https://www.teamdevelopmentforsitecore.com/" rel="noopener" target="_blank">TDS</a>
+					licenses, so serialisation for the solution uses
+					<a href="https://github.com/SitecoreUnicorn/Unicorn" rel="noopener" target="_blank">Unicorn</a>. Development has been chugging away quietyly for a while – and the deployments to our internal QA infrastructure were working fine. Our
+					<a href="https://azure.microsoft.com/en-gb/services/devops/?nav=min" rel="noopener" target="_blank">DevOps</a>
+					build was collecting up all the Unicorn serialised items, ensuring they got to the target server, and then using the PowerShell script for "remote sync" to ask Unicorn on the CM box to pull in all the changed items.
 					<p>Nothing surprising there.</p>
 					<p>But then the client sorted out some of their internal infrastructure for the project, and tried to run a deployment over to their kit instead of ours. And this one failed. The Unicorn sync step would not run.</p>
 					<p>After a bit of digging and thinking we hit on the likely cause: Our internal releases were using Microsoft's Hosted release agents running Windows – which are happy to run the .Net 4.x DLL that the Unicorn sync uses. But the client was using their own private release agents which were running on Linux with
 						<a href="https://github.com/PowerShell/PowerShell" rel="noopener" target="_blank">PowerShell Core</a>. It seems that configuration could not run the .Net 4 code and hence the failure.</p>
-					<h2>Fixing the immediate problem</h2>
-					<p>That was pretty easy – the client did also have some Windows agents available on their network, so we split the Unicorn sync task into a separate job which could run on the Windows agent. The main bulk of the release needed to stay on the Unix agents for network security – they access to Kubernetes APIs. But moving the sync part of the release allowed that code to run, and the process to complete.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Fixing the immediate problem</a>
+					</h2>
+					That was pretty easy – the client did also have some Windows agents available on their network, so we split the Unicorn sync task into a separate job which could run on the Windows agent. The main bulk of the release needed to stay on the Unix agents for network security – they access to Kubernetes APIs. But moving the sync part of the release allowed that code to run, and the process to complete.
 					<p>But it also piqued my interest...</p>
-					<h2>Fixing things via a different route</h2>
-					<p>What could I do if there wasn't a Windows agent available? Well the obvious answer is that the Unicorn Sync would need to be triggered using some .Net Core code. What would that involve?</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Fixing things via a different route</a>
+					</h2>
+					What could I do if there wasn't a Windows agent available? Well the obvious answer is that the Unicorn Sync would need to be triggered using some .Net Core code. What would that involve?
 					<p>Well the sync is basically two things: A PowerShell script that controls the process, and a DLL that includes some code for authentication. The DLL is
 						<a href="https://github.com/kamsar/MicroCHAP" rel="noopener" target="_blank">available in a Github repo</a>, so I took a fork of that...</p>
 					<p>It includes a few classes and some tests. It's was using XUnit for the tests though – which for some reason I could not make run on the laptop I was doing this with. (Everything built and ran, but all the tests were marked as "not run" and the tests log had a warning about lacking a test adapater nuget project) So I took a quick detour and changed it over to using MSTest just to make some progress. Having done that, a couple of the tests didn't pass:</p>
@@ -234,8 +240,10 @@
 						<code>SignatureService</code>
 						from this new namespace with
 						<code>New-Object</code>) but that should allow the code to run.</p>
-					<h2>Attempting a test...</h2>
-					<p>This weekend tinkering didn't involve the client's systems – so I tried testing this using local docker containers...</p>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">Attempting a test...</a>
+					</h2>
+					This weekend tinkering didn't involve the client's systems – so I tried testing this using local docker containers...
 					<p>Clearly there's something I don't understand about how Powershell Core images are built, or what the client's release agent config was. I tried running up a copy of
 						<code>mcr.microsoft.com/powershell</code>
 						using Linux Containers in docker, assuming this would show similar behaviour. But it was able to run the original code happily (and ran the new code too).</p>
@@ -245,7 +253,26 @@
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">Setting the scene</a>
+									</li>
+									<li>
+										<a href="#heading2">Fixing the immediate problem</a>
+									</li>
+									<li>
+										<a href="#heading3">Fixing things via a different route</a>
+									</li>
+									<li>
+										<a href="#heading4">Attempting a test...</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

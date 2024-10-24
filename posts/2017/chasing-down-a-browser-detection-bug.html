@@ -159,13 +159,15 @@
 						browser detection service. It worked fine for most of his testing, but raised an exception in some circumstances. Trying to dig into this and create a test to demonstrate the bug kept us amused for a few hours – maybe it will help you to?
 						<!--more-->
 					</p>
-					<h2>The bug we saw...</h2>
-					<p>A set of changes were deployed to our QA servers for a particular client, which added code making use of
-						<a href="https://github.com/chowson/Sitecore.51Degrees.CloudDeviceDetection" target="_blank" rel="noopener noreferrer">a particular Sitecore wrapper</a>
-						for the
-						<a href="https://51degrees.com/device-detection/cloud" target="_blank" rel="noopener noreferrer">51Degrees browser detection</a>
-						service. At a certain point our new code was making a decision based on ASP.Net's property for the requesting
-						<a href="https://msdn.microsoft.com/en-us/library/system.web.configuration.httpcapabilitiesbase.screenpixelswidth(v=vs.110).aspx" target="_blank" rel="noopener noreferrer">device's screen pixel-width</a>.</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The bug we saw...</a>
+					</h2>
+					A set of changes were deployed to our QA servers for a particular client, which added code making use of
+					<a href="https://github.com/chowson/Sitecore.51Degrees.CloudDeviceDetection" target="_blank" rel="noopener noreferrer">a particular Sitecore wrapper</a>
+					for the
+					<a href="https://51degrees.com/device-detection/cloud" target="_blank" rel="noopener noreferrer">51Degrees browser detection</a>
+					service. At a certain point our new code was making a decision based on ASP.Net's property for the requesting
+					<a href="https://msdn.microsoft.com/en-us/library/system.web.configuration.httpcapabilitiesbase.screenpixelswidth(v=vs.110).aspx" target="_blank" rel="noopener noreferrer">device's screen pixel-width</a>.
 					<p>QA reported that for mobile browsers this was all fine, and the new code worked as expected, but for desktop browsers the following exception was occurring when the browser property was accessed for the first time:</p>
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">System.FormatException: Input string was not in a correct format.
    at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer&amp; number, NumberFormatInfo info, Boolean parseDecimal)
@@ -173,11 +175,11 @@
    at System.Web.Configuration.HttpCapabilitiesBase.get_ScreenPixelsWidth()
 
 					</pre>
-					<h2>Why was it happening?</h2>
-					<p>Looking at the
-						<code>ScreenPixelWidth</code>
-						property with
-						<a href="http://ilspy.net/" target="_blank" rel="noopener noreferrer">ILSpy</a>, the crash was happening here:</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Why was it happening?</a>
+					</h2>
+					Looking at the `ScreenPixelWidth` property with
+					<a href="http://ilspy.net/" target="_blank" rel="noopener noreferrer">ILSpy</a>, the crash was happening here:
 					<pre class="code" data-enlighter-highlight="35" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public virtual int ScreenPixelsWidth
 {
 	get
@@ -261,12 +263,10 @@
 					</p>
 					<p>The value that comes back from the service is the string "Unknown" – clearly something we can't cast to an Integer...</p>
 					<p>So the fix is fairly obvious – we need to make sure the value "Unknown" gets replaced with some sort of sensible alternative. But to do that properly, we need a test to prove the bug and then our fix.</p>
-					<h2>Building a test to reproduce the issue in dev</h2>
-					<p>The integration with Sitecore registers a pipeline component which calls
-						<code>FiftyOneDegreesService</code>
-						class's
-						<code>SetBrowserCapabilities()</code>
-						method to look at the current request and update the browser detection data with 51Degrees' data. So that's the class we need to write a test for. The constructor for that class requires a set of dependencies passed in – so we need to provide those objects.</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Building a test to reproduce the issue in dev</a>
+					</h2>
+					The integration with Sitecore registers a pipeline component which calls `FiftyOneDegreesService` class's `SetBrowserCapabilities()` method to look at the current request and update the browser detection data with 51Degrees' data. So that's the class we need to write a test for. The constructor for that class requires a set of dependencies passed in – so we need to provide those objects.
 					<p>The first object we need is an
 						<code>ISitecoreSettingsWrapper</code>, which is used to read some settings from Sitecore's config files, via the
 						<code>GetSetting()</code>
@@ -333,12 +333,10 @@ Assert.AreEqual(0, request.Browser.ScreenPixelsWidth);
 						</a>
 					</p>
 					<p>Bingo - a failed test, with the same exception message we saw on our QA site.</p>
-					<h2>A bit of a detour...</h2>
-					<p>While I was working through the construction of the test with my colleague, I went down a bit of a rabbit hole about how we could fake the
-						<code>UserAgent</code>
-						for our test request. It turns out that because of the
-						<code>FakeWebRequestWrapper</code>
-						fake, this isn't actually necessary. But to help my future self (who will inevitably need to do this somewhere else) I figured I should include it...</p>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">A bit of a detour...</a>
+					</h2>
+					While I was working through the construction of the test with my colleague, I went down a bit of a rabbit hole about how we could fake the `UserAgent` for our test request. It turns out that because of the `FakeWebRequestWrapper` fake, this isn't actually necessary. But to help my future self (who will inevitably need to do this somewhere else) I figured I should include it...
 					<p>If you try to write to the
 						<code>UserAgent</code>
 						property of the request, you'll realise it doesn't have a setter. And if you try to add a header for the user agent, you'll get a
@@ -368,8 +366,10 @@ field.SetValue(request, workerrequest.Object);
 					</pre>
 					<p>Not pretty – but it does work.</p>
 					<p>But getting back to the important stuff...</p>
-					<h2>The fix</h2>
-					<p>Fixing the issue is pretty simple. We just need to ensure that if the code is copying a 51Degrees property into the .Net browser capabilities, it replaces any "Unknown" values with a value that will parse as an integer:</p>
+					<h2 class="anchor">
+						<a href="#heading5" name="heading5">The fix</a>
+					</h2>
+					Fixing the issue is pretty simple. We just need to ensure that if the code is copying a 51Degrees property into the .Net browser capabilities, it replaces any "Unknown" values with a value that will parse as an integer:
 					<pre class="code" data-enlighter-highlight="17,18,19,20" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public void SetBrowserCapabilities()
 {
     if (_httpContextWrapper.Items.Contains("FiftyOneDegreesService.SetBrowserCapabilities"))
@@ -414,7 +414,29 @@ field.SetValue(request, workerrequest.Object);
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The bug we saw...</a>
+									</li>
+									<li>
+										<a href="#heading2">Why was it happening?</a>
+									</li>
+									<li>
+										<a href="#heading3">Building a test to reproduce the issue in dev</a>
+									</li>
+									<li>
+										<a href="#heading4">A bit of a detour...</a>
+									</li>
+									<li>
+										<a href="#heading5">The fix</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

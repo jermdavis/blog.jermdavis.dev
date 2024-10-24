@@ -159,8 +159,10 @@ So here's one way it could work:">
 					<p>So here's one way it could work:
 						<!--more-->
 					</p>
-					<h2>First step is having some configuration...</h2>
-					<p>A very simple structure to store a pipeline might look like this:</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">First step is having some configuration...</a>
+					</h2>
+					A very simple structure to store a pipeline might look like this:
 					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;pipeline name="example"&gt;
   &lt;step type="StronglyTypedPipelines.DoubleStep, StronglyTypedPipelines" /&gt;
   &lt;step type="StronglyTypedPipelines.ToStringStep, StronglyTypedPipelines" /&gt;
@@ -173,8 +175,10 @@ So here's one way it could work:">
 						element then defines the type which must be instantiated to process that bit of the pipeline.</p>
 					<p>In Sitecore's world, the config for pipelines is commonly "patched" by add-on modules and the code you deploy for your site. Based on XML like it would be possible to implement some sort of config patching process that allows the same sort of "insert-before" or "replace" options as Sitecore does. I'm not going to go into the detail of that for this post, however. But for our purposes we can assume that code exists somewhere that can deal with doing any modification of the raw configuration before we try to instantiate the pipeline.</p>
 					<p>So the next task is to load the XML and get it ready for processing:</p>
-					<h2>Loading the XML</h2>
-					<p>Ideally there shouldn't be any significant differences between a "loaded from config" pipeline and a "created by code" one. So the code can start from a new abstract class that inherits from our original pipeline type:</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Loading the XML</a>
+					</h2>
+					Ideally there shouldn't be any significant differences between a "loaded from config" pipeline and a "created by code" one. So the code can start from a new abstract class that inherits from our original pipeline type:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ConfigBasedPipeline&lt;INPUT, OUTPUT&gt; : Pipeline&lt;INPUT, OUTPUT&gt;
 {
 }
@@ -199,8 +203,10 @@ So here's one way it could work:">
 					<p>It checks that we got a valid XML Element, tries to parse it into pipeline step objects and then tries to validate that these meet the type requirements of the pipeline. Finally we can use those objects to initialise the
 						<code>Func&lt;INPUT,OUTPUT&gt;</code>
 						which actually runs the pipeline process that we saw described in the code-first constructor from the previous post.</p>
-					<h2>Parsing and validating</h2>
-					<p>Parsing the XML into objects is fairly simple:</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Parsing and validating</a>
+					</h2>
+					Parsing the XML into objects is fairly simple:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IList&lt;IPipelineStep&gt; parsePipelineSteps(XElement pipelineXml)
 {
     var pipeline = new List&lt;IPipelineStep&gt;();
@@ -276,11 +282,11 @@ public interface IPipelineStep&lt;INPUT, OUTPUT&gt; : IPipelineStep
 					<p>This needs to iterate through each of the objects we generated from the XML and check it's inputs and outputs. It starts by looking at the type parameters for the overall pipeline object. Fetching the base generic pipeline step interface allows us to work out what the type parameters for the input and output of the overall pipeline is. So we can assume that the first step we encounter needs to have an input that is the same type as the overall pipeline.</p>
 					<p>Then the code can loop through each subsequent step, checking that the output type of one step matches the input type of the next. Again, it can use the type parameters of the base step interface to work this out. And finally, the output of the very last step must match the output of the overall pipeline.</p>
 					<p>If all of that matches up then all is well. Otherwise, the code raises exceptions that try to specify which step has been found to be incorrect and why.</p>
-					<h2>And executing the steps...</h2>
-					<p>If the steps validate, all that remains is to provide the code which can execute them. We can't easily express the
-						<code>Func&lt;INPUT,OUTPUT&gt;</code>
-						from the previous post because we don't know the actual step objects involve this time around. But we can iterate them and make use of reflection to get them to do their job anyway:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private OUTPUT processPipelineSteps(IList&lt;IPipelineStep&gt; pipelineSteps, INPUT input)
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">And executing the steps...</a>
+					</h2>
+					If the steps validate, all that remains is to provide the code which can execute them. We can't easily express the `Func<input,output>` from the previous post because we don't know the actual step objects involve this time around. But we can iterate them and make use of reflection to get them to do their job anyway:
+						<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private OUTPUT processPipelineSteps(IList&lt;IPipelineStep&gt; pipelineSteps, INPUT input)
 {
     object output = input;
 
@@ -293,27 +299,27 @@ public interface IPipelineStep&lt;INPUT, OUTPUT&gt; : IPipelineStep
     return (OUTPUT)output;
 }
 
-					</pre>
-					<p>We need to define the output as
-						<code>object</code>
-						as we know its type is going to change over the course of the execution. It starts out with the value of the input and then, for each step in the pipeline data we can use the reflection API to get a reference to the
-						<code>Process()</code>
-						method we know a pipeline step will define. And this can then be invoked by passing in the current state of the pipeline and recording the result as our new output state. Finally we know that the
-						<code>object</code>
-						holding the result state must have the same type as
-						<code>OUTPUT</code>
-						(since we validated the steps earlier) so we know we're safe to cast to that to return the "right" data.</p>
-					<p>Finally, we need to wrap up out abstract config-based pipeline class in a concrete type that specifies what the input and output are:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleConfigBasedPipeline : ConfigBasedPipeline&lt;int, string&gt;
+						</pre>
+						<p>We need to define the output as
+							<code>object</code>
+							as we know its type is going to change over the course of the execution. It starts out with the value of the input and then, for each step in the pipeline data we can use the reflection API to get a reference to the
+							<code>Process()</code>
+							method we know a pipeline step will define. And this can then be invoked by passing in the current state of the pipeline and recording the result as our new output state. Finally we know that the
+							<code>object</code>
+							holding the result state must have the same type as
+							<code>OUTPUT</code>
+							(since we validated the steps earlier) so we know we're safe to cast to that to return the "right" data.</p>
+						<p>Finally, we need to wrap up out abstract config-based pipeline class in a concrete type that specifies what the input and output are:</p>
+						<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleConfigBasedPipeline : ConfigBasedPipeline&lt;int, string&gt;
 {
     public ExampleConfigBasedPipeline(XElement pipelineXml) : base(pipelineXml)
     {
     }
 }
 
-					</pre>
-					<p>With that done, a config-based pipeline can be called with fairly similar code to the code-based ones:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var input = 13;
+						</pre>
+						<p>With that done, a config-based pipeline can be called with fairly similar code to the code-based ones:</p>
+						<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var input = 13;
 
 XDocument xd = XDocument.Load("ConfigBasedPipeline.xml");
 //
@@ -325,19 +331,44 @@ var pipeline = new ExampleConfigBasedPipeline(pipelineXml);
 
 var output = pipeline.Process(input);
 
-					</pre>
-					<p>Other than the need to fetch (and potentially patch) the XML to create the pipeline, this can behave in the same way as the code-first approach.</p>
-					<h2>In conclusion...</h2>
-					<p>So it turns out (if you have some XML patching code to use) you can have a simple approach to config-based pipelines fairly easily. The need for the data type passing through to vary does require some extra code, but it's not particularly complex.</p>
-					<p>One issue that I've not addressed here is creating the concrete pipeline object based on configuration data, rather than manually creating it as shown above. I'm not entirely sure whether real code would need that or not – since code usually wants to run a specific pipeline, and hence would know what concrete type it needed anyway. But if it was necessary, that could be done by putting the type data into the XML so that a factory method could instantiate the correct object.</p>
-					<p>I've
-						<a href="https://gist.github.com/jermdavis/4dcf6568d5cd44f03d0ec503620ac177" target="_blank" rel="noopener noreferrer">put the source for this bit of experimentation into a gist</a>
-						in case anyone wants to tinker with it.</p>
-					<a class="gotop" href="#top">↑ Back to top</a>
+						</pre>
+						<p>Other than the need to fetch (and potentially patch) the XML to create the pipeline, this can behave in the same way as the code-first approach.</p>
+						<h2 class="anchor">
+							<a href="#heading5" name="heading5">In conclusion...</a>
+						</h2>
+						So it turns out (if you have some XML patching code to use) you can have a simple approach to config-based pipelines fairly easily. The need for the data type passing through to vary does require some extra code, but it's not particularly complex.
+						<p>One issue that I've not addressed here is creating the concrete pipeline object based on configuration data, rather than manually creating it as shown above. I'm not entirely sure whether real code would need that or not – since code usually wants to run a specific pipeline, and hence would know what concrete type it needed anyway. But if it was necessary, that could be done by putting the type data into the XML so that a factory method could instantiate the correct object.</p>
+						<p>I've
+							<a href="https://gist.github.com/jermdavis/4dcf6568d5cd44f03d0ec503620ac177" target="_blank" rel="noopener noreferrer">put the source for this bit of experimentation into a gist</a>
+							in case anyone wants to tinker with it.</p>
+						<a class="gotop" href="#top">↑ Back to top</a>
+					</input,output>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">First step is having some configuration...</a>
+									</li>
+									<li>
+										<a href="#heading2">Loading the XML</a>
+									</li>
+									<li>
+										<a href="#heading3">Parsing and validating</a>
+									</li>
+									<li>
+										<a href="#heading4">And executing the steps...</a>
+									</li>
+									<li>
+										<a href="#heading5">In conclusion...</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

@@ -159,8 +159,10 @@
 					<p>I've got a project on the cards where I need to connect both Sitecore and a third-party image capture system to Content Hub. While I've done the official admin &amp; developer training for Content Hub, I thought it would be worth a quick proof-of-concept so that I could verify the plan I had would actually work – and it turned out that there was an interesting issue hiding under this... 
 						<!--more-->
 					</p>
-					<h2>What I need to test?</h2>
-					<p>The system I think I need to end up with looks a bit like this:</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">What I need to test?</a>
+					</h2>
+					The system I think I need to end up with looks a bit like this:
 					<p>
 						<a href="/img/2020/2020-10-integrationworkflow.png" target="_blank">
 							<img alt="Integration Workflow" src="/img/2020/2020-10-integrationworkflow.png">
@@ -177,8 +179,10 @@
 						<li>Sitecore needs to tell Content Hub to create a Public Link for the custom rendition.</li>
 						<li>And finally, I need to test that I can browse the public link anonymously.</li>
 					</ul>
-					<h2>Setting up a new rendition</h2>
-					<p>Renditions are set up using the "Media Processing" config for "Content". I'm interested in bitmaps, so the new rendition needs adding to the config processing for that. Out-of-the-box Content Hub's image processing extracts metadata, generates PDFs and renders a set of preview images. But the preview workflow here starts from an 1100 pixel size – and I may need bigger images than that in the real solution. So that requires that the new rendition is not a child of "preview" – it needs to be a new root item. That's easy to set up, but you need to pay attention to the "output" properties to make it all work.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Setting up a new rendition</a>
+					</h2>
+					Renditions are set up using the "Media Processing" config for "Content". I'm interested in bitmaps, so the new rendition needs adding to the config processing for that. Out-of-the-box Content Hub's image processing extracts metadata, generates PDFs and renders a set of preview images. But the preview workflow here starts from an 1100 pixel size – and I may need bigger images than that in the real solution. So that requires that the new rendition is not a child of "preview" – it needs to be a new root item. That's easy to set up, but you need to pay attention to the "output" properties to make it all work.
 					<p>I set up a "website thumbnail" rendition for my test. You need to make sure the redition is "stored", with a sensible name:</p>
 					<p>
 						<a href="/img/2020/2020-10-storedrendition.png" target="_blank">
@@ -204,8 +208,10 @@
 						</a>
 					</p>
 					<p>So that's ready to try some automation...</p>
-					<h2>Trying this via code</h2>
-					<p>The first thing you need to do in order to use the .Net API is to authenticate with your Content Hub system. That requires two things: First, an OAuth client needs setting up:</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Trying this via code</a>
+					</h2>
+					The first thing you need to do in order to use the .Net API is to authenticate with your Content Hub system. That requires two things: First, an OAuth client needs setting up:
 					<p>
 						<a href="/img/2020/2020-10-oauthclient.png" target="_blank">
 							<img alt="OAuth Client" src="/img/2020/2020-10-oauthclient.png">
@@ -332,8 +338,10 @@
 					</p>
 					<p>The error message here is "Failed File key for file with id ‘11554' not found."</p>
 					<p>What's going on there?</p>
-					<h2>Fixing my mistake</h2>
-					<p>Having had a bit of a think – the issue is the asynchronous nature of how Content Hub processes stuff. When you create a new Asset, you're running background jobs to fetch the image and generate the renditions. So you don't actually know when that will occur. But the code above is creating the Asset record and immediately creating a Public Link record based on the asset and a specific rendition name. And at that point, I don't think the rendition in question actually exists in Content Hub's database. Hence the error message above.</p>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">Fixing my mistake</a>
+					</h2>
+					Having had a bit of a think – the issue is the asynchronous nature of how Content Hub processes stuff. When you create a new Asset, you're running background jobs to fetch the image and generate the renditions. So you don't actually know when that will occur. But the code above is creating the Asset record and immediately creating a Public Link record based on the asset and a specific rendition name. And at that point, I don't think the rendition in question actually exists in Content Hub's database. Hence the error message above.
 					<p>So how can we fix this? Waiting!</p>
 					<p>After you create the asset, you have to wait for the fetch job to complete. And after you create the Public Link you have to wait for it before you try to generate the URL. The waiting can be done with a fairly simple code pattern:</p>
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public async Task WaitForRendition(IWebMClient client, long assetId, string renditionName)
@@ -377,7 +385,26 @@
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">What I need to test?</a>
+									</li>
+									<li>
+										<a href="#heading2">Setting up a new rendition</a>
+									</li>
+									<li>
+										<a href="#heading3">Trying this via code</a>
+									</li>
+									<li>
+										<a href="#heading4">Fixing my mistake</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

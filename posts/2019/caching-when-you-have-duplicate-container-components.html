@@ -155,8 +155,10 @@
 					<p>In theory, the magic of Dynamic Placeholders lets us have a container component placed onto your page more than once. That didn't work in the old world of "static" placeholders, because the rendering engine didn't like two placeholders with the same name. But despite it's benefits, the dynamic implementation has an annoying edge case – you may not be able to enable caching for your container component. I had a client bump into this issue recently, so I spent some time considering approaches that might help them address this issue. 
 						<!--more-->
 					</p>
-					<h2>The issue</h2>
-					<p>Imagine you have a container component. A very simple one will do fine – all it really needs to contain is a Dynamic Placeholder:</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The issue</a>
+					</h2>
+					Imagine you have a container component. A very simple one will do fine – all it really needs to contain is a Dynamic Placeholder:
 					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">@using Sitecore.Mvc
 &lt;div style="border:2px solid red; margin-top:10px; padding:10px;"&gt;
     &lt;div&gt;Dynamic Container&lt;/div&gt;
@@ -184,16 +186,22 @@
 					</p>
 					<p>There's no cache variant that works for "this component varies by its children" – so only the first instance of the container ever gets rendered and cached.</p>
 					<p>My interest in this came about because I got handed a bug report on a client site that said "our page is wrong!" and it turned out to be because of this issue. I think there are three main ways that the issue could be resolved to make the client happy:</p>
-					<h2>Solution one: Just disable caching</h2>
-					<p>If you turn the cache settings off for the container component, all will look right.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Solution one: Just disable caching</a>
+					</h2>
+					If you turn the cache settings off for the container component, all will look right.
 					<p>That's probably fine if your container has few children, or it's not used very much. The performance difference in that scenario is likely to be small – especially if you are able to enable caching for the child components inside your container.</p>
 					<p>That's a fix developers can roll out easily (it's just undoing the cache settings on the rendering item) and it doesn't affect editors at all.</p>
-					<h2>Solution two: Use a fake data source</h2>
-					<p>You could configure the container component with the "vary by datasource" cache setting instead of turning caching off. If the component doesn't really need a data source, the code will just ignore what ever item the datasource setting points to, other than for caching. And that can allow the normal caching framework to work here.</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Solution two: Use a fake data source</a>
+					</h2>
+					You could configure the container component with the "vary by datasource" cache setting instead of turning caching off. If the component doesn't really need a data source, the code will just ignore what ever item the datasource setting points to, other than for caching. And that can allow the normal caching framework to work here.
 					<p>No deployment is required for this, which is a bonus. But it might be confusing for editors to need to add a data source where it's not really needed. Plus this doesn't work if your container does need a datasource, and you have two on a page that need the same datasource but different children.</p>
 					<p>So this might not be a great answer.</p>
-					<h3>Solution three: Vary the cache by rendering id</h3>
-					<p>Finally, it turns out it's not actually that hard to extend Sitecore's caching model to allow for the idea of "cache this specific rendering instance". You could write some code that looked at the actual children of a component and generated a cache key based on that. Maybe by hashing some data from the Rendering XML? But it struck me that it's faster and easier (and probably much the same outcome) to just make use of the unique ID that every instance of a rendering gets by default...</p>
+					<h3 class="anchor">
+						<a href="#heading4" name="heading4">Solution three: Vary the cache by rendering id</a>
+					</h3>
+					Finally, it turns out it's not actually that hard to extend Sitecore's caching model to allow for the idea of "cache this specific rendering instance". You could write some code that looked at the actual children of a component and generated a cache key based on that. Maybe by hashing some data from the Rendering XML? But it struck me that it's faster and easier (and probably much the same outcome) to just make use of the unique ID that every instance of a rendering gets by default...
 					<p>To do this, you need to create a new data template to store your "cache by rendering's unique id" flag:</p>
 					<p>
 						<a href="/img/2019/2019-09-newcacheflag.png" target="_blank">
@@ -263,7 +271,26 @@
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The issue</a>
+									</li>
+									<li>
+										<a href="#heading2">Solution one: Just disable caching</a>
+									</li>
+									<li>
+										<a href="#heading3">Solution two: Use a fake data source</a>
+									</li>
+									<li>
+										<a href="#heading4">Solution three: Vary the cache by rendering id</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

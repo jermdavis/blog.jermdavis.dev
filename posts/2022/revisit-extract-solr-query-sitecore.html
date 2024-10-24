@@ -161,7 +161,10 @@
 						<a href="/posts/2021/peeking-into-search-queries" target="_blank" rel="noopener">I wrote a post about how you could extract the raw Solr query from Sitecore's ContentSearch APIs</a>. Usually the queries hid behind LINQ operations, but there are times where having the raw text can be helpful - sometimes Sitecore's API doesn't support the operations you need. That work was done under Sitecore v10.0, but having tried to repeat it under v10.2, I discover it no longer works. There have been some changes under the surface of ContentSearch which require a different approach. So if you need to do this under v10.2, here's how:
 						<!--more-->
 					</p>
-					<h2 id="the-issue">The issue</h2>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The issue
+						</a>
+					</h2>
 					<p>I sat down to write some grouped query code in a v10.2 project recently, and copied in my "grab the search query" code from
 						<a href="/posts/2021/peeking-into-search-queries" target="_blank" rel="noopener">my original post</a>. But the compiler was not happy with it:</p>
 					<p>
@@ -221,7 +224,10 @@ private TQuery GetQuery(Expression expression)
 					<p>That's a frustrating change in the light of
 						<a href="https://doc.sitecore.com/xp/en/developers/102/platform-administration-and-architecture/using-solr-to-group-search-results.html" target="_blank" rel="noopener">the documentation still suggesting there are queries where you need to know the raw Solr query language</a>
 						rather than just the LINQ expressions...</p>
-					<h2 id="a-solution">A solution</h2>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">A solution
+						</a>
+					</h2>
 					<p>But all is not lost - Microsoft have provided us with
 						<a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/reflection" target="_blank" rel="noopener">Reflection</a>
 						to solve this problem. Yes it has some performance challenges, and yes it means our code might well break again with future releases of ContentSearch. But it allows a way forward here at least.</p>
@@ -280,7 +286,10 @@ private TQuery GetQuery(Expression expression)
 
 					</pre>
 					<p>I don't think you can use this pattern to make an extension method - but it does allow you to have a per-query type static field for the method, which will reduce the slow reflection lookups. This will only call reflection once per query result type you use it against.</p>
-					<h2 id="a-side-note-about-geographic-queries">A side-note about geographic queries</h2>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">A side-note about geographic queries
+						</a>
+					</h2>
 					<p>If you were paying attention to the code example I showed in the first screenshot above, you'll have noticed a call to
 						<code>WithinRadius()</code>. That's a useful LINQ method that ContentSearch provides for doing geographic queries. But you'll see an interesting result when you call my helper code above for a query which uses that method. Taking this LINQ expression:</p>
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var q = ctx.GetQueryable&lt;SearchResultItem&gt;()
@@ -338,7 +347,26 @@ filter: "{!geofilt sfield=coordinate_rpt pt=52.843647,-3.944892 d=5}"
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The issue
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">A solution
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">A side-note about geographic queries
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

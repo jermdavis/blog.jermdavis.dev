@@ -159,13 +159,14 @@
 					<p>There was a lot of exciting new stuff on show at the Sitecore's recent MVP Summit and Symposium the other week. Plenty of others have written up the general goings on at those events (have a google – there's lots to read), so I thought I'd focus on something more specific that piqued my interest: the novel approach that's being taken to pipelines in some of the new code Sitecore are producing.
 						<!--more-->
 					</p>
-					<h2>Some background...</h2>
-					<p>
-						<a href="/img/2016/2016-10-5722_image_6788ad06.png" target="_blank">
-							<img alt="Commerce Pipelines" src="/img/2016/2016-10-5722_image_6788ad06.png">
-						</a>
-						Pipelines are
-						<a href="https://community.sitecore.net/technical_blogs/b/sitecorejohn_blog/posts/important-pipelines-in-the-sitecore-asp-net-cms" target="_blank" rel="noopener noreferrer">a common concept in Sitecore</a>, but I first came across the idea of a pipeline in code when I started working with a beta of Commerce Server back in 2000. So it's fitting that one of the places Sitecore were showing off their new code was in Sitecore Commerce – the replacement for the old Commerce Server codebase. I've also made use of pipeline patterns in some personal code I've written over the years – most recently in my homebrew replacement for the old Google Reader, which I use to keep on top of the news.</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">Some background...</a>
+					</h2>
+					<a href="/img/2016/2016-10-5722_image_6788ad06.png" target="_blank">
+						<img alt="Commerce Pipelines" src="/img/2016/2016-10-5722_image_6788ad06.png">
+					</a>
+					Pipelines are
+					<a href="https://community.sitecore.net/technical_blogs/b/sitecorejohn_blog/posts/important-pipelines-in-the-sitecore-asp-net-cms" target="_blank" rel="noopener noreferrer">a common concept in Sitecore</a>, but I first came across the idea of a pipeline in code when I started working with a beta of Commerce Server back in 2000. So it's fitting that one of the places Sitecore were showing off their new code was in Sitecore Commerce – the replacement for the old Commerce Server codebase. I've also made use of pipeline patterns in some personal code I've written over the years – most recently in my homebrew replacement for the old Google Reader, which I use to keep on top of the news.
 					<p>One of the things that all these pipeline implementations have in common is that they use a single type as the input and output of the overall process, and each step in the pipeline has that type as their input and output. An object goes in the top, passes through each step and then comes out the end. A lot of the time, that's all well and good. But sometimes I've felt that the object being passed through ends up a bit messy as a result of having to store state and data for every step. For example, in Commerce Server's shopping baskets they solved the issue of needing complex data types for the pipeline by using a dictionary object, which acquired more entries and child lists and dictionaries over the course of the execution. And my RSS reader's "processing new RSS Feed items" pipeline suffered from a similar issue. The pipeline data object there ended up with lots of fixed properties to deal with turning an entry from an RSS feed into "safe" title, metadata and content data to record in the database.</p>
 					<p>So, that background made me very interested in the way some of the new code Sitecore are producing was working. Having seen some presentations, I had a very interesting chat with
 						<a href="https://twitter.com/stephenpope" target="_blank" rel="noopener noreferrer">Stephen Pope</a>
@@ -174,8 +175,10 @@
 						NB: While I'm focusing on pipelines that are wholly defined in code here, I don't mean to suggest that Sitecore are too. The concepts of config files and patches are just things I've not needed in the code I'm interested in
 					</blockquote>
 					<p>And after a bit of tinkering and thinking about what Stephen had been saying, it turns out you can do quite interesting things with some pretty simple code here...</p>
-					<h2>One approach...</h2>
-					<p>In generic terms, a pipeline step can be described as an interface with single a processing method:</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">One approach...</a>
+					</h2>
+					In generic terms, a pipeline step can be described as an interface with single a processing method:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep&lt;INPUT, OUTPUT&gt;
 {
     OUTPUT Process(INPUT input);
@@ -235,8 +238,10 @@ string result = input
 
 					</pre>
 					<p>Already that's looking interesting, but:</p>
-					<h2>Here's where it gets more interesting...</h2>
-					<p>So that works fairly simply and easily, and you can build up quite complex pipelines with the compiler doing all your type checking for you. But during my chat with Stephen he suggested some other really interesting ideas that can stem from this design...</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Here's where it gets more interesting...</a>
+					</h2>
+					So that works fairly simply and easily, and you can build up quite complex pipelines with the compiler doing all your type checking for you. But during my chat with Stephen he suggested some other really interesting ideas that can stem from this design...
 					<p>First up: what if the overall pipeline class above implements the IPipelineStep interface? It's a trivial change:</p>
 					<pre class="code" data-enlighter-highlight="1" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class Pipeline&lt;INPUT, OUTPUT&gt; : IPipelineStep&lt;INPUT, OUTPUT&gt;
 {
@@ -317,9 +322,11 @@ public class InnerPipeline : Pipeline&lt;int, int&gt;
 
 					</pre>
 					<p>And it's easy to move from this code to a step which can choose between options for the step to run as well. And of course the optional step or steps you pick from can be entire pipelines themselves... Potentially other things like "exception handling of failing steps" or logging could be wrapped up in that style.</p>
-					<h2>In conclusion...</h2>
-					<p>While this is a very simple "proof of concept" implementation of some of the ideas I've heard discussed, it shows some interesting promise. I'm going to have to spend some time implementing some real pipelines for my RSS Reader when I have a free moment, and see whether I can make that code look cleaner with this approach. If you're interested in playing with this style of pipeline, you can
-						<a href="https://gist.github.com/jermdavis/67cf5d834ad720bb5f57c1a556c6b3d7" target="_blank" rel="noopener noreferrer">grab the code for my tinkering from GitHub</a>.</p>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">In conclusion...</a>
+					</h2>
+					While this is a very simple "proof of concept" implementation of some of the ideas I've heard discussed, it shows some interesting promise. I'm going to have to spend some time implementing some real pipelines for my RSS Reader when I have a free moment, and see whether I can make that code look cleaner with this approach. If you're interested in playing with this style of pipeline, you can
+					<a href="https://gist.github.com/jermdavis/67cf5d834ad720bb5f57c1a556c6b3d7" target="_blank" rel="noopener noreferrer">grab the code for my tinkering from GitHub</a>.
 					<blockquote>
 						<b>
 							<i>Edited to add:</i>
@@ -333,7 +340,26 @@ public class InnerPipeline : Pipeline&lt;int, int&gt;
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">Some background...</a>
+									</li>
+									<li>
+										<a href="#heading2">One approach...</a>
+									</li>
+									<li>
+										<a href="#heading3">Here's where it gets more interesting...</a>
+									</li>
+									<li>
+										<a href="#heading4">In conclusion...</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

@@ -163,8 +163,10 @@
 						and whatever provider you plug in will work in the same way. Unfortunately, for software our in the real world that's not always entirely true. Recently I came across an example of this which helped point out a bug in some search code in Sitecore...
 						<!--more-->
 					</p>
-					<h2>The scenario</h2>
-					<p>A component I found myself looking at was using the ContentSearch APIs to perform some queries and then render UI based on the results. There wasn't anything special going on. It was just finding an appropriate index, building up a query, running it and then displaying how many items matched. The relevant bit was vaguely along the lines of:</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The scenario</a>
+					</h2>
+					A component I found myself looking at was using the ContentSearch APIs to perform some queries and then render UI based on the results. There wasn't anything special going on. It was just finding an appropriate index, building up a query, running it and then displaying how many items matched. The relevant bit was vaguely along the lines of:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var index = fetchContextIndex(someContentItem);
 var predicate = buildTheSearchCriteria(currentState);
 
@@ -181,22 +183,16 @@ using (IProviderSearchContext context = index.CreateSearchContext())
 }
 
 					</pre>
-					<h2>The confusion</h2>
-					<p>The code started off running against an index managed by Lucene. With the particular set of content on the server, the value of the variable
-						<code>totalResults</code>
-						came back as 97. That seemed a sensible value, as there were roughly that number of items that matched the search criteria. But later the code got migrated to a server that was using Coveo to index the same content. And once that had happened, the value of
-						<code>totalResults</code>
-						always came back as 10, despite there being more matching pages in both the content tree and in the Coveo index.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">The confusion</a>
+					</h2>
+					The code started off running against an index managed by Lucene. With the particular set of content on the server, the value of the variable `totalResults` came back as 97. That seemed a sensible value, as there were roughly that number of items that matched the search criteria. But later the code got migrated to a server that was using Coveo to index the same content. And once that had happened, the value of `totalResults` always came back as 10, despite there being more matching pages in both the content tree and in the Coveo index.
 					<p>Cue
 						<a href="http://www.onmedia.net.au/assets/o-QUESTION-HEAD-SCRATCH-facebook.jpg" target="_blank" rel="noopener noreferrer">some head scratching</a>...</p>
-					<h2>The solution</h2>
-					<p>After a bit of fun with Google and poking about with the debugger, the subtle issue revealed itself: The code above uses the
-						<code>fullResultsSet.Count()</code>
-						method to fetch the total number of index hits that the search framework found for the query. At first glance that looks fine - the
-						<code>fullResultsSet</code>
-						object exposes the IEnumerable interface - so calling
-						<code>Count()</code>
-						seems a perfectly reasonable way to get the size of the results when there's no pagination involved in the query.</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">The solution</a>
+					</h2>
+					After a bit of fun with Google and poking about with the debugger, the subtle issue revealed itself: The code above uses the `fullResultsSet.Count()` method to fetch the total number of index hits that the search framework found for the query. At first glance that looks fine - the `fullResultsSet` object exposes the IEnumerable interface - so calling `Count()` seems a perfectly reasonable way to get the size of the results when there's no pagination involved in the query.
 					<p>But as some of you no doubt already spotted, that's not the documented way you're supposed to get the total number of results for a query. As
 						<a href="https://www.google.co.uk/search?q=sitecore+contentsearch+totalresultscount&amp;ie=&amp;oe=#q=sitecore+contentsearch+totalsearchresults" target="_blank" rel="noopener noreferrer">a number of Google hits point out</a>, the property
 						<code>TotalSearchResults</code>
@@ -206,8 +202,10 @@ using (IProviderSearchContext context = index.CreateSearchContext())
 						and
 						<code>TotalSearchResults</code>
 						when your query result set is bigger than the results page size. But because the code in question didn't do that, the bug slipped through...</p>
-					<h2>Why does it behave like this?</h2>
-					<p>Well getting past the initial slightly petulant "just to confuse us!" response, it's all down to implementation details...</p>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">Why does it behave like this?</a>
+					</h2>
+					Well getting past the initial slightly petulant "just to confuse us!" response, it's all down to implementation details...
 					<p>If you look into the code for the
 						<code>SearchResults&lt;TSource&gt;</code>
 						you'll see that this class exposing both the property
@@ -254,7 +252,26 @@ using (IProviderSearchContext context = index.CreateSearchContext())
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The scenario</a>
+									</li>
+									<li>
+										<a href="#heading2">The confusion</a>
+									</li>
+									<li>
+										<a href="#heading3">The solution</a>
+									</li>
+									<li>
+										<a href="#heading4">Why does it behave like this?</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

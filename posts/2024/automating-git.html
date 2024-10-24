@@ -158,12 +158,18 @@
 						about trying to smooth out the rougher edges of the process of blogging with some custom tooling. Both the site generator I'm using these days, and the simple editor tool I hacked together to suit my writing process. I realised recently that one of those rough edges that remained in the process was the need to manually commit my writing to source control, so I wondered what it might take to wire that into my editing tool...
 						<!--more-->
 					</p>
-					<h2 id="the-challenge">The challenge</h2>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The challenge
+						</a>
+					</h2>
 					<p>I have two separate git repos for my blog:</p>
 					<p>One is in Github, to provide the Github Pages site that I publish to. This repo contains only the output of my static site generator, and I automated the process of updating this early in my migration, with a "build and publish the site" PowerShell script which I can run from the command line.</p>
 					<p>The second repo is a self-hosted one which holds the source for the blog, the editor and the static site generator. The basic markdown for the pages, the Razor and custom C# code for the theme, and the WPF app that I write most of the posts in. This one doesn't have any automation right now. When I do some writing and am ready to commit the changes I've usually just opened Visual Studio to commit and push.</p>
 					<p>And that's the thing I was interested in improving. Could I add the Git process to the editing tool, so I didn't have to load VS in order to save changes to my repo?</p>
-					<h2 id="what-needs-automating">What needs automating?</h2>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">What needs automating?
+						</a>
+					</h2>
 					<p>It's three operations:</p>
 					<ul>
 						<li>An "add" operation<br>New files may have been created during editing for posts or for images, and these need to be tracked.</li>
@@ -173,7 +179,10 @@
 					<p>Maybe there's some other stuff too - my writing is usually just committed direct to the "main" branch, but it's not uncommon for me also to have some live side branches for code changes, or more significate site layout changes that I need to spend more time working on. So potentially the tooling needs to be able to cope with making sure that we're using the right branch.</p>
 					<p>And with the heavy heart of an experienced developer, there will need to be a way to detect (and maybe handle) error conditions. From the trivial "what happens if the computer is offline, but it's trying to push to a remote" to the less simple but important "the remote is ahead of local, and you won't be able to push".</p>
 					<p>And those needs got me thinking about possible approaches.</p>
-					<h2 id="the-simplest-way">The simplest way</h2>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">The simplest way
+						</a>
+					</h2>
 					<p>My first instinct was a simple but hacky one: Git is a command line tool, so can spawn it using the
 						<code>System.Diagnostics.Process</code>
 						class. It's a fair assumption that the git tooling will be available via the system Path, so it's easy to get the current changes:</p>
@@ -247,7 +256,10 @@ var result = outputStream.ReadToEnd();
 					<p>And other things like swapping branches can be handled in a similar manner by using the appropriate Git commands.</p>
 					<p>But the basic challenge with this approach is the need to parse all the results out of the output or error streams. And that tends to be a bit of a pain, and it's also quite sensitive to whether different versions of Git change the structure of the text they output.</p>
 					<p>And that made me think about more structured ways of doing this...</p>
-					<h2 id="a-more-formal-way">A more formal way</h2>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">A more formal way
+						</a>
+					</h2>
 					<p>Would an API do better? It should allow for an easier way of handling results at least. A bit of googling pointed me towards the
 						<a href="https://github.com/libgit2/libgit2sharp" target="_blank" rel="noopener">libgit2sharp</a>
 						project. That's a .Net wrapper around the native
@@ -303,7 +315,10 @@ using (var repo = new Repository(repoPath))
 					</pre>
 					<p>Unlike the command line (which just remembers this stuff), this code needs to know who you're committing as each time you call it. And similarly, attempting to push changes requires knowing credentials for the remote, which Git would have handled for you.</p>
 					<p>So while this approach gives you data in an easier format to process, it still has some challenges...</p>
-					<h2 id="conclusions">Conclusions</h2>
+					<h2 class="anchor">
+						<a href="#heading5" name="heading5">Conclusions
+						</a>
+					</h2>
 					<p>After some fun hacking, I have a basic experiment that works: A prototype window my the editor looks like this:</p>
 					<p>
 						<a target="_blank" href="/img/2024/07-TestUi.png">
@@ -318,7 +333,34 @@ using (var repo = new Repository(repoPath))
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The challenge
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">What needs automating?
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">The simplest way
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">A more formal way
+										</a>
+									</li>
+									<li>
+										<a href="#heading5">Conclusions
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

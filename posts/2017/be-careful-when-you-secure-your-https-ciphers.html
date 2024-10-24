@@ -167,10 +167,10 @@ I spent some time recently investigating why certain aspects of the <a href=&quo
 						search framework were broken on a client's server, and the answer ended up being directly related to crypto security. Here's what happened: 
 						<!--more-->
 					</p>
-					<h2>Finding a bug...</h2>
-					<p>My team and I had been working on some new features for a client's site. Having passed our internal QA phase we deployed the changes on to their UAT servers for them to run their own tests. But when we did this, we noticed that one key feature of the new pages was broken – any page containing a particular search-driven component threw an exception. With custom errors turned off we saw a message saying
-						<code>The request was aborted: Could not create SSL/TLS secure channel</code>
-						which originated from Coveo code:</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">Finding a bug...</a>
+					</h2>
+					My team and I had been working on some new features for a client's site. Having passed our internal QA phase we deployed the changes on to their UAT servers for them to run their own tests. But when we did this, we noticed that one key feature of the new pages was broken – any page containing a particular search-driven component threw an exception. With custom errors turned off we saw a message saying `The request was aborted: Could not create SSL/TLS secure channel` which originated from Coveo code:
 					<p>
 						<a href="/img/2017/2017-01-coveoysod.png" target="_blank">
 							<img alt="Coveo YSOD" src="/img/2017/2017-01-coveoysod.png">
@@ -240,8 +240,10 @@ Exception rethrown at [0]:
 
 					</pre>
 					<p>That's the same error that was shown in Content Editor – just formatted a bit better.</p>
-					<h2>What didn't help us...</h2>
-					<p>So my colleagues and I spent some time trying to work out what had gone wrong.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">What didn't help us...</a>
+					</h2>
+					So my colleagues and I spent some time trying to work out what had gone wrong.
 					<p>We investigated quite a few things without success, including:</p>
 					<ul>
 						<li>
@@ -260,8 +262,10 @@ Exception rethrown at [0]:
 							<strong>Had the Coveo CES server been broken in some way?</strong>
 							<br>The admin UI worked, queries worked via the REST API and the only log errors were Java's equivalent of the stack traces above. Hence this seemed unlikely, but was harder to rule out.</li>
 					</ul>
-					<h2>Turns out the answer was on the second page...</h2>
-					<p>We knew that another colleague (who was on holiday – so not available to help with this) had spent some time securing the web servers, and had used a tool called "<a href="https://www.nartac.com/Products/IISCrypto" target="_blank" rel="noopener noreferrer">IIS Crypto</a>" to update the server's settings. That was why one of the first things we checked was whether TLS had been disabled. However none of the people looking at this issue had much experience with this sort of configuration so we weren't entirely sure what we were doing... But as we got more desperate and did more research, we fired up that tool again. This time around we noticed that as well as allowing you to control what protocols are enabled, it also has another page of settings for what cipher suites are can be used:</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Turns out the answer was on the second page...</a>
+					</h2>
+					We knew that another colleague (who was on holiday – so not available to help with this) had spent some time securing the web servers, and had used a tool called "<a href="https://www.nartac.com/Products/IISCrypto" target="_blank" rel="noopener noreferrer">IIS Crypto</a>" to update the server's settings. That was why one of the first things we checked was whether TLS had been disabled. However none of the people looking at this issue had much experience with this sort of configuration so we weren't entirely sure what we were doing... But as we got more desperate and did more research, we fired up that tool again. This time around we noticed that as well as allowing you to control what protocols are enabled, it also has another page of settings for what cipher suites are can be used:
 					<p>
 						<a href="/img/2017/2017-01-iiscrypto.png" target="_blank">
 							<img alt="IIS Crypto" src="/img/2017/2017-01-iiscrypto.png">
@@ -283,8 +287,10 @@ Exception rethrown at [0]:
 					<p>
 						<a href="https://www.youtube.com/watch?v=OZpgnYhzdkI" target="_blank" rel="noopener noreferrer">Wild celebration ensued...</a>
 					</p>
-					<h2>In conclusion...</h2>
-					<p>So over-enthusiastic securing of your ciphers can cause you some pain.</p>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">In conclusion...</a>
+					</h2>
+					So over-enthusiastic securing of your ciphers can cause you some pain.
 					<p>If you're going to use tools like IIS Crypto to tie down the acceptable encryption your servers will use, you need to make sure you test everything that uses HTTPS in your solution. Underlying services are as likely to break as front-end features and the issues caused can be hidden for some time. If we'd realised the Sitecore UI error was important when it was first spotted, we could have prevented a lot of the pain here. That issue had been present since the security configuration was hardened on this server, but nobody realised its significance – it was only broken front-end code that raised the priority for a fix.</p>
 					<p>Based on this experience, clicking the "best practice" button in the IIS Crypto tool should give you a secure site which still works without the need to worry about individual settings, however that may be dependent on the precise setup of your site and its servers. You need to be quite careful about what other things you disable.</p>
 					<p>I also note that IIS Crypto can apply different security to "server" cryptography and "client" cryptography. When you're securing your servers to try and prevent malicious third parties from using crypto attacks against the sites you host, then it's the server-side stuff you need to secure. But what was broken for us here was the client behaviour of our web servers making calls to the Coveo server. That suggests there may be good reasons why you want these two areas of configuration to be different.</p>
@@ -306,7 +312,26 @@ Exception rethrown at [0]:
 				<i>
 					<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 						<div class="md:flex-row md:flex lg:flex-col">
-							<section class="md:flex-2 md:flex-grow md:flex-shrink">
+							<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+								<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+								<div class="bg-white p-2 flex flex-wrap">
+									<ol class="headings">
+										<li>
+											<a href="#heading1">Finding a bug...</a>
+										</li>
+										<li>
+											<a href="#heading2">What didn't help us...</a>
+										</li>
+										<li>
+											<a href="#heading3">Turns out the answer was on the second page...</a>
+										</li>
+										<li>
+											<a href="#heading4">In conclusion...</a>
+										</li>
+									</ol>
+								</div>
+							</section>
+							<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 								<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 								<div class="bg-white p-2 flex flex-wrap">
 									<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

@@ -160,8 +160,10 @@ Since I'd not looked at databases at this sort of level for some considerable ti
 					<p>Since I'd not looked at databases at this sort of level for some considerable time, I'm writing down some notes for my future self, next time I have to worry about this sort of thing...
 						<!--more-->
 					</p>
-					<h2>The symptoms</h2>
-					<p>The client in question had two database server clusters set up in separate data centres. For DR purposes, data was being pushed from #1 to #2 with a one-way replication. The replication had originally been configured for a subset of tables in Sitecore's Core database. It should have been pushing data from the ASP.Net Membership tables, but not pushing data for things like the ClientData table.</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The symptoms</a>
+					</h2>
+					The client in question had two database server clusters set up in separate data centres. For DR purposes, data was being pushed from #1 to #2 with a one-way replication. The replication had originally been configured for a subset of tables in Sitecore's Core database. It should have been pushing data from the ASP.Net Membership tables, but not pushing data for things like the ClientData table.
 					<p>But there were fairly regular exceptions appearing in the log, with epic stack traces like this:</p>
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="3,4" data-enlighter-language="text" style="width:100%; overflow:scroll;">3836 06:50:18 ERROR Application error.
 Exception: System.Exception
@@ -202,12 +204,14 @@ Source: Sitecore.Kernel
 
 					</pre>
 					<p>That's basically saying that (in this case) a media item request has failed because SQL Server refused to honour an attempt to write some data.</p>
-					<h2>Sorting this out</h2>
-					<p>Spending a bit of time with my good friend Google, came across
-						<a href="https://blogs.technet.microsoft.com/bpaulblog/2011/07/30/few-more-merge-replication-scenarios-questions/" target="_blank" rel="noopener noreferrer">blog posts</a>
-						and
-						<a href="https://social.msdn.microsoft.com/Forums/sqlserver/en-US/20343f7e-68f7-4b5b-a2b5-c827ec4c3988/the-transaction-ended-in-trigger?forum=sqlreplication" target="_blank" rel="noopener noreferrer">forum questions</a>
-						talking about this error outside the context of Sitecore.  These links suggest that the error is caused when some data from the setup of a replication gets left lying around because the replication wasn't configured successfully.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Sorting this out</a>
+					</h2>
+					Spending a bit of time with my good friend Google, came across
+					<a href="https://blogs.technet.microsoft.com/bpaulblog/2011/07/30/few-more-merge-replication-scenarios-questions/" target="_blank" rel="noopener noreferrer">blog posts</a>
+					and
+					<a href="https://social.msdn.microsoft.com/Forums/sqlserver/en-US/20343f7e-68f7-4b5b-a2b5-c827ec4c3988/the-transaction-ended-in-trigger?forum=sqlreplication" target="_blank" rel="noopener noreferrer">forum questions</a>
+					talking about this error outside the context of Sitecore.  These links suggest that the error is caused when some data from the setup of a replication gets left lying around because the replication wasn't configured successfully.
 					<p>Digging back through the history for this project, it turns out that there was a data centre outage in the past, and the replication was broken when the infrastructure was restored. So that tends to suggest that the posts above might be the right thing here.</p>
 					<p>Those posts suggest you can investigate if this is the issue by looking at the results of running a query like this on your affected database to tell you what triggers are defined:</p>
 					<pre class="code" data-enlighter-language="sql" style="width:100%; overflow:scroll;">SELECT
@@ -246,7 +250,20 @@ FROM
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The symptoms</a>
+									</li>
+									<li>
+										<a href="#heading2">Sorting this out</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

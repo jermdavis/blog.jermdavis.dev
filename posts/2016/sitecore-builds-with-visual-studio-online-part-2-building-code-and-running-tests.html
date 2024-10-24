@@ -183,9 +183,11 @@
 						on Github. You'll need to provide your own source for the TDS and FakeDB License file NuGet packages (which I have in a private feed) if you want to build it, however. But I figured it might be of interest to some people
 					</blockquote>
 					<p>Getting code, TDS and FakeDB to run together needs a minimum of three projects in your solution. (Though you can always have more if necessary) Obviously you'll need at least one project with your code in it. That doesn't need anything special other than access to whatever NuGet packages are required to compile the code. But the TDS and Test projects for the rest of the solution need a bit of tweaking to work in both a local and hosted build scenario. So here's how I made it work:</p>
-					<h2>Making TDS work in the cloud</h2>
-					<p>There are basically three changes you have to make to your standard TDS project so it works with both local and cloud builds, and they're
-						<a href="http://hedgehogdevelopment.github.io/tds/chapter5.html#tds-builds-using-cloud-servers" target="_blank" rel="noopener noreferrer">documented on the TDS site</a>:</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">Making TDS work in the cloud</a>
+					</h2>
+					There are basically three changes you have to make to your standard TDS project so it works with both local and cloud builds, and they're
+					<a href="http://hedgehogdevelopment.github.io/tds/chapter5.html#tds-builds-using-cloud-servers" target="_blank" rel="noopener noreferrer">documented on the TDS site</a>:
 					<ol>
 						<li>You need to make your references to the TDS MSBuild extensions via a NuGet package rather than assuming that they were installed by the TDS `.msi` file. You can't run an `.msi` installer on a hosted build server.</li>
 						<li>You need to ensure your project file has been modified to point to the local (installed by NuGet) copy of the MSBuild `.targets` file rather than the centralised one from the `.msi` file.</li>
@@ -204,8 +206,10 @@
 					<p>The final thing you need is to ensure that the TDS binaries can find their license. That's easy in a local build: If you've installed TDS on the machine then the license has already been captured when you went through the wizard. But that hasn't happened for a cloud build. You can put an XML file into your source tree that contains the data, but license data is something you don't want to accidentally make public via source control. So I think it's better to put the data into the build variables. In VSO, you can do that by editing your build and selecting the "Variables" tab and adding your license data there.</p>
 					<p>But since we've not got to the buit about creating a build yet, we'll come back to that step later in this post.</p>
 					<p>When that is done, whatever settings you put in the properties of your TDS project will be obeyed by the hosted build. Remember to set up the "build a package" properties in the TDS project for the right Build Target.</p>
-					<h2>Getting FakeDB to test in the cloud</h2>
-					<p>You'll have added the NuGet package for FakeDB anyway, in order to test locally, but the challenge for cloud tests is making sure that you can have the Sitecore DLLs FakeDB needs alongside your Sitecore license file. Now both of these are things that you don't really want to commit to source control (Especially if your code is going to end up in a public repository). So what you need here is some NuGet magic.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Getting FakeDB to test in the cloud</a>
+					</h2>
+					You'll have added the NuGet package for FakeDB anyway, in order to test locally, but the challenge for cloud tests is making sure that you can have the Sitecore DLLs FakeDB needs alongside your Sitecore license file. Now both of these are things that you don't really want to commit to source control (Especially if your code is going to end up in a public repository). So what you need here is some NuGet magic.
 					<p>The Sitecore DLLs bit is fairly simple. You may be able to use the same NuGet package that you're using for the Sitecore references in your source code project. Or, if that's not suitable for some reason, you can
 						<a href="/posts/2014/using-nuget-for-your-references-to-sitecore-dlls" target="_blank">create a specialised package</a>
 						with just
@@ -303,8 +307,10 @@ else
 						files, so putting that into the
 						<code>build</code>
 						folder just means it will sit there ready to process.</p>
-					<h2>And now you can pull it all together</h2>
-					<p>At this point, you should be able to write code, test it, and build TDS packages locally. The last step for getting the TFS build to work is to configure a build definition. Now that Microsoft have finally moved on from the (frankly painful) XAML build definitions that TFS used in the past, this is pleasingly simple.</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">And now you can pull it all together</a>
+					</h2>
+					At this point, you should be able to write code, test it, and build TDS packages locally. The last step for getting the TFS build to work is to configure a build definition. Now that Microsoft have finally moved on from the (frankly painful) XAML build definitions that TFS used in the past, this is pleasingly simple.
 					<p>First, create yourself a new build:</p>
 					<p>
 						<a href="/img/2016/2016-08-newbuild.png" target="_blank">
@@ -349,7 +355,23 @@ else
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">Making TDS work in the cloud</a>
+									</li>
+									<li>
+										<a href="#heading2">Getting FakeDB to test in the cloud</a>
+									</li>
+									<li>
+										<a href="#heading3">And now you can pull it all together</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

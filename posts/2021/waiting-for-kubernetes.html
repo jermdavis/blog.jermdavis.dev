@@ -157,13 +157,17 @@
 					<p>I've been slowly improving the release process for the container-based project I'm working on. There's a lot to learn about the ways to configure the Azure Devops pipelines for this work, because targeting Kubernetes is quite different from the old IaaS and PaaS approaches I was used to. 
 						<!--more-->
 					</p>
-					<h2>The issue</h2>
-					<p>One of the key processes for a container release is that you have to instruct Kubernetes to update the images for the site you're deploying. You send a command to say "here are the new config files, please update!". Kubernetes will then start the process of updating to the images described in this new config – which takes a while. It needs to download the files, spin up the appropriate containers based on them, and start up the software they run.</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The issue</a>
+					</h2>
+					One of the key processes for a container release is that you have to instruct Kubernetes to update the images for the site you're deploying. You send a command to say "here are the new config files, please update!". Kubernetes will then start the process of updating to the images described in this new config – which takes a while. It needs to download the files, spin up the appropriate containers based on them, and start up the software they run.
 					<p>Now a Sitecore deployment often involves tasks for things like "sync Unicorn" or similar, which have to take place after you've deployed your new images. So it's necessary for the release pipeline to wait for Kubernetes to finish this whole process of updating images before triggering Unicorn.</p>
 					<p>So how can DevOps do that waiting job?</p>
-					<h2>First attempt</h2>
-					<p>I did a bit of research before my initial attempt to set this up, and came across
-						<a href="https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#wait" rel="noopener" target="_blank">documentation for the "wait" option for the kubectl command</a>. When that is run, it can pause executition until some sort of container-related condition becomes true.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">First attempt</a>
+					</h2>
+					I did a bit of research before my initial attempt to set this up, and came across
+					<a href="https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#wait" rel="noopener" target="_blank">documentation for the "wait" option for the kubectl command</a>. When that is run, it can pause executition until some sort of container-related condition becomes true.
 					<p>And helpfully DevOps has a pipeline step which can run this command with its various parameters:</p>
 					<p>
 						<a href="/img/2021/2021-03-addkubectl.png" target="_blank">
@@ -183,16 +187,20 @@
 						<strong>So learning point #1:</strong>
 						Finished jobs are still important...</p>
 					<p>But that wasn't the only issue: I was also seeing warnings from DevOps where it complained that the wait operation was generating too much data:</p>
-					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2021-02-03T14:00:24.2280843Z ##[warning]Output variable not set as kubectl command output exceeded the maximum supported length. Output length: 413314, Maximum supported length: 32766
-2021-02-03T14:00:24.2289418Z ##[warning]Capturing deployment metadata failed with error: YAMLException: unexpected end of the stream within a double quoted scalar at line 1353, column 1:
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2021-02-03T14:00:24.2280843Z &lt;h2 class="anchor"&gt;&lt;a href="#heading3" name="heading3"&gt;[warning]Output variable not set as kubectl command output exceeded the maximum supported length. Output length: 413314, Maximum supported length: 32766
+&lt;/a&gt;&lt;/h2&gt;
+2021-02-03T14:00:24.2289418Z &lt;h2 class="anchor"&gt;&lt;a href="#heading4" name="heading4"&gt;[warning]Capturing deployment metadata failed with error: YAMLException: unexpected end of the stream within a double quoted scalar at line 1353, column 1:
+&lt;/a&gt;&lt;/h2&gt;
 
 					</pre>
 					<p>Turns out that when you have all the pods for a Sitecore XP setup, and you tell kubectl to return details as json, that generates quite a lot of data.</p>
 					<p>
 						<strong>So learning point #2:</strong>
 						DevOps doesn't want lots of your debug data...</p>
-					<h2>Fixing that...</h2>
-					<p>So after a bit more thinking, I revised my command a bit:</p>
+					<h2 class="anchor">
+						<a href="#heading5" name="heading5">Fixing that...</a>
+					</h2>
+					So after a bit more thinking, I revised my command a bit:
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe wait --for=condition=Ready pods -l app=cm -n sitecore --timeout=2700s
 
 					</pre>
@@ -207,7 +215,31 @@
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The issue</a>
+									</li>
+									<li>
+										<a href="#heading2">First attempt</a>
+									</li>
+									<li>
+										<a href="#heading3">[warning]Output variable not set as kubectl command output exceeded the maximum supported length. Output length: 413314, Maximum supported length: 32766
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">[warning]Capturing deployment metadata failed with error: YAMLException: unexpected end of the stream within a double quoted scalar at line 1353, column 1:
+										</a>
+									</li>
+									<li>
+										<a href="#heading5">Fixing that...</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

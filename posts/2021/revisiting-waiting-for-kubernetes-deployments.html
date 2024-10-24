@@ -156,8 +156,10 @@
 						<a href="/posts/2021/waiting-for-kubernetes" target="_blank">I was looking at how to release containerised Sitecore into Azure Kubernetes Clusters</a>, I worked through the question of "how do I make DevOps wait for the new images to be deployed", because you might want to run further work after the new containers are spun up. While what I tried back then was mostly working, I've found some reasons to try a different tack since then. 
 						<!--more-->
 					</p>
-					<h2>The challenge</h2>
-					<p>When I first worked through the problem of "make DevOps wait for Kubernetes to finish an operation", I tried making the DevOps release wait based on the status of pods. A command like:</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The challenge</a>
+					</h2>
+					When I first worked through the problem of "make DevOps wait for Kubernetes to finish an operation", I tried making the DevOps release wait based on the status of pods. A command like:
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe wait --for=condition=Ready pods -l app=cm -n &lt;YourNamespace&gt; --timeout=2700s
 
 					</pre>
@@ -177,8 +179,10 @@
 					<p>And that lead me to understand what was up:</p>
 					<p>The wait command above works fine when you are releasing a change to a single CM pod. But if you have multiple pods, it can go wrong: The "wait" can complete when only one of the pod replicas has been updated, which means you have a roughly 50% chance that the HTTPS request to sync Unicorn gets routed through the ingress controller to an old pod, rather than a newly updated one.</p>
 					<p>So how can DevOps ensure that all of the CM pods have been updated before it tries the Unicorn Job?</p>
-					<h2>A possible solution</h2>
-					<p>After spending a bit of time with my friend Google, I came across another approach. Instead of waiting on the state of a pod, it turns out you can wait on the state of a deployment:</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">A possible solution</a>
+					</h2>
+					After spending a bit of time with my friend Google, I came across another approach. Instead of waiting on the state of a pod, it turns out you can wait on the state of a deployment:
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl.exe rollout status deployment cm -n &lt;YourNamespace&gt;
 
 					</pre>
@@ -216,7 +220,20 @@ spec:
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The challenge</a>
+									</li>
+									<li>
+										<a href="#heading2">A possible solution</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

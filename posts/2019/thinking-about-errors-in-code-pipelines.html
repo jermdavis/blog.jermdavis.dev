@@ -158,14 +158,16 @@
 						on the subject of how code pipelines can work in a more functional .Net world. I've made use of those patterns in some code of my own, and I've found these posts have generated quite a lot of questions from readers here and followers on twitter. But I've never been quite happy with the implementation in my own code... 
 						<!--more-->
 					</p>
-					<h2>The challenge</h2>
-					<p>The key place I'd made use of these patterns was in my homebrew RSS reader tool. That has two pipelines in its update logic: The first takes a feed URL and transforms it into a set of "post" objects that need processing. The second takes a post object and transforms it (by fetching HTML, removing scripts, working out dates etc) into a complete entry for the content database.</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The challenge</a>
+					</h2>
+					The key place I'd made use of these patterns was in my homebrew RSS reader tool. That has two pipelines in its update logic: The first takes a feed URL and transforms it into a set of "post" objects that need processing. The second takes a post object and transforms it (by fetching HTML, removing scripts, working out dates etc) into a complete entry for the content database.
 					<p>Now the thing that didn't really fit here was that any attempt to fetch data over the internet can fail, but my original pipeline couldn't really handle that gracefully. You could either throw an exception that was caught outside of the pipeline, or you could include data in the pipeline's output model that specified what had gone wrong. But to my mind, neither of these is really the right way of solving the problem.</p>
 					<p>So how could you adapt the original pipeline model to better describe problems?</p>
-					<h2>Stealing another idea from Functional programming</h2>
-					<p>The world of functional programming tries to solve issues like this with a wrapper type often refered to as "Either". This represents a result that can be one of two types. It's generally used to wrap "Either a success object or a failure object", but it can also be used to handle a situation where you can have two different successful results from an operation. So could we try and redefine the basic pipeline interfaces in terms of receiving and returning
-						<code>Either</code>
-						objects?</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Stealing another idea from Functional programming</a>
+					</h2>
+					The world of functional programming tries to solve issues like this with a wrapper type often refered to as "Either". This represents a result that can be one of two types. It's generally used to wrap "Either a success object or a failure object", but it can also be used to handle a situation where you can have two different successful results from an operation. So could we try and redefine the basic pipeline interfaces in terms of receiving and returning `Either` objects?
 					<p>For the sort of pipeline I'm thinking about for my RSS Reader, we're probably thinking about a pipeline that can return either a successful data object, or an error exception that occurred while the data was being processed. So the type looks something like:</p>
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public struct Either&lt;SUCCESS, FAILURE&gt;
 {
@@ -277,8 +279,10 @@ public static implicit operator FAILURE(Either&lt;SUCCESS, FAILURE&gt; value) =&
 						<code>Process()</code>
 						method now just decides whether the input is a success or failure type, and calls the appropriate method on it. Most of the time I think the failure path will just "do nothing and pass on the existing error", so that can be a virtual method with this as default behaviour. But the opposite is true for the success path – pretty much every pipeline step will have some custom logic here, so it makes sense for that to be an abstract method.</p>
 					<p>And that's most of the basic logic we need to try this out...</p>
-					<h2>An example</h2>
-					<p>Lets make up some trivial pipeline steps to try this out. A very simple example of a step that might have an error is parsing a string to a number. So lets try a step that does that:</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">An example</a>
+					</h2>
+					Lets make up some trivial pipeline steps to try this out. A very simple example of a step that might have an error is parsing a string to a number. So lets try a step that does that:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ErrorAwareStringToIntStep : ErrorAwarePipelineStep&lt;string, int, Exception&gt;
 {
     public override Either&lt;int, Exception&gt; ProcessSuccessInput(Either&lt;string, Exception&gt; input)
@@ -398,8 +402,10 @@ public static implicit operator FAILURE(Either&lt;SUCCESS, FAILURE&gt; value) =&
 					<p>The
 						<a href="https://gist.github.com/jermdavis/0b27c613e7e252e4a1cd68fc530b7d77" rel="noopener noreferrer" target="_blank">code for this is available in a gist</a>
 						if you want it all together.</p>
-					<h2>Conclusions</h2>
-					<p>It does make the error handling pattern for the pipelines easier, I think – now that there's an explicit path for what happens to error data. I can see a way to recompose my RSS pipelines so that an error message comes out, and then a third pipeline that can translate an exception record from one of those pipelines into the "feed error" record that I want to store in my RSS reader's database. And once the infrastructure described above is in place, the individual pipeline components don't really change that much from what I had before.</p>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">Conclusions</a>
+					</h2>
+					It does make the error handling pattern for the pipelines easier, I think – now that there's an explicit path for what happens to error data. I can see a way to recompose my RSS pipelines so that an error message comes out, and then a third pipeline that can translate an exception record from one of those pipelines into the "feed error" record that I want to store in my RSS reader's database. And once the infrastructure described above is in place, the individual pipeline components don't really change that much from what I had before.
 					<p>But the counterpoint to that is that the interfaces of the various types involved in the pipeline infrastructure got more complex, and less readable as a result. And I'm not sure I've got to the bottom of the set of type casts and helper methods necessary to ensure that it's easy to use
 						<code>Either</code>
 						in the midst of other code.</p>
@@ -408,7 +414,26 @@ public static implicit operator FAILURE(Either&lt;SUCCESS, FAILURE&gt; value) =&
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The challenge</a>
+									</li>
+									<li>
+										<a href="#heading2">Stealing another idea from Functional programming</a>
+									</li>
+									<li>
+										<a href="#heading3">An example</a>
+									</li>
+									<li>
+										<a href="#heading4">Conclusions</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

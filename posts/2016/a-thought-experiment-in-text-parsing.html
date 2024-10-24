@@ -171,9 +171,11 @@ So I thought I'd invent an idea for an experimental project to test this out..."
 					<p>So I thought I'd invent an idea for an experimental project to test this out...
 						<!--more-->
 					</p>
-					<h2>What was the idea?</h2>
-					<p>Imagine your client phones you up one day and says "Our SEO people have sent me a text file full of changes we should make to the structure of our content. We need you to implement all the changes right away!". Not a million miles from something that might happen in reality... You could make all the changes by hand, or maybe you could automate them? Well the right answer is almost certainly
-						<a href="https://marketplace.sitecore.net/en/Modules/Sitecore_PowerShell_console.aspx" target="_blank" rel="noopener noreferrer">something involving PowerShell Extensions</a>, but for the purposes of having an excuse to learn about Sprache, how about this:</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">What was the idea?</a>
+					</h2>
+					Imagine your client phones you up one day and says "Our SEO people have sent me a text file full of changes we should make to the structure of our content. We need you to implement all the changes right away!". Not a million miles from something that might happen in reality... You could make all the changes by hand, or maybe you could automate them? Well the right answer is almost certainly
+					<a href="https://marketplace.sitecore.net/en/Modules/Sitecore_PowerShell_console.aspx" target="_blank" rel="noopener noreferrer">something involving PowerShell Extensions</a>, but for the purposes of having an excuse to learn about Sprache, how about this:
 					<p>Lets assume there are three operations described in the text file, and that the SEO people were nice enough to use a standard pattern for each one:</p>
 					<ul>
 						<li>
@@ -203,8 +205,10 @@ So I thought I'd invent an idea for an experimental project to test this out..."
 						</li>
 					</ul>
 					<p>What we'd like our automation to do is take a list of these commands from some text, and then attempt to process each one in turn. What code do we need to achieve that?</p>
-					<h2>First job: Parsing an item or path to operate on</h2>
-					<p>Taking a TDD type approach to this, what are the initial tests we might want for parsing a delete command? Well looking at the example above we need to parse the "delete" operation and we need to parse out the defintion of an item to delete. Sitecore usually identifies items by paths or IDs, so that tends to suggest we need to be able to parse either a path or a GUID here.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">First job: Parsing an item or path to operate on</a>
+					</h2>
+					Taking a TDD type approach to this, what are the initial tests we might want for parsing a delete command? Well looking at the example above we need to parse the "delete" operation and we need to parse out the defintion of an item to delete. Sitecore usually identifies items by paths or IDs, so that tends to suggest we need to be able to parse either a path or a GUID here.
 					<p>As you might expect from native .Net code, Sprache is a strongly typed parser. So if we're going to want to parse a "GUID or Path" field, we need to be able to parse the text into a type holding this data. A test case might look like this for GUIDs:</p>
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestMethod]
 public void ItemIDParsesValidID()
@@ -310,8 +314,10 @@ public static Parser&lt;string&gt; ItemName =
 						<code>Path</code>
 						is buit up by joining those item names back together again.</p>
 					<p>And with that code in place, the two tests defined above should now pass.</p>
-					<h2>Building on that to parse the delete operation</h2>
-					<p>Now we can parse a path, we can move on to parsing the delete operation. We're going to want a different output from the parser here – we're going to need a class to represent a deletion. However, in the future we're going to want to create a single parsing method that can parse any of our three commands – so the delete command parser will need to be defined in terms of a more generic "any command" type. To me this smells like a situation for the Command pattern, as later we're going to need this class to know how to process the deletion.</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Building on that to parse the delete operation</a>
+					</h2>
+					Now we can parse a path, we can move on to parsing the delete operation. We're going to want a different output from the parser here – we're going to need a class to represent a deletion. However, in the future we're going to want to create a single parsing method that can parse any of our three commands – so the delete command parser will need to be defined in terms of a more generic "any command" type. To me this smells like a situation for the Command pattern, as later we're going to need this class to know how to process the deletion.
 					<p>So we can define a Commmand pattern interface:</p>
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface ICommand
 {
@@ -368,9 +374,11 @@ public void DeleteParsesWithID()
 
 					</pre>
 					<p>And with all the code above in place these will pass too.</p>
-					<h2>Now to actually delete...</h2>
-					<p>Writing code in Sitecore to delete an item isn't hard – but sticking to our pattern of having tests to validate the code is less easy. Our saviour here comes in the form of the
-						<a href="https://github.com/sergeyshushlyapin/Sitecore.FakeDb" target="_blank" rel="noopener noreferrer">Sitecore.FakeDb project</a>. This allows you to run an "in-RAM" version of the Sitecore data APIs in your test project.</p>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">Now to actually delete...</a>
+					</h2>
+					Writing code in Sitecore to delete an item isn't hard – but sticking to our pattern of having tests to validate the code is less easy. Our saviour here comes in the form of the
+					<a href="https://github.com/sergeyshushlyapin/Sitecore.FakeDb" target="_blank" rel="noopener noreferrer">Sitecore.FakeDb project</a>. This allows you to run an "in-RAM" version of the Sitecore data APIs in your test project.
 					<p>It's very easy to install: All you need is the NuGet package added to your test project, a few DLLs from a valid Sitecore install (which can't go in NuGet for licensing reasons) and your Sitecore license file.</p>
 					<p>Once you have that in place, you're free to write tests against Sitecore item data like this:</p>
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[TestMethod]
@@ -426,8 +434,10 @@ public void ValidDeleteWorks()
 						<code>Sitecore.Context.Database</code>
 						and FakeDb magically replaces that with the in-memory database for the purposes of this test.</p>
 					<p>Easy, huh?</p>
-					<h2>Moving items</h2>
-					<p>Creating the move command is pretty similar - it just needs to parse out two item identifiers because you need the item and the target folder:</p>
+					<h2 class="anchor">
+						<a href="#heading5" name="heading5">Moving items</a>
+					</h2>
+					Creating the move command is pretty similar - it just needs to parse out two item identifiers because you need the item and the target folder:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; MoveCommand =
     from cmd in Parse.IgnoreCase("move").Token()
     from item in PathOrID
@@ -466,8 +476,10 @@ public void ValidDeleteWorks()
 
 					</pre>
 					<p>Again we can write tests to validate both of these. (More of that later)</p>
-					<h2>Creating items</h2>
-					<p>The create command is a bit more complex. It needs to parse out a template identifer, a location and a name. Then it has to optionally parse any other field values that need setting. The parsing code for that is a bit more complex:</p>
+					<h2 class="anchor">
+						<a href="#heading6" name="heading6">Creating items</a>
+					</h2>
+					The create command is a bit more complex. It needs to parse out a template identifer, a location and a name. Then it has to optionally parse any other field values that need setting. The parsing code for that is a bit more complex:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; CreateCommand =
     from cmd in Parse.IgnoreCase("create").Token()
     from template in PathOrID
@@ -586,8 +598,10 @@ public static Parser&lt;Field&gt; Field =
 
 					</pre>
 					<p>And as before, tests can run against all these bits of code to verify they work correctly...</p>
-					<h2>Finally, parse any command</h2>
-					<p>Now we've got parsers for each of the individual commands, it's trivial to parse "any command":</p>
+					<h2 class="anchor">
+						<a href="#heading7" name="heading7">Finally, parse any command</a>
+					</h2>
+					Now we've got parsers for each of the individual commands, it's trivial to parse "any command":
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Parser&lt;ICommand&gt; Any =
     CreateCommand
     .XOr(MoveCommand)
@@ -613,8 +627,10 @@ public void AnyCanParseCreate()
 }
 
 					</pre>
-					<h2>Wrapping up...</h2>
-					<p>That was the point at which I figured I'd got as much learning out of this example as I could, and moved on to other things.</p>
+					<h2 class="anchor">
+						<a href="#heading8" name="heading8">Wrapping up...</a>
+					</h2>
+					That was the point at which I figured I'd got as much learning out of this example as I could, and moved on to other things.
 					<p>It's a contrived example, but hopefully it shows that when you do need to parse text into structured data, there are better choices than Regular Expressions for C# developers. While I'll admit that working out how to use the Sprache API can be a bit challenging to begin with, the end result is much more usable, testable and readable than anything a regex will give you. And as a side effect, hopefully the code shows just how easy and helpful the Sitecore.FakeDb project is for enabling unit test of your API-level code.</p>
 					<p>In case you're interested in running the tests yourself, or delving through this code in more detail, I've
 						<a href="https://github.com/jermdavis/SpracheBlog" target="_blank" rel="noopener noreferrer">posted the whole test project to GitHub</a>. Feel free to clone and mess about...</p>
@@ -622,7 +638,38 @@ public void AnyCanParseCreate()
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">What was the idea?</a>
+									</li>
+									<li>
+										<a href="#heading2">First job: Parsing an item or path to operate on</a>
+									</li>
+									<li>
+										<a href="#heading3">Building on that to parse the delete operation</a>
+									</li>
+									<li>
+										<a href="#heading4">Now to actually delete...</a>
+									</li>
+									<li>
+										<a href="#heading5">Moving items</a>
+									</li>
+									<li>
+										<a href="#heading6">Creating items</a>
+									</li>
+									<li>
+										<a href="#heading7">Finally, parse any command</a>
+									</li>
+									<li>
+										<a href="#heading8">Wrapping up...</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

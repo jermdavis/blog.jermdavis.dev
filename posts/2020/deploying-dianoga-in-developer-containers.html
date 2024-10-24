@@ -170,10 +170,12 @@
 						helpfully points out that this issue is specific to older versions of Dianoga. With
 						<a href="https://github.com/kamsar/Dianoga/releases/tag/5.0.0" rel="noopener" target="_blank">V5 and newer the SVG optimiser now uses a pre-built single-file version</a>, so it wouldn't have the problem below. But the overall issue remains for any other reason you might need to put `node_modules` (or other excluded file/folder types) inside a container.
 					</blockquote>
-					<h2>The issue:</h2>
-					<p>I've been working on a project which is using
-						<a href="https://github.com/Sitecore/docker-examples" rel="noopener" target="_blank">Sitecore's docker containers for development</a>. When you build the solution in Visual Studio, it
-						<a href="https://containers.doc.sitecore.com/docs/file-deployment#understand-the-solution-structure" rel="noopener" target="_blank">copies the build output to a "deploy" folder, which is mapped into the docker container using a volume</a>. The project has Dianoga set up in the source tree – and all the files and dependencies are deployed by Visual Studio when you hit "publish".</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The issue:</a>
+					</h2>
+					I've been working on a project which is using
+					<a href="https://github.com/Sitecore/docker-examples" rel="noopener" target="_blank">Sitecore's docker containers for development</a>. When you build the solution in Visual Studio, it
+					<a href="https://containers.doc.sitecore.com/docs/file-deployment#understand-the-solution-structure" rel="noopener" target="_blank">copies the build output to a "deploy" folder, which is mapped into the docker container using a volume</a>. The project has Dianoga set up in the source tree – and all the files and dependencies are deployed by Visual Studio when you hit "publish".
 					<p>Initially that all seemed to be working fine – but when an SVG image was added to a page log errors started to appear in the container:</p>
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">1244 08:38:25 INFO  Dianoga: /1548975485 is not something that can be optimized, either because of its file format or because it is excluded.
 2336 08:38:25 ERROR Dianoga: Unable to optimize /1548975485 due to a processing error! It will be unchanged.
@@ -212,10 +214,10 @@ Source: Dianoga
 
 					</pre>
 					<p>It's clearly running – so what's up with SVGs?</p>
-					<h2>What's happening?</h2>
-					<p>A bit of digging lead to an important clue in the logs above. In the middle of the error stack trace is the message
-						<code>Error: Cannot find module 'C:\inetpub\wwwroot\App_Data\Dianoga Tools\SVGO\node_modules\svgo\bin\svgo'</code>
-						- it's saying it cannot find the SVG optimiser code.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">What's happening?</a>
+					</h2>
+					A bit of digging lead to an important clue in the logs above. In the middle of the error stack trace is the message `Error: Cannot find module 'C:\inetpub\wwwroot\App_Data\Dianoga Tools\SVGO\node_modules\svgo\bin\svgo'` - it's saying it cannot find the SVG optimiser code.
 					<p>Looking at the deployment folder that Visual Studio has written to, that file does exist, however:</p>
 					<p>
 						<a href="/img/2020/2020-10-missingsvgo.png" target="_blank">
@@ -251,9 +253,10 @@ Source: Dianoga
 					</p>
 					<p>Bingo - the files are in the container. They just didn't get copied over to
 						<code>wwwroot</code>...</p>
-					<h2>The solution:</h2>
-					<p>So I dug into the container, and looked at the entrypoint script, which lives in
-						<code>C:\tools\entrypoints\iis\Development.ps1</code>. It turns out that starts another script which does the file copying as a background job:</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">The solution:</a>
+					</h2>
+					So I dug into the container, and looked at the entrypoint script, which lives in `C:\tools\entrypoints\iis\Development.ps1`. It turns out that starts another script which does the file copying as a background job:
 					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">    # Start Watch-Directory.ps1 in background
     Start-Job -Name $watchDirectoryJobName -ArgumentList $WatchDirectoryParameters -ScriptBlock {
         param([hashtable]$params)
@@ -346,7 +349,23 @@ param(
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The issue:</a>
+									</li>
+									<li>
+										<a href="#heading2">What's happening?</a>
+									</li>
+									<li>
+										<a href="#heading3">The solution:</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

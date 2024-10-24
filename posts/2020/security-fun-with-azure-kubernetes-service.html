@@ -157,11 +157,13 @@
 					<p>I've been working on a deployment of Sitecore using containers recently, and hit a scenario which isn't discussed much in the Microsoft documentation: How do you go about setting it all up if you can't use Active Directory accounts across your DevOps and Azure instances? Having done some digging, here's what I've learned so far: 
 						<!--more-->
 					</p>
-					<h2>My issue</h2>
-					<p>I needed to run Sitecore in
-						<a href="https://azure.microsoft.com/en-gb/services/kubernetes-service/" rel="noopener" target="_blank">AKS</a>, but there was a security boundary between DevOps (owned and run by my client) and my dev/QA Azure instance (owned and run by my company). Normally this would be pretty easy – in DevOps you can create a
-						<a href="https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&amp;tabs=yaml" rel="noopener" target="_blank">Service Connection</a>
-						for an instance of AKS and give it your AD credentials for Azure. But that doesn't work for me – for tedious technical reasons it is not possible for me to log in as my Azure account when I'm accessing the client's DevOps, so I can't create one of these easy authentication tokens.</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">My issue</a>
+					</h2>
+					I needed to run Sitecore in
+					<a href="https://azure.microsoft.com/en-gb/services/kubernetes-service/" rel="noopener" target="_blank">AKS</a>, but there was a security boundary between DevOps (owned and run by my client) and my dev/QA Azure instance (owned and run by my company). Normally this would be pretty easy – in DevOps you can create a
+					<a href="https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&amp;tabs=yaml" rel="noopener" target="_blank">Service Connection</a>
+					for an instance of AKS and give it your AD credentials for Azure. But that doesn't work for me – for tedious technical reasons it is not possible for me to log in as my Azure account when I'm accessing the client's DevOps, so I can't create one of these easy authentication tokens.
 					<p>(For the curious: I have "username@mycompany.com" Azure AD account which is used for my Azure access in my company. But I also have the same username as a standard Microsoft account which is not tied to my company AD. The client used the standard Microsoft account to grant me access to their DevOps because they don't have access to our company AD either. So whenever I try to fill in the Service Connection form to give my credentials to set up this link, DevOps only accepts my Microsoft Account password. I cannot use the company AD account which would actually grant rights to the AKS instance. A silly issue – but a blocker none the less)</p>
 					<p>
 						<a href="/img/2020/2020-12-untitled-diagram.png" target="_blank">
@@ -169,13 +171,17 @@
 						</a>
 					</p>
 					<p>So how can I give DevOps permissions to push new deployments into my AKS instance?</p>
-					<h2>K8s tokens</h2>
-					<p>It turns out that Kubernetes has its own approach to security – and this is something I can use to solve my problem. Most of the docs that you come across for AKS assume that you'll be using Active Directory, but it turns out you can use role-based access control (referred to as
-						<a href="https://en.wikipedia.org/wiki/Role-based_access_control" rel="noopener" target="_blank">RBAC</a>
-						in the docs) with internal accounts too. So you can create an account in Kubernetes, grant it some permissions and then give its authentication tokens to DevOps to use when it connects.</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">K8s tokens</a>
+					</h2>
+					It turns out that Kubernetes has its own approach to security – and this is something I can use to solve my problem. Most of the docs that you come across for AKS assume that you'll be using Active Directory, but it turns out you can use role-based access control (referred to as
+					<a href="https://en.wikipedia.org/wiki/Role-based_access_control" rel="noopener" target="_blank">RBAC</a>
+					in the docs) with internal accounts too. So you can create an account in Kubernetes, grant it some permissions and then give its authentication tokens to DevOps to use when it connects.
 					<p>Sounds simple – but like many things here, it requires some thought.</p>
-					<h2>Getting an account</h2>
-					<p>Kubernetes has the concept of "service accounts" – users which can perform actions in the system but are expected to be used by other computers rather than people. Some documentation only discusses this inside your cluster, when pods need to communicate. However there is also some documentation that discusses how these can be used for external systems to perform actions in your cluster.</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Getting an account</a>
+					</h2>
+					Kubernetes has the concept of "service accounts" – users which can perform actions in the system but are expected to be used by other computers rather than people. Some documentation only discusses this inside your cluster, when pods need to communicate. However there is also some documentation that discusses how these can be used for external systems to perform actions in your cluster.
 					<p>From the command line you can create a new service account with
 						<code>kubectl</code>. So I started by creating one in my Sitecore deployment's namespace. However despite a variety of experiments here, I was unable to make that work correctly – it was easy to create the account, but AKS would always refuse to perform any actions under these credentials. After a lot of research, I found one article that described putting your service account into the "kube-system" namespace. And this worked for me.</p>
 					<p>So the command I created the user with ended up as:</p>
@@ -194,8 +200,10 @@
 						<code>-n</code>
 						parameter here.</p>
 					<p>(You can also do this from Yaml files, of course – but I'll stick to the command line here)</p>
-					<h2>Getting the credentials to use</h2>
-					<p>When you click "Manage" for the AKS service connection in DevOps, you need to change the authentication method to "Service Account" to use this approach. That requires you to fill in two key bits of info:</p>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">Getting the credentials to use</a>
+					</h2>
+					When you click "Manage" for the AKS service connection in DevOps, you need to change the authentication method to "Service Account" to use this approach. That requires you to fill in two key bits of info:
 					<p>
 						<a href="/img/2020/2020-12-serviceaccount.png" target="_blank">
 							<img alt="Service Account" src="/img/2020/2020-12-serviceaccount.png">
@@ -250,10 +258,10 @@
 
 					</pre>
 					<p>And this is what you need to paste into the DevOps form. Once that's done and saved in your Service Connection, the DevOps kubectl step can use it to connect to your AKS instance.</p>
-					<h2>Another thing that tripped me up...</h2>
-					<p>Early on in this process I came across some documentation describing the
-						<code>can-i</code>
-						command for checking if a user can do an operation. In theory, you can use a command like:</p>
+					<h2 class="anchor">
+						<a href="#heading5" name="heading5">Another thing that tripped me up...</a>
+					</h2>
+					Early on in this process I came across some documentation describing the `can-i` command for checking if a user can do an operation. In theory, you can use a command like:
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl auth can-i create deployment -n my-deployment --as azure-pipeline
 
 					</pre>
@@ -262,8 +270,10 @@
 					<p>This caused me a certain amount of delay when I was working out the steps above. I was trying to avoid running deployments – as they take a while. I assume there's some key thing I've missed here about how the
 						<code>can-i</code>
 						command works which explains this issue. But I've not worked it out yet...</p>
-					<h2>And there was one more thing to trip me up...</h2>
-					<p>Before I started trying to get the DevOps release to work, I'd been testing some releases from the command line. Those had been working fine. So when I ran the first DevOps release that succeeded, I was surprised to find that after DevOps declared it had finished applying the release I was seeing AKS erroring because it was unable to pull the requisite images.</p>
+					<h2 class="anchor">
+						<a href="#heading6" name="heading6">And there was one more thing to trip me up...</a>
+					</h2>
+					Before I started trying to get the DevOps release to work, I'd been testing some releases from the command line. Those had been working fine. So when I ran the first DevOps release that succeeded, I was surprised to find that after DevOps declared it had finished applying the release I was seeing AKS erroring because it was unable to pull the requisite images.
 					<p>Stepping back and thinking about it, that did make some sense. My AKS instance is sitting with my ACR instance in my DevOps. That means when I ran command line deploys as "me" they were running with the correct security tokens to access both AKS and ACR. But once DevOps takes over using its special token above, that doesn't have access to my ACR...</p>
 					<p>Another pass through the documentation teaches me another new thing. You can add the auth details for your ACR as a secret in your AKS instance:</p>
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl create secret docker-registry my-company-acr --docker-server=myacr.azurecr.io --docker-username=myacr --docker-password=1234343+sdasdsdaKJKweq --docker-email=my-email@somewhere.com
@@ -321,7 +331,32 @@ spec:
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">My issue</a>
+									</li>
+									<li>
+										<a href="#heading2">K8s tokens</a>
+									</li>
+									<li>
+										<a href="#heading3">Getting an account</a>
+									</li>
+									<li>
+										<a href="#heading4">Getting the credentials to use</a>
+									</li>
+									<li>
+										<a href="#heading5">Another thing that tripped me up...</a>
+									</li>
+									<li>
+										<a href="#heading6">And there was one more thing to trip me up...</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

@@ -165,10 +165,11 @@
 						<!--more-->
 					</p>
 					<p>The reason for me going back to this was that the installation scripting I'd used was working fine for me during testing, but when I came to try and install more than one automated instance on the same server I started to see the script failing.</p>
-					<h2>So what does SC_IISSITE_ID do?</h2>
-					<p>The first problem I hit was the installation failing with errors in the MSI log file around its call to
-						<code>StartIIS7ConfigTransaction</code>. A bit of internet digging lead me to this post:
-						<a href="http://wixtoolset.org/issues/2755/" target="_blank" rel="noopener noreferrer">http://wixtoolset.org/issues/2755/</a>. While it's not referring to Sitecore installs, it is referring to the idea that when the installation framework is installing stuff into IIS, it can make use of either site names or site IDs to find whether a particular site exists.</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">So what does SC_IISSITE_ID do?</a>
+					</h2>
+					The first problem I hit was the installation failing with errors in the MSI log file around its call to `StartIIS7ConfigTransaction`. A bit of internet digging lead me to this post:
+					<a href="http://wixtoolset.org/issues/2755/" target="_blank" rel="noopener noreferrer">http://wixtoolset.org/issues/2755/</a>. While it's not referring to Sitecore installs, it is referring to the idea that when the installation framework is installing stuff into IIS, it can make use of either site names or site IDs to find whether a particular site exists.
 					<p>During the install, the Sitecore MSI is using the ID you pass in the
 						<code>SC_IISSITE_ID</code>
 						field for creating the IIS site for your instance. Hence if that ID is unique the installer succeeds, but it will fail if you try to install two different instances with the same ID.</p>
@@ -176,8 +177,10 @@
 						<code>SC_IISSITE_ID</code>
 						property is optional. If you know it, pass it. But if you don't know it you can leave it out and the MSI engine will work out the next available ID to use.</p>
 					<p>So to make the scripted installation succeed for more than one instance, this needs to be left as an empty string.</p>
-					<h2>There's more than one "unique ID" number involved here...</h2>
-					<p>Having fixed that, I then discovered a second problem. Installing a second version of Sitecore on the same machine would still fail, but now with a more obscure error. The log file included something like this:</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">There's more than one "unique ID" number involved here...</a>
+					</h2>
+					Having fixed that, I then discovered a second problem. Installing a second version of Sitecore on the same machine would still fail, but now with a more obscure error. The log file included something like this:
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">MSI (s) (08:88) [12:31:21:291]: Machine policy value 'TransformsSecure' is 1
 MSI (s) (08:88) [12:31:21:291]: Machine policy value 'DisableUserInstalls' is 0
 MSI (s) (08:88) [12:31:21:291]: Specified instance {60C35F8E-334E-513E-B901-858D8CA9E17D} via transform :ComponentGUIDTransform5.mst is already installed. MSINEWINSTANCE requires a new instance that is not installed.
@@ -255,8 +258,10 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
 					</pre>
 					<p>The code checks if the registry entries that we want to process exist. It defaults to instance number one, and then looks at all the data under the Sitecore CMS bit of the registry. It finds the highest InstanceID value that has been stored here, extracts the number from it and then adds one to it.</p>
 					<p>So far, this has reliably found a valid ID to use.</p>
-					<h2>So where does this leave the install script?</h2>
-					<p>After making the changes above, the PowerShell code required to install an instance of Sitecore looks a bit like this:</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">So where does this leave the install script?</a>
+					</h2>
+					After making the changes above, the PowerShell code required to install an instance of Sitecore looks a bit like this:
 					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Perform-Install([string]$license, [string]$installer, [string]$site, [string]$sqlServer, [string]$sqlUser, [string]$sqlPassword) {
     $msi = "msiexec.exe"  
     $instanceID = (Generate-InstanceID $site)
@@ -287,19 +292,36 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
 
 					</pre>
 					<p>This combines the two changes above, to make the install work for more than one Sitecore instance on a single server. It also includes a final test to see if the website folder now exists – which indicates whether we succeeded.</p>
-					<h2>One other thing to note</h2>
-					<p>While testing these changes, I found a couple of situations where (for reasons I've not been able to determine) uninstalling an instance via
-						<code>.exe</code>
-						or
-						<code>.msi</code>
-						didn't work correctly. Despite the removal of the IIS site, most of the files and the databases, attempts to reuse the same instance name failed. I was seeing errors in the MSI log file saying that the install had failed (but with no specific reason) in some cases, and in one case an error saying that the installation was rolled-back because connecting to the database did not work (When the supplied credentials were definitely valid).</p>
+					<h2 class="anchor">
+						<a href="#heading4" name="heading4">One other thing to note</a>
+					</h2>
+					While testing these changes, I found a couple of situations where (for reasons I've not been able to determine) uninstalling an instance via `.exe` or `.msi` didn't work correctly. Despite the removal of the IIS site, most of the files and the databases, attempts to reuse the same instance name failed. I was seeing errors in the MSI log file saying that the install had failed (but with no specific reason) in some cases, and in one case an error saying that the installation was rolled-back because connecting to the database did not work (When the supplied credentials were definitely valid).
 					<p>In these cases, I was able to resolve the install problems by checking the registry (as described above) and removing left-over entries from the instance(s) which had not been removed by the uninstall process.</p>
 					<p>So if you see odd errors from the MSI process take a look at the registry and see if you have any leftovers.</p>
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">So what does SC_IISSITE_ID do?</a>
+									</li>
+									<li>
+										<a href="#heading2">There's more than one "unique ID" number involved here...</a>
+									</li>
+									<li>
+										<a href="#heading3">So where does this leave the install script?</a>
+									</li>
+									<li>
+										<a href="#heading4">One other thing to note</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

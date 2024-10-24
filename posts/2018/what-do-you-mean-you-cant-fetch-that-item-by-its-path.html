@@ -155,10 +155,12 @@
 					<p>There are some things in Sitecore that you just take for granted will work. Loading items is a good example of this. I'll admit that user error can get in your way, but usually if you can see an item in the content tree, you can write code that will load it without issues. So I'll admit I was pretty confused when I came across a scenario recently where this did not appear to work correctly. In case anyone else hits this challenge, here's what happened:
 						<!--more-->
 					</p>
-					<h2>The problem</h2>
-					<p>I have a client who is making use of the
-						<a href="https://doc.sitecore.net/sitecore_commerce/commerce_connect_components/introducing_commerce_connect" rel="noopener" target="_blank">Commerce Connect</a>
-						module to pull in data about product categories for an sales website. The back-end commerce system is their own, but they have made added some customisation to Commerce Connect to allow their data to be moved from the back-end system into Sitecore each night. They had noticed that sometimes, when new trees of content were being added by the import process some of the data would come over, but other bits would not. And that's where I got involved – looking to see what might be going wrong with the import process.</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">The problem</a>
+					</h2>
+					I have a client who is making use of the
+					<a href="https://doc.sitecore.net/sitecore_commerce/commerce_connect_components/introducing_commerce_connect" rel="noopener" target="_blank">Commerce Connect</a>
+					module to pull in data about product categories for an sales website. The back-end commerce system is their own, but they have made added some customisation to Commerce Connect to allow their data to be moved from the back-end system into Sitecore each night. They had noticed that sometimes, when new trees of content were being added by the import process some of the data would come over, but other bits would not. And that's where I got involved – looking to see what might be going wrong with the import process.
 					<p>After working through the custom bits of their integration code in the Visual Studio debugger, I spotted a place where this behaviour might occur. When it tried to import a new item of "product category" data, it was looking to load the correct parent item. (So the new child could be created under it) It looked like when a parent didn't exist, it would fail to process new children for that item. But oddly in some circumstances I could step through the code and see that the parent item was visible in the Sitecore content tree, but the request to load it still failed.</p>
 					<p>That confused me. So I did what I usually do when code confuses me: I try to reproduce the situation with the simplest possible thing. And after a few tries, I hit on the following process:</p>
 					<p>If I deleted all the product category data from Sitecore, I could run the Commerce Connect synchronisation process and it would complete ok. But having done that I could run some simple PowerShell that showed the problem:</p>
@@ -177,10 +179,12 @@ get-item -path master: -ID "{F3D09AFA-D9B3-11C7-14B1-4D1096878F21}" | select -Ex
 					</p>
 					<p>Attempting to load the parent item and show its children worked fine – and it would show that "Baby Bath Skin Care" was a child of the parent. But trying to load that item explicitly by it's path failed with an "item not found error". However asking for that "Baby Bath Skin Care" item by its ID worked fine.</p>
 					<p>Why on earth would loading an item by path fail when it was clearly present in the content tree?</p>
-					<h2>Further digging</h2>
-					<p>Some other issues we'd been looking at for this client had centred around
-						<a href="/posts/2018/a-fast-query-edge-case-that-might-bite-you" target="_blank">the publishing service and the descendants tables</a>
-						in Sitecore databases. That lead me to realising that the "cleanup database" option in the Control Panel could fix my issue: If I clicked it, and then re-ran my test script afterwards, it would succeed... Clearly this wasn't a fast query issue – so what was going on?</p>
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">Further digging</a>
+					</h2>
+					Some other issues we'd been looking at for this client had centred around
+					<a href="/posts/2018/a-fast-query-edge-case-that-might-bite-you" target="_blank">the publishing service and the descendants tables</a>
+					in Sitecore databases. That lead me to realising that the "cleanup database" option in the Control Panel could fix my issue: If I clicked it, and then re-ran my test script afterwards, it would succeed... Clearly this wasn't a fast query issue – so what was going on?
 					<p>A good hint towards what was up came from my colleague
 						<a href="http://sitecoreskills.blogspot.com/" rel="noopener" target="_blank">Martin</a>
 						– who suggested that the database cleanup would be clearing caches as well as its other operations. So I tried using cache.aspx to clear caches instead of the database cleanup, and that too fixed the issue when I ran my test script – so Martin was definitely on to something.</p>
@@ -201,8 +205,10 @@ get-item -path master: -ID "{F3D09AFA-D9B3-11C7-14B1-4D1096878F21}" | select -Ex
 						</a>
 					</p>
 					<p>That seemed like a cause for the issue – initially the paths cache contains empty GUIDs, which means trying to load an item by path will fail until the cache is cleared and gets re-populated with the correct IDs.</p>
-					<h2>Resolution...</h2>
-					<p>I've raised this issue with Sitecore Support, who have confirmed a bug in how the caching behaviour works with Commerce Connect, that will get fixed in a future release. In the mean time, if you find yourself encountering a similar issue you can reference bug 157425 when talking to support.</p>
+					<h2 class="anchor">
+						<a href="#heading3" name="heading3">Resolution...</a>
+					</h2>
+					I've raised this issue with Sitecore Support, who have confirmed a bug in how the caching behaviour works with Commerce Connect, that will get fixed in a future release. In the mean time, if you find yourself encountering a similar issue you can reference bug 157425 when talking to support.
 					<p>But if you need to work around the problem, just clearing the
 						<code>master[paths]</code>
 						cache after your Commerce Connect import runs should help you.</p>
@@ -210,7 +216,23 @@ get-item -path master: -ID "{F3D09AFA-D9B3-11C7-14B1-4D1096878F21}" | select -Ex
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The problem</a>
+									</li>
+									<li>
+										<a href="#heading2">Further digging</a>
+									</li>
+									<li>
+										<a href="#heading3">Resolution...</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">

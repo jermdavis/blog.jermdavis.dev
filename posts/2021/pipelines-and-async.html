@@ -155,8 +155,10 @@
 						for C# code. Recently I got a question on a gist I'd written to go with that article, because someone was having issues adding async code into pipeline components. Async patterns are much more common now, but this wasn't something I'd actually tried. Cue some interesting experiments... 
 						<!--more-->
 					</p>
-					<h2>Async gets everywhere...</h2>
-					<p>In my original code I had a basic pipeline step pattern that could map an input to an output:</p>
+					<h2 class="anchor">
+						<a href="#heading1" name="heading1">Async gets everywhere...</a>
+					</h2>
+					In my original code I had a basic pipeline step pattern that could map an input to an output:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IPipelineStep&lt;INPUT, OUTPUT&gt;
 {
 	OUTPUT Process(INPUT input);
@@ -183,21 +185,19 @@
 						<code>Task</code>s would grow out of control...</p>
 					<p>We want to define our pipeline steps based on their data inputs and outputs. We don't want to have to make the definition based on which position in the overall pipeline it will occupy. That would make our pipeline components really hard to work with – if you have to insert a new step at the start of the pipeline, all subsequent definitions would need to change. And that is Not Good...</p>
 					<p>So what can we do instead?</p>
-					<h2>A first try at fixing this...</h2>
-					<p>If the output of a pipeline step that awaits things needs to be a
-						<code>Task&lt;OUTPUT&gt;</code>
-						then perhaps we should make the input
-						<code>Task&lt;INPUT&gt;</code>
-						too? That solves our order-of-steps issue because every step can have the same signature:</p>
-					<p>So the basic definition becomes:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;INPUT, OUTPUT&gt;
+					<h2 class="anchor">
+						<a href="#heading2" name="heading2">A first try at fixing this...</a>
+					</h2>
+					If the output of a pipeline step that awaits things needs to be a `Task<output>` then perhaps we should make the input `Task<input>` too? That solves our order-of-steps issue because every step can have the same signature:
+						<p>So the basic definition becomes:</p>
+						<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public interface IAsyncPipelineStep&lt;INPUT, OUTPUT&gt;
 {
 	Task&lt;OUTPUT&gt; Process(Task&lt;INPUT&gt; input);
 }
 
-					</pre>
-					<p>Based on that, we need to tweak the definitions of the abstract pipeline based on these steps, to follow the same pattern:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
+						</pre>
+						<p>Based on that, we need to tweak the definitions of the abstract pipeline based on these steps, to follow the same pattern:</p>
+						<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
 {
 	public Func&lt;Task&lt;TIn&gt;, Task&lt;TOut&gt;&gt; _pipelineSteps { get; protected set; }
 
@@ -207,9 +207,9 @@
 	}
 }
 
-					</pre>
-					<p>And similarly adjust the helper method which allows us to compose the steps together:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class AsyncPipelineStepExtensions
+						</pre>
+						<p>And similarly adjust the helper method which allows us to compose the steps together:</p>
+						<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class AsyncPipelineStepExtensions
 {
 	public static Task&lt;TOut&gt; Step&lt;TIn, TOut&gt;(this Task&lt;TIn&gt; Input, IAsyncPipelineStep&lt;TIn, TOut&gt; Step)
 	{
@@ -217,9 +217,9 @@
 	}
 }
 
-					</pre>
-					<p>That gives us a basis to try defining some steps... How about an async fetch for some HTML from a website?</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt;
+						</pre>
+						<p>That gives us a basis to try defining some steps... How about an async fetch for some HTML from a website?</p>
+						<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HttpFetchAsyncStep : IAsyncPipelineStep&lt;Uri, string&gt;
 {
 	private static readonly HttpClient _client = new HttpClient();
 	
@@ -230,21 +230,21 @@
 	}
 }
 
-					</pre>
-					<p>The interesting thing here is that our input to each step is a
-						<code>Task&lt;INPUT&gt;</code>
-						- that's the promise that there will be an instance of the
-						<code>INPUT</code>
-						class at some point in the future. That means our step needs to wait for that future-point before it does anything with the input. Hence the
-						<code>await Input</code>
-						being the first line here...</p>
-					<p>
-						<b>
-							<i>* sound of ominous foreshadowing *</i>
-						</b>
-					</p>
-					<p>And writing to disk can be async too:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
+						</pre>
+						<p>The interesting thing here is that our input to each step is a
+							<code>Task&lt;INPUT&gt;</code>
+							- that's the promise that there will be an instance of the
+							<code>INPUT</code>
+							class at some point in the future. That means our step needs to wait for that future-point before it does anything with the input. Hence the
+							<code>await Input</code>
+							being the first line here...</p>
+						<p>
+							<b>
+								<i>* sound of ominous foreshadowing *</i>
+							</b>
+						</p>
+						<p>And writing to disk can be async too:</p>
+						<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
 {
 	public async Task&lt;string&gt; ProcessAsync(Task&lt;string&gt; Input)
 	{
@@ -257,10 +257,10 @@
 	}
 }
 
-					</pre>
-					<p>This is slightly different, because we're awaiting something which doesn't return data – but it's broadly the same pattern.</p>
-					<p>And we can compose those together into a pipeline:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt;
+						</pre>
+						<p>This is slightly different, because we're awaiting something which doesn't return data – but it's broadly the same pattern.</p>
+						<p>And we can compose those together into a pipeline:</p>
+						<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt;
 {
 	public ExampleAsyncPipeline()
 	{
@@ -271,11 +271,11 @@
 	}
 }
 
-					</pre>
-					<p>That doesn't change from our pre-async definition of a new pipeline. But we do need a little tweak to how we use it. Because our steps always have to take a
-						<code>Task&lt;T&gt;</code>
-						as input, we need a little tweak to ensure we have one for the input to the pipeline:</p>
-					<pre class="code" data-enlighter-highlight="6" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main()
+						</pre>
+						<p>That doesn't change from our pre-async definition of a new pipeline. But we do need a little tweak to how we use it. Because our steps always have to take a
+							<code>Task&lt;T&gt;</code>
+							as input, we need a little tweak to ensure we have one for the input to the pipeline:</p>
+						<pre class="code" data-enlighter-highlight="6" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main()
 {
 	var pipeline = new ExampleAsyncPipeline();
 	var uri = new Uri("https://news.bbc.co.uk/");
@@ -287,17 +287,17 @@
 	Console.WriteLine($"{uri} saved to {tempFile}");
 }
 
-					</pre>
-					<p>Now this runs, and it gives us some valid output:</p>
-					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">https://news.bbc.co.uk/ saved to C:\Users\jeremy\AppData\Local\Temp\tmpF77A.tmp
+						</pre>
+						<p>Now this runs, and it gives us some valid output:</p>
+						<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">https://news.bbc.co.uk/ saved to C:\Users\jeremy\AppData\Local\Temp\tmpF77A.tmp
 
-					</pre>
-					<p>But thinking about it, the code should probably hide the need for the
-						<code>Task.FromResult()</code>
-						call for us. We can amend the abstract
-						<code>AsyncPipeline</code>
-						to do this easily:</p>
-					<pre class="code" data-enlighter-highlight="10,11,12,13,14" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
+						</pre>
+						<p>But thinking about it, the code should probably hide the need for the
+							<code>Task.FromResult()</code>
+							call for us. We can amend the abstract
+							<code>AsyncPipeline</code>
+							to do this easily:</p>
+						<pre class="code" data-enlighter-highlight="10,11,12,13,14" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class AsyncPipeline&lt;TIn, TOut&gt; : IAsyncPipelineStep&lt;TIn, TOut&gt;
 {
 	public Func&lt;Task&lt;TIn&gt;, Task&lt;TOut&gt;&gt; _pipelineSteps { get; protected set; }
 
@@ -313,9 +313,9 @@
 	}
 }
 
-					</pre>
-					<p>Abstracting that away means we won't forget to do it later, and it makes the code to run the pipeline marginally neater too:</p>
-					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main()
+						</pre>
+						<p>Abstracting that away means we won't forget to do it later, and it makes the code to run the pipeline marginally neater too:</p>
+						<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">async Task Main()
 {
 	var pipeline = new ExampleAsyncPipeline();
 	var uri = new Uri("https://news.bbc.co.uk/");
@@ -325,29 +325,46 @@
 	Console.WriteLine($"{uri} saved to {tempFile}");
 }
 
-					</pre>
-					<p>And now all our pipelines can go async if necessary...</p>
-					<p>
-						<a href="/img/2021/2021-06-firstpassatasyncpipeline.png" target="_blank">
-							<img alt="First Pass at Async Pipeline" src="/img/2021/2021-06-firstpassatasyncpipeline.png">
-						</a>
-					</p>
-					<p>As previously,
-						<a href="https://gist.github.com/jermdavis/d794849103df95eeda2eec330f73411f" rel="noopener" target="_blank">all the code above is in a gist</a>
-						if you want to tinker with it. (I've pasted that from
-						<a href="https://www.linqpad.net/" rel="noopener" target="_blank">LinqPad</a>, so it's not a complete C# program, but it does include all the relevant code)</p>
-					<p>(And I want to add a "thank you!" to
-						<a href="https://github.com/wfigueiredo">Walanem Figueiredo</a>
-						for asking the question that prompted me to stop and think about this – it's turned out to be a surprisingly interesting topic)</p>
-					<h2>But!!! There's a problem here, I think</h2>
-					<p>The code above works, and I was going to leave it at that. But that foreshadowing... Further back-and-forth in the comments on my original gist has made me realise that this is probably not the right answer. Having the
-						<code>await Input</code>
-						logic in each pipeline step is annoying boilerplate that you have to remember every time you write a step, so that's not ideal. But it could also be the cause of some interesting bugs I think. And text time out I'll explain a bit about how I realised that, and how I thought about correcting that problem.</p>
-					<a class="gotop" href="#top">↑ Back to top</a>
+						</pre>
+						<p>And now all our pipelines can go async if necessary...</p>
+						<p>
+							<a href="/img/2021/2021-06-firstpassatasyncpipeline.png" target="_blank">
+								<img alt="First Pass at Async Pipeline" src="/img/2021/2021-06-firstpassatasyncpipeline.png">
+							</a>
+						</p>
+						<p>As previously,
+							<a href="https://gist.github.com/jermdavis/d794849103df95eeda2eec330f73411f" rel="noopener" target="_blank">all the code above is in a gist</a>
+							if you want to tinker with it. (I've pasted that from
+							<a href="https://www.linqpad.net/" rel="noopener" target="_blank">LinqPad</a>, so it's not a complete C# program, but it does include all the relevant code)</p>
+						<p>(And I want to add a "thank you!" to
+							<a href="https://github.com/wfigueiredo">Walanem Figueiredo</a>
+							for asking the question that prompted me to stop and think about this – it's turned out to be a surprisingly interesting topic)</p>
+						<h2 class="anchor">
+							<a href="#heading3" name="heading3">But!!! There's a problem here, I think</a>
+						</h2>
+						The code above works, and I was going to leave it at that. But that foreshadowing... Further back-and-forth in the comments on my original gist has made me realise that this is probably not the right answer. Having the `await Input` logic in each pipeline step is annoying boilerplate that you have to remember every time you write a step, so that's not ideal. But it could also be the cause of some interesting bugs I think. And text time out I'll explain a bit about how I realised that, and how I thought about correcting that problem.
+						<a class="gotop" href="#top">↑ Back to top</a>
+					</output>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
 					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">Async gets everywhere...</a>
+									</li>
+									<li>
+										<a href="#heading2">A first try at fixing this...</a>
+									</li>
+									<li>
+										<a href="#heading3">But!!! There's a problem here, I think</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
