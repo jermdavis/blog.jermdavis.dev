@@ -162,8 +162,9 @@
 						<a href="/posts/2018/why-am-i-missing-my-geoip-data" target="_blank">a client's website was missing its GeoIP data (and the related back-end analytics data) entirely</a>. While the changes discussed in that post solved the problem of there being no MongoDB data for GeoIP lookups at all, I continued to see odd issues with many users not being located after those fixes were made. Sorting this out seems to suggest that some of the "common wisdom" about configuring GeoIP for analytics isn't right – so here are my latest findings:
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">The issue</a>
+					<h2 class="anchor">The issue<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					<a href="/img/2018/2018-04-visitlocation.png" target="_blank">
 						<img alt="Visit Location" src="/img/2018/2018-04-visitlocation.png">
@@ -172,8 +173,9 @@
 					<a href="/posts/2018/why-am-i-missing-my-geoip-data" target="_blank">previous post</a>, I started to see some GeoIP data being recorded. But awhen I looked carefully at what was stored, I noted that the only data being captured was for addresses in Cardiff and London. I realised that those two locations happened to correspond to the network locations of me (on
 					<a href="http://www.bekagool.com" rel="noopener" target="_blank">Kagool</a>‘s internal network) and the client's authors. That looked suspicious, so I spent more time looking at the state of the site's configuration and infrastructure. However none of the information I was able to dig up seemed helpful or relevant.
 					<p>So having exhausted what I knew, and the miraculous powers of Google, I tried raising a support request with Sitecore...</p>
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">What wasn't wrong</a>
+					<h2 class="anchor">What wasn't wrong<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					After I'd explained the setup of the site, provided the config and log files, and jumped through all the usual hoops of making a support request, the suggestion I was given was that there was probably an issue with Sitecore's config for the load balancing and how it processed traffic...
 					<p>When some load balancers relay traffic from the internet to servers on your network, they can change the source address of the network packet that the server sees. Rather than the source being the IP address of the internet user's computer (which originally made the request) it can end up as the the IP Address of the load balancer itself. Obviously that would break things like geo-location or IP address based security. So there needs to be a way to handle that issue. Step forward
@@ -195,8 +197,9 @@
 						<code>X-Forwarded-For</code>
 						or similar header...</p>
 					<p>Cue a lot of back-and-forth with Support to explain this result, and discussions with the infrastructure people who owned the Azure setup to see if they could cast any light on the issue. Eventually I made Support's config change anyway – since that was the best way to finally prove this was not the issue. And surprise surprise, it made no difference...</p>
-					<h2 class="anchor">
-						<a href="#heading3" name="heading3">Getting to the issue eventually</a>
+					<h2 class="anchor">Getting to the issue eventually<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					So after being sidetracked by that for a quite a while, Support went back to the config files and came up with an interesting suggestion: They pointed out that the site's CD servers had `Analytics.PerformLookup` set to false, but the CM server had it set to true. I was surprised that they'd commented on that, as I had thought this was configured correctly. After all, the documentation and blog posts I'd read (Like the info
 					<a href="https://sdn.sitecore.net/upload/sitecore6/61/analytics_configuration_reference_sc61_usletter.pdf" rel="noopener" target="_blank">here</a>,
@@ -213,8 +216,9 @@
 						</a>
 					</p>
 					<p>Bingo...</p>
-					<h2 class="anchor">
-						<a href="#heading4" name="heading4">Conclusions</a>
+					<h2 class="anchor">Conclusions<a href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					So if you're using a recent-ish version of Sitecore (The site in question was on v8.1 – so probably anything that age or newer) it seems like the documentation and blog posts around the `Analytics.PerformLookup` setting are out-of-date when they say "set it on only one machine".
 					<p>Support are suggesting that the code and its behaviour seems to have changed at some point, and you do now need to set it on all your servers that need to resolve locations,
@@ -224,8 +228,8 @@
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -244,7 +248,15 @@
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -279,7 +291,7 @@
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -309,7 +321,7 @@
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -334,7 +346,7 @@
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -389,14 +401,6 @@
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

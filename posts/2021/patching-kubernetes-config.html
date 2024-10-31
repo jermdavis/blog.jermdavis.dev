@@ -155,8 +155,9 @@
 					<p>Deploying Sitecore (or anything else) in containers has been a big learning curve for me. Every so often I come across a new aspect of the whole business that I've not seen before. This week, another agency's work showed me a new thing which might help with making changes to Kubernetes config. The approaches I'd seen to deployments involved pushing all of the Kubernetes config each time you want to release, but it turns out you may not need to do that...
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">The underlying challenge</a>
+					<h2 class="anchor">The underlying challenge<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					All the early examples I'd seen for running containers releases used the `kubectl apply` command to send the full set of configuration data out to a Kubernetes cluster. Sitecore provide you with a big pile of config files in their container release:
 					<p>
@@ -174,8 +175,9 @@
 						<code>latest</code>
 						as the version tag. So if you deploy this config, Kubernetes will look at your container registry and find the most recent build and deploy that. Which is fine if you're just pushing out the newest thing – but it doesn't work if you need to deploy another version. Maybe you need to roll back? Or maybe your QA team is swapping between different feature builds because they're testing multiple bits of work in a different order that they were built...</p>
 					<p>So to be able to release a specific version of your website to Kubernetes, you need to change this config to describe a specific version tag, not a generic one like "latest".</p>
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">Where I'd started from</a>
+					<h2 class="anchor">Where I'd started from<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					When I first put the deployment process together for this particular project, I went with (what I thought) was a fairly straight forward solution to this challenge.
 					<p>When DevOps builds the containers, it tags them with the release details using the build number and the source branch it came from:</p>
@@ -186,8 +188,9 @@
 					</p>
 					<p>The next build step used a bit of PowerShell to edit the default Kubernetes config files, to replace the default image tag with the same tag that the build just applied to the images. And then the build put all the Kubernetes config files into the release artefact, so they would be available when the release was run.</p>
 					<p>So the release pipeline can download the artefact, and apply the config files it contains to get a release of the right set of images for the particular release.</p>
-					<h2 class="anchor">
-						<a href="#heading3" name="heading3">An alternative approach?</a>
+					<h2 class="anchor">An alternative approach?<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					But it turns out this may not be necessary. The `kubectl` command has
 					<a href="https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#patch" rel="noopener" target="_blank">a feature for patching configuration</a>
@@ -217,8 +220,9 @@
 
 					</pre>
 					<p>So maybe it would be possible to have a release that didn't need to include any of the Kubernetes config in the release artefact? That's something I need to find time to test...</p>
-					<h2 class="anchor">
-						<a href="#heading4" name="heading4">And another thing...</a>
+					<h2 class="anchor">And another thing...<a href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					Turns out you can also use this trick to acquire a patched version of your config file if you want. You can also specify a "dry run" parameter (so the command doesn't change the config, just works out what the result of the operation would be) and ask `kubectl` to output the result to the console. That gives you back the result of applying your patch to a specific config. That might be the current state of the deployment (e.g. as specified by `patch deployment cm` above) or you can specify a source file if you like with the `-f` parameter.
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">kubectl patch -n myNamespace -f cm.yaml -p '{"spec":{"template":{"spec":{"containers":[{"name":"sitecore-xp1-cm","myrepository.azurecr.io/myclient-xp1-cm:8823-example-branch"}]}}}}' --dry-run=client -o yaml &gt; cm-patched.yaml
@@ -228,8 +232,8 @@
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -248,7 +252,15 @@
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -283,7 +295,7 @@
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -313,7 +325,7 @@
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -338,7 +350,7 @@
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -393,14 +405,6 @@
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

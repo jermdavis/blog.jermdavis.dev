@@ -160,12 +160,14 @@
 					<p>I hit a rather confusing issue with a release a while back, which initially appeared to be a Unicorn problem. But after investigating the details, I think this was actually an infrastructure problem causing some odd behaviour. I doubt this is a common problem, but still worth writing down in case it's a challenge for anyone else... 
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">Some background</a>
+					<h2 class="anchor">Some background<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					The release in question was a containerised build. It had been running fine for some time, and I'd already released this build to the "dev" and "qa" instances of the site. The release process was set up to deploy the new images to Kubernetes, and then once the CM image was deployed and started, trigger the Unicorn sync to complete the deployment.
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">The issue</a>
+					<h2 class="anchor">The issue<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					When the release was triggered on the pre-prod instance of the site. The images deployed ok, but then the Unicorn sync failed. I've had instances in the past where synchronisation had failed for data-related reasons - a missing file in source control, or something an editor had done to the content tree. But in this instance it failed with a much stranger error:
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Creating master:/sitecore/System/Modules/some-item failed. API returned null.
@@ -175,8 +177,9 @@
 						<a href="https://github.com/SitecoreUnicorn/Rainbow/blob/3366c917df58fe0f7e6ca6d1a3b0cb267dd4c7f4/src/Rainbow.Storage.Sc/Deserialization/DefaultDeserializer.cs#L384" rel="noopener" target="_blank">the GitHub repository that the code in question came from</a>. So no easy answers for this one.</p>
 					<p>I tried repeating the deployment - which gave the same error. And I tried pulling down the source and running a sync on my local instance - which gave no errors.</p>
 					<p>So, for a while I was a bit stumped...</p>
-					<h2 class="anchor">
-						<a href="#heading3" name="heading3">A possible explanation</a>
+					<h2 class="anchor">A possible explanation<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					Going back to first-principles I thought about two things:
 					<p>Firstly, what is the code doing when the exception is thrown? Well looking at the source, it's trying to create an item from a template:</p>
@@ -196,8 +199,9 @@ targetItem.Versions.RemoveAll(true);
 					<p>The second difference is that the infrastructure is different between pre-prod and dev/qa. The client's infrastructure choices for this instance mean that there are two CM servers in the pre-prod deployment.</p>
 					<p>Thinking about that made me wonder if the cause here might be related to those multiple CM instances. What if the deployment was starting with a connection to one CM instance, and then getting swapped to the other one as the containers updated? And that lead me to thinking about clearing caches - because that could be a reason the in-memory data might be different.</p>
 					<p>And in fact clearing the cache on the active CM instance did get rid of the error, and allow the sync to complete correctly. And none of the other things I'd tried had done so. So I'm fairly sure something data and cache related is what was happening when I saw the error.</p>
-					<h2 class="anchor">
-						<a href="#heading4" name="heading4">Preventing this problem</a>
+					<h2 class="anchor">Preventing this problem<a href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					So, turns out this is probably an interesting variation on something I've discussed before. The problem comes down to how
 					<a href="/posts/2021/revisiting-waiting-for-kubernetes-deployments" rel="noopener" target="_blank">it waits for container updates</a>. If you have multiple CM roles and a release process which performs post-release tasks on your Sitecore CM role, you must wait for all of these roles to update before continuing. (And in fact, this issue came up before I posted that previous problem - it's not recurred since I made the changes I wrote about there)
@@ -205,8 +209,8 @@ targetItem.Versions.RemoveAll(true);
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -225,7 +229,15 @@ targetItem.Versions.RemoveAll(true);
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -260,7 +272,7 @@ targetItem.Versions.RemoveAll(true);
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -290,7 +302,7 @@ targetItem.Versions.RemoveAll(true);
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -315,7 +327,7 @@ targetItem.Versions.RemoveAll(true);
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -370,14 +382,6 @@ targetItem.Versions.RemoveAll(true);
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

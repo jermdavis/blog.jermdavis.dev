@@ -155,8 +155,9 @@
 					<p>I am no DBA. In fact I'm happy to admit that I know just enough SQL to be dangerous. So when database problems come up, they can be tricky. I recently helped a client work through an issue with analytics databases, which wasn't easy to google – so it's time to help future developers find it...
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">The issue</a>
+					<h2 class="anchor">The issue<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					A while back I'd been invoved in rolling out some infrastructure for a Sitecore v9.1 instance. At the point the deployment was done the AlwaysOn configuration for SQL Server wasn't in place – but it was going to be fitted in afterwards. Initially, everything was working ok – but after the client did work to get the AlwaysOn configuration enabled, issues started to occur. Lots of stuff to do with Analytics stopped working. Working through the issues, the key one was that analytics data stopped being recorded, because the xConnect collection role started recording errors:
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2019-11-25 03:07:05.630 +01:00 [Error] ["XdbContextLoggingPlugin"] XdbContext Batch Execution Exception
@@ -177,8 +178,9 @@ The login failed.
 						</a>
 					</p>
 					<p>Cue head scratching and googling...</p>
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">An explanation</a>
+					<h2 class="anchor">An explanation<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					There were two parts to this issue. The first was understanding how AlwaysOn's configuration was synchronising things. It happily syncronises databases (and any contained users they have) but it was not synchronising server-level things, like the `collectionuser` account itself. The xConnect shard databases aren't accessed by contained user accounts, because Sitecore needs the same user for all three – hence `collectionuser` is a server-level account instead.
 					<p>And the second thing was that internally, SQL Server seems to wire up server-level logins to the rights on databases using "Security IDs" (SIDs) rather than usernames.</p>
@@ -196,8 +198,9 @@ The login failed.
 					<p>When you look at that via SQL Management Studio, initially everything looks ok. For your collection shard databases on both machines you see they have
 						<code>collectionuser</code>
 						attached, with apparently sensible rights. When you look at the server-level login, on the primary machine you see a user who has rights to the shard databases. But on the secondary you see a user who has no rights to anything - because of that difference in SIDs hiding under the surface.</p>
-					<h2 class="anchor">
-						<a href="#heading3" name="heading3">The resolution</a>
+					<h2 class="anchor">The resolution<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					The trick to making this work is that you need to have both of your machines have a user with the same SID. A pile of googling lead to a blog post
 					<a href="https://blog.sqlauthority.com/2015/04/18/sql-server-create-login-with-sid-way-to-synchronize-logins-on-secondary-server/" rel="noopener" target="_blank">which describes how you should approach to that</a>: You can create a user with a known SID, using:
@@ -214,8 +217,8 @@ password = 'password@123', SID = 0x59B662112A43D24585BFE2BF80D9BE19
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -231,7 +234,15 @@ password = 'password@123', SID = 0x59B662112A43D24585BFE2BF80D9BE19
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -266,7 +277,7 @@ password = 'password@123', SID = 0x59B662112A43D24585BFE2BF80D9BE19
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -296,7 +307,7 @@ password = 'password@123', SID = 0x59B662112A43D24585BFE2BF80D9BE19
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -321,7 +332,7 @@ password = 'password@123', SID = 0x59B662112A43D24585BFE2BF80D9BE19
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -376,14 +387,6 @@ password = 'password@123', SID = 0x59B662112A43D24585BFE2BF80D9BE19
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

@@ -158,8 +158,9 @@
 						came out of some work to migrate some (fairly old) T4 Template code generation to .Net's newer Source Generators feature. Excluding my own mistakes, this process wasn't as easy as I'd hoped. So it seemed like a good topic to jot some notes down about, in case others are facing similar challenges...
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">Background</a>
+					<h2 class="anchor">Background<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					<p>A fairly common use case for T4 templates was to take some things already defined in a solution's code, and process them to generate extra code. A pattern here might be something like a developer defining a partial class that models some data:</p>
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">namespace BlogExample
@@ -248,8 +249,9 @@ namespace BlogExample
 					<p>The replacement technology is the newer "Source Generator" approach. This uses C# classes which implement the
 						<code>ISourceGenerator</code>
 						interface to generate extra source files which can then be compiled. But the migration isn't necessarily obvious...</p>
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">The big differences</a>
+					<h2 class="anchor">The big differences<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					<p>When the T4 approach runs, this happens after the C# compiler has turned the source that you typed out into a DLL. It needs to do that because it's using reflection to decide what code to generate. On the plus side, using reflection to do this analysis is pretty easy for most developers. But on the down side it does lead to an annoying side-effect. Generally you don't commit your generated code to source control, so when you clone a copy of a solution with this pattern it won't compile without errors the first time, because you need to have run the generation first, which can't happen until a build has completed...</p>
 					<pre class="mermaid">flowchart LR
@@ -276,8 +278,9 @@ namespace BlogExample
 
 					</pre>
 					<p>But this does mean the code in the generator cannot use Reflection to work out what to create...</p>
-					<h2 class="anchor">
-						<a href="#heading3" name="heading3">Setup for the new method</a>
+					<h2 class="anchor">Setup for the new method<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					<p>The first thing to pay attention to here is that a Source Generator has to run inside the compiler's context. That means your generators have to live in NetStandard 2 DLLs. Hence these need to be defined in a separate DLL to the project you'll be generating your code in.</p>
 					<p>If you're going to want to debug the generator code you're writing (and trust me, you will!) then you need to have installed the .Net Compiler Platform component into Visual Studio. You can do that via the Visual Studio Installer. For your relevant instance of VS, click "modify", "Individual components", then search for ".Net Compiler" and make sure it's checked:</p>
@@ -332,8 +335,9 @@ public class BlogExampleGenerator : ISourceGenerator
 						<code>ReferenceOutputAssembly</code>
 						set to true. Otherwise, this can be false.</p>
 					<p>With all that set up, you can build your solution, and you should be able to compile everything...</p>
-					<h2 class="anchor">
-						<a href="#heading4" name="heading4">Debugging your code</a>
+					<h2 class="anchor">Debugging your code<a href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					<p>In your source generator project, you need to set up a debug profile which knows what the generator should run against. This is the bit the .Net Compiler Platform is needed for - it adds the debug approach used here. So if you can't set this bit up, it's because that module is missing.</p>
 					<p>Open the properties dialog for your source generator project and scroll down to the debug section near the bottom, then click the "Open debug launch profiles UI" link. Click the "new" button, and add a "Roslyn Component" entry, and pick your main project in the dropdown to set the source data used to run the generator for debugging:</p>
@@ -343,8 +347,9 @@ public class BlogExampleGenerator : ISourceGenerator
 						</a>
 					</p>
 					<p>With that done, you can set your generator project as the Startup Project, and click play to debug it. Breakpoints etc should work as normal, and all the context data will be from the project you picked in the dialog above.</p>
-					<h2 class="anchor">
-						<a href="#heading5" name="heading5">The alternative code</a>
+					<h2 class="anchor">The alternative code<a href="#heading5" name="heading5">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					<p>But the real meat of this is how you replace the reflection code from T4 with parsing of the source tree for the generator. When it's invoked during the build process, a generator gets an instance of the
 						<code>GeneratorExecutionContext</code>
@@ -455,8 +460,9 @@ namespace CoreExample
 }
 
 					</pre>
-					<h2 class="anchor">
-						<a href="#heading6" name="heading6">Conclusions</a>
+					<h2 class="anchor">Conclusions<a href="#heading6" name="heading6">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					<p>While it's great that this approach gets away from the old "circular reference" problem, you do need to think differently about how you go about reading the parsed source here. It's much more flexible and enables some interesting new approaches, but understanding the structure of the parsed source tree is definitely harder than the old Reflection model.</p>
 					<p>Another nice difference here is that Source Generators know how to output multiple files. So it's much easier to have a situation where you generate one file per class you extend, if that's your preference.</p>
@@ -466,8 +472,8 @@ namespace CoreExample
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -492,7 +498,15 @@ namespace CoreExample
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -527,7 +541,7 @@ namespace CoreExample
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -557,7 +571,7 @@ namespace CoreExample
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -582,7 +596,7 @@ namespace CoreExample
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -637,14 +651,6 @@ namespace CoreExample
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

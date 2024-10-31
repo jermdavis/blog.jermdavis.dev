@@ -165,8 +165,9 @@
 						<!--more-->
 					</p>
 					<p>The reason for me going back to this was that the installation scripting I'd used was working fine for me during testing, but when I came to try and install more than one automated instance on the same server I started to see the script failing.</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">So what does SC_IISSITE_ID do?</a>
+					<h2 class="anchor">So what does SC_IISSITE_ID do?<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					The first problem I hit was the installation failing with errors in the MSI log file around its call to `StartIIS7ConfigTransaction`. A bit of internet digging lead me to this post:
 					<a href="http://wixtoolset.org/issues/2755/" target="_blank" rel="noopener noreferrer">http://wixtoolset.org/issues/2755/</a>. While it's not referring to Sitecore installs, it is referring to the idea that when the installation framework is installing stuff into IIS, it can make use of either site names or site IDs to find whether a particular site exists.
@@ -177,8 +178,9 @@
 						<code>SC_IISSITE_ID</code>
 						property is optional. If you know it, pass it. But if you don't know it you can leave it out and the MSI engine will work out the next available ID to use.</p>
 					<p>So to make the scripted installation succeed for more than one instance, this needs to be left as an empty string.</p>
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">There's more than one "unique ID" number involved here...</a>
+					<h2 class="anchor">There's more than one "unique ID" number involved here...<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					Having fixed that, I then discovered a second problem. Installing a second version of Sitecore on the same machine would still fail, but now with a more obscure error. The log file included something like this:
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">MSI (s) (08:88) [12:31:21:291]: Machine policy value 'TransformsSecure' is 1
@@ -258,8 +260,9 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
 					</pre>
 					<p>The code checks if the registry entries that we want to process exist. It defaults to instance number one, and then looks at all the data under the Sitecore CMS bit of the registry. It finds the highest InstanceID value that has been stored here, extracts the number from it and then adds one to it.</p>
 					<p>So far, this has reliably found a valid ID to use.</p>
-					<h2 class="anchor">
-						<a href="#heading3" name="heading3">So where does this leave the install script?</a>
+					<h2 class="anchor">So where does this leave the install script?<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					After making the changes above, the PowerShell code required to install an instance of Sitecore looks a bit like this:
 					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Perform-Install([string]$license, [string]$installer, [string]$site, [string]$sqlServer, [string]$sqlUser, [string]$sqlPassword) {
@@ -292,8 +295,9 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
 
 					</pre>
 					<p>This combines the two changes above, to make the install work for more than one Sitecore instance on a single server. It also includes a final test to see if the website folder now exists – which indicates whether we succeeded.</p>
-					<h2 class="anchor">
-						<a href="#heading4" name="heading4">One other thing to note</a>
+					<h2 class="anchor">One other thing to note<a href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					While testing these changes, I found a couple of situations where (for reasons I've not been able to determine) uninstalling an instance via `.exe` or `.msi` didn't work correctly. Despite the removal of the IIS site, most of the files and the databases, attempts to reuse the same instance name failed. I was seeing errors in the MSI log file saying that the install had failed (but with no specific reason) in some cases, and in one case an error saying that the installation was rolled-back because connecting to the database did not work (When the supplied credentials were definitely valid).
 					<p>In these cases, I was able to resolve the install problems by checking the registry (as described above) and removing left-over entries from the instance(s) which had not been removed by the uninstall process.</p>
@@ -301,8 +305,8 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -321,7 +325,15 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -356,7 +368,7 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -386,7 +398,7 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -411,7 +423,7 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -466,14 +478,6 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

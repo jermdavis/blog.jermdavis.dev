@@ -158,8 +158,9 @@
 						<a href="https://github.com/sitecore/docker-images" rel="noopener" target="_blank">Sitecore community container repo</a>. So I started thinking about what would it take to make one. 
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">Big picture</a>
+					<h2 class="anchor">Big picture<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					At their core Solr and SolrCloud are the same software, with some different configuration settings and data storage. So a key part of getting a single-node instance of SolrCloud to run for a developer is adding an extra command-line parameter when you start it up. More complex, however, is creating the indexes Sitecore will need. Ordinary Solr uses Cores, and you can create them easily just by copying files. But SolrCloud uses Collections – which are made up of both cores and data stored by
 					<a href="https://zookeeper.apache.org/index.html" rel="noopener" target="_blank">ZooKeeper</a>. Because the data is split out, you can't easily just drop files to make new collections – you need to use some sort of API.
@@ -168,8 +169,9 @@
 					<p>What this means is to make SolrCloud work, we're going to need to replace the process that the existing scripts use to create the default set of indexes. I've already spent a load of time on
 						<a href="https://github.com/jermdavis/SolrCloud-Helpers" rel="noopener" target="_blank">some scripts that can automate creating SolrCloud collections</a>
 						as part of the presentation linked to above – so those seem like a good starting point...</p>
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">First step: PowerShell</a>
+					<h2 class="anchor">First step: PowerShell<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					The first thing I noticed was that the base image for the existing Solr container is the standard Microsoft Nanoserver image. That's small – but it doesn't include PowerShell. While I think it would be possible to do this setup using batch files, it would be a lot of effort to re-write my SolrCloud scripts to avoid PowerShell. So the easy answer for me is to find a base image that does have the scripting engine included. Microsoft offer a
 					<a href="https://hub.docker.com/_/microsoft-powershell" rel="noopener" target="_blank">PowerShell-on-top-of-Nanoserver image</a>
@@ -190,8 +192,9 @@
 
 					</pre>
 					<p>So now when that container builds, PowerShell will be available for use.</p>
-					<h2 class="anchor">
-						<a href="#heading3" name="heading3">Don't create cores...</a>
+					<h2 class="anchor">Don't create cores...<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					In the existing scripts, the core creation is in two parts. The
 					<a href="https://github.com/Sitecore/docker-images/blob/master/windows/9.x.x/sitecore-xp-solr/Dockerfile" rel="noopener" target="_blank">Dockerfile for the Solr image</a>
@@ -215,8 +218,9 @@
 					</pre>
 					<p>(It's commented out here, because it's easier to show the change that way – this can be deleted)</p>
 					<p>Removing the start-up behaviour that copies these files is easy – because the next step is going to replace the entrypoint anyway...</p>
-					<h2 class="anchor">
-						<a href="#heading4" name="heading4">Firing up SolrCloud</a>
+					<h2 class="anchor">Firing up SolrCloud<a href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					The simplest way to get Solr to start up in SolrCloud mode for a developer is to add "-c" to the command line for running it. That could be done in the
 					<a href="https://github.com/Sitecore/docker-images/blob/master/windows/9.x.x/sitecore-xp-solr/Boot.cmd" rel="noopener" target="_blank">entrypoint file that already exists</a>
@@ -245,48 +249,42 @@ CMD ["c:\\program files\\powershell\\pwsh.exe", "-f", "Boot.ps1", "c:\\solr", "8
 					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">$solrConfig = "$dataPath\solr.xml"
 if(Test-Path $solrConfig)
 {
-	Write-Host "&lt;h3 class="anchor"&gt;&lt;a href="#heading5" name="heading5"&gt;Config exists!"
-&lt;/a&gt;&lt;/h3&gt;
+	Write-Host "### Config exists!"
 }
 else
 {
-	Write-Host "&lt;h3 class="anchor"&gt;&lt;a href="#heading6" name="heading6"&gt;Config does not exist, creating..."
-&lt;/a&gt;&lt;/h3&gt;
+	Write-Host "### Config does not exist, creating..."
 	Copy-Item "$installPath\\*" "$dataPath" -force -recurse
 }
 
-Write-Host "&lt;h3 class="anchor"&gt;&lt;a href="#heading7" name="heading7"&gt;Preparing Solr cores..."
-&lt;/a&gt;&lt;/h3&gt;
+Write-Host "### Preparing Solr cores..."
 
 Push-Location $dataPath
 if(Test-Path "write.lock")
 {
-	Write-Host "&lt;h3 class="anchor"&gt;&lt;a href="#heading8" name="heading8"&gt;Removing write.lock"
-&lt;/a&gt;&lt;/h3&gt;
+	Write-Host "### Removing write.lock"
 	Remove-Item "write.lock" -Force
 }
 Pop-Location
 
 					</pre>
 					<p>And finally, fire up Solr in Cloud mode:</p>
-					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "&lt;h3 class="anchor"&gt;&lt;a href="#heading9" name="heading9"&gt;Starting Solr..."
-&lt;/a&gt;&lt;/h3&gt;
+					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "### Starting Solr..."
 
 &amp; "$solrPath\bin\solr.cmd" start -port $solrPort -f -c
 
 					</pre>
-					<h2 class="anchor">
-						<a href="#heading10" name="heading10">And then we need collections...</a>
+					<h2 class="anchor">And then we need collections...<a href="#heading5" name="heading5">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					So earlier, the Dockerfile copied in a second PowerShell script. That is largely
 					<a href="https://github.com/jermdavis/SolrCloud-Helpers/blob/master/SolrCloud-Helpers/Install/007-Configure-SolrCollections.ps1" rel="noopener" target="_blank">my original collection creation script from my SolrCloud scripting</a>. But I've made a couple of changes. First up, is that the Sitecore containers are setup without SSL for Solr – so all the API endpoints in the script need to change from `https://` to `http://`. That's a quick search and replace operation. And the secondly, it needs to include the logic to decide what to do when it's run.
 					<p>The logic starts by waiting for Solr to be running:</p>
 					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;"># wait for it to start
-Write-Host "&lt;h3 class="anchor"&gt;&lt;a href="#heading11" name="heading11"&gt;Waiting on $solrPort..."
-&lt;/a&gt;&lt;/h3&gt;
+Write-Host "### Waiting on $solrPort..."
 Wait-ForSolrToStart "localhost" $solrPort
-Write-Host "&lt;h3 class="anchor"&gt;&lt;a href="#heading12" name="heading12"&gt;Started..."
-&lt;/a&gt;&lt;/h3&gt;
+Write-Host "### Started..."
 
 					</pre>
 					<p>Because SolrCloud uses both disk and Zookeeper for storing data, we need to be able to call API endpoints to set up collections, so the rest of the script has to wait for Solr to be running. Then we need to check to see if there's any work to do. This should really get refactored out to a function, but it asks the API how many collections exist at present:</p>
@@ -313,8 +311,7 @@ else
 					<p>The last step is making sure this script runs. This bit was a bit of a head-scratcher. The script needs to run in parallel with Solr, but Solr has to run with the "-f" flag, which causes it to keep going forever. So the collection creation has to execute before Solr is started, but needs to not block execution of the startup. And it also needs to be able to send its output back to the Docker console, if we're running connected. After a bit of hackery I settled on PowerShell's
 						<code>Start-Process</code>
 						command. That runs the script in parallel, but doesn't wait for it to end. So "Boot.ps1" can be updated:</p>
-					<pre class="code" data-enlighter-highlight="3" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "&lt;h3 class="anchor"&gt;&lt;a href="#heading9" name="heading9"&gt;Starting Solr..."
-&lt;/a&gt;&lt;/h3&gt;
+					<pre class="code" data-enlighter-highlight="3" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Write-Host "### Starting Solr..."
 
 Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\MakeCollections.ps1 $solrPort"
 
@@ -322,8 +319,9 @@ Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\Ma
 
 					</pre>
 					<p>It starts the process to make collections in the background, and then starts Solr in the foreground – allowing both parts to run in parallel.</p>
-					<h2 class="anchor">
-						<a href="#heading14" name="heading14">Conclusions</a>
+					<h2 class="anchor">Conclusions<a href="#heading6" name="heading6">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					So we can now build an image for SolrCloud and starting the container gives you a copy of SolrCloud with some collections created. Success!
 					<p>
@@ -354,8 +352,8 @@ Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\Ma
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -372,47 +370,23 @@ Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\Ma
 										<a href="#heading4">Firing up SolrCloud</a>
 									</li>
 									<li>
-										<a href="#heading5">Config exists!"
-										</a>
+										<a href="#heading5">And then we need collections...</a>
 									</li>
 									<li>
-										<a href="#heading6">Config does not exist, creating..."
-										</a>
-									</li>
-									<li>
-										<a href="#heading7">Preparing Solr cores..."
-										</a>
-									</li>
-									<li>
-										<a href="#heading8">Removing write.lock"
-										</a>
-									</li>
-									<li>
-										<a href="#heading9">Starting Solr..."
-										</a>
-									</li>
-									<li>
-										<a href="#heading10">And then we need collections...</a>
-									</li>
-									<li>
-										<a href="#heading11">Waiting on $solrPort..."
-										</a>
-									</li>
-									<li>
-										<a href="#heading12">Started..."
-										</a>
-									</li>
-									<li>
-										<a href="#heading13">Starting Solr..."
-										</a>
-									</li>
-									<li>
-										<a href="#heading14">Conclusions</a>
+										<a href="#heading6">Conclusions</a>
 									</li>
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -447,7 +421,7 @@ Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\Ma
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -477,7 +451,7 @@ Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\Ma
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -502,7 +476,7 @@ Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\Ma
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -557,14 +531,6 @@ Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\Ma
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

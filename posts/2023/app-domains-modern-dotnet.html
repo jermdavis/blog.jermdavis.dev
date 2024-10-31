@@ -156,8 +156,9 @@
 					<p>I was looking at writing a tool in .Net 7 the other day which would benefit from having an option to load and unload plugin extensions. Reloadable plugins could be a bit tricky in .Net 4, but doable. But that's changed dramatically in more recent framework versions, in some ways that are better and interesting.
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">The situation</a>
+					<h2 class="anchor">The situation<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					<p>In the past, if I needed to be able to unload or reload plugin-type code in a .Net application there were two main approaches: You could write the plugins as scripts that were interpreted at runtime, or you could use a separate
 						<code>AppDomain</code>
@@ -194,8 +195,9 @@
 
 					</pre>
 					<p>But AppDomains ceased to exist in .Net Core. It seems like this was largely because Microsoft wanted to get rid of the security related features, because they didn't think these worked well. And as a side-effect they had a better idea about how to do the unloading behaviour without that security boundary.</p>
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">The new approach</a>
+					<h2 class="anchor">The new approach<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					<p>The new model revolves around
 						<code>AssemblyLoadContext</code>
@@ -300,8 +302,9 @@ public class MyLoadContext : AssemblyLoadContext
 						<code>Unload()</code>
 						will succeed, but the GC will not be able to free the memory. So if you have a situation where code is loaded and unloaded often, this can lead to something which looks like a memory leak. This is probably not much of an issue if the load/unload behaviour is only done once for each run of your app. But if you do unload and load more often it might cause problems over the lifespan of a longer running process.</p>
 					<p>As noted above, there's no remoting going on here. While your load context is tracking loaded assemblies to allow unloading, it's not partitioning them off into a separate memory space. Hence it does not matter if any of the types involved here are serialisable, and you don't need to do anything complicated with unwrapping of references to objects inside and outside if the load context. So there's much less overhead in the code here, compared to the older model. But that's because of the loss of the security boundary...</p>
-					<h2 class="anchor">
-						<a href="#heading3" name="heading3">So what if I needed that security boundary?
+					<h2 class="anchor">So what if I needed that security boundary?
+						<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
 						</a>
 					</h2>
 					<p>Life is trickier here. The original
@@ -331,16 +334,17 @@ public class MyLoadContext : AssemblyLoadContext
 
 					</pre>
 					<p>The structure is very much like the old AppDomain model, but you have to manage all of this yourself now. Including spinning up that separate process with lower security.</p>
-					<h2 class="anchor">
-						<a href="#heading4" name="heading4">Conclusions
+					<h2 class="anchor">Conclusions
+						<a href="#heading4" name="heading4">
+							<img src="/img/link.png">
 						</a>
 					</h2>
 					<p>The particular example I was looking at that started me down this road probably doesn't need to explicitly manage security. It's not loading code from the internet, or anything risky like that. So I'm thinking this new model will be simpler for my scenario. But I think I still need to spend a bit of time wrapping my head around the right way to structure this in my app, since the patterns have changed enough that I think I've still got some learning to do...</p>
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -361,7 +365,15 @@ public class MyLoadContext : AssemblyLoadContext
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -396,7 +408,7 @@ public class MyLoadContext : AssemblyLoadContext
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -426,7 +438,7 @@ public class MyLoadContext : AssemblyLoadContext
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -451,7 +463,7 @@ public class MyLoadContext : AssemblyLoadContext
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -506,14 +518,6 @@ public class MyLoadContext : AssemblyLoadContext
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

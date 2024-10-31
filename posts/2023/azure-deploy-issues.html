@@ -160,8 +160,9 @@
 					<p>Some of the most frustrating issues in IT happen when a thing which was working fine stops, and you're sure you didn't change anything. Now that very few people host their own infrastructure, these issues can be compounded because change or problems might happen in the internals of a complex infrastructure system you have no control over. I got bitten by this recently, and while I have no answers I suspect this is worth writing up just because it may help other people to realise the problem you have is not always your fault...
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">The issue
+					<h2 class="anchor">The issue
+						<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
 						</a>
 					</h2>
 					<p>I've been working with a team on a client project that was adopted from another agency. We'd been through an onboarding process where we'd taken over the source and the release process in Azure DevOps. The project was hosted in the client's Azure, and they maintained control of that. The build and release pipelines for this work ran on Azure VMs the client hosted, rather than on Microsoft's cloud agents. We'd done some successfull releases of the code to the test and production infrastructure after taking over. There had been a few issues along the way, but broadly the process appeared to be working.</p>
@@ -183,23 +184,19 @@
 						</a>
 					</p>
 					<p>For Google's benefit, the raw error message shown in the screengrab was:</p>
-					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2023-07-24T08:19:54.0960901Z &lt;h2 class="anchor"&gt;&lt;a href="#heading2" name="heading2"&gt;[error]Error Code: ERROR_DESTINATION_NOT_REACHABLE
-&lt;/a&gt;&lt;/h2&gt;
-2023-07-24T08:19:54.1054292Z &lt;h2 class="anchor"&gt;&lt;a href="#heading3" name="heading3"&gt;[error]More Information: Could not connect to the remote computer ("REDACTED-cm-staging.scm.azurewebsites.net"). On the remote computer, make sure that Web Deploy is installed and that the required process ("Web Management Service") is started.  Learn more at: https://go.microsoft.com/fwlink/?LinkId=221672#ERROR_DESTINATION_NOT_REACHABLE.
-&lt;/a&gt;&lt;/h2&gt;
-2023-07-24T08:19:54.1146052Z &lt;h2 class="anchor"&gt;&lt;a href="#heading4" name="heading4"&gt;[error]Error: Unable to connect to the remote server
-&lt;/a&gt;&lt;/h2&gt;
-2023-07-24T08:19:54.1237674Z &lt;h2 class="anchor"&gt;&lt;a href="#heading5" name="heading5"&gt;[error]Error: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond REDACTED:443
-&lt;/a&gt;&lt;/h2&gt;
-2023-07-24T08:19:54.1329763Z &lt;h2 class="anchor"&gt;&lt;a href="#heading6" name="heading6"&gt;[error]Error count: 1.
-&lt;/a&gt;&lt;/h2&gt;
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2023-07-24T08:19:54.0960901Z ##[error]Error Code: ERROR_DESTINATION_NOT_REACHABLE
+2023-07-24T08:19:54.1054292Z ##[error]More Information: Could not connect to the remote computer ("REDACTED-cm-staging.scm.azurewebsites.net"). On the remote computer, make sure that Web Deploy is installed and that the required process ("Web Management Service") is started.  Learn more at: https://go.microsoft.com/fwlink/?LinkId=221672#ERROR_DESTINATION_NOT_REACHABLE.
+2023-07-24T08:19:54.1146052Z ##[error]Error: Unable to connect to the remote server
+2023-07-24T08:19:54.1237674Z ##[error]Error: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond REDACTED:443
+2023-07-24T08:19:54.1329763Z ##[error]Error count: 1.
 
 					</pre>
 					<p>The fact that a number of packages succeeded, then this one failed, and then more succeeded during this step was very odd. That suggested some sort of transient error. So we tried repeating the release step. And it failed again - but with an error on a different package in the set.</p>
 					<p>We tried it a few times, and found that it failed reliably, but on a different package (or packages plural in some cases) each time.</p>
 					<p>So we aborted the release, apologised to the client for the delay, and went back to the UAT site to test further. And now attempts to release to UAT failed too - with similar errors.</p>
-					<h2 class="anchor">
-						<a href="#heading7" name="heading7">Further investigations
+					<h2 class="anchor">Further investigations
+						<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
 						</a>
 					</h2>
 					<p>A developer's first instinct at this point is to go look at Google. And searching for issues with these errors around Web Deploy packages brings up a lot of people talking about how
@@ -210,8 +207,11 @@
 						<code>false</code>
 						on the AppService and its slots. So it seemed worth trying this.</p>
 					<p>Unfortunately it broke things in an exciting new way. Now the backups for the AppService stopped working. They would start, and wait for a while before failing with a broad
-						<code>&lt;h2 class="anchor"&gt;&lt;a href="#heading8" name="heading8"&gt;[error]An error occurred while sending the request.</code>
+						<code>&lt;h2 class="anchor"&gt;[error]An error occurred while sending the request.</code>
 						message in the DevOps log. In the AppService Activity Log, a slightly more useful error was shown in the JSON version of the log data:
+						<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</p>
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Timestamp: 2023-07-28T11:36:13.9557166Z\r\nCreating temp folder.
 Retrieve site meta-data.\r\nBacking up the databases.
@@ -226,8 +226,7 @@ Error in the backup operation: Storage access failed. The remote server returned
 					<p>But it's still not a useful error - as with the process being run here there's no scheduled job to recreate. This was just
 						<a href="https://learn.microsoft.com/en-us/azure/app-service/scripts/powershell-backup-onetime" target="_blank" rel="noopener">PowerShell code calling the Azure backup commands</a>...</p>
 					<p>Since we had valid backups from before the issue started, we tried skipping the backup steps on the next test release to UAT. And this raised yet another error message:</p>
-					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2023-07-26T15:18:55.2097709Z &lt;h2 class="anchor"&gt;&lt;a href="#heading9" name="heading9"&gt;[error]Error: Error Code: ERROR_USER_UNAUTHORIZED
-&lt;/a&gt;&lt;/h2&gt;
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">2023-07-26T15:18:55.2097709Z ##[error]Error: Error Code: ERROR_USER_UNAUTHORIZED
 More Information: Connected to the remote computer (REDACTED.publish.azurewebsites.windows.net") using the Web Management Service, but could not authorize. Make sure that you are using the correct user name and password, that the site you are connecting to exists, and that the credentials represent a user who has permissions to access the site.  Learn more at: https://go.microsoft.com/fwlink/?LinkId=221672#ERROR_USER_UNAUTHORIZED.
 Error: The remote server returned an error: (401) Unauthorized.
 Error count: 1.
@@ -236,8 +235,9 @@ Error count: 1.
 					<p>Here, trying to use Web Deploy to send a package to the AppService is being blocked for security reasons. But that seemed like an odd error. This whole DevOps process was running under a Service Principal that had successfully deployed before.</p>
 					<p>To be sure, we tried the "verify credentials" button in DevOps - which worked fine. And looked at the Azure RBAC settings for the AppService. We could clearly see that the Service Principle had "contributor" rights to all the resources involved. So we concluded that this "disable SCM" fix was not right for this scenario.</p>
 					<p>Rolling it back got rid of these backup and authorisation errors, and put us back to the original problem.</p>
-					<h2 class="anchor">
-						<a href="#heading10" name="heading10">An unhelpful solution
+					<h2 class="anchor">An unhelpful solution
+						<a href="#heading4" name="heading4">
+							<img src="/img/link.png">
 						</a>
 					</h2>
 					<p>So we spent quite a bit of time talking to the client and trying to veryify that nobody on their team or ours had changed anything in Azure. In parallel to that we raised a support ticket with Microsoft, and had a triage call with them where we demonstrated the issue. They didn't give us specific answers in that call, but said they would raise the issue with their AppService experts and get back to us.</p>
@@ -247,8 +247,9 @@ Error count: 1.
 						<a href="https://giphy.com/embed/F5jkct22mx0Zy" target="_blank" rel="noopener">there was a bit of strong language at this point</a>.</p>
 					<p>At some point after involving Microsoft Support, the issue magically disappeared. When I went back to them and asked if they'd done anything to achieve a fix they didn't give much helpful feedback. But this happened to coincide with an outage of Azure DevOps build pipelines in some EU regions. And when pressed the support people said this was related, without offering any proof or explanation of why.</p>
 					<p>So happy client - but frustrated dev team.</p>
-					<h2 class="anchor">
-						<a href="#heading11" name="heading11">In conclusion...
+					<h2 class="anchor">In conclusion...
+						<a href="#heading5" name="heading5">
+							<img src="/img/link.png">
 						</a>
 					</h2>
 					<p>As developers it doesn't feel good to not know
@@ -261,8 +262,8 @@ Error count: 1.
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -271,49 +272,33 @@ Error count: 1.
 										</a>
 									</li>
 									<li>
-										<a href="#heading2">[error]Error Code: ERROR_DESTINATION_NOT_REACHABLE
+										<a href="#heading2">Further investigations
 										</a>
 									</li>
 									<li>
-										<a href="#heading3">[error]More Information: Could not connect to the remote computer ("REDACTED-cm-staging.scm.azurewebsites.net"). On the remote computer, make sure that Web Deploy is installed and that the required process ("Web Management Service") is started.  Learn more at: https://go.microsoft.com/fwlink/?LinkId=221672#ERROR_DESTINATION_NOT_REACHABLE.
+										<a href="#heading3">[error]An error occurred while sending the request.` message in the DevOps log. In the AppService Activity Log, a slightly more useful error was shown in the JSON version of the log data:
 										</a>
 									</li>
 									<li>
-										<a href="#heading4">[error]Error: Unable to connect to the remote server
+										<a href="#heading4">An unhelpful solution
 										</a>
 									</li>
 									<li>
-										<a href="#heading5">[error]Error: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond REDACTED:443
-										</a>
-									</li>
-									<li>
-										<a href="#heading6">[error]Error count: 1.
-										</a>
-									</li>
-									<li>
-										<a href="#heading7">Further investigations
-										</a>
-									</li>
-									<li>
-										<a href="#heading8">[error]An error occurred while sending the request.` message in the DevOps log. In the AppService Activity Log, a slightly more useful error was shown in the JSON version of the log data:
-										</a>
-									</li>
-									<li>
-										<a href="#heading9">[error]Error: Error Code: ERROR_USER_UNAUTHORIZED
-										</a>
-									</li>
-									<li>
-										<a href="#heading10">An unhelpful solution
-										</a>
-									</li>
-									<li>
-										<a href="#heading11">In conclusion...
+										<a href="#heading5">In conclusion...
 										</a>
 									</li>
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -348,7 +333,7 @@ Error count: 1.
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -378,7 +363,7 @@ Error count: 1.
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -403,7 +388,7 @@ Error count: 1.
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -458,14 +443,6 @@ Error count: 1.
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

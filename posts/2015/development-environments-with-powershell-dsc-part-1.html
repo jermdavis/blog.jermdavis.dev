@@ -195,8 +195,9 @@ I'm going to break this up into a series of posts, as it's quite a big topic. Th
 					<p>I'm going to break this up into a series of posts, as it's quite a big topic. This week is a bit of an introduction to DSC and my goals for it:
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">What is PowerShell DSC?</a>
+					<h2 class="anchor">What is PowerShell DSC?<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					It's a scripting framework for automating the configuration and setup of servers. If you've ever used
 					<a href="https://www.chef.io/" target="_blank" rel="noopener noreferrer">Chef</a>
@@ -208,8 +209,9 @@ I'm going to break this up into a series of posts, as it's quite a big topic. Th
 						<li>Secondly: A runtime based on the Windows Management infrastructure that can process your descriptions and do all the hard work of getting the server into the state you described</li>
 					</ul>
 					<p>DSC is designed to support the DevOps concepts of automating infrastructure tasks and having executable code for describing server state which can also be seen as documentation of the state you require. It allows you to move towards the idea of having servers being disposable – since the process of building them is automated, creating and destroying them is easy. You can get to a state where you click a button in the management tools for Hyper-V (or your preferred Virtualisation framework) to spin up a new virtual machine and it automatically pulls the right configuration from a central location and configures itself to meet your requirements.</p>
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">What does a basic script look like?</a>
+					<h2 class="anchor">What does a basic script look like?<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					Here's a very basic script, which can be used to install IIS onto a machine:
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Configuration EnableIIS
@@ -240,8 +242,9 @@ EnableIIS
 					<p>In effect, the script describes the same process as logging on to a server, firing up the
 						<a href="http://blogs.technet.com/b/askcore/archive/2012/11/04/introducing-server-manager-in-windows-server-2012.aspx" target="_blank" rel="noopener noreferrer">Server Manager and using its UI for Roles &amp; Features to install IIS</a>.</p>
 					<p>There are lots of resource types available as part of DSC. You can unzip archives, install programs, control services, create files and directories, copy files and directories, add users to Active Directory and run raw PowerShell by default. But you can also extend DSC with your own specialised resources – and there are lots available on the Internet to make use of as well.</p>
-					<h2 class="anchor">
-						<a href="#heading3" name="heading3">What happens when we run the script?</a>
+					<h2 class="anchor">What happens when we run the script?<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					The final line of the script above uses the name of our `Configuration` to invoke the script. So what happens when we run this? Well interestingly, it doesn't actually change the state of any servers. Two things happen:
 					<p>Firstly, the PowerShell DSC framework parses your script and does a syntax check. If you've made any errors then you get an error explaining what it thinks is wrong.</p>
@@ -254,8 +257,9 @@ EnableIIS
 					<p>These files contain basically the same data as your DSC script, just in a format that's more focused on machine readability than the original PowerShell DSC code. And since it's cross platform, it's possible to generate these files to be run on UNIX-style servers if you're working in a mixed environment. (And you can use native tools on those servers to generate
 						<code>.MOF</code>
 						files for Windows too if you wish)</p>
-					<h2 class="anchor">
-						<a href="#heading4" name="heading4">Making a machine change state</a>
+					<h2 class="anchor">Making a machine change state<a href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					Now we have our `.MOF` file, what do we do with it? Well DSC provides a new PowerShell CommandLet called `Start-DSCConfiguration` which is used to pass the `.MOF` files to the underlying management infrastructure and run them. In a test environment, you run something like:
 					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">Start-DSCConfiguration -Path .\EnableIIS -Verbose -Wait -Force 
@@ -279,8 +283,9 @@ EnableIIS
 						</a>
 					</p>
 					<p>The debug output is saying that it's examined the server and discovered that IIS is already installed – so in this case it's done nothing.</p>
-					<h2 class="anchor">
-						<a href="#heading5" name="heading5">Making scripts more generic</a>
+					<h2 class="anchor">Making scripts more generic<a href="#heading5" name="heading5">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					So far, however, our script has been specific to a single server. That's nice for an example, but it's not very practical for the real world. You'd end up maintaining a separate script for each of the servers you manage and that would be a pain to keep everything up to date. Ideally we'd like to be able to write scripts which describe the state needed for a particular class of server (e.g. "Sitecore Content Deployment Webserver" or "SQL Server") and then just map those configurations to the appropriate server names for any given environment. How can we express our installation requirements in a more generic way to make them reusable?
 					<p>It's actually pretty simple – we can pass configuration data into our DSC Scripts, and generalise the script to process the data. DSC expects you to pass in a dictionary object containing a tree of name-value pairs that describe your config data. For example, expanding on the IIS example above, we might pass in the following configuration data:</p>
@@ -349,8 +354,9 @@ EnableIIS -ConfigurationData ".\configData.psd1"
 						files for development servers in different clusters.</p>
 					<p>As you'll see later in the series, you can also have custom parameters to pass in to
 						<code>Configuration</code>s, in much the same way you can pass parameters in to CommandLets you've written in script.</p>
-					<h2 class="anchor">
-						<a href="#heading6" name="heading6">So what are we going to do with all of this?</a>
+					<h2 class="anchor">So what are we going to do with all of this?<a href="#heading6" name="heading6">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					<a href="http://tech.simplybusiness.co.uk/content/images/2013/Feb/things.png" target="_blank" rel="noopener noreferrer">Install all the things!</a>
 					My goal over the next few posts is to write up how we can use the basic concepts above to construct DSC scripts to take a Windows server from its basic post-install state to running Sitecore 8.x for development. I plan to cover the following aspects of that:
@@ -367,8 +373,8 @@ EnableIIS -ConfigurationData ".\configData.psd1"
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -393,7 +399,15 @@ EnableIIS -ConfigurationData ".\configData.psd1"
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -428,7 +442,7 @@ EnableIIS -ConfigurationData ".\configData.psd1"
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -458,7 +472,7 @@ EnableIIS -ConfigurationData ".\configData.psd1"
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -483,7 +497,7 @@ EnableIIS -ConfigurationData ".\configData.psd1"
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -538,14 +552,6 @@ EnableIIS -ConfigurationData ".\configData.psd1"
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

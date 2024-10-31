@@ -161,8 +161,9 @@
 						<a href="#f1">the comments pointed me back to</a>) reminded me of an interesting issue that came up on a project I was looking at recently. If you're interested in the raw performance of your Sitecore sites, you might want to consider this as well when you're planning your views: 
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">The issue</a>
+					<h2 class="anchor">The issue<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					[<a href="#update">A few updates to this article at the end – please read those too</a>]
 					<p>A client was running some detailed performance testing on a site. Along with some other issues, they noticed that their performance trace data showed a surprising amount of time spent in
@@ -174,8 +175,9 @@
 						</a>
 					</p>
 					<p>On some pages about 200ms of the overall execution time was accounted for by calls to this method, which seems a really large amount of time for framework code like this. The code was running on servers with SSD drives, so it was unlikely to be a physical disk access issue. Since they were quite focused on the performance of their pages, the client was interested in what was happening to cause this, and what could be done about it.</p>
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">Investigating in more detail</a>
+					<h2 class="anchor">Investigating in more detail<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					The first thing I looked into was what that method was. A bit of time with Google brought up the source for the RazorGenerator project. Sitecore have added this to the product in order to allow views to be pre-compiled at build time, to reduce site startup time. The `FileExists` method is checking to see if a view exists, but it can also make a test to see if a cshtml file is newer than the pre-compiled view in an assembly:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected override bool FileExists(ControllerContext controllerContext, string virtualPath)
@@ -226,7 +228,8 @@
 					<p>The simplest model I could come up with was to have a View Rendering which called
 						<code>HTML.Partial()</code>
 						in a loop, to simulate a complex set of nested partial views. With this as a parent view:</p>
-					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">&lt;h2 class="anchor"&gt;&lt;a href="#heading3" name="heading3"&gt;Using Partials&lt;/a&gt;&lt;/h2&gt;
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">&lt;h2&gt;Using Partials&lt;/h2&gt;
+
 @for (int i = 0; i &lt; 100; i++)
 {
     @Html.Partial("~/views/ViewPerformanceTest/SimpleSubView.cshtml")
@@ -241,7 +244,8 @@
 						<code>ViewRendering()</code>
 						method:</p>
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">@using Sitecore.Mvc
-&lt;h2 class="anchor"&gt;&lt;a href="#heading4" name="heading4"&gt;Using ViewRenderings&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;Using ViewRenderings&lt;/h2&gt;
+
 @for (int i = 0; i &lt; 100; i++)
 {
 	@Html.Sitecore().ViewRendering("/views/ViewPerformanceTest/SimpleSubView.cshtml")
@@ -257,8 +261,9 @@
 					<p>I tried a variety of tests, with compiled views present and not present, with
 						<code>UsePhysicalViewsIfNewer</code>
 						enabled and disabled, with view files present and not present, and using both Partial and ViewRendering bindings. Under v8.2 all of these were showing similar behaviour where &gt; 40% of the time for each request was spent in this bit of RazorGenerator. As a comparison I also tried running the same views under a copy of V8.1 – where (unsurprisingly) these overheads were not visible.</p>
-					<h2 class="anchor">
-						<a href="#heading5" name="heading5">So what can we learn from this?</a>
+					<h2 class="anchor">So what can we learn from this?<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					To be honest, this confused me a bit, as my reading understanding of how this feature worked (based largely on the code above and
 					<a href="https://kamsar.net/index.php/2016/09/Precompiled-Views-with-Sitecore-8-2/" rel="noopener" target="_blank">Kam's post</a>), suggested that the `UsePhysicalViewsIfNewer` switch should change the results. But having discussed this with Sitecore Support, their response was mostly focused on the comments below and "talk to the RazorGenerator developers" – so perhaps my understanding wasn't right...
@@ -308,8 +313,8 @@
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -320,18 +325,20 @@
 										<a href="#heading2">Investigating in more detail</a>
 									</li>
 									<li>
-										<a href="#heading3">Using Partials</a>
-									</li>
-									<li>
-										<a href="#heading4">Using ViewRenderings</a>
-									</li>
-									<li>
-										<a href="#heading5">So what can we learn from this?</a>
+										<a href="#heading3">So what can we learn from this?</a>
 									</li>
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -366,7 +373,7 @@
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -396,7 +403,7 @@
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -421,7 +428,7 @@
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -476,14 +483,6 @@
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

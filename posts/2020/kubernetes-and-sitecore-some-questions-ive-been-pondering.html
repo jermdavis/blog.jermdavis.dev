@@ -167,8 +167,9 @@
 						<a href="https://twitter.com/jammykam" rel="noopener" target="_blank">Kamruz Jaman</a>,
 						<a href="https://twitter.com/jflh" rel="noopener" target="_blank">Jeff L'Heureux</a>
 						and the people of SitecoreLunch who have helped me work out answers to my questions about all this. Maybe these points will be helpful to others who are trying to work out what the right approach for their projects are too.</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">Point one: What OS version should your base containers use?</a>
+					<h2 class="anchor">Point one: What OS version should your base containers use?<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					<a href="/img/2020/2020-11-logos-1.png" target="_blank">
 						<img alt="logos" src="/img/2020/2020-11-logos-1.png">
@@ -178,16 +179,18 @@
 					<p>But then there's Kubernetes. When look at the config files you can download for configuring a production Kubernetes cluster, you'll see that these only describe using images based on the "<a href="https://searchwindowsserver.techtarget.com/definition/Microsoft-Windows-Server-LTSC-Long-Term-Servicing-Channel" rel="noopener" target="_blank">LTSC</a>" version of Windows. Which version should you be deploying to Production?</p>
 					<p>I did a pile of googling, but didn't really find a good answer. But Sitecore Slack to the rescue – Bart Plasmeijer explained the answer I missed:</p>
 					<p>According to Microsoft, Azure Kubernetes Service currently only supports with the LTSC version of Windows. So if you're deploying to AKS for production use, you have to use whatever the current LTSC release is right now.</p>
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">Point two: Do you really only ever have "one set" of containers?</a>
+					<h2 class="anchor">Point two: Do you really only ever have "one set" of containers?<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					Knowing the answer to the first point brings up a new issue. If we know we have to have LTSC images for production, should we use the same for local development, or might it make sense to build different images for local development vs onward deployment? A single set of images would seem to offer the simplest overall compatibility, but it would lead to loss of the latest Docker features on your development images.
 					<p>I have a local development setup where developers build some custom images that include a few project-specific things, but do not include any of the main project's code. The devs start up Docker and publish that code from Visual Studio on top of the containers. That lets them run the site locally and do their development without worrying about any solution files being baked into their containers. But it's no good for onward deployment.</p>
 					<p>So when I sat and thought about this, it seemed to make sense that my project actually needs some different Dockerfiles for two scenarios here. I need CM / CD Dockerfiles to make my developer images, to drop code in development on top of. (Which might also be targeted to the 2004 version of  Windows on my developer's machines) And I also need CM / CD Dockerfiles for onward deployment, and they need to include the compiled code by default.</p>
 					<p>When you look at the examples available, they always seem to have just a single set of Dockerfiles, and they run the same containers locally as they go on to deploy. So this made me wonder if my thinking was wrong here...</p>
 					<p>But having raised this issue with on Slack and discussed with Rob Ahnemann and the Sitecore Lunch people, it seems I'm not barking up the wrong tree there. Other people follow a similar model to optimise their image builds for different scenarios. And Kamruz Jaman pointed out that "build an image per windows release" is also a common approach – ensuring there's an image optimised for whichever O/S your developers and production servers are using.</p>
-					<h2 class="anchor">
-						<a href="#heading3" name="heading3">Point three: If you didn't change a Sitecore image, should you still build a custom version?</a>
+					<h2 class="anchor">Point three: If you didn't change a Sitecore image, should you still build a custom version?<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					And (again) the answer to #2 lead me to a new question. In my developer setup, I have a folder of Dockerfiles for all the roles in an XP deployment. So when docker-compose starts up an XP instance of the site, it's using custom images for all the roles. However the Dockerfiles for the xConnect role imagess don't actually do anything right now. The Dockerfiles exist in case I need to make custom changes to them later, but they don't currently add anything meaningful to the images.
 					<p>So I stated wondering about whether it was necessary for my Kubernetes image build to do anything with these Dockerfiles. Might it just be easier to not bother building them, save myself some disk space on my Azure Container Registry and stick with the default Sitecore images for xConnect when I deploy onwards? (At least until a requirement comes up for customising xConnect somehow, that is)</p>
@@ -197,8 +200,8 @@
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -214,7 +217,15 @@
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -249,7 +260,7 @@
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -279,7 +290,7 @@
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -304,7 +315,7 @@
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -359,14 +370,6 @@
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

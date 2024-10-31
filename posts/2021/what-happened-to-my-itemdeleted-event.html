@@ -157,16 +157,16 @@
 					<p>My QA team had a deployment issue recently, where Azure DevOps failed to successfully release to a couple of servers. The reason for the failure wasn't obvious to me immediately, so here's a quick write-up for Google, in the hope it saves some other people.
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">The reported error</a>
+					<h2 class="anchor">The reported error<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					The DevOps release pipeline had failed. It was the Unicorn sync step which reported an error, but the error messages were not initially helpful:
 					<a href="/img/2021/releaseerror.png">
 						<img src="/img/2021/releaseerror.png" alt="Release Error">
 					</a>
 					<p>For Google's benefit, the error is here:</p>
-					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="15" data-enlighter-language="text" style="width:100%; overflow:scroll;">2021-09-06T10:56:24.4434898Z &lt;h2 class="anchor"&gt;&lt;a href="#heading2" name="heading2"&gt;[section]Starting: Run Unicorn Sync
-&lt;/a&gt;&lt;/h2&gt;
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-highlight="15" data-enlighter-language="text" style="width:100%; overflow:scroll;">2021-09-06T10:56:24.4434898Z ##[section]Starting: Run Unicorn Sync
 2021-09-06T10:56:24.4576402Z ==============================================================================
 2021-09-06T10:56:24.4576705Z Task         : PowerShell
 2021-09-06T10:56:24.4576990Z Description  : Run a PowerShell script on Linux, macOS, or Windows
@@ -176,8 +176,7 @@
 2021-09-06T10:56:24.4578219Z ==============================================================================
 2021-09-06T10:56:25.3011750Z Generating script.
 2021-09-06T10:56:25.3420551Z ========================== Starting Command Output ===========================
-2021-09-06T10:56:25.3660200Z &lt;h2 class="anchor"&gt;&lt;a href="#heading3" name="heading3"&gt;[command]"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\azagent\A1\_work\_temp\6a50dc74-9a04-4072-afd1-03306e0b3fb2.ps1'"
-&lt;/a&gt;&lt;/h2&gt;
+2021-09-06T10:56:25.3660200Z ##[command]"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\azagent\A1\_work\_temp\6a50dc74-9a04-4072-afd1-03306e0b3fb2.ps1'"
 2021-09-06T10:56:25.6931500Z Starting Unicorn sync
 2021-09-06T10:56:26.4749680Z Sync-Unicorn: Executing Sync...
 2021-09-06T10:56:26.7585296Z Sync-Unicorn : Exception calling "GetResponse" with "0" argument(s): "The
@@ -188,15 +187,14 @@
 2021-09-06T10:56:26.7587616Z     + CategoryInfo          : NotSpecified: (:) [Sync-Unicorn], MethodInvocationException
 2021-09-06T10:56:26.7588307Z     + FullyQualifiedErrorId : WebException,Sync-Unicorn
 2021-09-06T10:56:26.7588676Z
-2021-09-06T10:56:26.8984825Z &lt;h2 class="anchor"&gt;&lt;a href="#heading4" name="heading4"&gt;[error]PowerShell exited with code '1'.
-&lt;/a&gt;&lt;/h2&gt;
-2021-09-06T10:56:26.9490148Z &lt;h2 class="anchor"&gt;&lt;a href="#heading5" name="heading5"&gt;[section]Finishing: Run Unicorn Sync
-&lt;/a&gt;&lt;/h2&gt;
+2021-09-06T10:56:26.8984825Z ##[error]PowerShell exited with code '1'.
+2021-09-06T10:56:26.9490148Z ##[section]Finishing: Run Unicorn Sync
 
 					</pre>
 					<p>But basically all it says is that there was a 500 error calling Unicorn's sync endpoint.</p>
-					<h2 class="anchor">
-						<a href="#heading6" name="heading6">A better error</a>
+					<h2 class="anchor">A better error<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					That's not enough to solve the problem, so I needed to get some more details. The obvious thing to try was a manual sync of Unicorn. So loaded up `/unicorn.aspx` and told it to sync everything. That told me two things initially: Firstly that the actual seralised items were syncing ok. And secondly that the error was actually happening during the automatic publish afterwards. It failed with this display in the UI:
 					<a href="/img/2021/unicornerror.png">
@@ -235,8 +233,9 @@ at Sitecore.Data.Engines.DataEngine.DeleteItem(Item item)
 					<p>That error's telling us that what actually happened was that the
 						<code>item:deleted</code>
 						event has a subscriber that connects to xDB. And that's what's failing here.</p>
-					<h2 class="anchor">
-						<a href="#heading7" name="heading7">A soluition – and some facepalming</a>
+					<h2 class="anchor">A soluition – and some facepalming<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					I spent a bit of time reading the errors above, before spotting this bit:
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Message[1]: Ensure definition type did not complete successfully. StatusCode: 500, ReasonPhrase: 'Internal Server Error'
@@ -257,8 +256,8 @@ Required license is missing: Sitecore.xDB.Base —&gt; Sitecore.Nexus.Licensing.
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -266,31 +265,23 @@ Required license is missing: Sitecore.xDB.Base —&gt; Sitecore.Nexus.Licensing.
 										<a href="#heading1">The reported error</a>
 									</li>
 									<li>
-										<a href="#heading2">[section]Starting: Run Unicorn Sync
-										</a>
+										<a href="#heading2">A better error</a>
 									</li>
 									<li>
-										<a href="#heading3">[command]"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\azagent\A1\_work\_temp\6a50dc74-9a04-4072-afd1-03306e0b3fb2.ps1'"
-										</a>
-									</li>
-									<li>
-										<a href="#heading4">[error]PowerShell exited with code '1'.
-										</a>
-									</li>
-									<li>
-										<a href="#heading5">[section]Finishing: Run Unicorn Sync
-										</a>
-									</li>
-									<li>
-										<a href="#heading6">A better error</a>
-									</li>
-									<li>
-										<a href="#heading7">A soluition – and some facepalming</a>
+										<a href="#heading3">A soluition – and some facepalming</a>
 									</li>
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -325,7 +316,7 @@ Required license is missing: Sitecore.xDB.Base —&gt; Sitecore.Nexus.Licensing.
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -355,7 +346,7 @@ Required license is missing: Sitecore.xDB.Base —&gt; Sitecore.Nexus.Licensing.
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -380,7 +371,7 @@ Required license is missing: Sitecore.xDB.Base —&gt; Sitecore.Nexus.Licensing.
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -435,14 +426,6 @@ Required license is missing: Sitecore.xDB.Base —&gt; Sitecore.Nexus.Licensing.
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

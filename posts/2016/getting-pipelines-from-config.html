@@ -159,8 +159,9 @@ So here's one way it could work:">
 					<p>So here's one way it could work:
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">First step is having some configuration...</a>
+					<h2 class="anchor">First step is having some configuration...<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					A very simple structure to store a pipeline might look like this:
 					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;pipeline name="example"&gt;
@@ -175,8 +176,9 @@ So here's one way it could work:">
 						element then defines the type which must be instantiated to process that bit of the pipeline.</p>
 					<p>In Sitecore's world, the config for pipelines is commonly "patched" by add-on modules and the code you deploy for your site. Based on XML like it would be possible to implement some sort of config patching process that allows the same sort of "insert-before" or "replace" options as Sitecore does. I'm not going to go into the detail of that for this post, however. But for our purposes we can assume that code exists somewhere that can deal with doing any modification of the raw configuration before we try to instantiate the pipeline.</p>
 					<p>So the next task is to load the XML and get it ready for processing:</p>
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">Loading the XML</a>
+					<h2 class="anchor">Loading the XML<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					Ideally there shouldn't be any significant differences between a "loaded from config" pipeline and a "created by code" one. So the code can start from a new abstract class that inherits from our original pipeline type:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public abstract class ConfigBasedPipeline&lt;INPUT, OUTPUT&gt; : Pipeline&lt;INPUT, OUTPUT&gt;
@@ -203,8 +205,9 @@ So here's one way it could work:">
 					<p>It checks that we got a valid XML Element, tries to parse it into pipeline step objects and then tries to validate that these meet the type requirements of the pipeline. Finally we can use those objects to initialise the
 						<code>Func&lt;INPUT,OUTPUT&gt;</code>
 						which actually runs the pipeline process that we saw described in the code-first constructor from the previous post.</p>
-					<h2 class="anchor">
-						<a href="#heading3" name="heading3">Parsing and validating</a>
+					<h2 class="anchor">Parsing and validating<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					Parsing the XML into objects is fairly simple:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private IList&lt;IPipelineStep&gt; parsePipelineSteps(XElement pipelineXml)
@@ -282,8 +285,9 @@ public interface IPipelineStep&lt;INPUT, OUTPUT&gt; : IPipelineStep
 					<p>This needs to iterate through each of the objects we generated from the XML and check it's inputs and outputs. It starts by looking at the type parameters for the overall pipeline object. Fetching the base generic pipeline step interface allows us to work out what the type parameters for the input and output of the overall pipeline is. So we can assume that the first step we encounter needs to have an input that is the same type as the overall pipeline.</p>
 					<p>Then the code can loop through each subsequent step, checking that the output type of one step matches the input type of the next. Again, it can use the type parameters of the base step interface to work this out. And finally, the output of the very last step must match the output of the overall pipeline.</p>
 					<p>If all of that matches up then all is well. Otherwise, the code raises exceptions that try to specify which step has been found to be incorrect and why.</p>
-					<h2 class="anchor">
-						<a href="#heading4" name="heading4">And executing the steps...</a>
+					<h2 class="anchor">And executing the steps...<a href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					If the steps validate, all that remains is to provide the code which can execute them. We can't easily express the `Func<input,output>` from the previous post because we don't know the actual step objects involve this time around. But we can iterate them and make use of reflection to get them to do their job anyway:
 						<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private OUTPUT processPipelineSteps(IList&lt;IPipelineStep&gt; pipelineSteps, INPUT input)
@@ -333,8 +337,9 @@ var output = pipeline.Process(input);
 
 						</pre>
 						<p>Other than the need to fetch (and potentially patch) the XML to create the pipeline, this can behave in the same way as the code-first approach.</p>
-						<h2 class="anchor">
-							<a href="#heading5" name="heading5">In conclusion...</a>
+						<h2 class="anchor">In conclusion...<a href="#heading5" name="heading5">
+								<img src="/img/link.png">
+							</a>
 						</h2>
 						So it turns out (if you have some XML patching code to use) you can have a simple approach to config-based pipelines fairly easily. The need for the data type passing through to vary does require some extra code, but it's not particularly complex.
 						<p>One issue that I've not addressed here is creating the concrete pipeline object based on configuration data, rather than manually creating it as shown above. I'm not entirely sure whether real code would need that or not – since code usually wants to run a specific pipeline, and hence would know what concrete type it needed anyway. But if it was necessary, that could be done by putting the type data into the XML so that a factory method could instantiate the correct object.</p>
@@ -345,8 +350,8 @@ var output = pipeline.Process(input);
 					</input,output>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -368,7 +373,15 @@ var output = pipeline.Process(input);
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -403,7 +416,7 @@ var output = pipeline.Process(input);
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -433,7 +446,7 @@ var output = pipeline.Process(input);
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -458,7 +471,7 @@ var output = pipeline.Process(input);
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -513,14 +526,6 @@ var output = pipeline.Process(input);
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

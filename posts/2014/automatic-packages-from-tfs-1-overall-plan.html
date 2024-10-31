@@ -191,8 +191,9 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 					<p>So for this first post, I'll sketch out the problem I want to solve and look at some of the basic code if will require. I'll flesh out the code an implementation over the rest of the posts – but I'm not sure how many there will be at this point... 
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">Requirements</a>
+					<h2 class="anchor">Requirements<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					I want to put together a tool which can be run either manually by a developer, or automatically by a build server. It should make use of the ChangeSet history in Team Foundation Server to determine the set of files, binaries and Sitecore Items which have changed and require deployment, and use that data to generate a standard Sitecore Package Definition file. It should be configurable, so that it can work with different projects that do not necessarily share the same underlying structure and processes. And it should avoid having any direct references to Sitecore itself, so it can be run without an instance of Sitecore available.
 					<p>At this point, I'm thinking the tool needs to be implemented roughly as follows:</p>
@@ -207,8 +208,9 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 					</ul>
 					<p>[My usual caveat that the code examples here miss out error handling and so on, in order to stay readable. Plus, in this case, I've not finished the code yet, so there's a good chance of it evolving a bit between posts]</p>
 					<p>So, to implementation:</p>
-					<h2 class="anchor">
-						<a href="#heading2" name="heading2">Parsing the command line</a>
+					<h2 class="anchor">Parsing the command line<a href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					If a tool is going to read command line parameters, it makes sense to re-use some pre-existing code for dealing with parsing them. A useful tool I've used for this before is
 					<a href="http://commandlinearguments.codeplex.com/SourceControl/latest#CommandLineArguments.cs" title="Command Line Arguments parser" target="_blank" rel="noopener noreferrer">this argument parser class from Peter Hallam @ Microsoft</a>. Adding this class into the project allows us to define the arguments we want to parse in terms of a C# class that will represent the resultant data. We need to be able to specify the following options:
@@ -254,8 +256,9 @@ So for this first post, I'll sketch out the problem I want to solve and look at 
 							<img alt="Parse Failed" src="/img/2014/2014-08-parsefailed.png">
 						</a>
 					</p>
-					<h2 class="anchor">
-						<a href="#heading3" name="heading3">Getting the TFS changes</a>
+					<h2 class="anchor">Getting the TFS changes<a href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					With the parameters parsed, the next thing to do is fetch the TFS changes. This can be done using a similar pattern to the approach from the PowerShell script – but using a more C# friendly way of executing the external tool. Plus, in this version we'll allow for both the first and last changeset to process (as per the configuration above) The class to manage the TFS interaction is as follows:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class TFSCommandLine
@@ -379,8 +382,9 @@ public enum TFSActions
 					</pre>
 					<p>So the code splits each of the lines received to get a path and an action, and it builds a dictionary keyed on the paths, and storing the set of actions associated with that path.</p>
 					<p>I'm thinking that as this code evolves, it may be useful to make the implementation of this class (specifically how it fetches the data) replaceable. I know it's possible to talk to TFS via an API rather than the command line. It may also be useful to be able to read test data to process without having a connection to TFS available – for automated tests perhaps. But that's a topic for a future post, perhaps.</p>
-					<h2 class="anchor">
-						<a href="#heading4" name="heading4">Processing the data</a>
+					<h2 class="anchor">Processing the data<a href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					The pattern I want to use for processing the data from TFS is a pipeline model. I'll talk about the implementation of this in a future post in this series, I think. But the overall process will be that the Pipeline will take the TFS data object as its input, it will pass this to each of the configured pipeline components and the result will be an object that represents a Package Definition. The code for running it will end up looking something like this:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">CommandLineParameters cp = new CommandLineParameters();
@@ -411,15 +415,16 @@ if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
 						object is created, and instructed to load the set of configured components. Then this is given the data from TFS, and after running all the pipeline components over it a package data set is returned. Each pipeline component gets a chance to modify the source data (for example to remove entries that aren't required for packaging, or to transform them into more useful data). The package data object that is generated can then be serialised to XML in the schema used by package definition files and saved to disk. The
 						<code>XMLWriterSettings</code>
 						is required here, as it turns out that Sitecore doesn't like loading a package definition if it starts with an XML declaration.</p>
-					<h2 class="anchor">
-						<a href="#heading5" name="heading5">Next..</a>
+					<h2 class="anchor">Next..<a href="#heading5" name="heading5">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					I've got a bit more thinking to do before the second part of this series, as I want to nail down a prototype of the pipeline implementation and how it will get configured – but I think the next post will either be about the pipelines or about the object to represent and serialise the package data. Watch this space...
 					<a class="gotop" href="#top">↑ Back to top</a>
 				</div>
 				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col">
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<ol class="headings">
@@ -441,7 +446,15 @@ if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
 								</ol>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -476,7 +489,7 @@ if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:flex-grow md:flex-shrink">
+						<section class="md:basis-1/5 md:shrink lg:order-3">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
 							<div class="bg-white p-2 flex flex-wrap">
 								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
@@ -506,7 +519,7 @@ if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
 							<div class="bg-white p-2">
 								<div>
@@ -531,7 +544,7 @@ if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
 								</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
 							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
 							<div class="bg-white mb-2 p-2">
 								<table>
@@ -586,14 +599,6 @@ if (CommandLine.Parser.ParseArgumentsWithUsage(args, cp))
 										</tr>
 									</tbody>
 								</table>
-							</div>
-						</section>
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-							<div class="bg-white mb-2 p-2">
-								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
-								</a>
 							</div>
 						</section>
 					</div>

@@ -155,8 +155,9 @@
 						that lead to difficult to diagnose failures in the WYSIWYG editor. I came across one such issue recently that seemed like just the sort of thing Google needs to know about to save future developers (and probably Future Me as well) from the pain of debugging it. 
 						<!--more-->
 					</p>
-					<h2 class="anchor">
-						<a href="#heading1" name="heading1">Bug reports...</a>
+					<h2 class="anchor">Bug reports...<a href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
 					</h2>
 					I was assigned two QA bug reports for a site I've been building. They were both related to one particular rendering – which allowed editors to pull in external content via  `<iframe>` tags injected into the page:
 <ul>
@@ -182,7 +183,7 @@ For Google's benifit, the key parts of the two exceptions here are:
 </pre>
 </li>
 </ul>
-<h2 class="anchor"><a href="#heading2" name="heading2">Digging in...</a></h2>
+<h2 class="anchor">Digging in...<a href="#heading2" name="heading2"><img src="/img/link.png"/></a></h2>
 My initial reading of these issues made me think that the two bugs were probably related, and that giving editors the ability to use raw markup to add in `<iframe/>` elements is a really good way of allowing them to accidentally break the page's markup in some way. I also noted that I could not reproduce the problems on my development instance. They only happened on QA. So that started me thinking that dodgy markup can cause issues in Experience Editor, because so much of its behaviour relies on being able to inject all the "chrome" that editors use to control renderings. So I went through some basic checks to try and spot any obvious errors:
 <ul>
 <li>I looked at the content in the DataSource items available for this component, to check that they were not injecting badly formed HTML.</li>
@@ -200,7 +201,7 @@ My initial reading of these issues made me think that the two bugs were probably
 <li>I added the caching settings from the original rendering to the new one. The new one still worked.</li>
 <li>I compared all the other settings on the original rendering with the new one, and found only one other difference: Experience Editor Buttons. So I added the custom button from the old one to the new one. And <a href="https://media.giphy.com/media/d0NnEG1WnnXqg/giphy.gif" rel="noopener" target="_blank">BOOM</a>! The new one broke in the same way as the old one...</li>
 </ul>
-<h2 class="anchor"><a href="#heading3" name="heading3">An answer!</a></h2>
+<h2 class="anchor">An answer!<a href="#heading3" name="heading3"><img src="/img/link.png"/></a></h2>
 With that in mind, I re-read the exception messages I'd been seeing, and noted two things: Firstly the stack trace included the type `Sitecore.Pipelines.GetChromeData.GetChromeDataProcessor.GetFieldEditorButton` so it had been giving me a hint about this all along, and secondly the main error was `Fields field cannot contain any of the following symbols: ():=` – which gave me a big hint.
 <p>So I switched over to the Core database, and drilled down to the custom Experience Editor Button definition that I'd added to my new Rendering. Looking through the fields I spotted:</p>
 <p><a href="/img/2018/2018-09-fieldissue.png" target="_blank"><img alt="Field Issue" src="/img/2018/2018-09-fieldissue.png"/></a></p>
@@ -212,14 +213,18 @@ With that in mind, I re-read the exception messages I'd been seeing, and noted t
 
             </div>
             <div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-                <div class="md:flex-row md:flex lg:flex-col">
-        <section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+                <div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+        <section class="mb-2 md:basis-full md:shrink-0">
             <h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
             <div class="bg-white p-2 flex flex-wrap">
                 <ol class="headings"><li><a href="#heading1">Bug reports...</a></li><li><a href="#heading2">Digging in...</a></li><li><a href="#heading3">An answer!</a></li></ol>
             </div>
         </section>
-    <section class="md:flex-2 md:flex-grow md:flex-shrink mb-2">
+    <section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+        <h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+        <div class="bg-white mb-2 p-2"><a href="/mvp"><img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge" /></a></div>
+    </section>
+    <section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
         <h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
         <div class="bg-white p-2 flex flex-wrap">
                     <a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Symposium </a>
@@ -235,7 +240,7 @@ With that in mind, I re-read the exception messages I'd been seeing, and noted t
         </div>
     </section>
 
-    <section class="md:flex-2 md:flex-grow md:flex-shrink">
+    <section class="md:basis-1/5 md:shrink lg:order-3">
         <h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
         <div class="bg-white p-2 flex flex-wrap">
                         <a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1"> Sitecore (236)</a>
@@ -254,7 +259,7 @@ With that in mind, I re-read the exception messages I'd been seeing, and noted t
         </div>
     </section>
 
-    <section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0">
+    <section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
         <h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
         <div class="bg-white p-2">
                     <div><a class="text-lg" href="/posts/2024-10">2024 - October</a></div>
@@ -268,7 +273,7 @@ With that in mind, I re-read the exception messages I'd been seeing, and noted t
         </div>
     </section>
 
-    <section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink">
+    <section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
         <h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
         <div class="bg-white mb-2 p-2">
             <table>
@@ -320,13 +325,8 @@ With that in mind, I re-read the exception messages I'd been seeing, and noted t
                             </a>
                         </td>
                     </tr>
-                </table>
+            </table>
         </div>
-    </section>
-
-    <section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:flex-shrink-0 lg:order-first">
-        <h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
-        <div class="bg-white mb-2 p-2"><a href="/mvp"><img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge" /></a></div>
     </section>
 </div>
             </div>
