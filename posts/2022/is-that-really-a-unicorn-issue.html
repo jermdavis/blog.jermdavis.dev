@@ -160,13 +160,13 @@
 					<p>I hit a rather confusing issue with a release a while back, which initially appeared to be a Unicorn problem. But after investigating the details, I think this was actually an infrastructure problem causing some odd behaviour. I doubt this is a common problem, but still worth writing down in case it's a challenge for anyone else... 
 						<!--more-->
 					</p>
-					<h2 x-data="" class="anchor">Some background<a x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+					<h2 x-data="" class="anchor">Some background<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
 							<img src="/img/link.png">
 						</a>
 						<span>url copied!</span>
 					</h2>
 					The release in question was a containerised build. It had been running fine for some time, and I'd already released this build to the "dev" and "qa" instances of the site. The release process was set up to deploy the new images to Kubernetes, and then once the CM image was deployed and started, trigger the Unicorn sync to complete the deployment.
-					<h2 x-data="" class="anchor">The issue<a x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+					<h2 x-data="" class="anchor">The issue<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
 							<img src="/img/link.png">
 						</a>
 						<span>url copied!</span>
@@ -179,7 +179,7 @@
 						<a href="https://github.com/SitecoreUnicorn/Rainbow/blob/3366c917df58fe0f7e6ca6d1a3b0cb267dd4c7f4/src/Rainbow.Storage.Sc/Deserialization/DefaultDeserializer.cs#L384" rel="noopener" target="_blank">the GitHub repository that the code in question came from</a>. So no easy answers for this one.</p>
 					<p>I tried repeating the deployment - which gave the same error. And I tried pulling down the source and running a sync on my local instance - which gave no errors.</p>
 					<p>So, for a while I was a bit stumped...</p>
-					<h2 x-data="" class="anchor">A possible explanation<a x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+					<h2 x-data="" class="anchor">A possible explanation<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
 							<img src="/img/link.png">
 						</a>
 						<span>url copied!</span>
@@ -202,7 +202,7 @@ targetItem.Versions.RemoveAll(true);
 					<p>The second difference is that the infrastructure is different between pre-prod and dev/qa. The client's infrastructure choices for this instance mean that there are two CM servers in the pre-prod deployment.</p>
 					<p>Thinking about that made me wonder if the cause here might be related to those multiple CM instances. What if the deployment was starting with a connection to one CM instance, and then getting swapped to the other one as the containers updated? And that lead me to thinking about clearing caches - because that could be a reason the in-memory data might be different.</p>
 					<p>And in fact clearing the cache on the active CM instance did get rid of the error, and allow the sync to complete correctly. And none of the other things I'd tried had done so. So I'm fairly sure something data and cache related is what was happening when I saw the error.</p>
-					<h2 x-data="" class="anchor">Preventing this problem<a x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
+					<h2 x-data="" class="anchor">Preventing this problem<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
 							<img src="/img/link.png">
 						</a>
 						<span>url copied!</span>
