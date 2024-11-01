@@ -158,19 +158,21 @@
 						about trying to smooth out the rougher edges of the process of blogging with some custom tooling. Both the site generator I'm using these days, and the simple editor tool I hacked together to suit my writing process. I realised recently that one of those rough edges that remained in the process was the need to manually commit my writing to source control, so I wondered what it might take to wire that into my editing tool...
 						<!--more-->
 					</p>
-					<h2 class="anchor">The challenge
-						<a href="#heading1" name="heading1">
+					<h2 x-data="" class="anchor">The challenge
+						<a x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					<p>I have two separate git repos for my blog:</p>
 					<p>One is in Github, to provide the Github Pages site that I publish to. This repo contains only the output of my static site generator, and I automated the process of updating this early in my migration, with a "build and publish the site" PowerShell script which I can run from the command line.</p>
 					<p>The second repo is a self-hosted one which holds the source for the blog, the editor and the static site generator. The basic markdown for the pages, the Razor and custom C# code for the theme, and the WPF app that I write most of the posts in. This one doesn't have any automation right now. When I do some writing and am ready to commit the changes I've usually just opened Visual Studio to commit and push.</p>
 					<p>And that's the thing I was interested in improving. Could I add the Git process to the editing tool, so I didn't have to load VS in order to save changes to my repo?</p>
-					<h2 class="anchor">What needs automating?
-						<a href="#heading2" name="heading2">
+					<h2 x-data="" class="anchor">What needs automating?
+						<a x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					<p>It's three operations:</p>
 					<ul>
@@ -181,10 +183,11 @@
 					<p>Maybe there's some other stuff too - my writing is usually just committed direct to the "main" branch, but it's not uncommon for me also to have some live side branches for code changes, or more significate site layout changes that I need to spend more time working on. So potentially the tooling needs to be able to cope with making sure that we're using the right branch.</p>
 					<p>And with the heavy heart of an experienced developer, there will need to be a way to detect (and maybe handle) error conditions. From the trivial "what happens if the computer is offline, but it's trying to push to a remote" to the less simple but important "the remote is ahead of local, and you won't be able to push".</p>
 					<p>And those needs got me thinking about possible approaches.</p>
-					<h2 class="anchor">The simplest way
-						<a href="#heading3" name="heading3">
+					<h2 x-data="" class="anchor">The simplest way
+						<a x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					<p>My first instinct was a simple but hacky one: Git is a command line tool, so can spawn it using the
 						<code>System.Diagnostics.Process</code>
@@ -259,10 +262,11 @@ var result = outputStream.ReadToEnd();
 					<p>And other things like swapping branches can be handled in a similar manner by using the appropriate Git commands.</p>
 					<p>But the basic challenge with this approach is the need to parse all the results out of the output or error streams. And that tends to be a bit of a pain, and it's also quite sensitive to whether different versions of Git change the structure of the text they output.</p>
 					<p>And that made me think about more structured ways of doing this...</p>
-					<h2 class="anchor">A more formal way
-						<a href="#heading4" name="heading4">
+					<h2 x-data="" class="anchor">A more formal way
+						<a x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					<p>Would an API do better? It should allow for an easier way of handling results at least. A bit of googling pointed me towards the
 						<a href="https://github.com/libgit2/libgit2sharp" target="_blank" rel="noopener">libgit2sharp</a>
@@ -319,10 +323,11 @@ using (var repo = new Repository(repoPath))
 					</pre>
 					<p>Unlike the command line (which just remembers this stuff), this code needs to know who you're committing as each time you call it. And similarly, attempting to push changes requires knowing credentials for the remote, which Git would have handled for you.</p>
 					<p>So while this approach gives you data in an easier format to process, it still has some challenges...</p>
-					<h2 class="anchor">Conclusions
-						<a href="#heading5" name="heading5">
+					<h2 x-data="" class="anchor">Conclusions
+						<a x-on:click.prevent="copy($event.target)" href="#heading5" name="heading5">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					<p>After some fun hacking, I have a basic experiment that works: A prototype window my the editor looks like this:</p>
 					<p>
@@ -569,7 +574,8 @@ using (var repo = new Repository(repoPath))
         });
         
 		</script>
-		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>
         window.dataLayer = window.dataLayer || [];

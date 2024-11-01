@@ -156,9 +156,10 @@
 						<a href="/posts/2021/pipelines-and-async" target="_blank">Last time out I was looking at applying async/await patterns to some pipeline patterns for C#</a>. After I came up with the initial solution I outlined in that post, there was some more back-and-forth in the discussion thread that prompted all this. And that discussion made me realise there was an interesting side effect of the code I wrote, which might lead to some confusing bugs. So back to the drawing board...
 						<!--more-->
 					</p>
-					<h2 class="anchor">Execution ordering and async<a href="#heading1" name="heading1">
+					<h2 x-data="" class="anchor">Execution ordering and async<a x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					Writing code that uses the `async`/`await` patterns from the previous post can have some interesting effects on the order of execution for some of the code. An example to demonstrate that is fairly simple to construct. Expanding on the example code I started last time, consider a pipeline with three steps:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExampleAsyncPipeline : AsyncPipeline&lt;Uri, string&gt;
@@ -258,9 +259,10 @@ Leaving DiskWriteAsyncStep #3
 						<code>await</code>
 						depends on step two's output. So now the flow of execution has nothing else to do but wait for step two's input to resolve, so it can then finish that step, and then finish step three.</p>
 					<p>And that's what we're seeing in the output above...</p>
-					<h2 class="anchor">Here be dragons!<a href="#heading2" name="heading2">
+					<h2 x-data="" class="anchor">Here be dragons!<a x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					Now broadly that's not an issue – the code does end up doing all its work in the right order.
 					<p>But after I sat and thought about this a bit harder, I realised that it would be possible to cause some really interesting bugs with this approach. Any code that runs before the
@@ -286,9 +288,10 @@ Leaving DiskWriteAsyncStep #3
 					</pre>
 					<p>And with just the right "wrong code" happening before that initial await I'm pretty sure it would be possible to cause deadlocks, and really mess up your day.</p>
 					<p>Clearly this code pattern is not great. So how can we resolve this issue?</p>
-					<h2 class="anchor">Tweaking the pattern to address that<a href="#heading3" name="heading3">
+					<h2 x-data="" class="anchor">Tweaking the pattern to address that<a x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					Having sat and thought about all this, I realised there was a better way to express all of this. If the code changes so that the `await` behaviour for the `Task` is moved out of the individual pipeline steps then it's not possible for people writing steps to make a mistake with this.
 					<p>I've tried a couple of attempts at this. My first pass worked on the basis that you could have an abstract base type for pipeline steps which dealt with the awaiting of the inputs. But I didn't want to restrict the pipeline steps to inheriting a base class – that didn't look quite right to me. so I tried a second attempt.</p>
@@ -636,7 +639,8 @@ public class DiskWriteAsyncStep : IAsyncPipelineStep&lt;string, string&gt;
         });
         
 		</script>
-		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>
         window.dataLayer = window.dataLayer || [];

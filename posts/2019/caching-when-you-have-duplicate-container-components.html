@@ -155,9 +155,10 @@
 					<p>In theory, the magic of Dynamic Placeholders lets us have a container component placed onto your page more than once. That didn't work in the old world of "static" placeholders, because the rendering engine didn't like two placeholders with the same name. But despite it's benefits, the dynamic implementation has an annoying edge case – you may not be able to enable caching for your container component. I had a client bump into this issue recently, so I spent some time considering approaches that might help them address this issue. 
 						<!--more-->
 					</p>
-					<h2 class="anchor">The issue<a href="#heading1" name="heading1">
+					<h2 x-data="" class="anchor">The issue<a x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					Imagine you have a container component. A very simple one will do fine – all it really needs to contain is a Dynamic Placeholder:
 					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">@using Sitecore.Mvc
@@ -187,23 +188,26 @@
 					</p>
 					<p>There's no cache variant that works for "this component varies by its children" – so only the first instance of the container ever gets rendered and cached.</p>
 					<p>My interest in this came about because I got handed a bug report on a client site that said "our page is wrong!" and it turned out to be because of this issue. I think there are three main ways that the issue could be resolved to make the client happy:</p>
-					<h2 class="anchor">Solution one: Just disable caching<a href="#heading2" name="heading2">
+					<h2 x-data="" class="anchor">Solution one: Just disable caching<a x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					If you turn the cache settings off for the container component, all will look right.
 					<p>That's probably fine if your container has few children, or it's not used very much. The performance difference in that scenario is likely to be small – especially if you are able to enable caching for the child components inside your container.</p>
 					<p>That's a fix developers can roll out easily (it's just undoing the cache settings on the rendering item) and it doesn't affect editors at all.</p>
-					<h2 class="anchor">Solution two: Use a fake data source<a href="#heading3" name="heading3">
+					<h2 x-data="" class="anchor">Solution two: Use a fake data source<a x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					You could configure the container component with the "vary by datasource" cache setting instead of turning caching off. If the component doesn't really need a data source, the code will just ignore what ever item the datasource setting points to, other than for caching. And that can allow the normal caching framework to work here.
 					<p>No deployment is required for this, which is a bonus. But it might be confusing for editors to need to add a data source where it's not really needed. Plus this doesn't work if your container does need a datasource, and you have two on a page that need the same datasource but different children.</p>
 					<p>So this might not be a great answer.</p>
-					<h3 class="anchor">Solution three: Vary the cache by rendering id<a href="#heading4" name="heading4">
+					<h3 x-data="" class="anchor">Solution three: Vary the cache by rendering id<a x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h3>
 					Finally, it turns out it's not actually that hard to extend Sitecore's caching model to allow for the idea of "cache this specific rendering instance". You could write some code that looked at the actual children of a component and generated a cache key based on that. Maybe by hashing some data from the Rendering XML? But it struck me that it's faster and easier (and probably much the same outcome) to just make use of the unique ID that every instance of a rendering gets by default...
 					<p>To do this, you need to create a new data template to store your "cache by rendering's unique id" flag:</p>
@@ -498,7 +502,8 @@
         });
         
 		</script>
-		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>
         window.dataLayer = window.dataLayer || [];

@@ -155,9 +155,10 @@
 						that lead to difficult to diagnose failures in the WYSIWYG editor. I came across one such issue recently that seemed like just the sort of thing Google needs to know about to save future developers (and probably Future Me as well) from the pain of debugging it. 
 						<!--more-->
 					</p>
-					<h2 class="anchor">Bug reports...<a href="#heading1" name="heading1">
+					<h2 x-data="" class="anchor">Bug reports...<a x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					I was assigned two QA bug reports for a site I've been building. They were both related to one particular rendering – which allowed editors to pull in external content via  `<iframe>` tags injected into the page:
 <ul>
@@ -183,7 +184,7 @@ For Google's benifit, the key parts of the two exceptions here are:
 </pre>
 </li>
 </ul>
-<h2 class="anchor">Digging in...<a href="#heading2" name="heading2"><img src="/img/link.png"/></a></h2>
+<h2 x-data class="anchor">Digging in...<a x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2"><img src="/img/link.png"/></a><span>url copied!</span></h2>
 My initial reading of these issues made me think that the two bugs were probably related, and that giving editors the ability to use raw markup to add in `<iframe/>` elements is a really good way of allowing them to accidentally break the page's markup in some way. I also noted that I could not reproduce the problems on my development instance. They only happened on QA. So that started me thinking that dodgy markup can cause issues in Experience Editor, because so much of its behaviour relies on being able to inject all the "chrome" that editors use to control renderings. So I went through some basic checks to try and spot any obvious errors:
 <ul>
 <li>I looked at the content in the DataSource items available for this component, to check that they were not injecting badly formed HTML.</li>
@@ -201,7 +202,7 @@ My initial reading of these issues made me think that the two bugs were probably
 <li>I added the caching settings from the original rendering to the new one. The new one still worked.</li>
 <li>I compared all the other settings on the original rendering with the new one, and found only one other difference: Experience Editor Buttons. So I added the custom button from the old one to the new one. And <a href="https://media.giphy.com/media/d0NnEG1WnnXqg/giphy.gif" rel="noopener" target="_blank">BOOM</a>! The new one broke in the same way as the old one...</li>
 </ul>
-<h2 class="anchor">An answer!<a href="#heading3" name="heading3"><img src="/img/link.png"/></a></h2>
+<h2 x-data class="anchor">An answer!<a x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3"><img src="/img/link.png"/></a><span>url copied!</span></h2>
 With that in mind, I re-read the exception messages I'd been seeing, and noted two things: Firstly the stack trace included the type `Sitecore.Pipelines.GetChromeData.GetChromeDataProcessor.GetFieldEditorButton` so it had been giving me a hint about this all along, and secondly the main error was `Fields field cannot contain any of the following symbols: ():=` – which gave me a big hint.
 <p>So I switched over to the Core database, and drilled down to the custom Experience Editor Button definition that I'd added to my new Rendering. Looking through the fields I spotted:</p>
 <p><a href="/img/2018/2018-09-fieldissue.png" target="_blank"><img alt="Field Issue" src="/img/2018/2018-09-fieldissue.png"/></a></p>
@@ -388,7 +389,8 @@ With that in mind, I re-read the exception messages I'd been seeing, and noted t
         });
         </script>
 
-        <script src="/vendor/rp/rpbar-1.0.js"></script>
+        <script defer src="/vendor/rp/rpbar-1.0.js"></script>
+        <script defer src="/js/post.js"></script>
 
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>

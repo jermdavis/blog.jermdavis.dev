@@ -184,9 +184,10 @@
 						<a href="/posts/2014/automatic-packages-from-tfs-3-pipelines-and-data-transformation" target="_blank">last week's entry I listed out the set of pipeline components required to generate a package</a>. This week, lets have a look at what goes into each of those components and see how they interact with the configuration and source control data.
 						<!--more-->
 					</p>
-					<h2 class="anchor">1: Basic Package Metadata<a href="#heading1" name="heading1">
+					<h2 x-data="" class="anchor">1: Basic Package Metadata<a x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					The first component that runs is the `SetPackageMetadata`. This is a simple component that just sets some basic package metadata. For the moment that is just the package's name and the name of the package creator:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class SetPackageMetadata : IPipelineComponent
@@ -211,9 +212,10 @@
 						interface and expose the
 						<code>Run()</code>
 						method that is called by the parent. When called, it does two things. First it looks at the configuration data that is passed in to the component. It checks to see if the configuration data includes a key called "SetPackageMetadata.PackageName". (For all the configuration settings I've chosen to use a "." pattern to avoid clashes) If the key does not exist in the configuration dictionary then the component can't continue – so it raises an exception to indicate this missing data. Otherwise it carries on and uses the configuration data and the system environment data to update properties in the package metadata.</p>
-					<h2 class="anchor">2: Remove any unwanted changes<a href="#heading2" name="heading2">
+					<h2 x-data="" class="anchor">2: Remove any unwanted changes<a x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					The second step in the pipeline is to remove any changed files from the Source Control data that we don't want to process. The job of the `RemoveUnwantedItems` is to fetch the configuration required for this, and then make use of the data to filter the Source Control Changes.
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class RemoveUnwantedItems : IPipelineComponent
@@ -303,9 +305,10 @@ private bool noExtension(string key)
 						is a helper method that hides the rather verbose uses
 						<code>System.Globalization</code>
 						to make this test.</p>
-					<h2 class="anchor">3: Renaming files<a href="#heading3" name="heading3">
+					<h2 x-data="" class="anchor">3: Renaming files<a x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					If the input from source control contains things like changes to `.less` files that need to have the extension changed in the package output, then this component will process the change. It takes a slightly more complex input configuration to specify a list of old and new names, and then checks the source control data for entries that need changing:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class RenameFiles : IPipelineComponent
@@ -351,9 +354,10 @@ private bool noExtension(string key)
 
 					</pre>
 					<p>This code follows similar patterns to the previous examples.</p>
-					<h2 class="anchor">4: Getting the right files to deploy<a href="#heading4" name="heading4">
+					<h2 x-data="" class="anchor">4: Getting the right files to deploy<a x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					Getting the relevant files to deploy is the next task to process. This requires knowing where the web project being deployed is located, in order to be able to adjust the paths returned by Source Control into the relative style of path required in a package:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractFilesToDeploy : IPipelineComponent
@@ -388,9 +392,10 @@ private bool noExtension(string key)
 					<p>For each item in the source data we need to exclude anything that's a serialised item, a C# file or is a deletion operation. For all the source changes that remain the absolute Souce Control Working Folder path is adjusted by removing the web project location in order to turn it into a relative path. All of these items are added to a
 						<code>PackageSourceFiles</code>
 						object, which is in turn added to the output package itself.</p>
-					<h2 class="anchor">5: Getting Sitecore items<a href="#heading5" name="heading5">
+					<h2 x-data="" class="anchor">5: Getting Sitecore items<a x-on:click.prevent="copy($event.target)" href="#heading5" name="heading5">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					The key bit of this tool is to get changes to serialised items into the output package. The `ExtractItemsToDeploy` item does this for us:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractItemsToDeploy : IPipelineComponent
@@ -541,9 +546,10 @@ At least 7 characters, where one or more is a punctuation character.
 						files. If you don't do a "get-latest" to ensure the files are available then you will see errors from the tool –
 						<code>FileNotFoundException</code>s.</p>
 					<p>Another possible thing to do with this tool in the future might be to add the ability to perform this get operation automatically. However I'm thinking of this tool being used in a build workflow where this job should already have been performed in order to perform the build itself.</p>
-					<h2 class="anchor">6: Adding binary files to deploy<a href="#heading6" name="heading6">
+					<h2 x-data="" class="anchor">6: Adding binary files to deploy<a x-on:click.prevent="copy($event.target)" href="#heading6" name="heading6">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					The last thing which needs to be added to the package is the binaries generated from the code in the web package. The `ExtractBinariesToDeploy` component does this. The configuration for this is a bit more complex, as it needs to be a set of project names, with their accompanying set of binaries. Currently that's a comma separated list, where each item is a pipe-separated list of one project followed by a number of binary files. The following bit of code parses the data out of the config setting into a Dictionary containing a list of strings:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private Dictionary&lt;string, List&lt;string&gt;&gt; extractProjectPathMap(PipelineData data)
@@ -617,9 +623,10 @@ At least 7 characters, where one or more is a punctuation character.
 					<p>And finally this adds a
 						<code>PackageSourceFiles</code>
 						to the output package that holds all of the binaries that it was necessary to add.</p>
-					<h2 class="anchor">7: Dealing with deletions<a href="#heading7" name="heading7">
+					<h2 x-data="" class="anchor">7: Dealing with deletions<a x-on:click.prevent="copy($event.target)" href="#heading7" name="heading7">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					Since there's no direct approach to deleting individual files or items inside a Sitecore package, for the moment I'm addressing deletions by adding them as an instruction to the ReadMe section of the package metadata:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ExtractDeletionsToDeploy : IPipelineComponent
@@ -650,9 +657,10 @@ At least 7 characters, where one or more is a punctuation character.
 
 					</pre>
 					<p>I'm considering the idea that a post-deployment event might be able to automate the removal of these items in the future.</p>
-					<h2 class="anchor">Next step...<a href="#heading8" name="heading8">
+					<h2 x-data="" class="anchor">Next step...<a x-on:click.prevent="copy($event.target)" href="#heading8" name="heading8">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					So that's the set of pipeline components I'm using for my prototype – but as previously suggested, the code is designed to be extensible to allow them to be improved or replaced in future work.
 					<p>Next week's will be the last part of this, I think – a wrap up and the final source code.</p>
@@ -895,7 +903,8 @@ At least 7 characters, where one or more is a punctuation character.
         });
         
 		</script>
-		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>
         window.dataLayer = window.dataLayer || [];

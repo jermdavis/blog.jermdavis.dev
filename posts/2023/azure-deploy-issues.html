@@ -160,10 +160,11 @@
 					<p>Some of the most frustrating issues in IT happen when a thing which was working fine stops, and you're sure you didn't change anything. Now that very few people host their own infrastructure, these issues can be compounded because change or problems might happen in the internals of a complex infrastructure system you have no control over. I got bitten by this recently, and while I have no answers I suspect this is worth writing up just because it may help other people to realise the problem you have is not always your fault...
 						<!--more-->
 					</p>
-					<h2 class="anchor">The issue
-						<a href="#heading1" name="heading1">
+					<h2 x-data="" class="anchor">The issue
+						<a x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					<p>I've been working with a team on a client project that was adopted from another agency. We'd been through an onboarding process where we'd taken over the source and the release process in Azure DevOps. The project was hosted in the client's Azure, and they maintained control of that. The build and release pipelines for this work ran on Azure VMs the client hosted, rather than on Microsoft's cloud agents. We'd done some successfull releases of the code to the test and production infrastructure after taking over. There had been a few issues along the way, but broadly the process appeared to be working.</p>
 					<p>We'd done a release of some new changes to the UAT infrastructure, and having got that tested and signed off, we tried to run the same release on production. But this failed in an entirely unexpected way...</p>
@@ -194,10 +195,11 @@
 					<p>The fact that a number of packages succeeded, then this one failed, and then more succeeded during this step was very odd. That suggested some sort of transient error. So we tried repeating the release step. And it failed again - but with an error on a different package in the set.</p>
 					<p>We tried it a few times, and found that it failed reliably, but on a different package (or packages plural in some cases) each time.</p>
 					<p>So we aborted the release, apologised to the client for the delay, and went back to the UAT site to test further. And now attempts to release to UAT failed too - with similar errors.</p>
-					<h2 class="anchor">Further investigations
-						<a href="#heading2" name="heading2">
+					<h2 x-data="" class="anchor">Further investigations
+						<a x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					<p>A developer's first instinct at this point is to go look at Google. And searching for issues with these errors around Web Deploy packages brings up a lot of people talking about how
 						<a href="https://stackoverflow.com/a/29440749" target="_blank" rel="noopener">disabling "SCM" fixed issues for them</a>. None of the posts matched the error we saw exactly, but the phrase "On the remote computer, make sure that Web Deploy is installed and that the required process ("Web Management Service") is started." popped up a lot in these posts.</p>
@@ -207,11 +209,12 @@
 						<code>false</code>
 						on the AppService and its slots. So it seemed worth trying this.</p>
 					<p>Unfortunately it broke things in an exciting new way. Now the backups for the AppService stopped working. They would start, and wait for a while before failing with a broad
-						<code>&lt;h2 class="anchor"&gt;[error]An error occurred while sending the request.</code>
+						<code>&lt;h2 x-data class="anchor"&gt;[error]An error occurred while sending the request.</code>
 						message in the DevOps log. In the AppService Activity Log, a slightly more useful error was shown in the JSON version of the log data:
-						<a href="#heading3" name="heading3">
+						<a x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</p>
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">Timestamp: 2023-07-28T11:36:13.9557166Z\r\nCreating temp folder.
 Retrieve site meta-data.\r\nBacking up the databases.
@@ -235,10 +238,11 @@ Error count: 1.
 					<p>Here, trying to use Web Deploy to send a package to the AppService is being blocked for security reasons. But that seemed like an odd error. This whole DevOps process was running under a Service Principal that had successfully deployed before.</p>
 					<p>To be sure, we tried the "verify credentials" button in DevOps - which worked fine. And looked at the Azure RBAC settings for the AppService. We could clearly see that the Service Principle had "contributor" rights to all the resources involved. So we concluded that this "disable SCM" fix was not right for this scenario.</p>
 					<p>Rolling it back got rid of these backup and authorisation errors, and put us back to the original problem.</p>
-					<h2 class="anchor">An unhelpful solution
-						<a href="#heading4" name="heading4">
+					<h2 x-data="" class="anchor">An unhelpful solution
+						<a x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					<p>So we spent quite a bit of time talking to the client and trying to veryify that nobody on their team or ours had changed anything in Azure. In parallel to that we raised a support ticket with Microsoft, and had a triage call with them where we demonstrated the issue. They didn't give us specific answers in that call, but said they would raise the issue with their AppService experts and get back to us.</p>
 					<p>While we waited, we got briefly distracted by the whole "<a href="https://support.sitecore.com/kb?id=kb_article_view&amp;sysparm_article=KB1002999" target="_blank" rel="noopener">myget has vanished</a>" issue which hit a lot of Sitecore developers around this time, but having sorted that, we went back to some further tests.</p>
@@ -247,10 +251,11 @@ Error count: 1.
 						<a href="https://giphy.com/embed/F5jkct22mx0Zy" target="_blank" rel="noopener">there was a bit of strong language at this point</a>.</p>
 					<p>At some point after involving Microsoft Support, the issue magically disappeared. When I went back to them and asked if they'd done anything to achieve a fix they didn't give much helpful feedback. But this happened to coincide with an outage of Azure DevOps build pipelines in some EU regions. And when pressed the support people said this was related, without offering any proof or explanation of why.</p>
 					<p>So happy client - but frustrated dev team.</p>
-					<h2 class="anchor">In conclusion...
-						<a href="#heading5" name="heading5">
+					<h2 x-data="" class="anchor">In conclusion...
+						<a x-on:click.prevent="copy($event.target)" href="#heading5" name="heading5">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					<p>As developers it doesn't feel good to not know
 						<em>why</em>
@@ -494,7 +499,8 @@ Error count: 1.
         });
         
 		</script>
-		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>
         window.dataLayer = window.dataLayer || [];

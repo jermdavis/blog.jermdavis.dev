@@ -187,9 +187,10 @@
 						recently, he was explaining how he'd ended up disabling generation of sitemaps in a project he was working on because of the performance issue it was causing in his codebase. That got me thinking about strategies for trying to address this problem. My suspicion is that the one of these to choose for an implementation of sitemaps is probably dependent on the specifics of your site and its size and requirements. But here are a few approaches you might consider in your solutions:</p>
 					<ul>
 						<li>
-							<h2 class="anchor">Make it manual<a href="#heading1" name="heading1">
+							<h2 x-data="" class="anchor">Make it manual<a x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
 									<img src="/img/link.png">
 								</a>
+								<span>url copied!</span>
 							</h2>
 							Perhaps the most obvious approach to speeding the publish up is simply to avoid processing the Sitemap data unless you really need to. The setup from the first Sitemap post was to generate the data when the publish happened by triggering the code at the end of the publishing events. What about having the publish happen when you click a UI button instead? That means you can run publishes whenever you need to without the extra overhead of the Sitemap generation each time. But conversely it does mean that you need to remember to click the update button to make sure search engines see your changes.
 							<p>As we've seen with
@@ -200,9 +201,10 @@
 								through code.</p>
 						</li>
 						<li>
-							<h2 class="anchor">Schedule it<a href="#heading2" name="heading2">
+							<h2 x-data="" class="anchor">Schedule it<a x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
 									<img src="/img/link.png">
 								</a>
+								<span>url copied!</span>
 							</h2>
 							Can your Sitemap files get updated on a schedule? Say twice a day or something similar? If so, perhaps scheduling a task to re-generate the Sitemap might be a sensible approach. Setting up a scheduled task in Sitecore
 							<a href="http://sitecoreblog.alexshyba.com/2008/04/adding-custom-scheduled-agents.html" target="_blank" rel="noopener noreferrer">seems fairly simple according to this blog post</a>, so it's not a great deal of extra effort to call the Sitemap generating code via this route. However there is one big issue here: If you want Sitecore to run your event, then the ASP.Net process for Sitecore must be in memory at the appropriate times. On a busy site that might not be an issue, but if the site is quiet IIS may drop it out of memory. So either you need to make sure you change the settings for your web server to prevent unloading the site when it has nothing to do, or you have to make sure Sitecore's own keep-alive task fires often enough to make sure IIS doesn't free up your memory. Try
@@ -211,9 +213,10 @@
 							<p>I guess you could also set this up so that your sitemap was generated when a specific (secured) URL was requested, and schedule your sitemap build via a Windows scheduled task that did an HTTP GET for that url as well. There's extra effort required to set that up, but it does have the advantage that it can pull Sitecore back into memory even after IIS has shut it down.</p>
 						</li>
 						<li>
-							<h2 class="anchor">Run it in the background<a href="#heading3" name="heading3">
+							<h2 x-data="" class="anchor">Run it in the background<a x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
 									<img src="/img/link.png">
 								</a>
+								<span>url copied!</span>
 							</h2>
 							What if you really do want every publish to trigger a rebuild of the Sitemap? Perhaps running that process on a background thread could help free up the UI and prevent publishing users having to wait around for so long? Well yes, it probably could, but with two fairly big caveats:
 							<p>The first is that you will probably need to think about what might happen if two publishes happen close enough together to cause the sitemap generation operations to overlap. Depending on how you choose to implement your sitemap generation you might find problems with overlapped operations. At the least you're wasting CPU cycles to generate the files in this scenario. But at worst, combing overlapping operations with certain code patterns might lead to exceptions for locked files, or files ending up with incorrect data in them. You will probably need to implement some sort of locking operation here in order to try to address these scenarios. In a single-server solution you can probably make use of Windows locking primitives. For multi-server solutions you would need to look at keeping locking flags on disk or in databases. Or alternatively you might consider writing your output to random file names, and only rename them to the correct names when the process finishes.</p>
@@ -221,9 +224,10 @@
 							<p>My suspicion is that this is probably not a great way to go if you need reliable code for big sitemaps from simple code.</p>
 						</li>
 						<li>
-							<h2 class="anchor">Break it into parallel tasks<a href="#heading4" name="heading4">
+							<h2 x-data="" class="anchor">Break it into parallel tasks<a x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
 									<img src="/img/link.png">
 								</a>
+								<span>url copied!</span>
 							</h2>
 							How about making the Sitemap build happen faster by running bits of it in parallel? Well it's another valid approach, but again, probably not an easy one. If you have multiple sitemap files to build then running each of those in parallel is pretty trivial. It's easy enough to get .Net to run a few things in parallel and wait for them all to complete before proceeding. The framework provides
 							<a href="http://msdn.microsoft.com/en-us/library/dd460717(v=vs.110).aspx" target="_blank" rel="noopener noreferrer">the Task Parallel Library</a>
@@ -464,7 +468,8 @@
         });
         
 		</script>
-		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>
         window.dataLayer = window.dataLayer || [];

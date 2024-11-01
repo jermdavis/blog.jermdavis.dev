@@ -163,9 +163,10 @@
 						and whatever provider you plug in will work in the same way. Unfortunately, for software our in the real world that's not always entirely true. Recently I came across an example of this which helped point out a bug in some search code in Sitecore...
 						<!--more-->
 					</p>
-					<h2 class="anchor">The scenario<a href="#heading1" name="heading1">
+					<h2 x-data="" class="anchor">The scenario<a x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					A component I found myself looking at was using the ContentSearch APIs to perform some queries and then render UI based on the results. There wasn't anything special going on. It was just finding an appropriate index, building up a query, running it and then displaying how many items matched. The relevant bit was vaguely along the lines of:
 					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var index = fetchContextIndex(someContentItem);
@@ -184,16 +185,18 @@ using (IProviderSearchContext context = index.CreateSearchContext())
 }
 
 					</pre>
-					<h2 class="anchor">The confusion<a href="#heading2" name="heading2">
+					<h2 x-data="" class="anchor">The confusion<a x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					The code started off running against an index managed by Lucene. With the particular set of content on the server, the value of the variable `totalResults` came back as 97. That seemed a sensible value, as there were roughly that number of items that matched the search criteria. But later the code got migrated to a server that was using Coveo to index the same content. And once that had happened, the value of `totalResults` always came back as 10, despite there being more matching pages in both the content tree and in the Coveo index.
 					<p>Cue
 						<a href="http://www.onmedia.net.au/assets/o-QUESTION-HEAD-SCRATCH-facebook.jpg" target="_blank" rel="noopener noreferrer">some head scratching</a>...</p>
-					<h2 class="anchor">The solution<a href="#heading3" name="heading3">
+					<h2 x-data="" class="anchor">The solution<a x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					After a bit of fun with Google and poking about with the debugger, the subtle issue revealed itself: The code above uses the `fullResultsSet.Count()` method to fetch the total number of index hits that the search framework found for the query. At first glance that looks fine - the `fullResultsSet` object exposes the IEnumerable interface - so calling `Count()` seems a perfectly reasonable way to get the size of the results when there's no pagination involved in the query.
 					<p>But as some of you no doubt already spotted, that's not the documented way you're supposed to get the total number of results for a query. As
@@ -205,9 +208,10 @@ using (IProviderSearchContext context = index.CreateSearchContext())
 						and
 						<code>TotalSearchResults</code>
 						when your query result set is bigger than the results page size. But because the code in question didn't do that, the bug slipped through...</p>
-					<h2 class="anchor">Why does it behave like this?<a href="#heading4" name="heading4">
+					<h2 x-data="" class="anchor">Why does it behave like this?<a x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					Well getting past the initial slightly petulant "just to confuse us!" response, it's all down to implementation details...
 					<p>If you look into the code for the
@@ -479,7 +483,8 @@ using (IProviderSearchContext context = index.CreateSearchContext())
         });
         
 		</script>
-		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>
         window.dataLayer = window.dataLayer || [];

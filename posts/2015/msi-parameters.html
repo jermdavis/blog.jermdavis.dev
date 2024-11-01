@@ -165,9 +165,10 @@
 						<!--more-->
 					</p>
 					<p>The reason for me going back to this was that the installation scripting I'd used was working fine for me during testing, but when I came to try and install more than one automated instance on the same server I started to see the script failing.</p>
-					<h2 class="anchor">So what does SC_IISSITE_ID do?<a href="#heading1" name="heading1">
+					<h2 x-data="" class="anchor">So what does SC_IISSITE_ID do?<a x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					The first problem I hit was the installation failing with errors in the MSI log file around its call to `StartIIS7ConfigTransaction`. A bit of internet digging lead me to this post:
 					<a href="http://wixtoolset.org/issues/2755/" target="_blank" rel="noopener noreferrer">http://wixtoolset.org/issues/2755/</a>. While it's not referring to Sitecore installs, it is referring to the idea that when the installation framework is installing stuff into IIS, it can make use of either site names or site IDs to find whether a particular site exists.
@@ -178,9 +179,10 @@
 						<code>SC_IISSITE_ID</code>
 						property is optional. If you know it, pass it. But if you don't know it you can leave it out and the MSI engine will work out the next available ID to use.</p>
 					<p>So to make the scripted installation succeed for more than one instance, this needs to be left as an empty string.</p>
-					<h2 class="anchor">There's more than one "unique ID" number involved here...<a href="#heading2" name="heading2">
+					<h2 x-data="" class="anchor">There's more than one "unique ID" number involved here...<a x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					Having fixed that, I then discovered a second problem. Installing a second version of Sitecore on the same machine would still fail, but now with a more obscure error. The log file included something like this:
 					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">MSI (s) (08:88) [12:31:21:291]: Machine policy value 'TransformsSecure' is 1
@@ -260,9 +262,10 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
 					</pre>
 					<p>The code checks if the registry entries that we want to process exist. It defaults to instance number one, and then looks at all the data under the Sitecore CMS bit of the registry. It finds the highest InstanceID value that has been stored here, extracts the number from it and then adds one to it.</p>
 					<p>So far, this has reliably found a valid ID to use.</p>
-					<h2 class="anchor">So where does this leave the install script?<a href="#heading3" name="heading3">
+					<h2 x-data="" class="anchor">So where does this leave the install script?<a x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					After making the changes above, the PowerShell code required to install an instance of Sitecore looks a bit like this:
 					<pre class="code" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">function Perform-Install([string]$license, [string]$installer, [string]$site, [string]$sqlServer, [string]$sqlUser, [string]$sqlPassword) {
@@ -295,9 +298,10 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
 
 					</pre>
 					<p>This combines the two changes above, to make the install work for more than one Sitecore instance on a single server. It also includes a final test to see if the website folder now exists – which indicates whether we succeeded.</p>
-					<h2 class="anchor">One other thing to note<a href="#heading4" name="heading4">
+					<h2 x-data="" class="anchor">One other thing to note<a x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					While testing these changes, I found a couple of situations where (for reasons I've not been able to determine) uninstalling an instance via `.exe` or `.msi` didn't work correctly. Despite the removal of the IIS site, most of the files and the databases, attempts to reuse the same instance name failed. I was seeing errors in the MSI log file saying that the install had failed (but with no specific reason) in some cases, and in one case an error saying that the installation was rolled-back because connecting to the database did not work (When the supplied credentials were definitely valid).
 					<p>In these cases, I was able to resolve the install problems by checking the registry (as described above) and removing left-over entries from the instance(s) which had not been removed by the uninstall process.</p>
@@ -529,7 +533,8 @@ MSI (c) (98:CC) [12:31:21:311]: MainEngineThread is returning 1639
         });
         
 		</script>
-		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>
         window.dataLayer = window.dataLayer || [];

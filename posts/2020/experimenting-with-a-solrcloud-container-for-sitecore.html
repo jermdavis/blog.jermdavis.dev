@@ -158,9 +158,10 @@
 						<a href="https://github.com/sitecore/docker-images" rel="noopener" target="_blank">Sitecore community container repo</a>. So I started thinking about what would it take to make one. 
 						<!--more-->
 					</p>
-					<h2 class="anchor">Big picture<a href="#heading1" name="heading1">
+					<h2 x-data="" class="anchor">Big picture<a x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					At their core Solr and SolrCloud are the same software, with some different configuration settings and data storage. So a key part of getting a single-node instance of SolrCloud to run for a developer is adding an extra command-line parameter when you start it up. More complex, however, is creating the indexes Sitecore will need. Ordinary Solr uses Cores, and you can create them easily just by copying files. But SolrCloud uses Collections – which are made up of both cores and data stored by
 					<a href="https://zookeeper.apache.org/index.html" rel="noopener" target="_blank">ZooKeeper</a>. Because the data is split out, you can't easily just drop files to make new collections – you need to use some sort of API.
@@ -169,9 +170,10 @@
 					<p>What this means is to make SolrCloud work, we're going to need to replace the process that the existing scripts use to create the default set of indexes. I've already spent a load of time on
 						<a href="https://github.com/jermdavis/SolrCloud-Helpers" rel="noopener" target="_blank">some scripts that can automate creating SolrCloud collections</a>
 						as part of the presentation linked to above – so those seem like a good starting point...</p>
-					<h2 class="anchor">First step: PowerShell<a href="#heading2" name="heading2">
+					<h2 x-data="" class="anchor">First step: PowerShell<a x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					The first thing I noticed was that the base image for the existing Solr container is the standard Microsoft Nanoserver image. That's small – but it doesn't include PowerShell. While I think it would be possible to do this setup using batch files, it would be a lot of effort to re-write my SolrCloud scripts to avoid PowerShell. So the easy answer for me is to find a base image that does have the scripting engine included. Microsoft offer a
 					<a href="https://hub.docker.com/_/microsoft-powershell" rel="noopener" target="_blank">PowerShell-on-top-of-Nanoserver image</a>
@@ -192,9 +194,10 @@
 
 					</pre>
 					<p>So now when that container builds, PowerShell will be available for use.</p>
-					<h2 class="anchor">Don't create cores...<a href="#heading3" name="heading3">
+					<h2 x-data="" class="anchor">Don't create cores...<a x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					In the existing scripts, the core creation is in two parts. The
 					<a href="https://github.com/Sitecore/docker-images/blob/master/windows/9.x.x/sitecore-xp-solr/Dockerfile" rel="noopener" target="_blank">Dockerfile for the Solr image</a>
@@ -218,9 +221,10 @@
 					</pre>
 					<p>(It's commented out here, because it's easier to show the change that way – this can be deleted)</p>
 					<p>Removing the start-up behaviour that copies these files is easy – because the next step is going to replace the entrypoint anyway...</p>
-					<h2 class="anchor">Firing up SolrCloud<a href="#heading4" name="heading4">
+					<h2 x-data="" class="anchor">Firing up SolrCloud<a x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					The simplest way to get Solr to start up in SolrCloud mode for a developer is to add "-c" to the command line for running it. That could be done in the
 					<a href="https://github.com/Sitecore/docker-images/blob/master/windows/9.x.x/sitecore-xp-solr/Boot.cmd" rel="noopener" target="_blank">entrypoint file that already exists</a>
@@ -274,9 +278,10 @@ Pop-Location
 &amp; "$solrPath\bin\solr.cmd" start -port $solrPort -f -c
 
 					</pre>
-					<h2 class="anchor">And then we need collections...<a href="#heading5" name="heading5">
+					<h2 x-data="" class="anchor">And then we need collections...<a x-on:click.prevent="copy($event.target)" href="#heading5" name="heading5">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					So earlier, the Dockerfile copied in a second PowerShell script. That is largely
 					<a href="https://github.com/jermdavis/SolrCloud-Helpers/blob/master/SolrCloud-Helpers/Install/007-Configure-SolrCollections.ps1" rel="noopener" target="_blank">my original collection creation script from my SolrCloud scripting</a>. But I've made a couple of changes. First up, is that the Sitecore containers are setup without SSL for Solr – so all the API endpoints in the script need to change from `https://` to `http://`. That's a quick search and replace operation. And the secondly, it needs to include the logic to decide what to do when it's run.
@@ -319,9 +324,10 @@ Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\Ma
 
 					</pre>
 					<p>It starts the process to make collections in the background, and then starts Solr in the foreground – allowing both parts to run in parallel.</p>
-					<h2 class="anchor">Conclusions<a href="#heading6" name="heading6">
+					<h2 x-data="" class="anchor">Conclusions<a x-on:click.prevent="copy($event.target)" href="#heading6" name="heading6">
 							<img src="/img/link.png">
 						</a>
+						<span>url copied!</span>
 					</h2>
 					So we can now build an image for SolrCloud and starting the container gives you a copy of SolrCloud with some collections created. Success!
 					<p>
@@ -582,7 +588,8 @@ Start-Process "c:\\program files\\powershell\\pwsh.exe" -ArgumentList "-f",".\Ma
         });
         
 		</script>
-		<script src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
 		<script>
         window.dataLayer = window.dataLayer || [];
