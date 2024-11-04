@@ -1,0 +1,691 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2024/extracting-article-headings">
+		<meta name="description" content="Automatically extracting and summarising headings in my blog posts with Statiq's pipelines">
+		<meta property="og:description" content="Automatically extracting and summarising headings in my blog posts with Statiq's pipelines">
+		<meta name="keywords" content="C#, Statiq">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Extracting blog article headings for navigation</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Extracting blog article headings for navigation [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2024-11-04T00:00:00+0000">
+		<meta property="article:published_time" content="2024-11-04T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/extracting-article-headings-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Extracting blog article headings for navigation' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Extracting blog article headings for navigation",
+        "url": "https://blog.jermdavis.dev/posts/2024/extracting-article-headings",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/extracting-article-headings-social.jpg",
+                "caption": "Logo image showing post title 'Extracting blog article headings for navigation' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2024-11-04T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2024/extracting-article-headings">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+						<a class="text-base font-medium" href="/search">Search</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+							<a class="block mt-5 text-base font-medium" href="/search">Search</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2024/extracting-article-headings</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Extracting blog article headings for navigation
+				</h1>
+				<h2 class="text-2xl">I've been meaning to implement this for a while...</h2>
+				<div class="meta">Published 04 November 2024</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/c/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						C#</a>
+					<a href="/tags/statiq/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Statiq</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~6 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I've  wanted to add some logic to this site to display article headings as navigation for a while. And I've also been thinking it would be helpful if you were able to link directly to headings. Pleasingly the Statiq engine makes doing this pretty simple, so here's how my attempt works:
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">The approach
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Any post can contain headings. This will be level 2 to level 4 headings (since level 1 is used by the layout for the page) and they can be expressed as either markdown or as html elements:</p>
+					<pre class="code" data-enlighter-language="html" style="width:100%; overflow:scroll;">## This is a level two heading in markdown
+&lt;h3&gt;and this is level three expressed as html&lt;/h3&gt;
+
+					</pre>
+					<p>The code needs to search the post's copy for these patterns, and for each thing it finds it should:</p>
+					<ul>
+						<li>If required, make the heading into html so the code can have full control over it</li>
+						<li>Give the heading element an
+							<code>&lt;a/&gt;</code>
+							element with a
+							<code>name</code>
+							attribute so that it can be linked to</li>
+						<li>Add an link to this heading to a new bit of page navigation</li>
+					</ul>
+					<p>So what does that look like in code?</p>
+					<h2 x-data="" class="anchor">Plugging in
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Statiq is based on a pipeline-style architecture, so the first step is to add an
+						<code>IConfigurator</code>
+						class to add the custom code into the engine:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HeadingSummaryConfigurator : IConfigurator&lt;Bootstrapper&gt;
+{
+    public void Configure(Bootstrapper configurable)
+    {
+        configurable.ModifyPipeline("Content", p =&gt;
+        {
+            p.ProcessModules.Insert(2, new HeadingSummaryModule());
+        });
+    }
+}
+
+					</pre>
+					<p>The right pipeline here is the
+						<code>Content</code>
+						one, and the custom code needs to happen fairly early in the pipeline - after the document data has been loaded.</p>
+					<p>That class refers to the
+						<code>HeadingSummaryModule</code>
+						class, whose structure is simple:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class HeadingSummaryModule : ParallelModule
+{
+    protected override async Task&lt;IEnumerable&lt;IDocument&gt;&gt; ExecuteInputAsync(IDocument input, IExecutionContext context)
+    {
+        // logic goes here
+    }
+}
+
+					</pre>
+					<h2 x-data="" class="anchor">Getting the data
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>This code is only interested in blog posts. They can be identified by the facts that they're
+						<code>.md</code>
+						files, and that their path includes
+						<code>/posts/</code>
+						so the overall
+						<code>Execute()</code>
+						method needs a test to check if the current file meets those criteria. so it becomes:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected override async Task&lt;IEnumerable&lt;IDocument&gt;&gt; ExecuteInputAsync(IDocument input, IExecutionContext context)
+{
+    if (input.Source.Extension == ".md" &amp;&amp; input.Source.FullPath.Contains("/posts/"))
+    {
+	// this is a blog post
+       // so rest of logic goes here
+    }
+
+    // if nothing gets processed, just pass the data straight through
+    return input.Yield();
+}
+
+					</pre>
+					<p>Then the next step is to get the content and find any headings it contains:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var headingSummary = new StringBuilder();
+
+var content = await input.GetContentStringAsync();
+var headings = _headings.Matches(content);
+
+					</pre>
+					<p>The
+						<code>_headings</code>
+						field is a regular expression to do the finding:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private static Regex _headings = new Regex("(?&lt;level&gt;\\#{2,4})(\\s*)(?&lt;linkText&gt;.*?)$|&lt;h(?&lt;level&gt;.)&gt;(?&lt;linkText&gt;.*?)&lt;/h.&gt;(\\s*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.ExplicitCapture);
+
+					</pre>
+					<p>That looks a bit messy, but it's an "or" of two separate tests. The first finds the markdown headings:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">(?&lt;level&gt;\\#{2,4})(\\s*)(?&lt;linkText&gt;.*?)$
+
+					</pre>
+					<p>That matches 2-4 '#' characters as the "level" group, skips any whitespace and then matches the rest of the line as the "linkText" group.</p>
+					<p>And then second finds the HTML headings:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">&lt;h(?&lt;level&gt;.)&gt;(?&lt;linkText&gt;.*?)&lt;/h.&gt;(\\s*)$
+
+					</pre>
+					<p>That matches the start of an
+						<code>h</code>
+						element, with its level number in the "level" group. It matches the content of the element into the "linkText" group, and then it matches the closing tag and any whitespace to the end of the line.</p>
+					<p>That does make some assumptions about how headings have been used here (e.g. that heading elements have not been wrapped in other elements, or that don't have any attributes set) but these assumptions work for the data I have.</p>
+					<p>So once that match completes the code can iterate over the results (assuming there are some) and do the processing:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">if (headings.Count &gt; 0)
+{
+    var id = 1;
+    headingSummary.Append("&lt;ol class=\"headings\"&gt;");
+    foreach (Match heading in headings)
+    {
+        var linkText = heading.Groups["linkText"].Value;
+        var level = decodeLevel(heading.Groups["level"].Value);
+
+        var summaryLink = $"&lt;li&gt;&lt;a href=\"#heading{id}\"&gt;{linkText}&lt;/a&gt;&lt;/li&gt;";
+        var replacementLink = $"&lt;h{level} x-data class=\"anchor\"&gt;{linkText}&lt;a title=\"click to copy url\" x-on:click.prevent=\"copy($event.target)\" href=\"#heading{id}\" name=\"heading{id}\"&gt;&lt;img src=\"/img/link.png\"/&gt;&lt;/a&gt;&lt;span&gt;url copied!&lt;/span&gt;&lt;/h{level}&gt;";h{level}&gt;";
+
+        headingSummary.Append(summaryLink);
+        content = content.Replace(heading.Value, replacementLink);
+
+        id += 1;
+    }
+    headingSummary.Append("&lt;/ol&gt;");
+
+    var mt = input.GetContentProvider().MediaType;
+    return input
+        .Clone(new MetadataItems { { "HeadingSummary", headingSummary.ToString() } })
+        .Clone(context.GetContentProvider(content, mt))
+        .Yield();
+}
+
+					</pre>
+					<p>If there are items this initialises the summary data with an ordered list to hold the headings. It also initialises a counter for an id for this heading. It iterates the discovered links, and then closes the ordered list. Finally it will return the modified data to the next step in the pipeline. That includes adding a
+						<code>HeadingSummary</code>
+						field to the metadata for the document containig the ordered list markup - which will be important in a bit.</p>
+					<p>The level of the heading needs parsing - since it might be a series of
+						<code>#</code>
+						characters from markdown or a number from the HTML. That logic is:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private int decodeLevel(string value)
+{
+    int level = 0;
+
+    if(!int.TryParse(value, out level))
+    {
+        level = value.Length;
+    }
+
+    return level;
+}
+
+					</pre>
+					<p>The loop extracts the groups for "linkText" and "level". It generates an
+						<code>&lt;li/&gt;</code>
+						element for the headings summary using the id from above and the "linkText" group to generate the
+						<code>href</code>
+						and the body of the link. Then it replaces the heading in the post's content with a new
+						<code>&lt;h?/&gt;</code>
+						element that uses the level computed above. And it includes both an
+						<code>href</code>
+						and a name` attribute on a link inside the heading, so that you can link directly to the heading.</p>
+					<h2 x-data="" class="anchor">Rendering it
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The changes to the headings in the content will render automaticall, because they're part of the page content.</p>
+					<p>In the razor that generates the right column of the site it can retrieve the metadata saved above, and render that out. Retrieving it is simple:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var headingSummary = Document.GetString("HeadingSummary");
+var addHeadingSummary = !string.IsNullOrWhiteSpace(headingSummary);
+
+					</pre>
+					<p>And then rendering depends on whether
+						<code>addHeadingSummary</code>
+						is true (which means there was a summary to render):</p>
+					<pre class="code" data-enlighter-language="html" style="width:100%; overflow:scroll;">@if (addHeadingSummary)
+{
+    &lt;section class="md:flex-2 md:flex-grow md:flex-shrink mb-2"&gt;
+        &lt;h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap"&gt;Post Headings&lt;/h3&gt;
+        &lt;div class="bg-white p-2 flex flex-wrap"&gt;
+            @Html.Raw(headingSummary)
+        &lt;/div&gt;
+    &lt;/section&gt;
+}
+
+					</pre>
+					<p>Which just wraps the generated HTML from the metadata with some formatting to make it match the style of the right column entries.</p>
+					<p>And there's a bit of CSS to make everything look pretty.</p>
+					<h2 x-data="" class="anchor">An unintended consequence!
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading5" name="heading5">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Now, can you spot the problem with the code above?</p>
+					<p>I'll admit I didn't think of this until I compiled and ran all the bits above. But there is an issue which I spotted once I had a draft of this post in place. This code finds
+						<em>all</em>
+						the headings - and it doesn't care if they're inside a code block or not:</p>
+					<p>
+						<a target="_blank" href="/img/2024/11-UnexpectedEffect.png">
+							<img alt="The unexpected side-effect of this code - that it finds and modifies the headings inside the code block as well as the body copy" src="/img/2024/11-UnexpectedEffect.png">
+						</a>
+					</p>
+					<p>So with my first pass at the code, this blog post got messed up by the heading extraction. That
+						<a href="http://localhost:5080/posts/2024/extracting-article-headings#heading1" target="_blank" rel="noopener">code block of examples above with two headings in it</a>
+						got processed as well as the headings in the body text. The code block got rewritten and the headings got included in the right column summary even though they shouldn't have been.</p>
+					<p>Clearly not good. So what can be done to fix this?</p>
+					<p>My first guess was "can I make the regular expression that finds headings ignore them if they're inside a code block". I spent a chunk of time on this, and initially looked at using
+						<a href="https://www.regular-expressions.info/lookaround.html" target="_blank" rel="noopener">look-ahead and look-back expressions</a>
+						to say "try match the heading, but ignore if if there's a code fence before and after". But it turns out that doesn't entirely work. Look-ahead / look-behind expressions can't match arbitrary-length expressions - so having "match any set of characters ending with a code fence" doesn't actually work here. That makes sense when you think about how Regex engines work, but it's is a limitation here.</p>
+					<p>So my second attempt at this went for a simpler approach: Match the headings. Then separately match any fenced code blocks. And that requires a very simple expression added:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private static Regex _codeblocks = new Regex("```.*?```", RegexOptions.Compiled | RegexOptions.Singleline);
+
+					</pre>
+					<p>Then as you iterate the headings, skip any which are inside one of the matched code blocks. That code ends up modifying the loop that processes the matched headings to:</p>
+					<pre class="code" data-enlighter-highlight="7,15-28" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">if (input.Source.Extension == ".md" &amp;&amp; input.Source.FullPath.Contains("/posts/"))
+{
+    var headingSummary = new StringBuilder();
+
+    var content = await input.GetContentStringAsync();
+    var headings = _headings.Matches(content);
+    var blocks = _codeblocks.Matches(content);
+
+    if (headings.Count &gt; 0)
+    {
+        var id = 1;
+        headingSummary.Append("&lt;ol class=\"headings\"&gt;");
+        foreach (Match heading in headings)
+        {
+            bool skip = false;
+            foreach(Match block in blocks)
+            {
+                if(heading.Index &gt; block.Index &amp;&amp; heading.Index &lt; block.Index + block.Length)
+                {
+                    skip = true;
+                    break;
+                }
+            }
+
+            if(skip)
+            {
+                continue;
+            }
+
+            var linkText = heading.Groups["linkText"].Value;
+            var level = decodeLevel(heading.Groups["level"].Value);
+
+            var summaryLink = $"&lt;li&gt;&lt;a href=\"#heading{id}\"&gt;{linkText}&lt;/a&gt;&lt;/li&gt;";
+            var replacementLink = $"&lt;h{level} x-data class=\"anchor\"&gt;{linkText}&lt;a title=\"click to copy url\" x-on:click.prevent=\"copy($event.target)\" href=\"#heading{id}\" name=\"heading{id}\"&gt;&lt;img src=\"/img/link.png\"/&gt;&lt;/a&gt;&lt;span&gt;url copied!&lt;/span&gt;&lt;/h{level}&gt;";
+
+            headingSummary.Append(summaryLink);
+            content = content.Replace(heading.Value, replacementLink);
+
+            id += 1;
+        }
+        headingSummary.Append("&lt;/ol&gt;");
+
+        var mt = input.GetContentProvider().MediaType;
+        return input
+            .Clone(new MetadataItems { { "HeadingSummary", headingSummary.ToString() } })
+            .Clone(context.GetContentProvider(content, mt))
+            .Yield();
+    }
+}
+
+					</pre>
+					<p>So wherever a heading overlaps a code block, that heading is skipped over. And while less efficient overall, that does work as originally intended.</p>
+					<h2 x-data="" class="anchor">Results
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading6" name="heading6">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>As you can see on this page all the headings in the body have a hover effect to identify that they can be linked to directly, and the right column includes a "Post Headings" region which lets you link to a particular heading. And that is pretty much what I wanted out of this bit of work. (I also did a bit of CSS &amp; JS fiddling as well so that the hover effect allows copying the URL with a click, but that's less interesting, so I've not written it up)</p>
+					<p>Success I think.</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The approach
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">Plugging in
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">Getting the data
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">Rendering it
+										</a>
+									</li>
+									<li>
+										<a href="#heading5">An unintended consequence!
+										</a>
+									</li>
+									<li>
+										<a href="#heading6">Results
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C#
+								</a>
+								<a href="/tags/statiq/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Statiq
+								</a>
+								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Symposium
+								</a>
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore
+								</a>
+								<a href="/tags/xm-cloud/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									XM Cloud
+								</a>
+								<a href="/tags/stream/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Stream
+								</a>
+								<a href="/tags/composable/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Composable
+								</a>
+								<a href="/tags/entra/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Entra
+								</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker
+								</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink lg:order-3">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (236)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (63)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (32)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (18)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (18)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (17)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+								<a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Visual Studio (12)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2024-11">2024 - November</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-10">2024 - October</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-09">2024 - September</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-08">2024 - August</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-07">2024 - July</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Months
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<table>
+									<tbody>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2024</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
