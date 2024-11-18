@@ -1,0 +1,722 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2024/optimising-allocations-for-performance">
+		<meta name="description" content="Understanding why allocations in .Net are a challenge when you need top performance, and how to optimise code">
+		<meta property="og:description" content="Understanding why allocations in .Net are a challenge when you need top performance, and how to optimise code">
+		<meta name="keywords" content="C#, Performance, Visual Studio, Profiling">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Optimising your allocations in .Net</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Optimising your allocations in .Net [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2024-11-18T00:00:00+0000">
+		<meta property="article:published_time" content="2024-11-18T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/optimising-allocations-for-performance-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Optimising your allocations in .Net' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Optimising your allocations in .Net",
+        "url": "https://blog.jermdavis.dev/posts/2024/optimising-allocations-for-performance",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/optimising-allocations-for-performance-social.jpg",
+                "caption": "Logo image showing post title 'Optimising your allocations in .Net' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2024-11-18T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2024/optimising-allocations-for-performance">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+						<a class="text-base font-medium" href="/search">Search</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+							<a class="block mt-5 text-base font-medium" href="/search">Search</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2024/optimising-allocations-for-performance</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Optimising your allocations in .Net
+				</h1>
+				<h2 class="text-2xl">If you want to go fast, you need to care about memory...</h2>
+				<div class="meta">Published 18 November 2024</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/c/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						C#</a>
+					<a href="/tags/performance/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Performance</a>
+					<a href="/tags/visual-studio/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Visual Studio</a>
+					<a href="/tags/profiling/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Profiling</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~9 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>I spend most of my working life building website code at work, and sometimes I get involved in performance work with that sort of system. In fact
+						<a href="https://blog.jermdavis.dev/posts/2017/measure-if-you-want-to-go-faster" target="_blank" rel="noopener">I've written and presented on that topic for Sitecore in the past</a>. But some code I've been working on in my own time needs much more focus on code performance than that - the maths-heavy code for ray tracing. I've been looking at some optimisiations for that recently. And one thing that this has reinforced for me is how "easy to write" code can have some performance challenges...
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">Some background
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>A while back I bought a book called
+						<a target="_blank" rel="noopener" href="https://pragprog.com/titles/jbtracer/the-ray-tracer-challenge/">The Ray Tracer Challenge</a>
+						which describes building a renderer via unit tests. I worked through that book, and built up a codebase in C#, and then added some features of my own for animation and handling the resulting images. And it works pretty well. I've been able to render some interesting images that use
+						<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Reflection_(computer_graphics)">reflection</a>,
+						<a href="https://en.wikipedia.org/wiki/Refraction" target="_blank" rel="noopener">refraction</a>,
+						<a href="https://en.wikipedia.org/wiki/Texture_mapping" target="_blank" rel="noopener">textures</a>,
+						<a href="https://en.wikipedia.org/wiki/Constructive_solid_geometry" target="_blank" rel="noopener">Constructive Solid Geometry</a>,
+						<a href="https://en.wikipedia.org/wiki/Normal_mapping" target="_blank" rel="noopener">normal maps</a>
+						and the like:</p>
+					<video controls="" poster="/img/2024/11-ExampleRender.jpg">
+						<source src="/img/2024/11-ExampleRender.mp4">
+						Download the
+						<a href="/img/2024/ExampleRender.mp4">MP4</a>
+						file.
+					</video>
+					<p>As I worked through the book I wrote code to be readable and to work, rather than worrying about speed specifically. And since there's a lot of calculation and iteration involved in these images, it can take quite a while to generate each one. The image above calculated 693,326,009 light rays in total and it took nearly half an hour to render the 50 frames in that animation on my Core i7 2.30GHz laptop.</p>
+					<p>So I started thinking about how I might be able to make it faster and I had two ideas. One was whether I might be able to use
+						<a href="https://learn.microsoft.com/en-us/dotnet/standard/simd" target="_blank" rel="noopener">the vectorisation support</a>
+						of .Net 9 to do some of the maths faster, and the other was that I might be able to remove some of the overheads in the code that were wasting time. The first one seems like a tricky problem because I think it would involve some fairly significant refactoring of how the current code works. So I decided to focus on the second for a while, and fired up my old friend the
+						<a href="https://learn.microsoft.com/en-us/visualstudio/profiling/profiling-feature-tour?view=vs-2022" target="_blank" rel="noopener">Visual Studio profiler</a>...</p>
+					<h2 x-data="" class="anchor">How rendering works
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Imagine a camera. Images are made by the light rays that came from The Sun bouncing off the surface of objects and being focused through a lens and onto an image sensor. That sensor (be it chemical film in an old camera, or silicon in a modern digital camera) then gives us our picture.</p>
+					<p>But in a computer
+						<a href="https://en.wikipedia.org/wiki/Ray_tracing_(graphics)" target="_blank" rel="noopener">it works kind of the opposite way</a>.</p>
+					<p>There's a model of "the world" that needs to be drawn, which includes a model of the camera displaying it. That camera's sensor is the output image. And the code does the maths to cast rays of light through the pixels of the sensor into the world in order to work out what colour each pixel should be.</p>
+					<p>The maths looks at how the light ray that came from the camera would bounce through the scene and if it would eventually end up at a source of light. The way it bounces, what it hits and what the light is determines the final colours.</p>
+					<p>But it's a lot of calculations. When you start looking at reflections and refractions, or you need to anti-alias edges, lots more rays get cast. And each one involves calculations.</p>
+					<p>Hence the giant number of rays being processed for the image above. And so it follows that anything I can do to make each ray cause less processing will end up a good thing...</p>
+					<h2 x-data="" class="anchor">Linq isn't bad, right?
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>When I wrote the code I used a collection of the shortcuts that C# devs often use - and one of those is
+						<a href="https://learn.microsoft.com/en-us/dotnet/csharp/linq/" target="_blank" rel="noopener">Linq</a>.</p>
+					<p>The code models the concept of an
+						<code>Intersection</code>
+						- a solution to some equations which specifies the point in space where a ray of light has touched the surface of an object in the scene. At the most basic level the ray stops at that point and there's work to calculate the colour that the point has. But in more complex cases the ray may reflect or refract towards other surfaces and light sources, and the underlying maths for intersecting a ray with the world will find all the intersections that could occur - assuming the ray passed through things. Hence you may get back multiple
+						<code>Intersection</code>
+						objects back from the maths.</p>
+					<p>As a side-effect of that, the code ends up having to sort
+						<code>Intersetction</code>
+						objects by their distance from the camera in a few places, in order to find the first place where the ray hits something in space, no matter what order the objects in the scene got processed. This was one of the places where I'd written Linq code for readability. So I had a few places in the source where after some calculuation to find all the possible
+						<code>Intersection</code>
+						data, there was something like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">return intersections
+        .Where(i =&gt; i.T &gt;= 0)
+        .OrderBy(i =&gt; i.T)
+        .FirstOrDefault();
+
+					</pre>
+					<p>(<code>T</code>
+						here is the "time" in the maths - basically how far away is the intersection from the camera)</p>
+					<p>But when I render a small test scene, this turns out to be more expensive an operation than you might initially think. To measure it I've switched the solution to run in release mode, and picked "Debug / Performance Profiler" from VS' main menu. You then need to pick what sort of measurement to take:</p>
+					<p>
+						<a target="_blank" href="/img/2024/11-StartProfiler.png">
+							<img alt="The setup dialog for the Visual Studio profiler tooling. Showing a set of choices for differnt things to profile - including Object Allocation Tracking - which is the useful one here" src="/img/2024/11-StartProfiler.png">
+						</a>
+					</p>
+					<p>".Net Object Allocation Tracking" is the right one here. Plus I've made sure that the "Analysis Target" is the right project in my solution. (Later, when taking further measurements you can pick "Debug / Relaunch Performance Profiler" to take another measurement with the same settings)</p>
+					<p>That will run the code to completion, do a bit of thinking, and then present a bunch of data:</p>
+					<p>
+						<a target="_blank" href="/img/2024/11-DataIncludingLinq.png">
+							<img alt="The core memory allocation diagnostic window from Visual Studio. Showing a graph of how memory has changed, and higlighting a lot of allocations for OrderedEnumerable types" src="/img/2024/11-DataIncludingLinq.png">
+						</a>
+					</p>
+					<p>The graph at the top is showing that it took about 28s to render this scene. The easiest to understand data here is shown by selecting "Allocations" in the tabs of the bottom pane, and looking at what has the highest numbers in that list. And here you can see that
+						<code>System.OrderedEnumerable&lt;Intersection,double&gt;</code>
+						gets created more than 1M times for this scene. That type is what gets created when Linq sorts a collection.</p>
+					<p>So that data is telling me that replacing those Linq operations with something that doesn't allocate could make a significant difference.</p>
+					<p>I started by factoring out that fragment of code as an extension method, and then rewrote the contents of that method so that it scans the existing collection to find the relevant one to return, rather than using Linq:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class IntersectionsExtensions
+{
+    public static Intersection Hit(this Intersection[] intersections)
+    {
+        int target = -1;
+        double max = double.MaxValue;
+        for (int i = 0; i &lt; intersections.Length; i++)
+        {
+            if (intersections[i].T &lt; 0)
+            {
+                continue;
+            }
+
+            if (intersections[i].T &lt; max)
+            {
+                target = i;
+                max = intersections[i].T;
+            }
+        }
+
+        if (target == -1)
+        {
+            return default;
+        }
+
+        return intersections[target];
+    }
+}
+
+					</pre>
+					<p>It's longer, and harder to read - but nothing in that method causes any
+						<code>new</code>
+						operations... It's looping through each element in the incoming collection, and if it's valid to process, it's checking if this is smaller than the current smallets item found. If so, it keeps that
+						<code>T</code>
+						value and the index of the element. And at the end it returns either
+						<code>default</code>
+						(if nothing was valid to return) or it returns the relevant item.</p>
+					<p>Making that change takes the data graph length down to ~20 seconds, and entirely removes those 1M+ allocations.</p>
+					<p>A good first step.</p>
+					<h2 x-data="" class="anchor">Consider how you create your collections
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The next thing I noticed was that the single most allocated object type was
+						<code>Intersection[]</code>
+						itself. That's not surprising - every ray cast will generate one of these, and each pixel can cast multiple rays. So it seems difficult to avoid creating a lot of this collection:</p>
+					<p>
+						<a target="_blank" href="/img/2024/11-ArraysBefore.png">
+							<img alt="The list of allocated types from the profiler dialog - expanded to show all the types of Intersection[] being allocated. Including 10M instances of Intersection[0]" src="/img/2024/11-ArraysBefore.png">
+						</a>
+					</p>
+					<p>But it's interesting to note here that the single biggest allocation of these arrays is of
+						<code>Intersection[0]</code>
+						- meaning that a lot of rays hit nothing in this scene. And while the rays that do hit seem hard to optimise, the situations where it misses can be sorted farily easily. I realised that the existing code had a lot of sections that looked like a bit like this code which decides if a ray has hit a sphere or not:</p>
+					<pre class="code" data-enlighter-highlight="12,22" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected override Intersection[] LocalIntersect(Ray localRay)
+{
+    var str = localRay.Origin.ToVector();
+    var a = localRay.Direction.Dot(localRay.Direction);
+    var b = 2f * localRay.Direction.Dot(str);
+    var c = str.Dot(str) - 1f;
+
+    var disc = (b * b) - 4f * a * c;
+
+    if (disc &lt; 0)
+    {
+        return new Intersection[0];
+    }
+
+    var sqrt = disc == 0 ? 0 : Math.Sqrt(disc);
+
+    var t1 = (-b - sqrt) / (2f * a);
+    var t2 = (-b + sqrt) / (2f * a);
+
+    if (double.IsNaN(t1) || double.IsNaN(t2))
+    {
+        return new Intersection[0];
+    }
+
+    return new Intersection[] { new Intersection(t1, this), new Intersection(t2, this) };
+}
+
+					</pre>
+					<p>Note how there are two places there that use
+						<code>new Intersection[0]</code>
+						to return a "miss". But being more sensible about this, there is a better way to approach this situation. C# has
+						<code>Array.Empty&lt;Intersection&gt;()</code>
+						specifically for this situation. It will share the same instance of this empty array across all references to it - which in this case can get rid of a load more allocations.</p>
+					<p>While digging through this code I also spotted another array-creation mistake. The code does anti-aliasing for each pixel by firing off multiple rays. For each pixel it goes through the middle, and also a bit up-left, up-right, down-left and down-right for the same pixel. That lets it average out the colour in the surrounding area and make the edges softer. But I realised that this code included
+						<code>new[]{ (+1, +1), (+1, -1), (-1, +1), (-1, -1) }</code>
+						in the loop which does this ray casting. Not a great idea - that array of
+						<a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples" target="_blank" rel="noopener">Tuples</a>
+						is being recreated for every ray cast. Much better to change that to a field declaration, so it's only ever done once:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private static (int, int)[] _deltas = { (+1, +1), (+1, -1), (-1, +1), (-1, -1) };
+
+					</pre>
+					<p>So with those two changes implemented across the code, another test showed further improvement. That got rid of 10M empty arrays allocations in the test scene:</p>
+					<p>
+						<a target="_blank" href="/img/2024/11-ArraysAfter.png">
+							<img alt="Comparing the before and after of the list of allocated types, showing the Intersection[] objects. Before there are millions of Intersection[0] being allocated. After there are none." src="/img/2024/11-ArraysAfter.png">
+						</a>
+					</p>
+					<p>And that has a
+						<em>big</em>
+						impact on the overall performance. The render speed for the same model dropped to ~5s - a massive 15s less than the prevous run. And that gives an idea of how much effect all that unnecessary garbage collection has on a tight inner maths loop.</p>
+					<p>I also spotted another challenge with collections. There were a number of places where the code had to do some more complex filtering of the
+						<code>Intersection</code>
+						data generated by a ray. An example here is with the maths for cylinders. It needs to manage intersections for both the cylindrical body and for the end-caps. So there were a few places which had code that allocated
+						<code>List&lt;Intersection&gt;</code>
+						collections so it can add and remove the relevant intersection data. For example:</p>
+					<pre class="code" data-enlighter-highlight="1,8,14,17,19" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var intersections = new List&lt;Intersection&gt;();
+
+  ... snip ...
+
+var y0 = localRay.Origin.Y + t0 * localRay.Direction.Y;
+if (this.Minimum.Value &lt; y0 &amp;&amp; y0 &lt; this.Maximum.Value)
+{
+    intersections.Add(new Intersection(t0, this));
+}
+
+var y1 = localRay.Origin.Y + t1 * localRay.Direction.Y;
+if (this.Minimum.Value &lt; y1 &amp;&amp; y1 &lt; this.Maximum.Value)
+{
+    intersections.Add(new Intersection(t1, this));
+}
+
+IntersectCaps(localRay, intersections);
+
+return intersections.ToArray();
+
+					</pre>
+					<p>So this is allocating a lot of objects too - every time a cylinder (or other shape type using the same patterns) is tested, it's allocating a collection. But it's also a trickier one to optimise. The rendering code uses a
+						<code>Parallel.For()</code>
+						loop to make sure rays get cast by all your CPU cores at once. So "just make this collection a field" isn't good enough here. One copy of the shape object (because there is only one copy of the scene model in memory) is used by many threads in parallel during rendering.</p>
+					<p>But .Net does have a helpful object for this scenario. You can declare a special wrapper around your type to mark it as Thread Local. That means any thread which runs this code will have a separate copy of the data, preventing the parallel threads from interfering with each other. So the collection declaration above can change to:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private ThreadLocal&lt;List&lt;Intersection&gt;&gt; _intersection = new ThreadLocal&lt;List&lt;Intersection&gt;&gt;();
+
+					</pre>
+					<p>And then the original code can change to:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">if (_intersection.Value == null)
+{
+    _intersection.Value = new List&lt;Intersection&gt;();
+}
+else
+{
+    _intersection.Value.Clear();
+}
+
+  ... snip ...
+
+var y0 = localRay.Origin.Y + t0 * localRay.Direction.Y;
+if (this.Minimum.Value &lt; y0 &amp;&amp; y0 &lt; this.Maximum.Value)
+{
+    _intersection.Value.Add(new Intersection(t0, this));
+}
+
+var y1 = localRay.Origin.Y + t1 * localRay.Direction.Y;
+if (this.Minimum.Value &lt; y1 &amp;&amp; y1 &lt; this.Maximum.Value)
+{
+    _intersection.Value.Add(new Intersection(t1, this));
+}
+
+IntersectCaps(localRay, _intersection.Value);
+
+return _intersection.Value.ToArray();
+
+					</pre>
+					<p>So this change to the code makes sure that the collection exists in its thread-local space, and if it already did clears the data. And that now allocates once per thread and per instance of the shape, instead of per ray cast.</p>
+					<p>That knocked about another second off the render time, and got rid of 300k allocations.</p>
+					<h2 x-data="" class="anchor">Loop types matter
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading5" name="heading5">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Having made all those changes, I tried adjusting the test scene to work the code harder - one which included both a multi-frame animation and some more complex shapes. And re-running the profiler against this pointed out a new place to consider optimising:</p>
+					<p>
+						<a target="_blank" href="/img/2024/11-Enumerators.png">
+							<img alt="The allocated objects list again, his time highlighting 4M Enumerator objects being allocated" src="/img/2024/11-Enumerators.png">
+						</a>
+					</p>
+					<p>The code included a collection of
+						<code>foreach()</code>
+						loops over collections of data. Probably not something you'd worry about normally. But here the measurement shows that those loops cause an
+						<code>Enumerator</code>
+						to be created and destroyed each time. And that's ~4M more allocations that can be removed from this test render.</p>
+					<p>So in a few places I changed from using:</p>
+					<pre class="code" data-enlighter-highlight="1" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">foreach (var geometry in Geometry)
+{
+    var i = geometry.Intersects(ray);
+
+    if (i.Length &gt; 0)
+    {
+        _intersections.Value.AddRange(i);
+    }
+}
+
+					</pre>
+					<p>to using a
+						<code>for()</code>
+						loop and manually extracting the correct element from the collections:</p>
+					<pre class="code" data-enlighter-highlight="1,3" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">for(int idx=0; idx&lt;Geometry.Count; idx++)
+{
+    var geometry = Geometry[idx];
+    var i = geometry.Intersects(ray);
+
+    if (i.Length &gt; 0)
+    {
+        _intersections.Value.AddRange(i);
+    }
+}
+
+					</pre>
+					<p>Those changes knocked 1/5th off the render time for this scene, and removed those 4M allocations entirely.</p>
+					<h2 x-data="" class="anchor">Conclusions
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading6" name="heading6">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>None of those were particularly tricky changes - but they had a fairly profound impact on the performance of the overall code.</p>
+					<p>And while this sort of improvement is most beneficial for the hard-working code here, these are all things that will make a difference in any code that needs avoid memory churn in order to go faster.</p>
+					<p>So if you need your code to cope with higher loads you might want to consider these issues too...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">Some background
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">How rendering works
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">Linq isn't bad, right?
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">Consider how you create your collections
+										</a>
+									</li>
+									<li>
+										<a href="#heading5">Loop types matter
+										</a>
+									</li>
+									<li>
+										<a href="#heading6">Conclusions
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C#
+								</a>
+								<a href="/tags/performance/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Performance
+								</a>
+								<a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Visual Studio
+								</a>
+								<a href="/tags/profiling/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Profiling
+								</a>
+								<a href="/tags/statiq/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Statiq
+								</a>
+								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Symposium
+								</a>
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore
+								</a>
+								<a href="/tags/xm-cloud/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									XM Cloud
+								</a>
+								<a href="/tags/stream/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Stream
+								</a>
+								<a href="/tags/composable/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Composable
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink lg:order-3">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (236)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (64)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (32)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (18)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (18)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (17)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+								<a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Visual Studio (13)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2024-11">2024 - November</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-10">2024 - October</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-09">2024 - September</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-08">2024 - August</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-07">2024 - July</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Months
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<table>
+									<tbody>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2024</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
