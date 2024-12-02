@@ -1,0 +1,548 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2024/event-memory-issues">
+		<meta name="description" content="Investigating a memory leak with snapshots from production, and tracing the issue to static event handlers">
+		<meta property="og:description" content="Investigating a memory leak with snapshots from production, and tracing the issue to static event handlers">
+		<meta name="keywords" content="Sitecore, Performance, Platform DXP, Azure">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Watch out for Events in your Sitecore code</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Watch out for Events in your Sitecore code [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2024-12-02T00:00:00+0000">
+		<meta property="article:published_time" content="2024-12-02T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/event-memory-issues-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Watch out for Events in your Sitecore code' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Watch out for Events in your Sitecore code",
+        "url": "https://blog.jermdavis.dev/posts/2024/event-memory-issues",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/event-memory-issues-social.jpg",
+                "caption": "Logo image showing post title 'Watch out for Events in your Sitecore code' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2024-12-02T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2024/event-memory-issues">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+						<a class="text-base font-medium" href="/search">Search</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+							<a class="block mt-5 text-base font-medium" href="/search">Search</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2024/event-memory-issues</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Watch out for Events in your Sitecore code
+				</h1>
+				<h2 class="text-2xl">They are an excellent way to break stuff if you don't understand them...</h2>
+				<div class="meta">Published 02 December 2024</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/sitecore/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Sitecore</a>
+					<a href="/tags/performance/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Performance</a>
+					<a href="/tags/platform-dxp/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Platform DXP</a>
+					<a href="/tags/azure/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Azure</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~5 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>After my recent delve into
+						<a href="https://blog.jermdavis.dev/posts/2024/optimising-allocations-for-performance" target="_blank" rel="noopener">memory optimisation for non-work code</a>, I spent some time recently investigating a memory issue in a production Sitecore site. The outcome of that was an issue which can be a common problem for .Net code. So in the hope of seeing it less in the future, here are some notes on what I saw and how you can avoid the same trap...
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">The symptom
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>An easy one. The site was hosted in Azure PaaS, and every so often the CD server instances would recycle due to excess memory usage. The monitoring graphs for Working Set looked like:</p>
+					<p>
+						<a target="_blank" href="/img/2024/12-MemoryGraph.png">
+							<img alt="Azure's monitoring graph for memory use in an App Service. The lines rise slowly to a peak of about 14GB before they are recycled. This pattern is repeated." src="/img/2024/12-MemoryGraph.png">
+						</a>
+					</p>
+					<p>Broadly (with some variations for part-time instances, and deployments occurring) the memory usage of the instances is trending up over time. It starts around 2GB when an instance starts up, and goes up to around 12-14GB before being recycled.</p>
+					<p>Clearly, something isn't right here...</p>
+					<h2 x-data="" class="anchor">Gathering data
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Usually the best way to diagnose issues like this is to get memory dumps. Azure makes this pleasingly easy. You can open up your App Service in the portal and select "Diagnostic Tools" from the menu of icons. And on this page there is an option for "Collect Memory Dump":</p>
+					<p>
+						<a target="_blank" href="/img/2024/12-AzureMemoryDumpScreen.png">
+							<img alt="The Azure portal page for taking a memory dump. It asks for a storage account to record data into, whether to dump or dump and analyse and what instances to look at." src="/img/2024/12-AzureMemoryDumpScreen.png">
+						</a>
+					</p>
+					<p>You need to select three things here. First is a storage account. The tool will create a blob store record for each dump you take, organised into folders by App Service, date/time and instance. So it needs you to provide a storage account you have write access to for this. Secondly you need to specify if you want collection and analysis, or just collection. I tend to pick "collect data only" as I want to analyse myself. Though the analysis will sometimes come up with things you would not have spotted. (so don't discount it entirely) And then finally you need to pick what instances to dump. In this case I picked one instance - the one which had most memory in use at that time.</p>
+					<p>When you click "Collect MemoryDump" it will work for a while and save the dump to your Storage.</p>
+					<p>For this test I took two dumps. One with the App Service instance consuming nearly its maximum memory usage. And then one after recycling that instance and waiting for it to handle a few requests and get back up to speed. That gave data for a good "before and after" comparison of what's going on in memory.</p>
+					<p>As an aside, it wasn't immediately obvious to me how you can recycle a single App Service instance. The main App Service page in the portal lets you recycle the whole service - all its instances. But for Production that's not a good thing. But the diagnostic tools page has "Advanced Application Restart" as an option towards the end of its left hand menu. And that lets you pick a single instance to cycle.</p>
+					<h2 x-data="" class="anchor">Preparing to analyse
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Once you've got your data you need to download it locally to investigate. I'd recommend renaming the files to be clearly "before" and "after" at this point so you don't get confused by the cryptic names Azure gives them.</p>
+					<p>Then you can load these dumps in Visual Studio. To do a comparison between the two dumps take, the process is:</p>
+					<ul>
+						<li>Open the solution for the source code of your site</li>
+						<li>Use "File / Open / File" from the main menu, and select your "before" dump file</li>
+						<li>That will open the "Minidump Summary Page". From the right hand menu there, pick "Debug Managed Memory":
+							<a target="_blank" href="/img/2024/12-OpenTheDump.png">
+								<img alt="The dump summary page, showing the 'debug managed memory' option" src="/img/2024/12-OpenTheDump.png">
+							</a>
+						</li>
+						<li>Click that, and wait for VS to process the dump. For large files (14GB!) this can take a while, depending on the spec of your computer.</li>
+						<li>And once that's loaded, the "Managed Memory" window which appears will have a "With Baseline" dropdown in the top right. Click that, pick "Browse and select your "after" dump file:
+							<a target="_blank" href="/img/2024/12-SetBaseline.png">
+								<img alt="The memory dump window showing the option to select a baseline dump file" src="/img/2024/12-SetBaseline.png">
+							</a>
+							This may cause a warning to be displayed:
+							<a target="_blank" href="/img/2024/12-Warning.png">
+								<img alt="The 'Baseline represents a different instance' warning" src="/img/2024/12-Warning.png">
+							</a>
+							This is due to the process having recycled, and you can click "yes". That will now take further time to load the second dump, and convert the numbers in the various displays to be the delta between the dumps.</li>
+					</ul>
+					<p>But now you have the relevant data for a diagnosis.</p>
+					<h2 x-data="" class="anchor">Looking for the issue
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>My usual go-to starting point with these memory analysis jobs is to sort the list of "stuff in memory" that Visual Studio shows you by the counts. (Which is the delta between the two dumps here - so just what changed between them) And in this case, that showed:</p>
+					<p>
+						<a target="_blank" href="/img/2024/12-MemoryDeltaReport.png">
+							<img alt="The analysis of what's in memory from the dumps, showing millions of objects in memory with the project's namespace" src="/img/2024/12-MemoryDeltaReport.png">
+						</a>
+					</p>
+					<p>Yup. We've got lots of stuff in memory here, and most of it has the namespace of the website project. That's not a surprise, given were looking for a memory leak, though. Big numbers and your namespace are usually a good sign you've got a problem. So selecting the
+						<code>EventFacade</code>
+						object from the list there, what do we see in the reference graph?</p>
+					<p>
+						<a target="_blank" href="/img/2024/12-ReferenceGraph.png">
+							<img alt="The reference graph for the EventFacade object, showing its connection to the Sitecore EventSubscribers static property" src="/img/2024/12-ReferenceGraph.png">
+						</a>
+					</p>
+					<p>From that panel of the memory diagnostics it's clear that lots of these
+						<code>EventFacade</code>
+						object are connected back to a single Sitecore object -
+						<code>Sitecore.Events.Event</code>
+						and its
+						<code>EventSubscribers</code>
+						type. (The screengrab clips it, but the actual property exposing that type is
+						<code>DynamicSubscribers</code>) And that gives us a really good reason for this whole issue:</p>
+					<p>The diagnostics above are showing this is static. And the decompiled source backs this up:</p>
+					<pre class="code" data-enlighter-highlight="8" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class Event
+{
+    ... snip ...
+
+    //
+    // Summary:
+    //     The dynamic subscribers.
+    private static readonly EventSubscribers DynamicSubscribers;
+
+   ... snip ...
+}
+
+					</pre>
+					<p>So why is this a problem?</p>
+					<p>If you have any object in memory which is referenced by a static property / object / collection then it's fixed in memory until either you manually break that reference, or the whole App Domain is unloaded. Static objects exist for the lifetime of the App Domain, and don't get garbage collected. And that means that none of the non-static objects they hold references to can get collected either, even if they're no longer needed.</p>
+					<p>So this is why you have to be very careful with static events in C# generally, and Sitecore specifically - they make it really easy to cause a memory leak.</p>
+					<p>If you write code which calls
+						<code>Sitecore.Events.Event.Subscribe()</code>
+						to register your object to receive events being broadcast by Sitecore at runtime, then you must make sure that you always call
+						<code>Sitecore.Events.Event.Unsubscribe()</code>
+						as well when your object is finished with. Or you'll end up with exactly this sort of memory leak.</p>
+					<p>This is also true of more standard (non-Sitecore) C#, where you have code which looks something like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class EventTest
+{
+    public delegate void YourEventHandler(object sender, EventArgs e);
+    public static event YourEventHandler DoStuff;
+}
+
+					</pre>
+					<p>and then write something like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">EventTest.DoStuff += (s, e) =&gt; { Console.WriteLine("Event fired!"); };
+
+					</pre>
+					<p>If your code doesn't explicitly remove that handler again, you'll get a leak. This maybe doesn't matter in a desktop app, where you probably only set up your event handling code once. But in a web app this can be a significant issue because things are often set up for every page request. And that tends to lead to the sort of memory graph at the top of this post.</p>
+					<h2 x-data="" class="anchor">Fixing it
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading5" name="heading5">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>In the code I was looking at, some further examination of the code showed that sometimes the events were unsubscribed, and sometimes they were not. So the fix is to make sure everything always unsubscribes.</p>
+					<p>In cases where you're looking at old WebForms code (if you're that unlucky...) Then the
+						<code>Page_Unload()</code>
+						handler is probably your place to do this. If you're working with MVC then all controllers are
+						<code>IDisposable</code>
+						so you can override
+						<code>Dispose(bool disposing)</code>
+						to make sure these things are called once the MVC framework is done with your controller.</p>
+					<p>In the code I was looking at, it seemed like some developers in the past knew this, but that bit of institutional memory got forgotten along the way, and when some newer code was added it didn't follow these patterns.</p>
+					<p>But it will now...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The symptom
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">Gathering data
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">Preparing to analyse
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">Looking for the issue
+										</a>
+									</li>
+									<li>
+										<a href="#heading5">Fixing it
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore
+								</a>
+								<a href="/tags/performance/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Performance
+								</a>
+								<a href="/tags/platform-dxp/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Platform DXP
+								</a>
+								<a href="/tags/azure/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Azure
+								</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C#
+								</a>
+								<a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Visual Studio
+								</a>
+								<a href="/tags/profiling/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Profiling
+								</a>
+								<a href="/tags/statiq/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Statiq
+								</a>
+								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Symposium
+								</a>
+								<a href="/tags/xm-cloud/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									XM Cloud
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink lg:order-3">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (236)</a>
+								<a href="/tags/platform-dxp/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Platform DXP (211)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (64)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (32)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (18)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (18)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (17)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2024-12">2024 - December</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-11">2024 - November</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-10">2024 - October</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-09">2024 - September</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-08">2024 - August</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Months
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<table>
+									<tbody>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2024</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
