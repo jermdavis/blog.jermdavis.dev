@@ -1,0 +1,782 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2024/integrating-ping">
+		<meta name="description" content="If you want a minimal IDAM integration that wasn't Entra External ID, what might that look like with Ping Identity?">
+		<meta property="og:description" content="If you want a minimal IDAM integration that wasn't Entra External ID, what might that look like with Ping Identity?">
+		<meta name="keywords" content="Sitecore, Composable">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Integrating Ping Identity for public login</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Integrating Ping Identity for public login [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2024-12-16T00:00:00+0000">
+		<meta property="article:published_time" content="2024-12-16T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/integrating-ping-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Integrating Ping Identity for public login' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Integrating Ping Identity for public login",
+        "url": "https://blog.jermdavis.dev/posts/2024/integrating-ping",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/integrating-ping-social.jpg",
+                "caption": "Logo image showing post title 'Integrating Ping Identity for public login' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2024-12-16T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2024/integrating-ping">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+						<a class="text-base font-medium" href="/search">Search</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+							<a class="block mt-5 text-base font-medium" href="/search">Search</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2024/integrating-ping</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Integrating Ping Identity for public login
+				</h1>
+				<h2 class="text-2xl">If you don't want Entra for your IDAM, what else might you do?</h2>
+				<div class="meta">Published 16 December 2024</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/sitecore/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Sitecore</a>
+					<a href="/tags/composable/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Composable</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~8 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<blockquote>
+						<div class="text-lg font-bold">This is post 2 of 2 in a series titled
+							<i>Simple IDAM Integrations</i>
+						</div>
+						<ul>
+							<li>
+								<a href="/posts/2024/minimal-change-entra-sitecore">What's the 'minimal change' to use Entra External ID for public login with Sitecore?</a>
+							</li>
+							<li>
+								<b>Integrating Ping Identity for public login</b>
+							</li>
+						</ul>
+					</blockquote>
+					<p>A while back I wrote a bit about how you might integrate
+						<a href="https://blog.jermdavis.dev/posts/2024/minimal-change-entra-sitecore" target="_blank" rel="noopener">Extra External ID with Sitecore</a>
+						to provide a very minimal IDAM integration for login. But in the follow-ups to the internal discussions that gave me the idea for that post, my project started talking about alternatives to Entra. So what might you be able to do if you chose
+						<a href="https://www.pingidentity.com/" target="_blank" rel="noopener">Ping Identity</a>
+						instead?
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">The scenario
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The requirement for what the integration needed to do was the same as the things I wrote about in my previous post. Minimal change, to allow credential validation via the IDAM provider, but keeping the authorisation behaviour in Sitecore's model. But there was a request to look into Ping Identity as an alternative service provider.</p>
+					<h2 x-data="" class="anchor">The basics
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The model I discussed last time was roughly:</p>
+					<ul>
+						<li>Configure an "application" in the IDAM provider for your site &amp; grab its config</li>
+						<li>Make your website present a link to the IDAM provider the user can click to log in</li>
+						<li>When the IDAM provider redirects back to you after their process completes, decode the provided security token</li>
+						<li>Use the email address in the provided token to run Sitecore's login process.</li>
+					</ul>
+					<p>And after looking at the documentation for Ping it's clear that exactly this "hosted login" model can work much the same way. The URLs requested change a bit, but the logic and behaviour stays pretty much the same.</p>
+					<p>That wouldn't make much of a blog post - but interestingly Ping offers an approach Entra doesn't seem to support: It allows you to deal with gathering credentials on your web page, but pass these to Ping's APIs for validation and token issuing.</p>
+					<p>That has some interesting potential for having the benefits of IDAM but being able to make the login page(s) look exactly the they way you want. That might be an improvement over the "you can customise our page a bit" approach of the hosted login model.</p>
+					<h2 x-data="" class="anchor">The fancy approach
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Having gone through a lot of documentation the process for authenticating a user via this model goes like this:</p>
+					<p>Initially you need to configure an "application" and a "flow" in Ping much as we did for Entra External ID. However here the documentation is fairly focused on doing this via APIs - rather than Entra's "just via the UI" model. In reality I suspect I'd not be automating this creation as it would be a bit of a "fire and forget" job. But these api-first approaches might be useful in some scenarios.</p>
+					<p>There are a few key things to set here, however. Your app's config needs:</p>
+					<ul>
+						<li>The
+							<code>Response Type</code>
+							set to
+							<code>Code</code>
+						</li>
+						<li>The
+							<code>Grant Type</code>
+							set to
+							<code>Authorization Code</code>
+							and
+							<code>Client Credentials</code>
+						</li>
+						<li>The
+							<code>Redirect URIs</code>
+							set to match whatever you use in the code below</li>
+						<li>The
+							<code>Token Endpoint Authentication Method</code>
+							set to
+							<code>Client Secret Post</code>
+						</li>
+					</ul>
+					<p>And it also needs an Attribute Mapping set up to export the user's email in the id token we end up acquiring.</p>
+					<p>You need to attach a Policy to your app as well - here I'm using one which only wants the user's password. But you can create more complex ones.</p>
+					<p>You'll need to add your login form as a component in Sitecore. At its simplest this can be a View Rendering which posts data back to an API controller, so we don't need to worry about any complexity with Sitecore Controllers.</p>
+					<p>So the view might include:</p>
+					<pre class="code" data-enlighter-language="html" style="width:100%; overflow:scroll;">&lt;div&gt;
+    &lt;h2&gt;Ping Login Experiment&lt;/h2&gt;
+
+    &lt;form action="/api/ping/login" method="post"&gt;
+        &lt;label for="user"&gt;User: &lt;/label&gt;
+        &lt;input type="text" name="user" placeholder="user" /&gt;
+        &lt;label for="user"&gt;Pwd: &lt;/label&gt;
+        &lt;input type="password" name="pwd" placeholder="password" /&gt;
+        &lt;button type="submit"&gt;Go!&lt;/button&gt;
+    &lt;/form&gt;
+
+&lt;/div&gt;
+
+					</pre>
+					<p>And the controller needs a method to receive that post:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PingApiController : Controller
+{
+    [HttpPost]
+    public ActionResult Login(string user, string pwd)
+    {
+        // logic goes here
+    }
+}
+
+					</pre>
+					<p>You need to take the client id (also referred to as the app id in the docs), the client secret and the environment id from either the Ping UI or their setup API calls, as they'll be needed later.</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string _environmentId = "&lt;your value&gt;";
+private string _clientId = "&lt;your value&gt;";
+private string _secret = "&lt;your value&gt;";
+
+					</pre>
+					<p>You'll also need to know the API endpoint for Ping's calls. And you'll need to have a URL for Ping to redirect to, like we did in the Entra version. But in this case while that URL is required by the endpoints your calling, we won't actually allow that redirect to be performed - all the work will be handled in back-end code.</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string _authPath = "https://auth.pingone.eu";
+private string _redirect = "https://cm.pingexperiment.localhost/api/ping/redirect";
+
+					</pre>
+					<p>The documentation then describes two calls you make to get the relevant ID and URL for the login flow to follow. I'll reproduce that here, but I'm fairly sure these are constants of your App's setup so you might choose to make them config settings?</p>
+					<p>First up you need to fetch the ID for the login flow you've attached to your application:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string GetFlowId()
+{
+    var uri = $"{_authPath}/{_environmentId}/as/authorize?response_type=code&amp;client_id={_clientId}&amp;redirect_uri={_redirect}&amp;scope=openid";
+    var client = WebRequest.CreateHttp(uri);
+    client.AllowAutoRedirect = false;
+    client.CookieContainer = _cookies;
+
+    var response = client.GetResponse();
+    
+    var loc = response.Headers["Location"];
+
+    return loc.Substring(loc.IndexOf('=') + 1);
+}
+
+					</pre>
+					<p>You can make a
+						<code>GET</code>
+						request to the
+						<code>/as/authorize</code>
+						endpoint to retrieve this ID. The URL requested here needs to include a collection of bits of data. You need to use the right API URL path, and the right environment ID so that Ping knows which bit of your estate you're talking to. You also need to pass the client id (or app id) to say what sort of login you're going via the app's configuration, and you need to specify an (unused) redirect that matches your app's configuration.</p>
+					<p>Sending that request needs two other settings. First, you have to tell it not to follow any redirects it receives. And second you need to make cookies persistent across all the requests we'll be making here, so that Ping can follow your session.
+						<code>_cookies</code>
+						here is just a field in the controller:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private CookieContainer _cookies = new CookieContainer();
+
+					</pre>
+					<p>And then when the call returns you can extract the
+						<code>Location</code>
+						header that gets sent back as part of the 302 response. Normally the browser would follow this redirect to show a login form, but we've told our client not to redirect, so we get a value that looks like:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">https://apps.pingone.eu/9a25db85-0c77-4b4f-94fc-42acc9e23299/signon/?flowId=0a1471bb-a437-4955-bc65-dg8caa3c885b
+
+					</pre>
+					<p>The ID we need is the querystring param
+						<code>flowId</code>
+						- so the function can grab that off the end of the string and return it.</p>
+					<p>(As an aside, you'd have error handling code in all this stuff if you were doing it properly - but I'm ignoring that for clarity)</p>
+					<p>Then you can make a second call using that flow ID to get the URL that the flow would submit user credentials to:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string GetFlowSubmissionUrl(string flowId)
+{
+    var uri = $"{_authPath}/{_environmentId}/flows/{flowId}";
+    var client = WebRequest.CreateHttp(uri);
+    client.CookieContainer = _cookies;
+
+    var response = client.GetResponse();
+    using (var strm = response.GetResponseStream())
+    {
+        using(var rdr = new StreamReader(strm))
+        {
+            var data = rdr.ReadToEnd();
+
+            var json = JObject.Parse(data);
+            var flowUrl = json["_links"]["usernamePassword.check"]["href"];
+                    
+            return flowUrl.ToString();
+        }
+    }
+}
+
+					</pre>
+					<p>This call is similar in structure. It constructs a request to get data for the
+						<code>flowId</code>
+						we captured before, ensures we're keeping cookies and gets a response. It then reads out the body of the response - which is a blob of json which has a structure like this:</p>
+					<pre class="code" data-enlighter-language="json" style="width:100%; overflow:scroll;">{
+    "_links" : {
+        "usernamePassword.check" : {
+            "href" : "https://auth.pingone.eu/9a25db85-0c77-4b4f-94fc-42acc9e23299/flows/0f5984c7-90ca-4554-8a1a-93c752d0507d"
+        },
+        "self" : {
+            "href" : "https://auth.pingone.eu/9a25db85-0c77-4b4f-94fc-42acc9e23299/flows/0f5984c7-90ca-4554-8a1a-93c752d0507d"
+        }
+    },
+    "id" : "015984c7-90ca-4554-8a1a-93c752d0507d",
+    "resumeUrl" : "https://auth.pingone.eu/9a25db85-0c77-4b4f-94fc-42acc9e23299/as/resume?flowId=0f5984c7-90ca-4554-8a1a-93c752d0507d",
+    "status" : "USERNAME_PASSWORD_REQUIRED",
+    "createdAt" : "2024-11-06T14:49:26.669Z",
+    "expiresAt" : "2024-11-06T15:04:26.732Z",
+    "_embedded" : {
+        "application" : {
+            "name" : "Simple_Login_App"
+        }
+    }
+}
+
+					</pre>
+					<p>The important thing here is the
+						<code>href</code>
+						attribute of the
+						<code>usernamePassword.check</code>
+						element. You can see from the
+						<code>status</code>
+						field that the flow is waiting on a username and password to validate the user - so we need to post those bits of data to the url we're extracting here.</p>
+					<p>Posting that data is a little more compex, but looks like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string PostCredsForResumeUrl(string flowUrl, string user, string pwd)
+{
+    var contentType = "application/vnd.pingidentity.usernamePassword.check+json";
+    var body = $"{{\"username\": \"{user}\",\"password\": \"{pwd}\"}}";
+
+    var bodyData = Encoding.ASCII.GetBytes(body);
+
+    var client = WebRequest.CreateHttp(flowUrl);
+    client.CookieContainer = _cookies;
+    client.ContentType = contentType;
+    client.Method = "POST";
+    client.ContentLength = bodyData.Length;
+    using(var strm = client.GetRequestStream())
+    {
+        strm.Write(bodyData, 0, bodyData.Length);
+    }
+
+    WebResponse response;
+    try
+    {
+        response = client.GetResponse();
+    }
+    catch(WebException ex)
+    {
+        // Invalid response
+        return null;
+    }
+
+    using (var strm = response.GetResponseStream())
+    {
+        using (var rdr = new StreamReader(strm))
+        {
+            var data = rdr.ReadToEnd();
+            var json = JObject.Parse(data);
+
+            return json["resumeUrl"].ToString();
+        }
+    }
+}
+
+					</pre>
+					<p>This needs to take the user's credentials, format them into some JSON and post them to the URL from above. The response to that post will either be a blob of JSON for success or a HTTP error code. For simplicity the code here just assumes any error is a login error (rather than anything relating to networks or the like) and returns null. But if there's no error we get JSON like:</p>
+					<pre class="code" data-enlighter-language="json" style="width:100%; overflow:scroll;">{
+  "_links": {
+    "self": {
+      "href": "https://auth.pingone.eu/9a25db85-0c77-4b4f-94fc-42acc9e23299/flows/0f6f75df-7aed-42c3-b6bf-c79562f60366"
+    }
+  },
+  "id": "0f6f75df-7aed-42c3-b6bf-c79562f60366",
+  "session": {
+    "id": "888427de-9fb2-4be3-92b5-14cad9f6f4f1"
+  },
+  "resumeUrl": "https://auth.pingone.eu/9a25db85-0c77-4b4f-94fc-42acc9e23299/as/resume?flowId=0f6f75df-7aed-42c3-b6bf-c79562f60366",
+  "status": "COMPLETED",
+  "createdAt": "2024-11-06T15:26:46.196Z",
+  "expiresAt": "2024-11-06T15:41:46.392Z",
+  "_embedded": {
+    "user": {
+      "id": "3471e840-c1cf-4850-b163-3f311dcc4be3",
+      "username": "DJD"
+    },
+    "application": {
+      "name": "Simple_Login_App"
+    }
+  }
+}
+
+					</pre>
+					<p>The important thing here is the "resume url" which is needed for the next step. But in more complex scenarios you might need to look at the
+						<code>status</code>
+						field. Here that's "completed" because this flow only needs username and password, so all its requirements have been met. But if you had a flow which needed 2FA then you might a status to say "now you need to do the 2nd factor" - which you'd have to respond to by posting the user's 2FA code data to the appropriate URL to get to the "completed" state or get an error if they did not match.</p>
+					<p>But the resume URL extracted is required to close out the login. Once all the factors are submitted this can be called to get a completion code which we need next:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public string ResumeToGetCode(string resumeUrl)
+{
+    var client = WebRequest.CreateHttp(resumeUrl);
+    client.CookieContainer = _cookies;
+    client.AllowAutoRedirect = false;
+
+    var response = client.GetResponse();
+
+    var redirectUrl = response.Headers["Location"];
+
+    var code = redirectUrl.Substring(redirectUrl.IndexOf('=') + 1);
+
+    return code;
+}
+
+					</pre>
+					<p>This is repeating the pattern of making a
+						<code>GET</code>
+						request which ignores redirects and extracting the redirect URL returned from a 302 response. And the querystring value at the end of that URL is the code we need to extract.</p>
+					<p>Finally (!) then we need to translate that "yes, you did log in ok" code into a token in the same structure as we had before with Entra. I mentioned earlier adding the Attribute Mapping to include the email address we want for the login on the Sitecore side. That needs to be in place for the token to have the data we want.</p>
+					<p>The code looks like this:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">private string GetToken(string code)
+{
+    var uri = $"{_authPath}/{_environmentId}/as/token";
+
+    string formFields = $"grant_type=authorization_code&amp;code={code}&amp;client_id={_clientId}&amp;client_secret={_secret}&amp;redirect_uri={_redirect}&amp;scope=openid+email";
+    var formData = System.Text.Encoding.ASCII.GetBytes(formFields);
+
+    var client = WebRequest.CreateHttp(uri);
+    client.ContentType = "application/x-www-form-urlencoded";
+    client.CookieContainer = _cookies;
+    client.Method = "POST";
+    client.ContentLength = formData.Length;
+
+    using (var stream = client.GetRequestStream())
+    {
+        stream.Write(formData, 0, formData.Length);
+    }
+
+    var response = client.GetResponse();
+    using (var strm = response.GetResponseStream())
+    {
+        using (var rdr = new StreamReader(strm))
+        {
+            var data = rdr.ReadToEnd();
+
+            System.Diagnostics.Debug.WriteLine($"token: {data}");
+
+            var json = JObject.Parse(data);
+            var id_token = json["id_token"];
+
+            return id_token.ToString();
+        }
+    }
+}
+
+					</pre>
+					<p>This call isn't part of the login flow - so it involves
+						<code>POST</code>ing a variety of things as part of the request. It needs to know we're authorising with a code. Then we need to pass the code, the client ID, the client secret and the (unused) redirect URL again. And we need to specify the scope of data we want to extract.</p>
+					<p>Now when you read the documentation for this call it suggests a slightly different approach. It doesn't add the client ID and secret to the posted data. Instead it suggests using these as a Basic Auth header instead. I spent a chunk of time trying to make that work, but always got a 400 response at best, and a 403 at worst as I fiddled with the data being sent.</p>
+					<p>But the docs also describe the above approach as an alternative. The changes I had to make in order for this to work were:</p>
+					<ul>
+						<li>Don't send a basic auth header</li>
+						<li>Do include the client id and secret in the posted form data</li>
+						<li>Configure the app so that the
+							<code>Token Endpoint Authentication Method</code>
+							is set to
+							<code>Client Secret Post</code>
+						</li>
+					</ul>
+					<p>And the results of a valid call get you the same structure of token we saw in the previous post:</p>
+					<pre class="code" data-enlighter-language="json" style="width:100%; overflow:scroll;">{
+    "access_token" : "eyJraWQiOiI5NGZiOWYzMC05YjcyLTExZWYtYjFmOS0zZjFkYTlkYmY5ZTAiLCJhbGciOiJSUzI1NiJ9.eyJjbGllbnRfaWQiOiI5ODQyN2U5YS1hNTYzLTQ4MTYtYmZhNi1jNzNmOTA2MDllYTgiLCJpc3MiOiJodHRwczovL2F1dGgucGluZ29uZS5ldS85NjI1ZGI4NS0wYzc3LTRiY2YtOTRmYy00MmE0YzllMjMyOTkvYXMiLCJqdGkiOiI1OTg0YjdkOC1iNjRmLTQyMGQtYWFiNC00MmY4YmZlMjIxZjUiLCJpYXQiOjE3MzA5OTA5ODAsImV4cCI6MTczMDk5NDU4MCwiYXVkIjpbImh0dHBzOi8vYXBpLnBpbmdvbmUuZXUiXSwic2NvcGUiOiJvcGVuaWQiLCJzdWIiOiIzNDcxZTg0MC1jMWNmLTQ4NTAtYjE2My0zZjMxMWRjYzRiZTMiLCJzaWQiOiI3MmJjOWMxMS1lZGZkLTRjNjUtOTUxZC0xNWYyMTljMDBhNDkiLCJlbnYiOiI5NjI1ZGI4NS0wYzc3LTRiY2YtOTRmYy00MmE0YzllMjMyOTkiLCJvcmciOiI5ZjFlMDEzZS0yMWQ0LTQ2YTEtODk3My0yOTQxZjA1MjQxNTIifQ.oQNlFArGpVFKwWYKYw2-2V0HxePAFYdul2O7cf5rLhstT0QF-YYkOpZr9A-gsTf1JzKxZloOmulSwu2QYGbvx4BceG78hUBGzsn7HnTQ8junsawPA7VBWfysmON7HRni5z_uEqKoM3oRESaoKISEZeiTc-P-mZ4_LIzFIntJJHkHGPz_bHpb8tGM_zFUuikWlD07qqAYqK593RVrUGzgmdbXgsava4jC2AW_hjSgSehj7i1SLS06IR-I1jqial-Bv6PXkgs8WUFpAKCOlK6SA75J7qUp91IAdOpNQbewuTfmqnEeyKwLfIv0dcrRZNP2gjIDLNnNCrh3QqdDdHulkQ",
+    "token_type" : "Bearer",
+    "expires_in" : 3600,
+    "scope" : "openid",
+    "id_token" : "eyJraWQiOiI5NGZiOWYzMC05YjcyLTExZWYtYjFmOS0zZjFkYTlkYmY5ZTAiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL2F1dGgucGluZ29uZS5ldS85NjI1ZGI4NS0wYzc3LTRiY2YtOTRmYy00MmE0YzllMjMyOTkvYXMiLCJzdWIiOiIzNDcxZTg0MC1jMWNmLTQ4NTAtYjE2My0zZjMxMWRjYzRiZTMiLCJhdWQiOiI5ODQyN2U5YS1hNTYzLTQ4MTYtYmZhNi1jNzNmOTA2MDllYTgiLCJpYXQiOjE3MzA5OTA5ODAsImV4cCI6MTczMDk5NDU4MCwiYWNyIjoiU2ltcGxlX0xvZ2luX1BvbGljeSIsImFtciI6WyJwd2QiXSwiYXV0aF90aW1lIjoxNzMwOTkwOTc5LCJhdF9oYXNoIjoiR2tOUXRKa1NtZEtSZEJadVlHRmJTZyIsInNpZCI6IjcyYmM5YzExLWVkZmQtNGM2NS05NTFkLTE1ZjIxOWMwMGE0OSIsImVudiI6Ijk2MjVkYjg1LTBjNzctNGJjZi05NGZjLTQyYTRjOWUyMzI5OSIsIm9yZyI6IjlmMWUwMTNlLTIxZDQtNDZhMS04OTczLTI5NDFmMDUyNDE1MiIsInAxLnJlZ2lvbiI6IkVVIn0.SJ5PP-rzjtl5ZfGkLfOKeBEQAwmgnQ2sGzZSM3c2vIzPGpaHduE6gbogGhgEjVWM-RbxckYJmafVLfNTnAl3mziAk2PvktxuqXtmYoFixGsjjOAv9W2CcaLKuE3F4nDSxjvG5w--leqs4HhTrSvvYYgAlOF2zoHiHNNEfTDpUAoaYndgaezgCxjmIHYcud1u6E8LbU-V7nNolfqQf7v5Xxgmq51sIAaRbHNwJapxGRZC6jkLc3YWkN_aPK3bgSfzOkQpm-u4PyOIy2emLTjBS5F0BabZMCpR8YPjgzzP2ErdSMIQLEKwfbPWzbCPZx9I1KBj_LAcDR6MioxNIRYy5g"
+}
+
+					</pre>
+					<p>So the overall controller method can end up looking like this. It just calls all of the methods talked through above, and makes sure that the
+						<code>resumeUrl</code>
+						acquired when posting the user's credentials isn't null.</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">[HttpPost]
+public ActionResult Login(string user, string pwd)
+{
+    var flowId = GetFlowId();
+    var flowUrl = GetFlowSubmissionUrl(flowId);
+    var resumeUrl = PostCredsForResumeUrl(flowUrl, user, pwd);
+
+    string token = null;
+    if (!string.IsNullOrWhiteSpace(resumeUrl))
+    {
+        var code = ResumeToGetCode(resumeUrl);
+        token = GetToken(code);
+    }
+
+    return ProcessToken(token);
+}
+
+					</pre>
+					<p>Where
+						<code>ProcessToken()</code>
+						is the same code from the previous post to take the token text and extract the data to process the login. It doesn't try to log in if the
+						<code>token</code>
+						supplied here is null. So it does nothing if login has failed. But in the real world there'd be some better UI to handle error conditions here.</p>
+					<p>So that's an interesting alternative to using Entra's model.</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The scenario
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">The basics
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">The fancy approach
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2024</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/10yrs.png" width="219" height="219" alt="2024 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore
+								</a>
+								<a href="/tags/composable/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Composable
+								</a>
+								<a href="/tags/performance/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Performance
+								</a>
+								<a href="/tags/platform-dxp/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Platform DXP
+								</a>
+								<a href="/tags/azure/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Azure
+								</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C#
+								</a>
+								<a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Visual Studio
+								</a>
+								<a href="/tags/profiling/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Profiling
+								</a>
+								<a href="/tags/statiq/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Statiq
+								</a>
+								<a href="/tags/symposium/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Symposium
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink lg:order-3">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (237)</a>
+								<a href="/tags/platform-dxp/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Platform DXP (211)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (64)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (32)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (18)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (18)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (17)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2024-12">2024 - December</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-11">2024 - November</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-10">2024 - October</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-09">2024 - September</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-08">2024 - August</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Months
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<table>
+									<tbody>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2024</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
