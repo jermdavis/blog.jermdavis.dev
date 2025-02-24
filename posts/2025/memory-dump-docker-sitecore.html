@@ -1,0 +1,592 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2025/memory-dump-docker-sitecore">
+		<meta name="description" content="Some notes on taking memory dumps of Sitecore (or other) code running in containers">
+		<meta property="og:description" content="Some notes on taking memory dumps of Sitecore (or other) code running in containers">
+		<meta name="keywords" content="Performance, Sitecore, Docker, Visual Studio, Platform DXP">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Memory diagnostics for Docker in containers</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Memory diagnostics for Docker in containers [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2025-02-24T00:00:00+0000">
+		<meta property="article:published_time" content="2025-02-24T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/memory-dump-docker-sitecore-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Memory diagnostics for Docker in containers' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Memory diagnostics for Docker in containers",
+        "url": "https://blog.jermdavis.dev/posts/2025/memory-dump-docker-sitecore",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/memory-dump-docker-sitecore-social.jpg",
+                "caption": "Logo image showing post title 'Memory diagnostics for Docker in containers' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2025-02-24T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2025/memory-dump-docker-sitecore">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/scss/tailwind.css" rel="stylesheet">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/scss/site-theme.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="max-w-7xl mx-auto text-black" id="top">
+		<div id="rp-bar"></div>
+		<div class="relative bg-white" x-data="{ open: false }">
+			
+			<!-- desktop -->
+			<div class="px-4 lg:px-6 bg-gray-100">
+				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
+					<div class="flex justify-start lg:w-0 flex-1">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav -mr-2 -my-2 lg:hidden">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							
+							<!-- Heroicon name: outline/menu -->
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav hidden lg:flex space-x-10">
+						<a class="text-base font-medium" href="/posts">Posts</a>
+						<a class="text-base font-medium" href="/tags">Tags</a>
+						<a class="text-base font-medium" href="/about">About</a>
+						<a class="text-base font-medium" href="/links">Useful Links</a>
+						<a class="text-base font-medium" href="/mvp">MVP</a>
+						<a class="text-base font-medium" href="/search">Search</a>
+					</nav>
+				</div>
+			</div>
+			
+			<!--Mobile menu, show/hide based on mobile menu state.-->
+			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
+				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
+					<div class="pt-5 pb-6 px-5">
+						<div class="flex items-center justify-between">
+							<div class="flex">
+								<a href="/">
+									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav -mr-2">
+								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav py-6 px-5 pt-0">
+						<nav class=" gap-x-8">
+							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
+							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
+							<a class="block mt-5 text-base font-medium" href="/about">About</a>
+							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
+							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
+							<a class="block mt-5 text-base font-medium" href="/search">Search</a>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+			<div class="post-heading">
+				<div class="url p-1 bg-gray-100 rounded-md">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2025/memory-dump-docker-sitecore</tt>
+				</div>
+				<h1 class="text-5xl mb-4 pb-1">
+					Memory diagnostics for Docker in containers
+				</h1>
+				<h2 class="text-2xl">It's more manual, but it still works...</h2>
+				<div class="meta">Published 24 February 2025</div>
+				<div class="flex py-1 flex-wrap">
+					<a href="/tags/performance/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Performance</a>
+					<a href="/tags/sitecore/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Sitecore</a>
+					<a href="/tags/docker/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Docker</a>
+					<a href="/tags/visual-studio/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Visual Studio</a>
+					<a href="/tags/platform-dxp/" class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">
+						Platform DXP</a>
+					<span class="p-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~4 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="py-2 lg:pl-3">
+			<div class="lg:flex">
+				<div class="lg:flex-auto mx-3 lg:min-w-0 content">
+					<p>When I was writing about
+						<a href="https://blog.jermdavis.dev/posts/2024/event-memory-issues" target="_blank" rel="noopener">dealing with memory analysis</a>
+						for Sitecore recently I focused on a site running under Auzre PaaS. But what if you're working in Docker locally? A good question it turns out...
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">In an ideal world, this should be easy...
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Working locally with an instance of Sitecore installed directly on your computer this is prety simple - you can attach either the
+						<a href="https://learn.microsoft.com/en-us/visualstudio/profiling/profiling-feature-tour?view=vs-2022&amp;pivots=programming-language-dotnet" target="_blank" rel="noopener">Performance Profiler</a>
+						tools or attach the debugger and look at the Diagnostic tools pane. Either of these can give you useful data.</p>
+					<p>But if you fire up recent Visual Studio and attach the debugger to the website process in a container, you'll get this:</p>
+					<p>
+						<a target="_blank" href="/img/2025/02-VSNoDiagTools.png">
+							<img alt="The Diagnostic Tools pane in Visual Studio showing that it 'does not support the current configuration' when attached to a Docker process" src="/img/2025/02-VSNoDiagTools.png">
+						</a>
+					</p>
+					<p>It doesn't support being attached to a Docker-based process. And the Performance Profiler UI doesn't have an option to attach to a container.</p>
+					<p>So one approach to dealing with this that's worked for me is to do something slightly fancier with some extra tooling:</p>
+					<h2 x-data="" class="anchor">Stealing a trick from Azure PaaS
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>For Sitecore on Azure we used a memory dump - so can that work for us in a Docker container? Yes it can! Though it does need a bit more effort.</p>
+					<p>For me, the most "developer friendly" way to grab a dump at runtime is with the
+						<a href="https://learn.microsoft.com/en-us/sysinternals/downloads/procdump" target="_blank" rel="noopener">SysInternals ProcDump</a>
+						tool. That's a free download, and it gives you a decent command line for triggering process dumps in different scenarios.</p>
+					<p>You can download the tool and add it to your base docker image if you want. (Via your CM role
+						<code>DockerFile</code>
+						- but
+						<a href="#heading4">see below</a>
+						if you're going that way) But for a very simple developer test / blog post write-up, it's probably easiest to just copy it into the container you're debugging manually. I copied the files into a sub-folder of the
+						<code>Deploy/Website</code>
+						data volume for a Sitecore Docker instance:</p>
+					<p>
+						<a target="_blank" href="/img/2025/02-ProcDumpOnDisk.png">
+							<img alt="The files for ProcDump copied into the deploy/website folder of a Sitecore Docker instance" src="/img/2025/02-ProcDumpOnDisk.png">
+						</a>
+					</p>
+					<p>That's a quick and easy way to make the files available in the container. But remember to clear the "you downloaded this from the internet" security flag on the ProcDump zip file before you extract the files and copy them...</p>
+					<p>Now you need to get inside the running container to run ProcDump. So from the command line you can run:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">docker exec -it &lt;your-container-name&gt; powershell
+
+					</pre>
+					<p>And that will get you a shell running inside your Sitecore container. From there you can go to the folder with ProcDump in it with
+						<code>cd .\tool\</code>
+						and we're ready to capture some data.</p>
+					<p>The key command line options to grab a dump now are:</p>
+					<pre class="code" data-enlighter-theme="droide-text" data-enlighter-language="text" style="width:100%; overflow:scroll;">.\procdump.exe -accepteula -ma w3wp "c:\deploy"
+
+					</pre>
+					<p>Using
+						<code>-accepteula</code>
+						bypasses any "are you sure you agree to the license" business.
+						<code>-ma</code>
+						asks for a full dump of the specified process, so we get all the data available. (You can take smaller dumps - see the documentation for further info) Specifying
+						<code>w3wp</code>
+						for the process to dump means we get a copy of just what IIS (and hence our Sitecore website) are up to. And finally the
+						<code>"c:\deploy"</code>
+						specifies where we want the dump file written.</p>
+					<p>The docker volume that maps the
+						<code>docker\deploy\website</code>
+						folder on your physical disk into the container maps to
+						<code>c:\deploy</code>
+						- it doesn't got straight to the IIS webroot folder due to a limitation of mapped volumes under Windows. (You can only map a volume to an empty folder) So we need to write the new data there so it shows up on your host computer.</p>
+					<p>When you run that you'll see something like:</p>
+					<p>
+						<a target="_blank" href="/img/2025/02-ProcDumpRuns.png">
+							<img alt="A terminal window showing the output of ProcDump running to capture a dump." src="/img/2025/02-ProcDumpRuns.png">
+						</a>
+					</p>
+					<p>And you'll see the dump pop up on your disk in amongst your deployed code:</p>
+					<p>
+						<a target="_blank" href="/img/2025/02-DumpOnDisk.png">
+							<img alt="Windows Explorer showing the dump file written to disk in the shared docker volume for deploying to Sitecore" src="/img/2025/02-DumpOnDisk.png">
+						</a>
+					</p>
+					<p>And now you can follow the
+						<a href="https://blog.jermdavis.dev/posts/2024/event-memory-issues#heading3" target="_blank" rel="noopener">same process as before</a>, to load that dump into Visual Studio and take a look at what's going on with the memory.</p>
+					<h2 x-data="" class="anchor">Fancier business
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>ProcDump does have some clever extra features - such as waiting until a specific condition is met before doing anything. The one of these I've found most useful is "dump when a memory threshold is exceeded" which uses the
+						<code>-m</code>
+						switch.</p>
+					<p>For example, using
+						<code>-m 3000</code>
+						ProcDump will sit and wait until your instance of IIS has used more than 3GB of RAM and then take the process dump:</p>
+					<p>
+						<a target="_blank" href="/img/2025/02-DumpAt3GB.png">
+							<img alt="A console window showing ProcDump running in 'wait for the process to use 3GB RAM' mode, and eventually triggering" src="/img/2025/02-DumpAt3GB.png">
+						</a>
+					</p>
+					<p>That's really helpful if you want ProcDump to trigger once you get close to a memory problem due to some automated test against your instance.</p>
+					<p>But you can do other clever things like triggering on exceptions being thrown, or when CPU usage (or other performance counters) excede specified value. So you can get fairly fancy if you need to.</p>
+					<p>But overall, this gives you a lot more power for diagnosing issues in your local Docker-hosted code.</p>
+					<h2 x-data="" class="anchor">A better setup?
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The examples above are as simple as possible to make for a easy read - but if you plan to use this for anything serious it would make sense to adjust this very minimal setup.</p>
+					<p>Writing the dumps to the
+						<code>c:\deploy</code>
+						isn't really the best plan - inside the container there's a script to copy data from the this folder into the website root. You don't really want that to happen to a big dump file. So there are a couple of ways to fix this:</p>
+					<ul>
+						<li>
+							<strong>Change the entrypoint script's file-copy code to ignore dump files by default</strong>
+							<br>
+							Inside the container
+							<code>Watch-Directory.ps1</code>
+							configures the copying and it's called by the entrypoint script with some parameters passed. The defaults for what files are ignored are set in the definition of the
+							<code>$DefaultExcludedFiles</code>
+							variable in the watch script. That can be adjusted to add dump files:<pre class="code" data-enlighter-highlight="7" data-enlighter-language="powershell" style="width:100%; overflow:scroll;">...
+[Parameter(Mandatory = $false)]
+[array]$DefaultExcludedFiles = @(
+      "*.user", "*.cs", "*.csproj", "packages.config",
+      "*ncrunch*", ".gitignore", ".gitkeep", ".dockerignore",
+      "*.example", "*.disabled",
+      "*.dmp"),
+...
+
+							</pre>
+							Now the files will appear in you deployment folder, but there will be no risk of them getting copied elsewhere.</li>
+						<li>
+							<strong>Make your own folder and map it out of the container</strong>
+							<br>
+							If your
+							<code>dockerfile</code>
+							for the CM role creates a new folder (say
+							<code>c:\dump</code>) and you make
+							<code>ProcDump.exe</code>
+							write to that folder, then it can be mapped out of the container fairly easily. A new volume can be added to the
+							<code>docker-compose.override.yml</code>
+							file's CM service:<pre class="code" data-enlighter-highlight="6" data-enlighter-language="yaml" style="width:100%; overflow:scroll;">...
+  volumes:
+    - ${LOCAL_DEPLOY_PATH}\platform:C:\deploy
+    - ${LOCAL_DATA_PATH}\cm:C:\inetpub\wwwroot\App_Data\logs
+    - ${HOST_LICENSE_FOLDER}:c:\license
+    - $(${LOCAL_DATA_PATH}\dump):c:\dump
+...
+
+							</pre>
+							You'll have to rememeber to create
+							<code>\docker\data\dump</code>
+							(and likely drop a
+							<code>.gitkeep</code>
+							file in it, so it doesn't get deleted) as well. And now the dump files will appear in that folder.</li>
+					</ul>
+					<h2 x-data="" class="anchor">And it's not just Docker
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading5" name="heading5">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>I should note this technique can also work if you're hosting your containers with Kubernetes. It does require some different configuration of course...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares flex bg-gray-100 p-2 mt-1">
+						<li class="shrink mr-4">
+							<b>Feel like sharing?</b>
+						</li>
+						<li class="shrink mr-4">⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Memory diagnostics for Docker in containers%20https://blog.jermdavis.dev/posts/2025/memory-dump-docker-sitecore">On BlueSky</a>
+						</li>
+						<li class="shrink mr-4">⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https://blog.jermdavis.dev/posts/2025/memory-dump-docker-sitecore">On LinkedIn</a>
+						</li>
+						<li class="shrink mr-4">⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Memory diagnostics for Docker in containers&amp;url=https://blog.jermdavis.dev/posts/2025/memory-dump-docker-sitecore">On Mastodon</a>
+						</li>
+						<li class="shrink mr-4">⇒
+							<a target="_blank" rel="nofollow noreferrer" href="mailto:&amp;body=Memory diagnostics for Docker in containers%20https://blog.jermdavis.dev/posts/2025/memory-dump-docker-sitecore">On Email</a>
+						</li>
+						<li class="flex-auto"></li>
+					</ul>
+				</div>
+				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
+					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
+						<section class="mb-2 md:basis-full md:shrink-0">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Post Headings</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<ol class="headings">
+									<li>
+										<a href="#heading1">In an ideal world, this should be easy...
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">Stealing a trick from Azure PaaS
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">Fancier business
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">A better setup?
+										</a>
+									</li>
+									<li>
+										<a href="#heading5">And it's not just Docker
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
+							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2025</h3>
+							<div class="bg-white mb-2 p-2">
+								<a href="/mvp">
+									<img class="lg:mx-auto" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/performance/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Performance
+								</a>
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore
+								</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker
+								</a>
+								<a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Visual Studio
+								</a>
+								<a href="/tags/platform-dxp/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Platform DXP
+								</a>
+								<a href="/tags/forms/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Forms
+								</a>
+								<a href="/tags/contentsearch/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									ContentSearch
+								</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C#
+								</a>
+								<a href="/tags/net/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									.Net
+								</a>
+								<a href="/tags/composable/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Composable
+								</a>
+							</div>
+						</section>
+						<section class="md:basis-1/5 md:shrink lg:order-3">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
+							<div class="bg-white p-2 flex flex-wrap">
+								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Sitecore (240)</a>
+								<a href="/tags/platform-dxp/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Platform DXP (214)</a>
+								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									C# (66)</a>
+								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									PowerShell (32)</a>
+								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Installation (23)</a>
+								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Docker (20)</a>
+								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Solr (19)</a>
+								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									General (18)</a>
+								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									Containers (17)</a>
+								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+									UI (15)</a>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/tags" role="button">All Tags
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
+							<div class="bg-white p-2">
+								<div>
+									<a class="text-lg" href="/posts/2025-02">2025 - February</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2025-01">2025 - January</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-12">2024 - December</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-11">2024 - November</a>
+								</div>
+								<div>
+									<a class="text-lg" href="/posts/2024-10">2024 - October</a>
+								</div>
+							</div>
+							<div class="bg-white mb-2 p-2">
+								<a class="text-lg" href="/posts" role="button">All Months
+									<i class="fas fa-angle-double-right"></i>
+								</a>
+							</div>
+						</section>
+						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
+							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
+							<div class="bg-white mb-2 p-2">
+								<table>
+									<tbody>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="border-0">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
+												<a class="text-lg ml-2" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
+			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+				<div>©
+					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2025</div>
+			</div>
+			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
+				<a class="font-medium" href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
+				<li class="inline-block">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li class="inline-block ml-4">
+					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
+				<div class="w-full text-lg">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
