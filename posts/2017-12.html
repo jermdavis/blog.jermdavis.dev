@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 	<head>
+		<script src="/js/theme.js"></script>
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -25,18 +26,15 @@
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
 		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
-		<link href="/scss/tailwind.css" rel="stylesheet">
 		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
-		<link href="/scss/site-theme.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
 		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
 	</head>
-	<body class="max-w-7xl mx-auto text-black" id="top">
-		<div class="relative bg-white" x-data="{ open: false }">
-			
-			<!-- desktop -->
-			<div class="px-4 lg:px-6 bg-gray-100">
-				<div class="bannerContainer flex justify-between items-center border-b-2 border-gray-100 py-6 lg:justify-start lg:space-x-10">
-					<div class="flex justify-start lg:w-0 flex-1">
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
 						<a href="/">
 							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
 						</a>
@@ -45,43 +43,48 @@
 							<div class="text-lg">Sitecore, C# and web development</div>
 						</div>
 					</div>
-					<div class="nav -mr-2 -my-2 lg:hidden">
+					<div class="nav navBurger">
 						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
 							<span class="sr-only">Open menu</span>
-							
-							<!-- Heroicon name: outline/menu -->
 							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
 							</svg>
 						</button>
 					</div>
-					<nav class="nav hidden lg:flex space-x-10">
-						<a class="text-base font-medium" href="/posts">Posts</a>
-						<a class="text-base font-medium" href="/tags">Tags</a>
-						<a class="text-base font-medium" href="/about">About</a>
-						<a class="text-base font-medium" href="/links">Useful Links</a>
-						<a class="text-base font-medium" href="/mvp">MVP</a>
-						<a class="text-base font-medium" href="/search">Search</a>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
 					</nav>
 				</div>
 			</div>
-			
-			<!--Mobile menu, show/hide based on mobile menu state.-->
-			<div class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right lg:hidden z-50">
-				<div style="display:none;" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50" x-show="open" x-transition="">
-					<div class="pt-5 pb-6 px-5">
-						<div class="flex items-center justify-between">
-							<div class="flex">
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
 								<a href="/">
-									<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
 								</a>
 								<div class="mx-2">
 									<div class="text-2xl">Jeremy Davis</div>
 									<div class="text-base">Sitecore, C# and web development</div>
 								</div>
 							</div>
-							<div class="nav -mr-2">
-								<button @click="open = false" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
 									<span class="sr-only">Close menu</span>
 									
 									<!-- Heroicon name: outline/x -->
@@ -92,234 +95,222 @@
 							</div>
 						</div>
 					</div>
-					<div class="nav py-6 px-5 pt-0">
-						<nav class=" gap-x-8">
-							<a class="block mt-5 text-base font-medium" href="/posts">Posts</a>
-							<a class="block mt-5 text-base font-medium" href="/tags">Tags</a>
-							<a class="block mt-5 text-base font-medium" href="/about">About</a>
-							<a class="block mt-5 text-base font-medium" href="/links">Useful Links</a>
-							<a class="block mt-5 text-base font-medium" href="/mvp">MVP</a>
-							<a class="block mt-5 text-base font-medium" href="/search">Search</a>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
 						</nav>
 					</div>
 				</div>
 			</div>
 		</div>
-		<header class="bg-gray-300 px-4 py-1 lg:px-6 text-center" style="">
+		<header class="headerContainer" style="">
 			<div class="site-heading">
-				<div class="url p-1 bg-gray-100 rounded-md">Page printed from:
+				<div class="url printBanner">Page printed from:
 					<tt>https://blog.jermdavis.dev/posts/2017-12</tt>
 				</div>
-				<h1 class="text-5xl mb-4 pb-1">
+				<h1>
 					Posts from December 2017
 				</h1>
 			</div>
 		</header>
-		<div class="py-2 lg:pl-3">
-			<div class="lg:flex">
-				<div class="lg:flex-auto mx-3 lg:min-w-0 ">
-					<div class="post-preview">
-						<h2 class="post-title">
-							<a href="/posts/2017/embedding-resources-in-powershell-scripts">Embedding resources in PowerShell&nbsp;scripts</a>
-						</h2>
-						<div class="post-subtitle">
-							<i></i>
-						</div>
-						<p class="post-meta">
-							Published on 24 December 2017  (Updated 08 January 2018)
-						</p>
-						<p>A challenge I've come across a number of times while working with PowerShell scripts for Sitecore is that scripts sometimes have other files they depend on. Making sure that your scripts and their dependencies stay in sync can be a challenge at times, especally when scripts get reused across an organisation. So what approaches can you use for this?
-						</p>
-						<div class="flex py-1 flex-wrap">
-							<span class="py-1 px-1 mr-1 mt-1 bg-gray-100 rounded-md">
-								<a href="/tags/powershell/" class="whitespace-nowrap">
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol ">
+					<div class="posts">
+						<div class="post-preview">
+							<h2 class="post-title">
+								<a href="/posts/2017/embedding-resources-in-powershell-scripts">Embedding resources in PowerShell&nbsp;scripts</a>
+							</h2>
+							<div class="post-subtitle">
+								<i></i>
+							</div>
+							<p class="post-meta">
+								Published on 24 December 2017  (Updated 08 January 2018)
+							</p>
+							<p>A challenge I've come across a number of times while working with PowerShell scripts for Sitecore is that scripts sometimes have other files they depend on. Making sure that your scripts and their dependencies stay in sync can be a challenge at times, especally when scripts get reused across an organisation. So what approaches can you use for this?
+							</p>
+							<div class="tagList">
+								<a href="/tags/powershell/">
 									PowerShell</a>
-							</span>
-							<span class="py-1 px-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~1 min. read</span>
+								<span>~1 min. read</span>
+							</div>
 						</div>
-					</div>
-					<div class="post-preview">
-						<h2 class="post-title">
-							<a href="/posts/2017/if-you-have-to-use-ninject-with-solr">If you have to use Ninject with&nbsp;Solr...</a>
-						</h2>
-						<div class="post-subtitle">
-							<i></i>
-						</div>
-						<p class="post-meta">
-							Published on 11 December 2017
-						</p>
-						<p>My first time having to configure Solr for Sitecore recently taught me a variety of new things. (I know – how have I managed to avoid it this long?) Most of the basics of the setup have been well documented elsewhere, so I won't repeat any of that. However setting up the site to use the Ninject DI container wasn't as smooth as the documentation suggested, so here are some notes on the issues I hit in case you find yourself stuck:
-						</p>
-						<div class="flex py-1 flex-wrap">
-							<span class="py-1 px-1 mr-1 mt-1 bg-gray-100 rounded-md">
-								<a href="/tags/configuration/" class="whitespace-nowrap">
+						<div class="post-preview">
+							<h2 class="post-title">
+								<a href="/posts/2017/if-you-have-to-use-ninject-with-solr">If you have to use Ninject with&nbsp;Solr...</a>
+							</h2>
+							<div class="post-subtitle">
+								<i></i>
+							</div>
+							<p class="post-meta">
+								Published on 11 December 2017
+							</p>
+							<p>My first time having to configure Solr for Sitecore recently taught me a variety of new things. (I know – how have I managed to avoid it this long?) Most of the basics of the setup have been well documented elsewhere, so I won't repeat any of that. However setting up the site to use the Ninject DI container wasn't as smooth as the documentation suggested, so here are some notes on the issues I hit in case you find yourself stuck:
+							</p>
+							<div class="tagList">
+								<a href="/tags/configuration/">
 									Configuration</a>
-							</span>
-							<span class="py-1 px-1 mr-1 mt-1 bg-gray-100 rounded-md">
-								<a href="/tags/sitecore/" class="whitespace-nowrap">
+								<a href="/tags/sitecore/">
 									Sitecore</a>
-							</span>
-							<span class="py-1 px-1 mr-1 mt-1 bg-gray-100 rounded-md">
-								<a href="/tags/platform-dxp/" class="whitespace-nowrap">
+								<a href="/tags/platform-dxp/">
 									Platform DXP</a>
-							</span>
-							<span class="py-1 px-1 mr-1 mt-1 bg-gray-100 rounded-md">
-								<a href="/tags/solr/" class="whitespace-nowrap">
+								<a href="/tags/solr/">
 									Solr</a>
-							</span>
-							<span class="py-1 px-1 mr-1 mt-1 bg-gray-100 rounded-md whitespace-nowrap">~3 min. read</span>
+								<span>~3 min. read</span>
+							</div>
 						</div>
 					</div>
 				</div>
-				<div class="sidebar lg:flex-none lg:w-64 m-0 mt-1 lg:mt-0 lg:p-1 lg:bg-gray-100">
-					<div class="md:flex-row md:flex lg:flex-col md:flex-wrap lg:order-1">
-						<section class="mvp md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-2 md:order-last">
-							<h3 class="bg-gray-300 p-2 whitespace-nowrap">Sitecore MVP 2015-2025</h3>
-							<div class="bg-white mb-2 p-2">
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2025</h3>
+							<div>
 								<a href="/mvp">
-									<img class="lg:mx-auto" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2025 MVP Badge">
 								</a>
 							</div>
 						</section>
-						<section class="md:basis-1/5 md:shrink-0 mb-2 lg:order-3">
-							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Tags</h3>
-							<div class="bg-white p-2 flex flex-wrap">
-								<a href="/tags/performance/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/performance/">
 									Performance
 								</a>
-								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/sitecore/">
 									Sitecore
 								</a>
-								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/docker/">
 									Docker
 								</a>
-								<a href="/tags/visual-studio/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/visual-studio/">
 									Visual Studio
 								</a>
-								<a href="/tags/platform-dxp/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/platform-dxp/">
 									Platform DXP
 								</a>
-								<a href="/tags/forms/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/forms/">
 									Forms
 								</a>
-								<a href="/tags/contentsearch/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/contentsearch/">
 									ContentSearch
 								</a>
-								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/c/">
 									C#
 								</a>
-								<a href="/tags/net/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/net/">
 									.Net
 								</a>
-								<a href="/tags/composable/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/composable/">
 									Composable
 								</a>
 							</div>
 						</section>
-						<section class="md:basis-1/5 md:shrink lg:order-3">
-							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Top Tags</h3>
-							<div class="bg-white p-2 flex flex-wrap">
-								<a href="/tags/sitecore/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
 									Sitecore (240)</a>
-								<a href="/tags/platform-dxp/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/platform-dxp/">
 									Platform DXP (214)</a>
-								<a href="/tags/c/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/c/">
 									C# (66)</a>
-								<a href="/tags/powershell/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/powershell/">
 									PowerShell (32)</a>
-								<a href="/tags/installation/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/installation/">
 									Installation (23)</a>
-								<a href="/tags/docker/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/docker/">
 									Docker (20)</a>
-								<a href="/tags/solr/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/solr/">
 									Solr (19)</a>
-								<a href="/tags/general/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/general/">
 									General (18)</a>
-								<a href="/tags/containers/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/containers/">
 									Containers (17)</a>
-								<a href="/tags/ui/" class="flex-initial text-lg p-1 mr-1 bg-gray-100 rounded-md mt-1">
+								<a href="/tags/ui/">
 									UI (15)</a>
 							</div>
-							<div class="bg-white mb-2 p-2">
-								<a class="text-lg" href="/tags" role="button">All Tags
-									<i class="fas fa-angle-double-right"></i>
-								</a>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
 							</div>
 						</section>
-						<section class="md:flex-2 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink lg:order-4">
-							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Recent Months</h3>
-							<div class="bg-white p-2">
-								<div>
-									<a class="text-lg" href="/posts/2025-02">2025 - February</a>
-								</div>
-								<div>
-									<a class="text-lg" href="/posts/2025-01">2025 - January</a>
-								</div>
-								<div>
-									<a class="text-lg" href="/posts/2024-12">2024 - December</a>
-								</div>
-								<div>
-									<a class="text-lg" href="/posts/2024-11">2024 - November</a>
-								</div>
-								<div>
-									<a class="text-lg" href="/posts/2024-10">2024 - October</a>
-								</div>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2025-02">2025 - February</a>
+								<a href="/posts/2025-01">2025 - January</a>
+								<a href="/posts/2024-12">2024 - December</a>
+								<a href="/posts/2024-11">2024 - November</a>
+								<a href="/posts/2024-10">2024 - October</a>
 							</div>
-							<div class="bg-white mb-2 p-2">
-								<a class="text-lg" href="/posts" role="button">All Months
-									<i class="fas fa-angle-double-right"></i>
-								</a>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
 							</div>
 						</section>
-						<section class="md:flex-1 md:border-l-2 md:border-gray-300 lg:border-l-0 md:shrink-0 lg:order-5">
-							<h3 class="bg-gray-300 p-2 md:border-r-2 md:border-white lg:border-r-0 whitespace-nowrap">Socials</h3>
-							<div class="bg-white mb-2 p-2">
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
 								<table>
 									<tbody>
 										<tr>
-											<td class="border-0">
+											<td class="icon">
 												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
 													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
 												</a>
 											</td>
-											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
-												<a class="text-lg ml-2" rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
 													Bluesky
 												</a>
 											</td>
 										</tr>
 										<tr>
-											<td class="border-0">
+											<td class="icon">
 												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
 													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
 												</a>
 											</td>
-											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
-												<a class="text-lg ml-2" rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
 													LinkedIn
 												</a>
 											</td>
 										</tr>
 										<tr>
-											<td class="border-0">
+											<td class="icon">
 												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
 													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
 												</a>
 											</td>
-											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
-												<a class="text-lg ml-2" rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
 													Sitecore Slack
 												</a>
 											</td>
 										</tr>
 										<tr>
-											<td class="border-0">
+											<td class="icon">
 												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
 													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
 												</a>
 											</td>
-											<td class="border-0 md:hidden sm:table-cell lg:table-cell">
-												<a class="text-lg ml-2" rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
 													Mastodon
 												</a>
 											</td>
@@ -332,36 +323,38 @@
 				</div>
 			</div>
 		</div>
-		<footer class="lg:flex order-1 bg-gray-100 px-4 lg:px-6 py-4">
-			<div class="flex-1 lg:flex-1 text-center lg:text-left">
+		<footer class="footerContainer">
+			<div class="copyright">
 				<div>©
-					<a target="_blank" class="font-medium" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
 					2014-2025</div>
 			</div>
-			<div class="lg:flex-1 lg:order-3 text-center lg:text-right">
-				<a class="font-medium" href="/tools">Published using Statiq</a>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
 				<br>
 			</div>
-			<ul class="list-none lg:flex-1 lg:order-2 p-0 text-center lg:align-middle" style="margin:0px !important">
-				<li class="inline-block">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
 					</svg>
 				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium" target="_blank" href="/feed.rss">RSS</a>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
 				</li>
-				<li class="inline-block ml-4">
-					<a class="font-medium" target="_blank" href="/feed.atom">Atom</a>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
 				</li>
 			</ul>
 		</footer>
-		<div class="min-h-screen bg-gray-300 py-6 flex flex-col justify-center sm:py-12" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
-			<div class="border-2 border-gray-600 bg-gray-100 max-w-screen-lg mx-auto fixed bg-white inset-x-5 p-5 bottom-10 rounded-lg drop-shadow-2xl flex gap-4 flex-wrap md:flex-nowrap text-center md:text-left items-center justify-center md:justify-between">
-				<div class="w-full text-lg">
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
 					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
 				</div>
-				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="bg-gray-400 px-5 py-2 text-white rounded-md hover:bg-gray-600 focus:outline-none" aria-label="Dismiss">Understood</button>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
 			</div>
 		</div>
 		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
