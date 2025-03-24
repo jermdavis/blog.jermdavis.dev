@@ -53,5 +53,3 @@ function IsDarkMode() {
     }
     return false;
 }
-
-//RefreshTheme();

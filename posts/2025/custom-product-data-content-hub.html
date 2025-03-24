@@ -1,0 +1,573 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2025/custom-product-data-content-hub">
+		<meta name="description" content="An overview of customising the schema for Products in Sitecore's Content Hub PCM">
+		<meta property="og:description" content="An overview of customising the schema for Products in Sitecore's Content Hub PCM">
+		<meta name="keywords" content="Content Hub, Sitecore, Commerce">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Customising product data in Content Hub</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Customising product data in Content Hub [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2025-03-24T00:00:00+0000">
+		<meta property="article:published_time" content="2025-03-24T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/custom-product-data-content-hub-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Customising product data in Content Hub' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Customising product data in Content Hub",
+        "url": "https://blog.jermdavis.dev/posts/2025/custom-product-data-content-hub",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/custom-product-data-content-hub-social.jpg",
+                "caption": "Logo image showing post title 'Customising product data in Content Hub' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2025-03-24T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2025/custom-product-data-content-hub">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2025/custom-product-data-content-hub</tt>
+				</div>
+				<h1>
+					Customising product data in Content Hub
+				</h1>
+				<h2>Chances are you need to store some non-standard stuff...</h2>
+				<div class="meta">Published 24 March 2025</div>
+				<div class="tagList">
+					<a href="/tags/content-hub/">
+						Content Hub</a>
+					<a href="/tags/sitecore/">
+						Sitecore</a>
+					<a href="/tags/commerce/">
+						Commerce</a>
+					<span>~6 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<p>Content Hub is a product I don't get to use too often, so I find myself digging about a bit to remember the details of some customisation and setup. So having had to do some investigations into how to customise the Product Content Management features recently I figured both myself and search engines might benefit from some notes on the subject for the future. And maybe you will too...
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">The scenario
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Say you want to manage product data in Content Hub using its
+						<a href="https://doc.sitecore.com/ch/en/users/34/content-hub/pcm.html" target="_blank" rel="noopener">PCM</a>
+						feature. You want to customise the system to store some extra data relevant to your business, and you need the UI to display those custom fields too. (Later you'll likely need to be able to query this data via GraphQL - buy we'll get to that in a future post) So what are the core tasks required to achieve the custom schema?</p>
+					<h2 x-data="" class="anchor">The underlying data
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>All the data you manage in Content Hub derives from the underlying
+						<code>Entity</code>
+						data type - which is basically the equivalent of
+						<code>Item</code>
+						for this bit of software. Product data uses the
+						<code>M.PCM.Product</code>
+						entity. You can manage this by clicking the "cog" item from the global nav bar, and picking "Schema" from the list of areas to manage:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-SchemaIcon.png">
+							<img alt="Content Hub's 'Manage config' page showing many tiles for different settings areas, as reached from the global nav cog icon" src="/img/2025/03-SchemaIcon.png">
+						</a>
+					</p>
+					<p>From here you can browse the list of schemas, or use the search box to find "PCM" and click the title of the correct one:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-PickTheSchema.png">
+							<img alt="The schema config page, filtered to show 'pcm' schema only" src="/img/2025/03-PickTheSchema.png">
+						</a>
+					</p>
+					<p>The default product schema includes names, SKUs ("Product Number" in this terminology) descriptions and images. The images are stored as a relation to zero or more
+						<code>Asset</code>
+						entries - Assets being the data type for Content Hub's DAM images. By default they don't include pricing here - I think on the basis that you probably have some sort of ERP or similar system that manages that data separately, with Content Hub dealing with enriching that raw data for marketing purposes. (But that is something you can add if your scenario needs it)</p>
+					<p>Again, a bit like Data Templates in Platform DXP or XM Cloud, the schema is split into groups and fields. Out of the box there are a load of groups which include the basic
+						<code>Entity</code>
+						data (like review states, and system fields) and the PCM-specific data like SKUs and descriptions. If you have data you want to add then you'll need to do some schema planning to decide what fields and what groupings to use for your scenario. But for the purposes of an example lets add a new group and two new fields: A max-discount-percentage and a URL slug.</p>
+					<p>Clicking the "New Group" button opens the dialog to configure a new field grouping:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-NewGroup.png">
+							<img alt="The dialog for adding a new group to the Product schema" src="/img/2025/03-NewGroup.png">
+						</a>
+					</p>
+					<p>The
+						<code>Name</code>
+						field here is a programmatic identifier, so can't have whitespace or similar. The Label field provides the text to show in as the field's title in the UI, and can be translated for multiple languages if required. The most useful other feature here is the "Conditional" tab. This lets you control the visibility of the group based on other system data. Say you have a group which is only valid for Food products - you can make that group visible only when the product's type is in the "food" section of your taxonomy, for example.  And once the new group is created it can be dragged around in the list of groups to set its order.</p>
+					<p>With a group selected the options for modifying it are contained in the right hand white-background region named for that group:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-ManageGroup.png">
+							<img alt="Once a group has been created it appears in the group list, and can be selected to add fields to it" src="/img/2025/03-ManageGroup.png">
+						</a>
+					</p>
+					<p>Adding a new field to the group is displayed as a button, but other options like editing the values from the "create" dialog and deleting a group are under the ellipsis (three dots) dropdown menu inside this region. Don't get confused with the ellipsis above that's outside the group's white region though - that manages the overall entity.</p>
+					<p>Clicking the "New Member" button prompts you to pick the type of field you're adding. There are two options here: "Properties" - which are basic fields you type in. And "Taxonomy" which allows for picking values from curated lists. That's a bit like the choice between a simple field type like "Single line text" or "Checkbox" in the Platform DXP, vs a reference field like "Multilist" or "DropLink".</p>
+					<p>For the example "URL slug" field a "Property" is required. That will then get you to pick the data type for the field (string is appropriate here) and then fill in the name / label etc data. This dialog also includes options for "make this field conditional" as the group had, but also allows you to set validation rules as well. Fields also have a set of options you can pick from for determining how the field will be handled elsewhere in the system:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-FieldSwitches.png">
+							<img alt="Flag properties for a new field - showing the set of things which can be enabled" src="/img/2025/03-FieldSwitches.png">
+						</a>
+					</p>
+					<p>In this case "unique" is appropriate, as we don't want two products to have the same slug, and "content" enables this content to be included in Content Hub's internal search.</p>
+					<p>For the purposes of a more-fun example, lets make the discount field a taxonomy type. That requires two steps: Firstly creating the taxonomy data structure it will refer to and then secondly setting up the field itself.</p>
+					<p>Taxonomies are managed via the settings cog and the "Taxonomy" tile, where there is a "New Taxonomy" button.</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-AddTaxonomy.png">
+							<img alt="The dialog for adding a new taxonomy definition - setting the basic fields" src="/img/2025/03-AddTaxonomy.png">
+						</a>
+					</p>
+					<p>Once that's created you can add a set of values with the "+" icon:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-TaxonomyName.png">
+							<img alt="Adding values to the taxonomy is achieved by clicking the plus icon" src="/img/2025/03-TaxonomyName.png">
+						</a>
+					</p>
+					<p>Note that while there is a field for "identifier" there, you want to fill in the "Name" field with the programmatic name and let the system fill in the identifier with the full value. You may also want to sort the created taxonomy entries by dragging them in the left column once they're saved.</p>
+					<p>With that created you can add a Taxonomy-type field and give its name. You have to select your taxonomy in the "Associated Definition" field, and specify the cardinality here too. (You field can refer to multiple values from the taxonomy if you wish)</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-TaxonomyCardinality.png">
+							<img alt="The dialog showing adding a new taxonomy-based field to the schema of a product - choosing both which taxonomy to apply and its cardinality" src="/img/2025/03-TaxonomyCardinality.png">
+						</a>
+					</p>
+					<p>Once you've made your group and field changes you need to remember to click the "Apply Changes" button on your entity to save all this.</p>
+					<h2 x-data="" class="anchor">The UI
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Next up, you're going to want users to be able to see your fields and fill them in. So you need to customise the page config for the Product entity. This is a bit like adjusting the Presentation Details in the Platform DXP. This is managed via the "Pages" tile from the Settings cog:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-FindingProductDetailsPage.png">
+							<img alt="Finding the product details page in the UI config, and selecting it to cusomise" src="/img/2025/03-FindingProductDetailsPage.png">
+						</a>
+					</p>
+					<p>There are a lot of Pages in the system, so searching for "Product" is the easiest way to find and select the "Product Details" page - which is what the system calls the page where you manage the content of a product. You can also edit the "Product Creation" page if you want your extra fields to show up on the initial creation pop-over dialog.</p>
+					<p>The right-hand column here shows the structure of the UI displayed. It can be a bit cryptic, but each box represents a control and the regions represent something akin to the placeholders in Presentation Details. If you compare the published page's components to the boxes on this diagram you can usually work out the mapping from UI to component with a bit of thought.</p>
+					<p>In this case we're interested in the tab control that includes the product details, assets and comments so we can add the new group of fields into details:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-ProductPageUI.png">
+							<img alt="The basics of the Product Detail view - showing a group of fields, and the overall layout of the page" src="/img/2025/03-ProductPageUI.png">
+						</a>
+					</p>
+					<p>When you look at the Page information you'll see a tab control in "Column 2" (which makes sense), but it only shows two things which might be tabs and none of them appear to be the right one:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-TwoOfThreeTabs.png">
+							<img alt="The details of the 'column 2' section of the UI - showing only two controls confusingly" src="/img/2025/03-TwoOfThreeTabs.png">
+						</a>
+					</p>
+					<p>This confused me for a bit - but the answer is that under the "Tabs" control there are "cog and person" icons. These are a switch between showing the "default" options (cog) and allowing them to be customised (person). Clicking the person will change the tab control from greyed to colourful, and allow you to click the tab control title itself to get at its settings:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-EnableTabOptions.png">
+							<img alt="Clicking the 'person' icon to allow access to the details of the correct controls" src="/img/2025/03-EnableTabOptions.png">
+						</a>
+					</p>
+					<p>The other two controls after the "Tabs" one that you've just enabled aren't the tabs under the tab control - they're other controls on the main details page. Hence the names not matching up...</p>
+					<p>But now when you click the tab control to customise it, you'll see the correct three tabs in the left column of the new display:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-TabDetails.png">
+							<img alt="The details of the tab control, showing the tabs in the left column and their details in the right" src="/img/2025/03-TabDetails.png">
+						</a>
+					</p>
+					<p>And you can click the "Entity Details" control title from the "Details" tab page.</p>
+					<p>That gets you the page which shows all the schema details, and lets you enable your custom group and select it. You'll probably want to drag it up from the bottom of the list into the right order as well. Initially your group in the left column will have a grey switch showing it's hidden. Click that to turn it green and all the options will appear in the right column, and enable your group to be visible on the product details page:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-EnableCustomSchema.png">
+							<img alt="Enabling your custom group to be shown in the central tab column" src="/img/2025/03-EnableCustomSchema.png">
+						</a>
+					</p>
+					<p>Here you can do stuff like set a background for your field group, and control exactly which fields from the group are visible. Make sure all your fields are enabled as appropriate, and set to "editable":</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-MakeFieldsEdtitable.png">
+							<img alt="Ensuring your custom fields are visible and editable in their properties for the UI" src="/img/2025/03-MakeFieldsEdtitable.png">
+						</a>
+					</p>
+					<p>Then you can click "Save and close" at the top of this page, and your fields should now be visible in the product editing UI:</p>
+					<p>
+						<a target="_blank" href="/img/2025/03-FieldsNowVisible.png">
+							<img alt="The custom fields are now visible in their own section of the details page for a product" src="/img/2025/03-FieldsNowVisible.png">
+						</a>
+					</p>
+					<h2 x-data="" class="anchor">Conclusions
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>So now we can configure whatever schema we need to support products, and we can get to editing data.</p>
+					<p>But what about rendering these products in another system, along with their images? Well that will be in part two's discussion of the related bits of GraphQL API...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Customising product data in Content Hub%20https://blog.jermdavis.dev/posts/2025/custom-product-data-content-hub">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https://blog.jermdavis.dev/posts/2025/custom-product-data-content-hub">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Customising product data in Content Hub&amp;url=https://blog.jermdavis.dev/posts/2025/custom-product-data-content-hub">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="mailto:&amp;body=Customising product data in Content Hub%20https://blog.jermdavis.dev/posts/2025/custom-product-data-content-hub">On Email</a>
+						</li>
+						<li></li>
+					</ul>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The scenario
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">The underlying data
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">The UI
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">Conclusions
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2025</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2025 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/content-hub/">
+									Content Hub
+								</a>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/commerce/">
+									Commerce
+								</a>
+								<a href="/tags/performance/">
+									Performance
+								</a>
+								<a href="/tags/visual-studio/">
+									Visual Studio
+								</a>
+								<a href="/tags/caching/">
+									Caching
+								</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP
+								</a>
+								<a href="/tags/docker/">
+									Docker
+								</a>
+								<a href="/tags/forms/">
+									Forms
+								</a>
+								<a href="/tags/contentsearch/">
+									ContentSearch
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (242)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (215)</a>
+								<a href="/tags/c/">
+									C# (66)</a>
+								<a href="/tags/powershell/">
+									PowerShell (32)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/general/">
+									General (18)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+								<a href="/tags/visual-studio/">
+									Visual Studio (15)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2025-03">2025 - March</a>
+								<a href="/posts/2025-02">2025 - February</a>
+								<a href="/posts/2025-01">2025 - January</a>
+								<a href="/posts/2024-12">2024 - December</a>
+								<a href="/posts/2024-11">2024 - November</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2025</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
