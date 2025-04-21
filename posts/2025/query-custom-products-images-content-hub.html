@@ -1,0 +1,759 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2025/query-custom-products-images-content-hub">
+		<meta name="description" content="Querying custom Sitecore Content Hub product data and images for delivery">
+		<meta property="og:description" content="Querying custom Sitecore Content Hub product data and images for delivery">
+		<meta name="keywords" content="Content Hub, Sitecore, GraphQL">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Querying product data and images in Content Hub</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Querying product data and images in Content Hub [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2025-04-20T00:00:00+0000">
+		<meta property="article:published_time" content="2025-04-20T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/query-custom-products-images-content-hub-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Querying product data and images in Content Hub' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Querying product data and images in Content Hub",
+        "url": "https://blog.jermdavis.dev/posts/2025/query-custom-products-images-content-hub",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/query-custom-products-images-content-hub-social.jpg",
+                "caption": "Logo image showing post title 'Querying product data and images in Content Hub' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2025-04-20T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2025/query-custom-products-images-content-hub">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2025/query-custom-products-images-content-hub</tt>
+				</div>
+				<h1>
+					Querying product data and images in Content Hub
+				</h1>
+				<h2>Last time we put custom products in - now lets get them out for delivery</h2>
+				<div class="meta">Published 20 April 2025</div>
+				<div class="tagList">
+					<a href="/tags/content-hub/">
+						Content Hub</a>
+					<a href="/tags/sitecore/">
+						Sitecore</a>
+					<a href="/tags/graphql/">
+						GraphQL</a>
+					<span>~8 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<blockquote class="series">
+						<div>This is post 2 of 2 in a series titled
+							<i>Some notes on Content Hub Product Content Management</i>
+						</div>
+						<ul>
+							<li>
+								<a href="/posts/2025/custom-product-data-content-hub">Customising product data in Content Hub</a>
+							</li>
+							<li>
+								<b>Querying product data and images in Content Hub</b>
+							</li>
+						</ul>
+					</blockquote>
+					<p>In a previous post I looked at how you can customise schema for Products in the Product Content Management feature of Content Hub. But getting data in is only half the story - how can we go about getting it back out for use elsewhere in our tech ecosystem? Well the answer is a fun combination of GraphQL and how Content Hub can serve images. Read on for my notes on one approach on configuring all of this: 
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">Getting our data back at scale?
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Now Content Hub's REST API can absolutely return this data, but it's designed for flexibility and features rather than performance. Hence the need to look at GraphQL here. And these APIs are part of the "Delivery Platform" feature in the software.</p>
+					<p>(The rest of this post assumes you have enabled the Delivery Platform feature for Content Hub)</p>
+					<h2 x-data="" class="anchor">Ensure your changes are available to GQL
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>If you're going to access your custom data via the Content Hub REST API then your changes are all available by default.  But if you're going to want to see these fields via GraphQL you need to ensure you've published these schema changes to that part of the system too. In the last post in this series we customised the Product schema - so those changes need enabling for this API.</p>
+					<p>First up, you need to ensure your entity is enabled for publishing to the GraphQL Delivery Platform. At the top of the entity page there's a "Delivery Platform settings" option:</p>
+					<p>
+						<a target="_blank" href="/img/2025/04-DeliveryPlatformButton.png">
+							<img alt="The schema config page, highlighting the button for configuring the delivery platform settings" src="/img/2025/04-DeliveryPlatformButton.png">
+						</a>
+					</p>
+					<p>You need to ensure the "Enable in delivery platform" setting is green here. There are more advanced options for scheduled delivery too, but it won't work at all without this flag.</p>
+					<p>Secondly if you've made a reference to a taxonomy you need to ensure that is published to the Delivery Platform too. From the settings cog pick the "Delivery Platform" tile and search for your taxonomy. Ensure you've clicked "Save and Publish" to enable this data in GraphQL:</p>
+					<p>
+						<a target="_blank" href="/img/2025/04-PublishTaxonomy.png">
+							<img alt="Finding your custom taxonomy data in the Delivery Platform settings and ensuring it is published" src="/img/2025/04-PublishTaxonomy.png">
+						</a>
+					</p>
+					<p>Finally, once the taxonomy is published you may need to ensure your new taxonomy field is explicitly enabled. If your field has a "grey cloud with a line through it" icon in the entity schema then you need to click that icon to toggle it to the enabled "blue cloud with a cog in it" state and apply these changes:</p>
+					<p>
+						<a target="_blank" href="/img/2025/04-EnableFieldInGql.png">
+							<img alt="The schema config dialog showing the field using the taxonomy being enabled for publishing" src="/img/2025/04-EnableFieldInGql.png">
+						</a>
+					</p>
+					<p>And the grey cloud should turn blue to indicate success.</p>
+					<h2 x-data="" class="anchor">Tokens!
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Next, you're going to need API tokens to let your GQL client authenticate with the APIs. These are managed via the settings cog and "API Keys". From here you can create keys for "Delivery" (live) or "Preview" (still being edited - un-cached) data. You'll need at least a preview key, and you have to record it yourself as once created you cannot view keys via this UI. I'll stick to talking about Preview here, but all of this applies to the live API similarly.</p>
+					<p>I note the examples in the docs use quite short keys of 10 characters or so, but the real ones look something like
+						<code>si9OdTVJZlpwaFRhQU9ORm9nTlVjTkxBaWhpdjBTaUJCMHkzZ2lD9HgvRT18eXBvLWV4cHQ0ZDRjZTYxZb==</code>
+						instead.</p>
+					<p>Next you'll need a GraphQL tool. There is an integrated "playground" UI included at
+						<code>https://your-domain.sitecoresandbox.cloud/api/graphql/preview/ide/</code>
+						for the preview API (and live too, without the
+						<code>preview/</code>
+						bit of the URL) but I found the UI a bit buggy here - it failed to close the pop-up auto-complete windows properly which made the screen fairly unusable after a while. Not sure why that was, but I went back to using Postman because of this.</p>
+					<p>Whichever tool you're using you'll need to target the correct query API, which is
+						<code>https://your-domain.sitecoresandbox.cloud/api/graphql/preview/v1</code>
+						for preview. And you'll need to supply your key. Whichever tool you're using, you're passing an HTTP header which is named
+						<code>X-GQL-Token</code>. For the built-in playground you need to find the "HTTP HEADERS" tab at the bottom left of the window and paste in the header data as JSON:</p>
+					<pre class="code" data-enlighter-language="json" style="width:100%; overflow:scroll;">{
+  "X-GQL-Token":" -- your value here --"
+}
+
+					</pre>
+					<p>If you're using a more structured tool like Postman then you need to set Authorisation Type to "API Key" and then add the key as above to the headers.</p>
+					<p>And then you can run a query. You're querying the
+						<code>allM_PCM_Product</code>
+						set of entities, and can fetch back fields as required:</p>
+					<pre class="code" data-enlighter-language="graphql" style="width:100%; overflow:scroll;">{
+    allM_PCM_Product {
+        results {
+            id
+            productName
+            productLabel
+            maxDiscount { id }
+            urlSlug
+            productShortDescription
+        }
+    }
+}
+
+
+					</pre>
+					<p>Note that relationship-type taxonomy fields need you to specify you want the related ID (or other fields) returned in your query, but simple fields only require you to specify their name. For example, you'd get a query error if you specified only
+						<code>maxDiscount</code>
+						here rather than
+						<code>maxDiscount { id }</code>.</p>
+					<p>But once that's right you'll get back data:</p>
+					<pre class="code" data-enlighter-language="json" style="width:100%; overflow:scroll;">{
+    "data": {
+        "allM_PCM_Product": {
+            "results": [
+                {
+                    "id": "5Iq0CYSFQNy12sDHkJRnhg",
+                    "productName": "D47087",
+                    "productLabel": {
+                        "en-US": "Timber Balance Bench with Hooks on One End - 11ft"
+                    },
+                    "maxDiscount": {
+                        "id": "Product.DiscountSize.25"
+                    },
+                    "urlSlug": "/timber-balance-bench",
+                    "productShortDescription": {
+                        "en-US": "The Niels Larsen traditional balance bench is crafted in the UK using only timber from sustainable sources that is all FSC or PEFC certified. "
+                    }
+                }
+
+                ...  snip ...
+            ]
+        }
+    }
+}
+
+					</pre>
+					<h2 x-data="" class="anchor">Getting images via public URLs
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>By default the renditions generated by Content Hub are authenticated resources. Your users can download them, but they're not optimised for serving to the internet generally. Public Links are what Content Hub calls the process of pushing and image to its CDN and giving you a link that's safe for internet use.</p>
+					<p>You can manually create Public Links from the Asset pages, but for managing product images that's probably not the right approach. Ideally this would be automated so that whenever an editor adds images for a Product these become public so that GraphQL queries from your web front-end can get both the right copy and the correct image URL.</p>
+					<p>And automating these is achievable - though it's a bit more technical than the customisations above. Content Hub has an events framework you can access via the "Triggers" tile under the system settings cog. From here you can bind bits of code to events raised while users work.</p>
+					<p>If you click "New trigger" from the Triggers page you can specify the details of an event you want handled. There are three pages here to set up. The first specifies some base details, where the important parts are the "Objective" and "Execution type" fields:</p>
+					<p>
+						<a target="_blank" href="/img/2025/04-NewTrigger.png">
+							<img alt="The 'Create Public Links' page, with the 'Objective' and 'Execution type' fields highlighted" src="/img/2025/04-NewTrigger.png">
+						</a>
+					</p>
+					<p>Objectives are the events that cause a trigger to run. You can create one or more of Creation, Modification or Deletion here - and creation is appropriate to this scenario. Execution type controls whether the event is handled synchronously or asynchronously. For anything involving image processing and pushing data to a 3rd party you should go async here, so "In background" is the right answer.</p>
+					<p>For the conditions tab you specify rules that control what subset of the basic event will cause this trigger to be executed. You have to specify something here - and "the asset doesn't already have any public links" is a likely sounding rule. You click "Add definition" to specify the sort of entity your rule operates on, and then give one or more conditions for properties of that entity. So in this case:</p>
+					<p>
+						<a target="_blank" href="/img/2025/04-Condtions.png">
+							<img alt="Adding a rule - where the public link currently does not exist" src="/img/2025/04-Condtions.png">
+						</a>
+					</p>
+					<p>On
+						<code>M.Asset</code>
+						the rule checks if the
+						<code>AssetToPublicLink</code>
+						relationship has any relations defined.</p>
+					<p>Finally the "Actions" tab says what should happen if this rule triggers. You're basically selecting C# scripts here, and helpfully Sitecore provide an OTB one which is pretty close to what's needed here. The "CMP - Create public links for linked assets" action will work for a first pass:</p>
+					<p>
+						<a target="_blank" href="/img/2025/04-OTBActionScript.png">
+							<img alt="The UI fr adding actions, showing one action for 'create public links' added" src="/img/2025/04-OTBActionScript.png">
+						</a>
+					</p>
+					<p>However in real code you'd probably add a custom Action script with some of this code tweaked...</p>
+					<p>With those changes saved, if you create a product and upload a new image for it, drilling down to the image's Asset page you'll now see some options populated in the Public Links region of the page:</p>
+					<p>
+						<a target="_blank" href="/img/2025/04-NewPublicLinks.png">
+							<img alt="The Public Links section of the Asset Details page, showing two newly generated public links - 'Preview' and 'Original'" src="/img/2025/04-NewPublicLinks.png">
+						</a>
+					</p>
+					<p>But what did it create links to here? Well if you go to via the system cog to the "Scripts" tile you can open the code provided, which looks like:</p>
+					<pre class="code" data-enlighter-highlight="23,26" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">using System.Linq;
+using System.Threading.Tasks;
+
+var assetId = Context.TargetId;
+
+// Check if public links don't exist yet
+var query = Query.CreateQuery(entities =&gt; from e in entities
+                                            where e.DefinitionName == "M.PublicLink"
+                                            &amp;&amp; e.Parent("AssetToPublicLink") == assetId.Value
+                                            &amp;&amp; (e.Property("Resource") == "preview" || e.Property("Resource") == "downloadOriginal")
+                                            &amp;&amp; e.Property("IsDisabled") == false
+                                            select e);
+query.Take = 1;
+
+var result = await MClient.Querying.QueryIdsAsync(query);
+if (result.TotalNumberOfResults &gt; 0)
+{
+    MClient.Logger.Info("Public links already exist for asset with id '" + assetId + "'");
+    return;
+}
+
+// Create public links
+await CreateForRendition("preview", assetId.Value);
+MClient.Logger.Info("Created public link 'preview' for asset with id '" + assetId + "'");
+
+await CreateForRendition("downloadOriginal", assetId.Value);
+MClient.Logger.Info("Created public link 'downloadOriginal' for asset with id '" + assetId + "'");
+
+... snip ...
+
+					</pre>
+					<p>The two highlighted lines here are doing the work - calling
+						<code>CreateForRendition</code>
+						on the "preview" and "downloadOriginal" renditions of our asset. I've left out that function itself, but it's just a wrapper around the more verbose API calls to achieve "make a link to a specific rendition of this asset".</p>
+					<p>So if you want to customise what rendition(s) you get public links for automatically, then you need to do three things:</p>
+					<ol>
+						<li>Ensure the right rendition is configured for creation</li>
+						<li>Tweak the code for this Action's Script so that it creates a link for that rendition</li>
+						<li>Make sure all those changes are built / published for both the script and renditions settings</li>
+					</ol>
+					<p>So you might set up renditions for:</p>
+					<ul>
+						<li>
+							<code>productThumbnail</code>
+							- at 200px x 200px</li>
+						<li>
+							<code>productImage</code>
+							at 1024px x 1024px both rendered to
+							<code>webp</code>
+							format. That's all set up under the "Media Processing" config for image-type content:</li>
+					</ul>
+					<p>
+						<a target="_blank" href="/img/2025/04-CustomRenditions.png">
+							<img alt="The Media Processing config page, showing the renditions for the thumbnail and full size public links created earlier" src="/img/2025/04-CustomRenditions.png">
+						</a>
+					</p>
+					<p>The config here can be a bit tricky to get right. For each of those renditions you need to add a "Convert Image" node to the graph. The properties for that node have settings for the core parameters and the output. The Parameters tab has a load of settings for the transform you want to make to the base image:</p>
+					<p>
+						<a target="_blank" href="/img/2025/04-RenderingProperties.png">
+							<img alt="The properties dialog for the Convert Image node, showing assorted fields" src="/img/2025/04-RenderingProperties.png">
+						</a>
+					</p>
+					<p>Name is what's displayed on the node in the diagram. The content type and target extensions define what you want to render the image out as, and the Height/Width / Colour Profile and Density set the size and structure you want. Resize option lets you decide how and when resize is performed. And Content Disposition lets you specify that the rendition should be attached to the asset.</p>
+					<p>The Outputs tab sets some further details about saving the data. You need to enable the "Store output" option.</p>
+					<p>
+						<a target="_blank" href="/img/2025/04-RenderingOutputs.png">
+							<img alt="The output tab for the Convert Image node, showing it settings" src="/img/2025/04-RenderingOutputs.png">
+						</a>
+					</p>
+					<p>The Output name is what we'll reference this from the script above which creates the Public Links. And the oddly named "Property" field specifies which segment of the Renditions this is saved too. But the key point seems to be that you have to add a Rendition Link here. And that has a further set of fields:</p>
+					<p>
+						<a target="_blank" href="/img/2025/04-RenditionLink.png">
+							<img alt="The properties dialog a Rendition Link, showing its fields" src="/img/2025/04-RenditionLink.png">
+						</a>
+					</p>
+					<p>It doesn't seem to make a lot of difference what you set here - just that this has been set.</p>
+					<p>Once all that's been saved, you can (copy and) update the script to reference these renditions.</p>
+					<p>And now when you upload a new image it will get correctly sized public links automatically as the ingestion processing completes.</p>
+					<h2 x-data="" class="anchor">Back to queries
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading5" name="heading5">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>With that data in place we can now add a bit to the GraphQL to return these public link URLs too:</p>
+					<pre class="code" data-enlighter-highlight="10-15" data-enlighter-language="graphql" style="width:100%; overflow:scroll;">{
+    allM_PCM_Product {
+        results {
+            id
+            productName
+            productLabel
+            maxDiscount { id }
+            urlSlug
+            productShortDescription
+            pCMProductToAsset {
+                results {
+                    fileName
+                    urls
+                }
+            }
+        }
+    }
+}
+
+					</pre>
+					<p>The
+						<code>productShortDescription</code>
+						relation connects this product to its assets, so fetching the
+						<code>results</code>
+						for that allows us to get the filename and public urls for each asset. And with that in place, you now get the URLs in the response data:</p>
+					<pre class="code" data-enlighter-highlight="18-38" data-enlighter-language="json" style="width:100%; overflow:scroll;">{
+    "data": {
+        "allM_PCM_Product": {
+            "results": [
+                {
+                    "id": "07r4dKcNQNeE1ev0hWx5oA",
+                    "productName": "737283",
+                    "productLabel": {
+                        "en-US": "Ready Mixed Paint 5L - Red"
+                    },
+                    "maxDiscount": {
+                        "id": "Product.DiscountSize.75"
+                    },
+                    "urlSlug": "/red-paint",
+                    "productShortDescription": {
+                        "en-US": null
+                    },
+                    "pCMProductToAsset": {
+                        "results": [
+                            {
+                                "fileName": "737283.jpg",
+                                "urls": {
+                                    "e9f1fab383dd4c2da40538f8288f564a": {
+                                        "url": "https://your-domain.sitecoresandbox.cloud/api/public/content/e9f1fab383dd4c2da40538f8288f564a?v=0e589b71",
+                                        "expiredOn": null,
+                                        "resource": "productThumbnail",
+                                        "metadata": null
+                                    },
+                                    "57f66d6fcdff4abca4b39263a232aa35": {
+                                        "url": "https://your-domain.sitecoresandbox.cloud/api/public/content/57f66d6fcdff4abca4b39263a232aa35?v=21037169",
+                                        "expiredOn": null,
+                                        "resource": "productImage",
+                                        "metadata": null
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+
+                ... snip ...
+            ]
+        }
+    }
+}
+
+					</pre>
+					<p>So your front-end can now render any data you want about your products...</p>
+					<h2 x-data="" class="anchor">Conclusions
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading6" name="heading6">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>So it took quite a lot of writing, but the setup required to get custom product data for your website out of Content Hub isn't too complex.</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Querying product data and images in Content Hub%20https://blog.jermdavis.dev/posts/2025/query-custom-products-images-content-hub">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https://blog.jermdavis.dev/posts/2025/query-custom-products-images-content-hub">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Querying product data and images in Content Hub&amp;url=https://blog.jermdavis.dev/posts/2025/query-custom-products-images-content-hub">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="mailto:&amp;body=Querying product data and images in Content Hub%20https://blog.jermdavis.dev/posts/2025/query-custom-products-images-content-hub">On Email</a>
+						</li>
+						<li></li>
+					</ul>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">Getting our data back at scale?
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">Ensure your changes are available to GQL
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">Tokens!
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">Getting images via public URLs
+										</a>
+									</li>
+									<li>
+										<a href="#heading5">Back to queries
+										</a>
+									</li>
+									<li>
+										<a href="#heading6">Conclusions
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2025</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2025 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/content-hub/">
+									Content Hub
+								</a>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/graphql/">
+									GraphQL
+								</a>
+								<a href="/tags/sugcon/">
+									SUGCON
+								</a>
+								<a href="/tags/xm-cloud/">
+									XM Cloud
+								</a>
+								<a href="/tags/commerce/">
+									Commerce
+								</a>
+								<a href="/tags/performance/">
+									Performance
+								</a>
+								<a href="/tags/visual-studio/">
+									Visual Studio
+								</a>
+								<a href="/tags/caching/">
+									Caching
+								</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (244)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (215)</a>
+								<a href="/tags/c/">
+									C# (66)</a>
+								<a href="/tags/powershell/">
+									PowerShell (32)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/general/">
+									General (18)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+								<a href="/tags/visual-studio/">
+									Visual Studio (15)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2025-04">2025 - April</a>
+								<a href="/posts/2025-03">2025 - March</a>
+								<a href="/posts/2025-02">2025 - February</a>
+								<a href="/posts/2025-01">2025 - January</a>
+								<a href="/posts/2024-12">2024 - December</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2025</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
