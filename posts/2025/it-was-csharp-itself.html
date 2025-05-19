@@ -1,0 +1,629 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2025/it-was-csharp-itself">
+		<meta name="description" content="Finding and diagnosing a bug in the way the C# compiler handles some invalid syntax">
+		<meta property="og:description" content="Finding and diagnosing a bug in the way the C# compiler handles some invalid syntax">
+		<meta name="keywords" content="C#, .Net, Bug">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - For once, it is a bug in C#!</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="For once, it is a bug in C#! [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2025-05-19T00:00:00+0000">
+		<meta property="article:published_time" content="2025-05-19T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/it-was-csharp-itself-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'For once, it is a bug in C#!' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "For once, it is a bug in C#!",
+        "url": "https://blog.jermdavis.dev/posts/2025/it-was-csharp-itself",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/it-was-csharp-itself-social.jpg",
+                "caption": "Logo image showing post title 'For once, it is a bug in C#!' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2025-05-19T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2025/it-was-csharp-itself">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2025/it-was-csharp-itself</tt>
+				</div>
+				<h1>
+					For once, it is a bug in C#!
+				</h1>
+				<h2>99% of the time it's not - but that 1% when it is can be extra fun...</h2>
+				<div class="meta">Published 19 May 2025</div>
+				<div class="tagList">
+					<a href="/tags/c/">
+						C#</a>
+					<a href="/tags/net/">
+						.Net</a>
+					<a href="/tags/bug/">
+						Bug</a>
+					<span>~5 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<p>Having been in development for a long time I've come across a lot of headscratching odd behaviour in code. Those issus have lead to a fair few conversations where people have looked at the odd behaviour and asked "is it a compiler/runtime bug?". And in all these years it never has been that sort of bug. But for the first time I have recently found a situation where some odd behaviour is C#'s fault...</p>
+					<p>So here's some info about the issue I saw this time, and what Microsoft are fixing as a result:
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">Shooting myself in the foot
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>I was hacking about with some code that for a personal project recently. It was a .Net 8 console application, which loaded some config and did some processing. In my first pass through the code I'd made a config POCO which exposed settings as properties, like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ToolConfig
+{
+    // logic to load config from disk
+    public string DataSourceFile { get; set }
+}
+
+					</pre>
+					<p>But as I was working I realised this made the logic of the tool too closely coupled to the config. Adding new logic meant changing the config class to expose new settings. So I refactored this towards a more generic
+						<code>Dictionary</code>
+						based solution where this class doesn't need to know what config it stores:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class ToolConfig : Dictionary&lt;string,string&gt;
+{
+    // logic to load config from disk
+}
+
+					</pre>
+					<p>Nothing too dramatic...</p>
+					<p>But in the tool's code, I had originally written a constructor something like:</p>
+					<pre class="code" data-enlighter-theme="droide" data-enlighter-language="text" style="width:100%; overflow:scroll;">public class SourceDataModel
+{
+    private string _SourceFile;
+
+    public SourceDataModel(ToolConfig cfg)
+    {
+        _SourceFile = cfg.DataSourceFile ?? 
+            throw new InvalidDataException($"No value supplied for {nameof(cfg.DataSourceFile)}");
+    }
+}
+
+					</pre>
+					<p>So while I was refactoring, I changed this over to the new config approach and unthinkingly wrote something like:</p>
+					<pre class="code" data-enlighter-theme="droide" data-enlighter-highlight="9" data-enlighter-language="text" style="width:100%; overflow:scroll;">public class SourceDataModel
+{
+    public constr string SourceFileConfigKey = "DataSourceFile";
+    private string _SourceFile;
+
+    public SourceDataModel(ToolConfig cfg)
+    {
+        _SourceFile = cfg[SourceFileConfigKey] ?? 
+            throw new InvalidDataException($"No value supplied for {nameof(cfg[SourceFileConfigKey])}");
+    }
+}
+
+					</pre>
+					<p>And stuff started going wrong...</p>
+					<h2 x-data="" class="anchor">What's the problem?
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The initial problem was that as I typed that change I noticed this appear:</p>
+					<p>
+						<a target="_blank" href="/img/2025/05-AnalyzerErro.png">
+							<img class="" alt="The Visual Studio toolbar showing a warning about an internal error in the Diagnostic Analyzer" src="/img/2025/05-AnalyzerErro.png">
+						</a>
+					</p>
+					<p>For Google's benefit, the message there is "Feature 'Diagnostic analyzer runner' is currently unavailable due to an internal error."</p>
+					<p>I shrugged that off when I saw it, as I've seen issues like that happen on occasion before. An add-in crashes, or gets slow and Visual Studio complains. I dismissed the warning bar and carried on writing the refactoring.</p>
+					<p>But the next time I hit compile it seemed to take a surprisingly long time (for a fairly small project) and I got this in the output window:</p>
+					<pre class="code" data-enlighter-theme="droide" data-enlighter-highlight="4" data-enlighter-language="text" style="width:100%; overflow:scroll;">Build started at 10:53...
+1&gt;------ Build started: Project: BugTest, Configuration: Debug Any CPU ------
+1&gt;C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\Roslyn\Microsoft.CSharp.Core.targets(84,5): 
+     error MSB6006: "csc.exe" exited with code -2146232797.
+1&gt;Done building project "BugTest.csproj" -- FAILED.
+========== Build: 0 succeeded, 1 failed, 0 up-to-date, 0 skipped ==========
+========== Build completed at 10:54 and took 16.694 seconds ==========
+
+					</pre>
+					<p>That's not a syntax error - that's the C# compiler crashing. Bad times...</p>
+					<p>My first thought here was that something got corrupted and I needed to restart. So I closed Visual Studio, and reopened my solution. Same issue. So I rebooted my computer and reloaded again. But sill same issue. The yellow warning bar appeared after reloading, and I still could not compile.</p>
+					<p>Clearly something more significant was up.</p>
+					<h2 x-data="" class="anchor">The cause - and workaround
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>My first thought was that I'd had a VS update applied recently, so perhaps that was dodgy. So I tried a restore on my VS install. But other than taking an annoyingly long time, that didn't affect the issue at all.</p>
+					<p>So I did what I should probably have done initially: I clicked the "Show Stack Trace" link in the yellow warning banner. And that gave me a big old pile of crash:</p>
+					<pre class="code" data-enlighter-theme="droide" data-enlighter-language="text" style="width:100%; overflow:scroll;">StreamJsonRpc.RemoteInvocationException: Unexpected value 'Unknown' of type 'Microsoft.CodeAnalysis.CSharp.AccessorKind'
+   at StreamJsonRpc.JsonRpc.&lt;InvokeCoreAsync&gt;d__156`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.CodeAnalysis.Remote.BrokeredServiceConnection`1.&lt;TryInvokeAsync&gt;d__18`1.MoveNext()
+RPC server exception:
+System.InvalidOperationException: Unexpected value 'Unknown' of type 'Microsoft.CodeAnalysis.CSharp.AccessorKind'
+      at Microsoft.CodeAnalysis.CSharp.RefSafetyAnalysis.MethodInfo.Create(PropertySymbol property, AccessorKind accessorKind)
+      at Microsoft.CodeAnalysis.CSharp.RefSafetyAnalysis.VisitIndexerAccess(BoundIndexerAccess node)
+      at Microsoft.CodeAnalysis.CSharp.BoundTreeVisitor.VisitExpressionOrPatternWithStackGuard(Int32&amp; recursionDepth, BoundNode node)
+      at Microsoft.CodeAnalysis.CSharp.BoundTreeWalker.VisitNameOfOperator(BoundNameOfOperator node)
+      at Microsoft.CodeAnalysis.CSharp.BoundTreeVisitor.VisitExpressionOrPatternWithStackGuard(BoundNode node)
+      at Microsoft.CodeAnalysis.CSharp.BoundTreeVisitor.VisitExpressionOrPatternWithStackGuard(Int32&amp; recursionDepth, BoundNode node)
+      at Microsoft.CodeAnalysis.CSharp.BoundTreeWalker.VisitLocalDeclaration(BoundLocalDeclaration node)
+      at Microsoft.CodeAnalysis.CSharp.RefSafetyAnalysis.VisitLocalDeclaration(BoundLocalDeclaration node)
+      at Microsoft.CodeAnalysis.CSharp.BoundTreeWalker.VisitList[T](ImmutableArray`1 list)
+      at Microsoft.CodeAnalysis.CSharp.BoundTreeWalker.VisitBlock(BoundBlock node)
+      at Microsoft.CodeAnalysis.CSharp.RefSafetyAnalysis.VisitBlock(BoundBlock node)
+      at Microsoft.CodeAnalysis.CSharp.BoundTreeWalker.VisitNonConstructorMethodBody(BoundNonConstructorMethodBody node)
+      at Microsoft.CodeAnalysis.CSharp.RefSafetyAnalysis.Analyze(CSharpCompilation compilation, MethodSymbol symbol, BoundNode node, BindingDiagnosticBag diagnostics)
+      at Microsoft.CodeAnalysis.CSharp.MethodCompiler.BindMethodBody(MethodSymbol method, TypeCompilationState compilationState, BindingDiagnosticBag diagnostics, Boolean includeInitializersInBody, BoundNode initializersBody, Boolean reportNullableDiagnostics, ImportChain&amp; importChain, Boolean&amp; originalBodyNested, Boolean&amp; prependedDefaultValueTypeConstructorInitializer, InitialState&amp; forSemanticModel)
+      at Microsoft.CodeAnalysis.CSharp.MethodCompiler.CompileMethod(MethodSymbol methodSymbol, Int32 methodOrdinal, ProcessedFieldInitializers&amp; processedInitializers, SynthesizedSubmissionFields previousSubmissionFields, TypeCompilationState compilationState)
+      at Microsoft.CodeAnalysis.CSharp.MethodCompiler.CompileNamedType(NamedTypeSymbol containingType)
+      at Microsoft.CodeAnalysis.CSharp.MethodCompiler.&lt;&gt;c__DisplayClass25_0.&lt;CompileNamedTypeAsync&gt;b__0()
+      at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   --- End of stack trace from previous location ---
+      at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+      at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task&amp; currentTaskSlot, Thread threadPoolThread)
+   --- End of stack trace from previous location ---
+      at Microsoft.CodeAnalysis.CSharp.MethodCompiler.WaitForWorkers()
+      at Microsoft.CodeAnalysis.CSharp.MethodCompiler.CompileMethodBodies(CSharpCompilation compilation, PEModuleBuilder moduleBeingBuiltOpt, Boolean emittingPdb, Boolean hasDeclarationErrors, Boolean emitMethodBodies, BindingDiagnosticBag diagnostics, Predicate`1 filterOpt, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.CSharp.CSharpCompilation.&lt;GetDiagnosticsForMethodBodiesInTree&gt;g__compileMethodBodiesAndDocComments|238_0(SyntaxTree filterTree, Nullable`1 filterSpan, BindingDiagnosticBag bindingDiagnostics, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.CSharp.CSharpCompilation.GetDiagnosticsForMethodBodiesInTree(SyntaxTree tree, Nullable`1 span, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.CSharp.CSharpCompilation.GetDiagnosticsForSyntaxTree(CompilationStage stage, SyntaxTree syntaxTree, Nullable`1 filterSpanWithinTree, Boolean includeEarlierStages, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.CSharp.SyntaxTreeSemanticModel.GetDiagnostics(Nullable`1 span, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Diagnostics.CompilationWithAnalyzers.&lt;GetCompilationEventsForSingleFileAnalysis&gt;g__generateCompilationEvents|64_0(Compilation compilation, AnalysisScope analysisScope, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Diagnostics.CompilationWithAnalyzers.GetCompilationEventsForSingleFileAnalysis(Compilation compilation, AnalysisScope analysisScope, ImmutableArray`1 additionalFiles, Boolean hasAnyActionsRequiringCompilationEvents, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Diagnostics.CompilationWithAnalyzers.ComputeAnalyzerDiagnosticsAsync(AnalysisScope analysisScope, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Diagnostics.CompilationWithAnalyzers.GetAnalysisResultCoreAsync(SemanticModel model, Nullable`1 filterSpan, ImmutableArray`1 analyzers, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Diagnostics.CompilationWithAnalyzersPair.GetAnalysisResultAsync(SemanticModel model, Nullable`1 filterSpan, ImmutableArray`1 projectAnalyzers, ImmutableArray`1 hostAnalyzers, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Diagnostics.Extensions.GetAnalysisResultAsync(CompilationWithAnalyzersPair compilationWithAnalyzers, DocumentAnalysisScope documentAnalysisScope, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Diagnostics.Extensions.GetAnalysisResultAsync(CompilationWithAnalyzersPair compilationWithAnalyzers, DocumentAnalysisScope documentAnalysisScope, Project project, DiagnosticAnalyzerInfoCache analyzerInfoCache, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Remote.Diagnostics.DiagnosticComputer.AnalyzeAsync(CompilationWithAnalyzersPair compilationWithAnalyzers, BidirectionalMap`2 analyzerToIdMap, ImmutableArray`1 projectAnalyzers, ImmutableArray`1 hostAnalyzers, SkippedHostAnalyzersInfo skippedAnalyzersInfo, Boolean reportSuppressedDiagnostics, Boolean logPerformanceInfo, Boolean getTelemetryInfo, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Remote.Diagnostics.DiagnosticComputer.GetDiagnosticsAsync(ImmutableArray`1 projectAnalyzerIds, ImmutableArray`1 hostAnalyzerIds, Boolean reportSuppressedDiagnostics, Boolean logPerformanceInfo, Boolean getTelemetryInfo, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Remote.Diagnostics.DiagnosticComputer.GetNormalPriorityDiagnosticsAsync(ImmutableArray`1 projectAnalyzerIds, ImmutableArray`1 hostAnalyzerIds, Boolean reportSuppressedDiagnostics, Boolean logPerformanceInfo, Boolean getTelemetryInfo, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Remote.RemoteDiagnosticAnalyzerService.&lt;&gt;c__DisplayClass3_0.&lt;&lt;CalculateDiagnosticsAsync&gt;b__0&gt;d.MoveNext()
+   --- End of stack trace from previous location ---
+      at Microsoft.CodeAnalysis.Remote.RemoteWorkspace.&lt;&gt;c__DisplayClass7_0`1.&lt;&lt;RunWithSolutionAsync&gt;g__ProcessSolutionAsync|1&gt;d.MoveNext()
+   --- End of stack trace from previous location ---
+      at Microsoft.CodeAnalysis.Remote.RemoteWorkspace.RunWithSolutionAsync[T](AssetProvider assetProvider, Checksum solutionChecksum, Boolean updatePrimaryBranch, Func`2 implementation, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Remote.RemoteWorkspace.RunWithSolutionAsync[T](AssetProvider assetProvider, Checksum solutionChecksum, Boolean updatePrimaryBranch, Func`2 implementation, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Remote.BrokeredServiceBase.RunWithSolutionAsync[T](Checksum solutionChecksum, Func`2 implementation, CancellationToken cancellationToken)
+      at Microsoft.CodeAnalysis.Remote.RemoteDiagnosticAnalyzerService.CalculateDiagnosticsAsync(Checksum solutionChecksum, DiagnosticArguments arguments, CancellationToken cancellationToken)
+
+
+					</pre>
+					<p>At this point I also noted that trying to run
+						<code>dotnet build</code>
+						from the command line gave a similar stack trace, and also had
+						<code>csc.exe</code>
+						crashing out with a failure.</p>
+					<p>So what does that stack trace tell us?</p>
+					<p>Well it looks like this is a failure in some code using the Roslyn parser framework to analyse the code - and most of this is from a
+						<code>CodeAnalysis</code>
+						namespace. So it seems like the problem is with how the compiler framework is trying to process the source code in question. And this bit gives an important clue about where the issue is:</p>
+					<pre class="code" data-enlighter-theme="droide" data-enlighter-language="text" style="width:100%; overflow:scroll;">      at Microsoft.CodeAnalysis.CSharp.RefSafetyAnalysis.MethodInfo.Create(PropertySymbol property, AccessorKind accessorKind)
+      at Microsoft.CodeAnalysis.CSharp.RefSafetyAnalysis.VisitIndexerAccess(BoundIndexerAccess node)
+      at Microsoft.CodeAnalysis.CSharp.BoundTreeVisitor.VisitExpressionOrPatternWithStackGuard(Int32&amp; recursionDepth, BoundNode node)
+      at Microsoft.CodeAnalysis.CSharp.BoundTreeWalker.VisitNameOfOperator(BoundNameOfOperator node)
+
+					</pre>
+					<p>(I think the point it crashes is
+						<a href="https://github.com/dotnet/roslyn/blob/b11b94089fa3bf048a4866837589229f7a60d0e7/src/Compilers/CSharp/Portable/Binder/RefSafetyAnalysis.cs#L869" target="_blank" rel="noopener">here in the source</a>?) And the trace is saying that the
+						<code>NameOfOperator</code>
+						is involved - it's trying to parse an
+						<code>ExpressionOrPattern</code>
+						with an
+						<code>Indexer</code>
+						while running the
+						<code>RefSafetyAnalysis</code>
+						analyser. So that points back to this bit of the source code:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">_SourceFile = cfg[SourceFileConfigKey] ?? 
+    throw new InvalidDataException($"No value supplied for {nameof(cfg[SourceFileConfigKey])}");
+
+					</pre>
+					<p>The interpolated string passed to the exception constructor is calling
+						<code>nameof()</code>
+						on an expression with an indexer...</p>
+					<p>And when I changed
+						<code>nameof(cfg[SourceFileConfigKey])</code>
+						to
+						<code>nameof(cfg)</code>
+						all the errors went away and I could compile my code again. So it's the indexer here which is triggering the problem.</p>
+					<h2 x-data="" class="anchor">Conclusions
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>To my mind this is an error in how the analyser in question handles
+						<code>nameof()</code>
+						being invoked on an indexer. The parsing of an expression like
+						<code>cfg["test"]</code>
+						should either succeed or return a compiler error. It should never crash.</p>
+					<p>However I'm also pretty sure this isn't valid syntax. What is the "name" of an indexer operation on a dictionary? That's not a thing you can give a name to - it's an expression which can be evaluated to a value. And while I'm not an expert on reading the
+						<a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/expressions#12823-the-nameof-operator" target="_blank" rel="noopener">C# language spec</a>, I think this backs up that assessment.</p>
+					<p>It's interesting to note that it is specifically object indexers that seem to cause the issue here. Accessing an array like this:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var u = new int[1];
+var name = nameof(u[1]);
+
+					</pre>
+					<p>gives the compiler error CS8081 - "Expression does not have a name". It does not crash. And it seems likely that this is what the correct behaviour should be for my
+						<code>Dictionary</code>
+						example too?</p>
+					<p>So I've
+						<a href="https://developercommunity.visualstudio.com/t/Using-nameof-on-a-Dictionary-breaks-di/10878248" target="_blank" rel="noopener">submitted this as a bug to Microsoft</a>, and they say a fix has been built and is scheduled for release at some point.</p>
+					<p>So once they ship that it should turn my bad code into the syntax error it deserves to be...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=For once, it is a bug in C#!%20https://blog.jermdavis.dev/posts/2025/it-was-csharp-itself">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https://blog.jermdavis.dev/posts/2025/it-was-csharp-itself">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=For once, it is a bug in C#!&amp;url=https://blog.jermdavis.dev/posts/2025/it-was-csharp-itself">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" data-no-validate="data-no-validate" href="mailto:&amp;body=For once, it is a bug in C#!%20https://blog.jermdavis.dev/posts/2025/it-was-csharp-itself">On Email</a>
+						</li>
+						<li></li>
+					</ul>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">Shooting myself in the foot
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">What's the problem?
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">The cause - and workaround
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">Conclusions
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2025</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2025 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/c/">
+									C#
+								</a>
+								<a href="/tags/net/">
+									.Net
+								</a>
+								<a href="/tags/bug/">
+									Bug
+								</a>
+								<a href="/tags/general/">
+									General
+								</a>
+								<a href="/tags/content-hub/">
+									Content Hub
+								</a>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/graphql/">
+									GraphQL
+								</a>
+								<a href="/tags/sugcon/">
+									SUGCON
+								</a>
+								<a href="/tags/xm-cloud/">
+									XM Cloud
+								</a>
+								<a href="/tags/commerce/">
+									Commerce
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (244)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (215)</a>
+								<a href="/tags/c/">
+									C# (67)</a>
+								<a href="/tags/powershell/">
+									PowerShell (32)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/general/">
+									General (19)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+								<a href="/tags/visual-studio/">
+									Visual Studio (15)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2025-05">2025 - May</a>
+								<a href="/posts/2025-04">2025 - April</a>
+								<a href="/posts/2025-03">2025 - March</a>
+								<a href="/posts/2025-02">2025 - February</a>
+								<a href="/posts/2025-01">2025 - January</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2025</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
