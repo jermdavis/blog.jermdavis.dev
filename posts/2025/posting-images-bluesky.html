@@ -1,0 +1,614 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2025/posting-images-bluesky">
+		<meta name="description" content="Example code for posting a message and attached image to BlueSky">
+		<meta property="og:description" content="Example code for posting a message and attached image to BlueSky">
+		<meta name="keywords" content="C#">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Posting images to BlueSky</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Posting images to BlueSky [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2025-06-02T00:00:00+0000">
+		<meta property="article:published_time" content="2025-06-02T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/posting-images-bluesky-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Posting images to BlueSky' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Posting images to BlueSky",
+        "url": "https://blog.jermdavis.dev/posts/2025/posting-images-bluesky",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/posting-images-bluesky-social.jpg",
+                "caption": "Logo image showing post title 'Posting images to BlueSky' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2025-06-02T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2025/posting-images-bluesky">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2025/posting-images-bluesky</tt>
+				</div>
+				<h1>
+					Posting images to BlueSky
+				</h1>
+				<h2>Notes so I can remember how later...</h2>
+				<div class="meta">Published 02 June 2025</div>
+				<div class="tagList">
+					<a href="/tags/c/">
+						C#</a>
+					<span>~3 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<p>I was tinkering with some some code that could post to
+						<a href="https://bsky.app/" target="_blank" rel="noopener">BlueSky</a>
+						recently, and it took me a couple of goes to make the process of submitting a message with an image work. So in case it's of any use to anyone else, here's one way it can work:
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">The basic process
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>There are four things to do:</p>
+					<ol>
+						<li>Get your app password</li>
+						<li>Authenticate</li>
+						<li>Post the image blob and get some reference data for it</li>
+						<li>Post your message with the blob reference</li>
+					</ol>
+					<p>Sounds easy, huh?
+						<a href="https://gist.github.com/jermdavis/bc04cca430696e80e354c962b3aefa47" target="_blank" rel="noopener">All the code for this is posted in a gist</a>, and the rest of this post is a broad explanation of what's happening.</p>
+					<p>
+						<span style="color:red;">Make gist public</span>
+					</p>
+					<h2 x-data="" class="anchor">Get your app password
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>This first bit isn't code. You don't use the account password to post via the API - you use an App Password instead. To get one of those you need to log in to the UI, and click the "Settings" cog from the left menu and then "Privacy and security" to find the App Passwords option:</p>
+					<p>
+						<a target="_blank" href="/img/2025/06-LinkToAppPasswords.png">
+							<img alt="The BlueSky Privacy &amp; Security settings page, showing the App Passwords option" src="/img/2025/06-LinkToAppPasswords.png">
+						</a>
+					</p>
+					<p>That page will list any app passwords you've created, and let you add new ones:</p>
+					<p>
+						<a target="_blank" href="/img/2025/06-LitstOfPasswords.png">
+							<img alt="The BlueSky's App Passwords page, showing the add button and existing passwords" src="/img/2025/06-LitstOfPasswords.png">
+						</a>
+					</p>
+					<p>Clicking the "Add" button here will let you create a new App Password entry by supplying a name:</p>
+					<p>
+						<a target="_blank" href="/img/2025/06-NameNewAppPassword.png">
+							<img alt="The dialog allowing you to set the name for a new app password" src="/img/2025/06-NameNewAppPassword.png">
+						</a>
+					</p>
+					<p>And then it will give you a random password to use:</p>
+					<p>
+						<a target="_blank" href="/img/2025/06-TheNewPassword.png">
+							<img alt="The data for the newly created app password, which you need to record to use later." src="/img/2025/06-TheNewPassword.png">
+						</a>
+					</p>
+					<p>Note that you have to copy this and save it, as there is no way to view this again once you close this dialog. (Also, I deleted this key before posting this - sorry hacker type people)</p>
+					<p>Also, note that when you come to authenticate, the username is your account name plus the server it's hosted on. So if your name is
+						<code>@mybotaccount</code>
+						then the username you need to authenticate is
+						<code>mybotaccount.bsky.social</code>.</p>
+					<h2 x-data="" class="anchor">Authenticate
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The rest of the calls require a
+						<a href="https://en.wikipedia.org/wiki/JSON_Web_Token" target="_blank" rel="noopener">JWT</a>
+						passed in their request headers, so the first API call is to get that token. The code needs to pass the username and the app password wrapped up in some simple json.</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var usr = "yourusername.bsky.social";
+var pwd = "aaaa-1111-bbbb-2222";
+
+var authContent = JsonContent.Create(new {
+    identifier = usr,
+    password = pwd
+});
+
+					</pre>
+					<p>Sending the request will require an
+						<code>HttpClient</code>
+						object to interact with BlueSky's API. You should avoid creating and destroying these per request, so you likely want to create this centrally and reuse it for the rest of the operations:</p>
+					<pre class="code" data-enlighter-theme="droide" data-enlighter-language="text" style="width:100%; overflow:scroll;">private HttpClient _client = new();
+
+					</pre>
+					<p>(That's an
+						<code>IDisposable</code>
+						object, so make sure it's disposed once it's no longer needed) But with that in place, the json content prepared above can be posted to the relevant endpoint:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var authDataResp = await _client.PostAsync("https://bsky.social/xrpc/com.atproto.server.createSession", authContent);
+
+					</pre>
+					<p>If that request fails, it's likely indicating the credentials are no good - a condition which will need handling instead of proceeding. But if it succeeds then the response is some json that includes the token you need and some other data. So that needs parsing to retrieve the token:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var authJson = await authDataResp.Content.ReadAsStringAsync();
+var authData = JsonNode.Parse(authJson);
+
+var jwt = authData["accessJwt"]?.GetValue&lt;string&gt;();
+
+					</pre>
+					<p>And the easiest way to handle that token is to add the
+						<code>Bearer</code>
+						header as a default to the client - so it's sent automatically for the remaining requests:</p>
+					<pre class="code" data-enlighter-language="chsarp" style="width:100%; overflow:scroll;">_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+
+					</pre>
+					<h2 x-data="" class="anchor">Post the image blob
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>To attach an image to your post, you need to upload it and get back a data structure that describes the stored image blob. The image is supplied as a raw data stream in the body of another post, which has to specify the MIME type for the image format as a header. (As well as the token set up previously)</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var imageData = new StreamContent(data);
+imageData.Headers.Add("Content-Type", format);
+
+var resp = await _client.PostAsync("https://bsky.social/xrpc/com.atproto.repo.uploadBlob", imageData);
+
+					</pre>
+					<p>The
+						<code>data</code>
+						variable to pass as the
+						<code>StreamContent</code>
+						object is the stream returned by a call like
+						<code>File.OpenRead(@"C:\temp\your-test-image.jpg")</code>.</p>
+					<p>If this succeeds, the response from this is a chunk of json which describes the storage of the data - which will be required later.</p>
+					<pre class="code" data-enlighter-language="json" style="width:100%; overflow:scroll;">{
+  "blob": {
+    "$type": "blob",
+    "ref": {
+      "$link": "baqkreieuv2ih2jk3ritnfarlmjq6psv2weifchape76bju6geadjoryktu"
+    },
+    "mimeType": "image/jpeg",
+    "size": 452753
+  }
+}
+
+					</pre>
+					<p>That can be read from the response and parsed into a POCO to reuse later:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var storageData = await resp.Content.ReadAsStringAsync();
+var storageNode = JsonObject.Parse(storageData);
+var blob = Blob.Deserialize(storageNode);
+
+					</pre>
+					<p>The POCO includes a static method to do that deserialisation, just to make the example a bit prettier: (There is probably a prettier way to do this - but I was hacking about...)</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static Blob Deserialize(JsonNode n)
+{
+    var json = n.ToString();
+
+    var b = System.Text.Json.JsonSerializer.Deserialize&lt;BlobWrapper&gt;(n);
+
+    if (b == null || b.Blob == null)
+    {
+        throw new ArgumentException("Deserialising blob data returned a null");
+    }
+
+    return b.Blob;
+}
+
+					</pre>
+					<h2 x-data="" class="anchor">Post the message
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading5" name="heading5">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Posting a message with an image requires building up a json structure that respresents the message and (optionally) the attached image:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var post = new PostData
+{
+    Repo = usr,
+    Collection = "app.bsky.feed.post",
+    Record = new PostRecordData
+    {
+        Text = message,
+        CreatedAt = DateTime.Now
+    }
+};
+
+if (blob != null)
+{
+    altText = altText ?? string.Empty;
+    post.Record.Embed = Embed.Generate(blob, altText);
+}
+
+					</pre>
+					<p>So it creates the basic data with the
+						<code>message</code>
+						we want to send, and then adds in
+						<code>Blob</code>
+						from earlier as an embed if we have one.</p>
+					<p>And then that structure can get posted to the API:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var postContent = JsonContent.Create(post);
+var postResponse = await _client.PostAsync("https://bsky.social/xrpc/com.atproto.repo.createRecord", postContent);
+
+					</pre>
+					<p>As before the code can check the
+						<code>.IsSuccessStatusCode</code>
+						property of the response to verify the message got accepted correctly.</p>
+					<p>And with that, your message should appear in the user's feed.</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Posting images to BlueSky%20https://blog.jermdavis.dev/posts/2025/posting-images-bluesky">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https://blog.jermdavis.dev/posts/2025/posting-images-bluesky">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Posting images to BlueSky&amp;url=https://blog.jermdavis.dev/posts/2025/posting-images-bluesky">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" data-no-validate="data-no-validate" href="mailto:&amp;body=Posting images to BlueSky%20https://blog.jermdavis.dev/posts/2025/posting-images-bluesky">On Email</a>
+						</li>
+						<li></li>
+					</ul>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The basic process
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">Get your app password
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">Authenticate
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">Post the image blob
+										</a>
+									</li>
+									<li>
+										<a href="#heading5">Post the message
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2025</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2025 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/c/">
+									C#
+								</a>
+								<a href="/tags/net/">
+									.Net
+								</a>
+								<a href="/tags/bug/">
+									Bug
+								</a>
+								<a href="/tags/general/">
+									General
+								</a>
+								<a href="/tags/content-hub/">
+									Content Hub
+								</a>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/graphql/">
+									GraphQL
+								</a>
+								<a href="/tags/sugcon/">
+									SUGCON
+								</a>
+								<a href="/tags/xm-cloud/">
+									XM Cloud
+								</a>
+								<a href="/tags/commerce/">
+									Commerce
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (244)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (215)</a>
+								<a href="/tags/c/">
+									C# (68)</a>
+								<a href="/tags/powershell/">
+									PowerShell (32)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/general/">
+									General (19)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+								<a href="/tags/visual-studio/">
+									Visual Studio (15)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2025-06">2025 - June</a>
+								<a href="/posts/2025-05">2025 - May</a>
+								<a href="/posts/2025-04">2025 - April</a>
+								<a href="/posts/2025-03">2025 - March</a>
+								<a href="/posts/2025-02">2025 - February</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2025</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
