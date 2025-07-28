@@ -1,0 +1,497 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2025/mistake-satiq-pipelines">
+		<meta name="description" content="A mistake to avoid when implementing a 'do nothing' path in a Statiq module">
+		<meta property="og:description" content="A mistake to avoid when implementing a 'do nothing' path in a Statiq module">
+		<meta name="keywords" content="C#, Statiq">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - A mistake to avoid with Statiq's pipelines</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta name="fediverse:creator" content="@jermdavis@mastodon.social">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="A mistake to avoid with Statiq's pipelines [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2025-07-28T00:00:00+0000">
+		<meta property="article:published_time" content="2025-07-28T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/mistake-satiq-pipelines-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'A mistake to avoid with Statiq's pipelines' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "A mistake to avoid with Statiq's pipelines",
+        "url": "https://blog.jermdavis.dev/posts/2025/mistake-satiq-pipelines",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/mistake-satiq-pipelines-social.jpg",
+                "caption": "Logo image showing post title 'A mistake to avoid with Statiq's pipelines' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2025-07-28T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2025/mistake-satiq-pipelines">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2025/mistake-satiq-pipelines</tt>
+				</div>
+				<h1>
+					A mistake to avoid with Statiq's pipelines
+				</h1>
+				<h2>How not to implement a 'do nothing' path in a module...</h2>
+				<div class="meta">Published 28 July 2025</div>
+				<div class="tagList">
+					<a href="/tags/c/">
+						C#</a>
+					<a href="/tags/statiq/">
+						Statiq</a>
+					<span>~2 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<p>I've been tinkering with some pipeline modules for the Statiq generation engine that I use to render this blog, and I bumped into a fun mistake in my code which confused me for a while. To help me next time I'm doing this sort of modification, this seemed worth documenting - even if it is a bit of a silly mistake...
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">The issue
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>I was working on a module which needed to generate some custom data for specific content types in the input to my Statiq site. So I created a new Module and typed
+						<code>override</code>
+						and let the autocomplete generate the main method for this class:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CustomIndexModule : ParallelModule
+{
+    protected override Task&lt;IEnumerable&lt;IDocument&gt;&gt; ExecuteInputAsync(IDocument input, IExecutionContext context)
+    {
+        return base.ExecuteInputAsync(input, context);
+    }
+}
+
+					</pre>
+					<p>And with that in place I started to write some logic. Most of it is unimportant to this issue - but the key lines were basically:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CustomIndexModule : ParallelModule
+{
+    protected override Task&lt;IEnumerable&lt;IDocument&gt;&gt; ExecuteInputAsync(IDocument input, IExecutionContext context)
+    {
+        if(!input.Destination.FullPath.StartsWith("myFolder/"))
+        {
+            return base.ExecuteInputAsync(input, context);
+        }
+        
+        //
+        // logic to generate the index data
+        //
+    }
+}
+
+					</pre>
+					<p>So (I thought) if the particular document isn't in the right folder, this module will skip over it and do nothing. And I added this module to the pipeline for the site.</p>
+					<p>But once this was in place I started to see some odd issues. Running the generator now threw an unexpected error for a page which had been working fine beforehand:</p>
+					<pre class="code" data-enlighter-theme="droide" data-enlighter-language="text" style="width:100%; overflow:scroll;">[ERRO] Archives/PostProcess » ExecuteSwitch » RenderContentPostProcessTemplates » ExecuteIf » ExecuteIf » RenderRazor » [C:/Users/Jeremy/source/repos/blog.jermdavis.dev/StatiqGenerator/theme/input/mvp.cshtml =&gt; mvp.html] Object reference not set to an instance of an object.
+
+					</pre>
+					<p>And commenting out the new module made this go away immediately.</p>
+					<p>I spent a bit of time fiddling here, trying to work out what had gone wrong - but the only other thing I noticed was that some files were missing from the output - including the one that was mentioned in the message above.</p>
+					<h2 x-data="" class="anchor">The solution
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Having dug around for rather too long, I realised that I should look back at previous code I'd written for modules. And in doing that I had a bit of a revelation. In the code I'd written the "do nothing" behaviour was to call the
+						<code>base.ExecuteInputAsync()</code>
+						method as that's what the autocomplete had created with the empty method. (That's the default behaviour for overriding a C# method - call its base) But my previous code had called
+						<code>input.Yield()</code>
+						instead, driven by what's in the Statiq documentation. And changing the code to:</p>
+					<pre class="code" data-enlighter-highlight="7" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CustomIndexModule : ParallelModule
+{
+    protected async override Task&lt;IEnumerable&lt;IDocument&gt;&gt; ExecuteInputAsync(IDocument input, IExecutionContext context)
+    {
+        if(!input.Destination.FullPath.StartsWith("myFolder/"))
+        {
+            return input.Yield();
+        }
+    
+        // rest of the logic
+    }
+}
+
+					</pre>
+					<p>resolved the issue. So what was up? Well digging into the code that underlies the base
+						<code>Module</code>
+						definition you see this:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">protected virtual Task&lt;IEnumerable&lt;IDocument&gt;&gt; ExecuteInputAsync(IDocument input, IExecutionContext context) =&gt;
+            Task.FromResult&lt;IEnumerable&lt;IDocument&gt;&gt;(null);
+
+					</pre>
+					<p>The overall result of calling the base method for
+						<code>ExecuteInputAsync()</code>
+						is to return
+						<code>null</code>
+						- so my code above wasn't keeping the current
+						<code>input</code>
+						document, but was discarding it.</p>
+					<p>Hence the issue I was seeing where files were not being generated by the build. Instead of being passed through unprocessed, the documents that didn't need the custom index data were being discarded.</p>
+					<p>Hopefully this post will help me not make that mistake again. And it's a useful reminder that generally "pipeline" style code needs a different approach to doing nothing when it receives an input. You generally need to make sure you pass the input back out again rather than actually doing nothing at all...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=A mistake to avoid with Statiq&amp;#x27;s pipelines%20https://blog.jermdavis.dev/posts/2025/mistake-satiq-pipelines">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https://blog.jermdavis.dev/posts/2025/mistake-satiq-pipelines">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=A mistake to avoid with Statiq&amp;#x27;s pipelines&amp;url=https://blog.jermdavis.dev/posts/2025/mistake-satiq-pipelines">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" data-no-validate="data-no-validate" href="mailto:&amp;body=A mistake to avoid with Statiq&amp;#x27;s pipelines%20https://blog.jermdavis.dev/posts/2025/mistake-satiq-pipelines">On Email</a>
+						</li>
+						<li></li>
+					</ul>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The issue
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">The solution
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2025</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2025 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/c/">
+									C#
+								</a>
+								<a href="/tags/statiq/">
+									Statiq
+								</a>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/serialisation/">
+									Serialisation
+								</a>
+								<a href="/tags/scs/">
+									SCS
+								</a>
+								<a href="/tags/net/">
+									.Net
+								</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP
+								</a>
+								<a href="/tags/powershell/">
+									PowerShell
+								</a>
+								<a href="/tags/windows-11/">
+									Windows 11
+								</a>
+								<a href="/tags/bug/">
+									Bug
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (246)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (216)</a>
+								<a href="/tags/c/">
+									C# (70)</a>
+								<a href="/tags/powershell/">
+									PowerShell (33)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/general/">
+									General (19)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+								<a href="/tags/visual-studio/">
+									Visual Studio (15)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2025-07">2025 - July</a>
+								<a href="/posts/2025-06">2025 - June</a>
+								<a href="/posts/2025-05">2025 - May</a>
+								<a href="/posts/2025-04">2025 - April</a>
+								<a href="/posts/2025-03">2025 - March</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2025</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
