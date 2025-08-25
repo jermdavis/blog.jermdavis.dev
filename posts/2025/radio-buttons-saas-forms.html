@@ -1,0 +1,521 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2025/radio-buttons-saas-forms">
+		<meta name="description" content="Working around a bug in how Sitecore's SaaS forms renders radio button fields">
+		<meta property="og:description" content="Working around a bug in how Sitecore's SaaS forms renders radio button fields">
+		<meta name="keywords" content="Forms, SaaS, Sitecore, Bug">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Fun with Radio Buttons in Sitecore's SaaS forms</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta name="fediverse:creator" content="@jermdavis@mastodon.social">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Fun with Radio Buttons in Sitecore's SaaS forms [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2025-08-24T00:00:00+0000">
+		<meta property="article:published_time" content="2025-08-24T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/radio-buttons-saas-forms-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Fun with Radio Buttons in Sitecore's SaaS forms' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Fun with Radio Buttons in Sitecore's SaaS forms",
+        "url": "https://blog.jermdavis.dev/posts/2025/radio-buttons-saas-forms",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/radio-buttons-saas-forms-social.jpg",
+                "caption": "Logo image showing post title 'Fun with Radio Buttons in Sitecore's SaaS forms' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2025-08-24T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2025/radio-buttons-saas-forms">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2025/radio-buttons-saas-forms</tt>
+				</div>
+				<h1>
+					Fun with Radio Buttons in Sitecore's SaaS forms
+				</h1>
+				<h2>A work-around for an unexpected bug with how forms are rendered</h2>
+				<div class="meta">Published 24 August 2025</div>
+				<div class="tagList">
+					<a href="/tags/forms/">
+						Forms</a>
+					<a href="/tags/saas/">
+						SaaS</a>
+					<a href="/tags/sitecore/">
+						Sitecore</a>
+					<a href="/tags/bug/">
+						Bug</a>
+					<span>~2 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<p>I was doing some investigation into moving some Experience Forms UI over to the new SaaS Forms in XM Cloud recently, and bumped into an interesting issue. If you're looking to make use of this new tool you this may be an interesting read:
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">The issue
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>I spent a bit of time in the new form designer replicating the basics of a contact form, and all looked OK:</p>
+					<p>
+						<a target="_blank" href="/img/2025/08-DesignView.png">
+							<img alt="The design view of a form with some intro text, two Radio Button choices and a text field. It is correctly displayed" src="/img/2025/08-DesignView.png">
+						</a>
+					</p>
+					<p>Most of the form in question doesn't matter - the important bit was that there was a radio button list which does not show any sort of title above the individual options the user can choose. That lack of title isn't the default for a radio button field, however. You have to modify the default properties of the field to disable the main label:</p>
+					<p>
+						<a target="_blank" href="/img/2025/08-DisableMainLabel.png">
+							<img alt="The properties checkbox for 'Hide main label' on the radio button field" src="/img/2025/08-DisableMainLabel.png">
+						</a>
+					</p>
+					<p>And that all looks fine until you swap over to the "preview" tab, to look at what your form will be when it's injected into a website. That's not right:</p>
+					<p>
+						<a target="_blank" href="/img/2025/08-MissingLables.png">
+							<img alt="The labels for the individual radio buttons have vanished" src="/img/2025/08-MissingLables.png">
+						</a>
+					</p>
+					<p>As well as there being no main label on the radio button list, each of the radio buttons appears to have lost its label too...</p>
+					<h2 x-data="" class="anchor">A hacky fix
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>If you look at the page DOM via browser dev tools, the labels are still there - but they've been set to
+						<code>display: none</code>
+						in the CSS by activating that "hide the main label" option:</p>
+					<p>
+						<a target="_blank" href="/img/2025/08-DomShowingLabel.png">
+							<img alt="The browser DOM showing the label still exists, but is hidden from display by CSS" src="/img/2025/08-DomShowingLabel.png">
+						</a>
+					</p>
+					<p>So it seems like whatever CSS is applied by the "Hide main label" property is a bit over-enthusiastic and hides this text as well as the bit it was supposed to affect.</p>
+					<p>But that means we can work around this fairly easily with a bit of extra CSS. The SaaS forms allows you to add "Custom Styles" to your forms. The default is a visual editor for this, but you can change it to show the raw CSS by clicking the "CSS Editor" button once you've created your own custom style:</p>
+					<p>
+						<a target="_blank" href="/img/2025/08-CSSEditor.png">
+							<img alt="The style editor in Sitecore's SaaS forms, showing the 'css editor' button that allows changing the raw CSS" src="/img/2025/08-CSSEditor.png">
+						</a>
+					</p>
+					<p>You can add in this simple style to the end of the text to restore the labels:</p>
+					<pre class="code" data-enlighter-language="css" style="width:100%; overflow:scroll;">label.radio-field &gt; span.form-field-label {
+    display: inline;
+    padding-top: 2px;
+}
+
+					</pre>
+					<p>And then you have to assign the custom CSS to your form:</p>
+					<p>
+						<a target="_blank" href="/img/2025/08-AssignTheCSS.png">
+							<img alt="The settings page for a form in Sitecore's SaaS forms. Showing the 'apply style to form' button that lets you customise your form" src="/img/2025/08-AssignTheCSS.png">
+						</a>
+					</p>
+					<p>From the Settings cog in the form editor, pick "Apply style to form" and then pick your custom style from the dropdown.</p>
+					<p>With that done, the preview will look correct again:</p>
+					<p>
+						<a target="_blank" href="/img/2025/08-FixedForm.png">
+							<img alt="The fixed form, with the labels for individual radio button choices showing again" src="/img/2025/08-FixedForm.png">
+						</a>
+					</p>
+					<h2 x-data="" class="anchor">Worth noting
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>When you apply a custom style to a form, you get this notification shown in the settings page:</p>
+					<p>
+						<a target="_blank" href="/img/2025/08-Notification.png">
+							<img alt="A notification saying 'Style in-use is saved as CSS code, and the changes will only be visible when seen in preview'" src="/img/2025/08-Notification.png">
+						</a>
+					</p>
+					<p>When I first read that I assumed it meant "you can't see your custom styles applied when you look at the design view for the form - only when you look at the preview" - and that is true.</p>
+					<p>However there's a second thing it's trying to tell you. It seems like when you apply a custom theme it is copying the data to your form, rather than making a live link. So if you go back to your custom style data and save new changes, you won't see these applied to your customised form when you refresh the preview.</p>
+					<p>You have to remove the custom styles and add them again from the settings page, in order for your preview to update with style changes. Click the "Clear style" button and then repeat the "Apply style to form" process:</p>
+					<p>
+						<a target="_blank" href="/img/2025/08-ClearStyle.png">
+							<img alt="The 'clear style' button which can be used to remove old styles" src="/img/2025/08-ClearStyle.png">
+						</a>
+					</p>
+					<h2 x-data="" class="anchor">Conclusions
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>I've raised this with Sitecore Support and they've accepted it as bug reference
+						<code>DESIGNLIB-2819</code>
+						- so if it's not fixed by the time you come to try and make forms yourself, you can cite that bug number to point out this has been a problem for a while...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Fun with Radio Buttons in Sitecore&amp;#x27;s SaaS forms%20https://blog.jermdavis.dev/posts/2025/radio-buttons-saas-forms">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https://blog.jermdavis.dev/posts/2025/radio-buttons-saas-forms">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Fun with Radio Buttons in Sitecore&amp;#x27;s SaaS forms&amp;url=https://blog.jermdavis.dev/posts/2025/radio-buttons-saas-forms">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" data-no-validate="data-no-validate" href="mailto:&amp;body=Fun with Radio Buttons in Sitecore&amp;#x27;s SaaS forms%20https://blog.jermdavis.dev/posts/2025/radio-buttons-saas-forms">On Email</a>
+						</li>
+						<li></li>
+					</ul>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The issue
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">A hacky fix
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">Worth noting
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">Conclusions
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2025</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2025 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/forms/">
+									Forms
+								</a>
+								<a href="/tags/saas/">
+									SaaS
+								</a>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/bug/">
+									Bug
+								</a>
+								<a href="/tags/windows/">
+									Windows
+								</a>
+								<a href="/tags/azure/">
+									Azure
+								</a>
+								<a href="/tags/c/">
+									C#
+								</a>
+								<a href="/tags/statiq/">
+									Statiq
+								</a>
+								<a href="/tags/serialisation/">
+									Serialisation
+								</a>
+								<a href="/tags/scs/">
+									SCS
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (247)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (216)</a>
+								<a href="/tags/c/">
+									C# (70)</a>
+								<a href="/tags/powershell/">
+									PowerShell (33)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/general/">
+									General (19)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+								<a href="/tags/visual-studio/">
+									Visual Studio (15)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2025-08">2025 - August</a>
+								<a href="/posts/2025-07">2025 - July</a>
+								<a href="/posts/2025-06">2025 - June</a>
+								<a href="/posts/2025-05">2025 - May</a>
+								<a href="/posts/2025-04">2025 - April</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2025</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
