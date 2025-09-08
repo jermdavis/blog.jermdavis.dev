@@ -1,0 +1,505 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2025/messing-up-razor">
+		<meta name="description" content="Understand how flow control works with C# in Razor views, to avoid issues">
+		<meta property="og:description" content="Understand how flow control works with C# in Razor views, to avoid issues">
+		<meta name="keywords" content="MVC, Razor, C#, .Net">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Messing up your page layout with a fun Razor mistake</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta name="fediverse:creator" content="@jermdavis@mastodon.social">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Messing up your page layout with a fun Razor mistake [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2025-09-08T00:00:00+0000">
+		<meta property="article:published_time" content="2025-09-08T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/messing-up-razor-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Messing up your page layout with a fun Razor mistake' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Messing up your page layout with a fun Razor mistake",
+        "url": "https://blog.jermdavis.dev/posts/2025/messing-up-razor",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/messing-up-razor-social.jpg",
+                "caption": "Logo image showing post title 'Messing up your page layout with a fun Razor mistake' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2025-09-08T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2025/messing-up-razor">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2025/messing-up-razor</tt>
+				</div>
+				<h1>
+					Messing up your page layout with a fun Razor mistake
+				</h1>
+				<h2>If you use C# code in your Razor, think about how views work</h2>
+				<div class="meta">Published 08 September 2025</div>
+				<div class="tagList">
+					<a href="/tags/mvc/">
+						MVC</a>
+					<a href="/tags/razor/">
+						Razor</a>
+					<a href="/tags/c/">
+						C#</a>
+					<a href="/tags/net/">
+						.Net</a>
+					<span>~2 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<p>Sometimes it's the simplest things that can trip up development work. A case in point is a bug ticket I got handed recently, which I think shows the need to understand your tools when writing code. Read on to avoid an interesting mistake with code flow in Razor views...
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">The issue
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>QA raised a bug on a UI component that showed some images for a product details page. The design had the page broken up into regions, so it started with two columns - images on left and descriptive text on the right. Below this was a full-width region with some other bits in it. Because that right column of text was potentially long, the images were supposed to be "sticky" as you scrolled down the page, until you reached the end of the two column part of the page. They were supposed to stop there, before overlapping the contents of the single-column section below.</p>
+					<p>But QA reported a page where scrolling down would cause the images to start overlapping this next content section - in fact the images would carry on being sticky all the way down the page to the footer if you kept scrolling...</p>
+					<p>
+						<a target="_blank" href="/img/2025/09-UnexpectedOverlap.png">
+							<img alt="An outline diagram of the page components, showing the floating image overlapping with the full-width content" src="/img/2025/09-UnexpectedOverlap.png">
+						</a>
+					</p>
+					<h2 x-data="" class="anchor">The cause
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>After looking into which instances of this page worked, and which ones did not, the issue appeared related to whether the product in question had any reviews or not. But reviews were being rendered by a different component to the one which was reported as broken. Digging through the source for reviews showed some code along the lines of:</p>
+					<pre class="code" data-enlighter-language="cshtml" style="width:100%; overflow:scroll;">&lt;section&gt;
+  @if(Model.HasReviews) {
+    foreach(var review in Model.Reviews) {
+      @RenderReview(review)
+    }
+    &lt;div&gt;&lt;a href="https://reviewsite.com/product/wxyz"&gt;Link to more reviews&lt;/a&gt;&lt;/div&gt;
+  } else {
+    return;
+  }
+&lt;/section&gt;
+
+					</pre>
+					<p>It's a slightly contrived example to highlight the issue, but what it was supposed to do was only render the reviews and the link if there were reviews to show. But in the scenario with no reviews, "view source" in the browser showed this component emitted a
+						<code>&lt;section&gt;</code>
+						starting tag but never provided its closing
+						<code>&lt;/section&gt;</code>
+						tag.</p>
+					<p>When this invalid HTML arrived at the browser it dutifully tried to parse and "fix" the unbalanced markup it received. But whatever rules it followed caused it to move the floating
+						<code>&lt;img/&gt;</code>
+						element to be a child of an element one level higher up the tree than the CSS expected - which could be seen in the DevTools inspector. And this meant the image could float further than expected. (On closer inspection, it also broke some other stuff on the page too - but those issues hadn't been raised in the QA ticket)</p>
+					<p>That behaviour (where the browser is trying very hard to fix the mess) caused some confusion. When you look at the results using the Developer Tools you're seeing the "fixed" DOM. It's structure can be different to what "View Source" would show you. And that difference can cover up a bug like this if you're not expecting this behavour.</p>
+					<h2 x-data="" class="anchor">What's happening here
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The perils of not making your HTML valid is a separate issue. I'm perhaps showing my "grew up int the age of XML and XSLT being the new hotness" age here, but I much prefer using XHTML to the "some elements are self-closing" approach of standard HTML. I find it easier to spot issues in that model.</p>
+					<p>But the key take-away for me from this issue is to understand how Razor files get turned into code, and hence how flow-control operations like
+						<code>return</code>
+						will affect their execution.</p>
+					<p>When your app renders a view, it's compiled into a method which intermixes lines that write literal strings to the output stream with any logic that the Razor file includes. If you decompile the DLL generated from the Razor above, it looks something like:</p>
+					<pre class="code" data-enlighter-highlight="14-17" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class _Page_Views_Example_cshtml : WebViewPage&lt;ExampleModel&gt;
+{
+    public override void Execute()
+    {
+        this.WriteLiteral("&lt;section&gt;");
+        if (Model.HasReviews)
+        {
+            foreach(var review in Model.Reviews)
+            {
+                // Render the review
+            }
+            this.WriteLiteral("&lt;div&gt;&lt;a href=\"https://reviewsite.com/product/wxyz\"&gt;Link to more reviews&lt;/a&gt;&lt;/div&gt;");
+        }
+        else
+        {
+            return;
+        }
+        this.WriteLiteral("&lt;/section&gt;");
+    }
+}
+
+					</pre>
+					<p>And that should highlight why this issue happened: Because it's a single function, that
+						<code>return</code>
+						causes the whole thing to exit and the unbalanaced markup to be generated. If there are no reviews, the code can never get to outputting that
+						<code>&lt;/section&gt;</code>.</p>
+					<p>So think carefully about how Razor translates into C# when you're implementing logic. Is using
+						<code>return</code>
+						for flow control here really the right approach? I'd argue the vast majority of the time it isn't. In this scenario the whole
+						<code>else</code>
+						clause didn't need to be there. And removing it was the fix for this bug.</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Messing up your page layout with a fun Razor mistake%20https://blog.jermdavis.dev/posts/2025/messing-up-razor">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https://blog.jermdavis.dev/posts/2025/messing-up-razor">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Messing up your page layout with a fun Razor mistake&amp;url=https://blog.jermdavis.dev/posts/2025/messing-up-razor">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" data-no-validate="data-no-validate" href="mailto:&amp;body=Messing up your page layout with a fun Razor mistake%20https://blog.jermdavis.dev/posts/2025/messing-up-razor">On Email</a>
+						</li>
+						<li></li>
+					</ul>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The issue
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">The cause
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">What's happening here
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2025</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2025 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/mvc/">
+									MVC
+								</a>
+								<a href="/tags/razor/">
+									Razor
+								</a>
+								<a href="/tags/c/">
+									C#
+								</a>
+								<a href="/tags/net/">
+									.Net
+								</a>
+								<a href="/tags/forms/">
+									Forms
+								</a>
+								<a href="/tags/saas/">
+									SaaS
+								</a>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/bug/">
+									Bug
+								</a>
+								<a href="/tags/windows/">
+									Windows
+								</a>
+								<a href="/tags/azure/">
+									Azure
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (247)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (216)</a>
+								<a href="/tags/c/">
+									C# (71)</a>
+								<a href="/tags/powershell/">
+									PowerShell (33)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/general/">
+									General (19)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+								<a href="/tags/net/">
+									.Net (15)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2025-09">2025 - September</a>
+								<a href="/posts/2025-08">2025 - August</a>
+								<a href="/posts/2025-07">2025 - July</a>
+								<a href="/posts/2025-06">2025 - June</a>
+								<a href="/posts/2025-05">2025 - May</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2025</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
