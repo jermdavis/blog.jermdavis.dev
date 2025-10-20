@@ -1,0 +1,435 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2025/remember-about-search">
+		<meta name="description" content="Four things to remember as you transition from Solr to Sitecore's SaaS search product">
+		<meta property="og:description" content="Four things to remember as you transition from Solr to Sitecore's SaaS search product">
+		<meta name="keywords" content="Sitecore, Search">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Four things to remember about Sitecore Search</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta name="fediverse:creator" content="@jermdavis@mastodon.social">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Four things to remember about Sitecore Search [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2025-10-20T00:00:00+0000">
+		<meta property="article:published_time" content="2025-10-20T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/remember-about-search-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Four things to remember about Sitecore Search' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Four things to remember about Sitecore Search",
+        "url": "https://blog.jermdavis.dev/posts/2025/remember-about-search",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/remember-about-search-social.jpg",
+                "caption": "Logo image showing post title 'Four things to remember about Sitecore Search' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2025-10-20T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2025/remember-about-search">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2025/remember-about-search</tt>
+				</div>
+				<h1>
+					Four things to remember about Sitecore Search
+				</h1>
+				<h2>There's a lot of change if you're used to ContentSearch</h2>
+				<div class="meta">Published 20 October 2025</div>
+				<div class="tagList">
+					<a href="/tags/sitecore/">
+						Sitecore</a>
+					<a href="/tags/search/">
+						Search</a>
+					<span>~2 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<p>Anyone who's been doing Sitecore DXP for a while will be fairly comfortable with Solr and how search works under the Content Search APIs. But if you're moving to the newer SaaS products then you're not working with that any more. And getting started with Sitecore's SaaS Search product does involve learning a few changed concepts.</p>
+					<p>Here are four quick things they tell you that you might not have thought too much about, but you need to remember to help avoid project surprises...
+						<!--more-->
+					</p>
+					<ol>
+						<li>
+							<b>
+								You can't query across Entities</b>
+							<br>
+							<p>The documentation and training for Search talks about how you can design and create Entities to represent content types in search - things like Books, Pages, Products etc. But an important thing to remember is that you can't run a search query that returns multiple types of Entities in a single result set.</p>
+							<p>That means if your site needs to show multiple content types at once, you have to make sure you use a single Entity type for all of these things. And hence you likely need a field in your Entity which records the content type in your index so you can do stuff like vary the display between products and pages.</p>
+							<p>That's likely what you would have done anyway with ContentSearch and Solr - so don't be too distracted by all the talk of entities in the new documentation.</p>
+						</li>
+						<li>
+							<b>If you want to use Receipes, make sure you use the Product Entity</b>
+							<br>
+							<p>Relatedly, the specific Entity definition you choose to start your work from can be important too.</p>
+							<p>The commerce side of Sitecore Search has a bunch of pre-build recipies which you can use to create things like "make recommendations of products to show this user" as UI components. These sound like a good time-saver, but take care.</p>
+							<p>Since these are generally related to commerce scenarios, they rely internally on the pre-built "Product" entity that's provided out of the box. So if your content is indexed to a different entity then these recipies won't work correctly.</p>
+							<p>If you're going to make use of the commerce-related recipies, then your base entity needs to be Sitecore's Product one to avoid problems. Extend that instead of creating your own.</p>
+						</li>
+						<li>
+							<b>3) Those Recipes can't take parameters from your site</b>
+							<br>
+							<p>While you can do things to configure recipies in the search console, sometimes you'll come across requirements where the data that affects a widget's behaviour should come from the current user's website session.</p>
+							<p>Take care here, as if you have requirments for making search components based on recipies which rely this. For example "certain results should not be shown to users who are in security group X" is tricky as you can't pass the current user's group into the recipe when it's called.</p>
+							<p>You may need to build a custom component for this type of requirement, vary which widget/recipe is displayed or risk some JavaScript which hides certain results after they've been returned.</p>
+						</li>
+						<li>
+							<b>4) The feed crawler doesn't actually crawl!</b>
+							<br>
+							<p>Usually when you're talking about Search, any reference to "crawler" means that the system will go out and find data by doing things like following links and loading each URL in turn. But the "feed crawler" for Sitecore Search doesn't work like that.</p>
+							<p>While it will go though a "feed" (a json document describing your content) and index it, it can't go out and fetch this data from your site.</p>
+							<p>You have to send the file containing all the relevant data for the index
+								<em>to</em>
+								Sitecore Search for it to process, despite what the name implies. Remember that when you're planning your indexing approach.</p>
+						</li>
+					</ol>
+					<p>Hopefully if you keep those things in mind, you can make your implementation simpler.</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Four things to remember about Sitecore Search%20https://blog.jermdavis.dev/posts/2025/remember-about-search">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https://blog.jermdavis.dev/posts/2025/remember-about-search">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Four things to remember about Sitecore Search&amp;url=https://blog.jermdavis.dev/posts/2025/remember-about-search">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" data-no-validate="data-no-validate" href="mailto:&amp;body=Four things to remember about Sitecore Search%20https://blog.jermdavis.dev/posts/2025/remember-about-search">On Email</a>
+						</li>
+						<li></li>
+					</ul>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2025</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2025 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/search/">
+									Search
+								</a>
+								<a href="/tags/c/">
+									C#
+								</a>
+								<a href="/tags/presentation/">
+									Presentation
+								</a>
+								<a href="/tags/mvc/">
+									MVC
+								</a>
+								<a href="/tags/razor/">
+									Razor
+								</a>
+								<a href="/tags/net/">
+									.Net
+								</a>
+								<a href="/tags/forms/">
+									Forms
+								</a>
+								<a href="/tags/saas/">
+									SaaS
+								</a>
+								<a href="/tags/bug/">
+									Bug
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (249)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (216)</a>
+								<a href="/tags/c/">
+									C# (72)</a>
+								<a href="/tags/powershell/">
+									PowerShell (33)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/general/">
+									General (19)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+								<a href="/tags/net/">
+									.Net (15)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2025-10">2025 - October</a>
+								<a href="/posts/2025-09">2025 - September</a>
+								<a href="/posts/2025-08">2025 - August</a>
+								<a href="/posts/2025-07">2025 - July</a>
+								<a href="/posts/2025-06">2025 - June</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2025</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
