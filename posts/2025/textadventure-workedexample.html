@@ -1,0 +1,958 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2025/textadventure-workedexample">
+		<meta name="description" content="Building on previous posts about a text adventure engine for a short example game">
+		<meta property="og:description" content="Building on previous posts about a text adventure engine for a short example game">
+		<meta name="keywords" content="Text Games, C#">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Text adventures: A worked example</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta name="fediverse:creator" content="@jermdavis@mastodon.social">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Text adventures: A worked example [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2025-12-29T00:00:00+0000">
+		<meta property="article:published_time" content="2025-12-29T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/textadventure-workedexample-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Text adventures: A worked example' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Text adventures: A worked example",
+        "url": "https://blog.jermdavis.dev/posts/2025/textadventure-workedexample",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/textadventure-workedexample-social.jpg",
+                "caption": "Logo image showing post title 'Text adventures: A worked example' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2025-12-29T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2025/textadventure-workedexample">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		<script src="/vendor/qrcode/qrcode.min.js"></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2025/textadventure-workedexample</tt>
+				</div>
+				<h1>
+					Text adventures: A worked example
+				</h1>
+				<h2>Putting the last three posts together...</h2>
+				<div class="meta">Published 29 December 2025</div>
+				<div class="tagList">
+					<a href="/tags/text-games/">
+						Text Games</a>
+					<a href="/tags/c/">
+						C#</a>
+					<span>~9 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<blockquote class="series">
+						<div>This is post 4 of 4 in a series titled
+							<i>Text adventures</i>
+						</div>
+						<ul>
+							<li>
+								<a href="/posts/2025/textadventure-world">Text adventures: Starting with a world</a>
+							</li>
+							<li>
+								<a href="/posts/2025/textadventure-commands">Text adventures: The player's commands</a>
+							</li>
+							<li>
+								<a href="/posts/2025/textadventure-behaviour">Text adventures: Behaviours for flavour</a>
+							</li>
+							<li>
+								<b>Text adventures: A worked example</b>
+							</li>
+						</ul>
+					</blockquote>
+					<p>Following on from the general framework bits in the previous posts about building a text adventure, what needs doing to create an example game? Here's an explanation of the example repo game to show how it all goes together. [<i>
+							<b>Spoiler warning</b>
+						</i>
+						- if you want the fun of playing the example game, don't read this post before you play, as it explains some of the puzzles.]
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">A few bits of housekeeping
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Before getting into the meat if it, there are a few small quality-of life features that it's worth having on top of what's been discussed before:</p>
+					<ul>
+						<li>
+							<b>Separating out the "engine" from the game</b>
+							<br>
+							It's helpful to organise your solution with one (reusable?) project which contains reusable code, and a separate project for the bits that are specific to the current game:<br>
+							<a target="_blank" href="/img/2025/12-SolutionStructure.png">
+								<img alt="The example solution, showing how it is broken into two projects" src="/img/2025/12-SolutionStructure.png">
+							</a>
+						</li>
+						<li>
+							<b>Have a "setup" class which configures your game world</b>
+							<br>
+							Similarly it's helpful to create
+							<a href="https://github.com/jermdavis/BlogTextAdventure/blob/master/ExampleTextAdventure/Example/ExampleSetup.cs" target="_blank" rel="noopener">a class which handles all the setup</a>
+							for a game world:<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static class ExampleSetup
+{
+    public static World Initialise()
+    {
+        var world = new World();
+
+        // setup the rooms, characters, items, etc...
+
+        return world;
+    }
+}
+
+							</pre>
+							And that can be called in the
+							<a href="https://github.com/jermdavis/BlogTextAdventure/blob/a863af7aba09f6e7a7e9e1a47f565a1d430bfaf8/AdventureEngine/GameRunner.cs#L14" target="_blank" rel="noopener">process of running the game</a>:<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class GameRunner
+{
+    public void Run(Func&lt;World&gt; init)
+    {
+        Console.WriteLine("Initialising world...");
+        var world = init();
+
+        // run the game
+    }
+}
+
+							</pre>
+							Similarly to the first point, this makes reuse of code easier.</li>
+						<li>
+							<b>Helpers to automatically register scripts</b>
+							<br>
+							Once you get to a more complex game, the number of
+							<code>Behaviour</code>
+							and
+							<code>Command</code>
+							classes you create might get large. Hence individually registering these can become a bit of a hassle. So this is perhaps a place to
+							<a href="https://github.com/jermdavis/BlogTextAdventure/blob/a863af7aba09f6e7a7e9e1a47f565a1d430bfaf8/AdventureEngine/WorldExtensions.cs#L29" target="_blank" rel="noopener">make use of some reflection to find them all automatically</a>
+							For example - for commands:<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static World RegisterCommands(this World world, Assembly dll)
+{
+    var cmds = dll.GetTypes().Where(t =&gt; t.IsAssignableTo(typeof(Command)));
+
+    foreach (var cmd in cmds)
+    {
+        var constructor = cmd.GetConstructor(Type.EmptyTypes);
+        if (constructor != null)
+        {
+            var command = (Command)constructor.Invoke(null);
+            world.Commands.Add(command.Name, command);
+        }
+    }
+
+    return world;
+}
+
+							</pre>
+							And these helpers can be called in
+							<a href="https://github.com/jermdavis/BlogTextAdventure/blob/a863af7aba09f6e7a7e9e1a47f565a1d430bfaf8/ExampleTextAdventure/Example/ExampleSetup.cs#L13" target="_blank" rel="noopener">the initialisation of the game</a>.</li>
+						<li>
+							<b>Formatting your output</b>
+							<br>
+							There are a few things that can make console output easier to read. Common ones include adding a bit of colour, and ensuring that words don't break at the edge of the window. You can write your own code for this, or make use of existing libraries.</li>
+					</ul>
+					<p>But with that in place, on to the game itself...</p>
+					<h2 x-data="" class="anchor">Making a map
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The example I tried was as follows: The player has arrived outside a country cottage. There's a road back to civilisation that the game won't let them take, and clues that they need to get a taxi to ride home. The cottage and its garden can be explored to find a phone and a person who is able to provide a taxi number if they're given a cup of tea.</p>
+					<p>The rooms and paths between them required might look like:</p>
+					<pre class="mermaid">flowchart LR
+  gate["<b>Garden gate</b>
+						<br>(Start)<br>Sign describing<br>taxi pickup"]
+  lane["<b>Winding lane</b>
+						<br>back home"]
+  taxi["<b>Taxi</b>
+						<br>(End)<br>Driver to<br>pay"]
+  path["<b>Path</b>"]
+  step["<b>Doorstep</b>
+						<br>Doormat has<br>hidden key"]
+  hall["<b>Hall</b>
+						<br>Ticking clock<br>and phone"]
+  kitchen["<b>Kitchen</b>
+						<br>Kettle etc<br>for tea"]
+  bedroom["<b>Bedroom</b>
+						<br>Old man to<br>give cup and<br>exchange tea for<br>taxi number"]
+  patio["<b>Patio</b>"]
+
+  gate-- (E) not<br>walkable --&gt;lane
+  gate&lt;-- (N/S) only after<br>phoning taxi --&gt;taxi
+  gate&lt;-- (E/W) --&gt;path
+  path&lt;-- (E/W) --&gt;step
+  step&lt;-- (E/W) only after<br>finding key --&gt;hall
+  hall&lt;-- (U/D) --&gt;bedroom
+  hall&lt;-- (E/W) --&gt;kitchen
+  kitchen-- (E) not<br>walkable --&gt;patio
+
+					</pre>
+					<p>Implementing this will need a few things:</p>
+					<ul>
+						<li>Allowing rooms and items to have a hidden state - where they're in the world object graph, but can't be seen by the player. That will allow the "taxi" room and its entrance to appear as a result of phoning, and the door key to appear as a result of examining the doormat.</li>
+						<li>Adding any custom commands needed - like being able to use the phone</li>
+						<li>Adding the behaviours needed to make the puzzles and logic work</li>
+						<li>Creating the rooms, the routes between them and the items / characters. And assigning the right properties, behaviours and commands to make them work.</li>
+					</ul>
+					<p>The hidden state is fairly easy. Entities need a new property to indicate if they should be displayed:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public bool Visible { get; set; } = true;
+
+					</pre>
+					<p>And it's helpful to have helpers to make constructing or updating entities with that flag:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static T IsNotVisible&lt;T&gt;(this T entity) where T : Entity
+{
+    entity.Visible = false;
+    return entity;
+}
+
+public static T IsVisible&lt;T&gt;(this T entity) where T : Entity
+{
+    entity.Visible = true;
+    return entity;
+}
+
+					</pre>
+					<p>And with that in place the commands which interact with these entities can apply a filter. You can't interact with something in the hidden state, so there are various places to add a filter to avoid showing them, like the
+						<code>look</code>
+						command and how it lists out exits:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var visibleExits = r.Exits.Where(e =&gt; e.Value.Visible);
+if (visibleExits.Any())
+{
+    world.Display("Exits:");
+    foreach (var exit in visibleExits)
+    {
+        world.Display($"  To the {exit.Key} is {exit.Value.Article} {exit.Value.Name}");
+    }
+}
+
+					</pre>
+					<p>And commands like
+						<code>get</code>
+						need to have things like the calls to
+						<code>MatchEntity()</code>
+						filtered too, so that even if the player knows an item should be there, they can't get it until the puzzle has been solved appropriately:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static bool MatchEntity&lt;T&gt;(T entity, string name) where T : Entity
+{
+    if(entity.Visible)
+    {
+        // do the name-based matching
+    }
+            
+    return false;
+}
+
+					</pre>
+					<p>So following the "helper" patterns from the first post in this series, the world can be set up with calls like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var doorstepRoom = world
+    .CreateRoom("The", "doorstep",
+        """"
+        The cottage looked quite quaint from a distance, but up close it's a bit more run down. There's peeling paint on the door and mud on the ground.
+        A pile of leaves have collected in the corner, and flutter about occasionally with gusts of wind.
+        """"
+    )
+    .AddBehaviours("bell", "frontdoorlock")
+    .AddItemInRoom(matItem)
+    .AddItemInRoom(keyItem)
+    .AddItemInRoom(bellItem);
+
+					</pre>
+					<p>The order entities get created in are important here - you have to have created the underlying entity for "the doormat" ('matItem') before you can add it into the 'doorstepRoom'. Sometimes this requires a bit of thinking to get right.</p>
+					<h2 x-data="" class="anchor">Places you can't go
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>There are three places in the map where the player is prevented from moving in a direction they can see by game logic. For the "gate -&gt; winding lane" and "kitchen -&gt; patio" routes this is fairly simple: The direction exists and can be interacted with normally, but the player is never actually allowed to move that way.</p>
+					<p>So the logic here is pretty simple. It needs a behaviour which always outputs a message about why you can't go that way and returns a result of false. That will prevent the move command from succeeding, but allows all the other interactions to work. Something like:</p>
+					<pre class="code" data-enlighter-highlight="9-16" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class GateMovementBehaviour : Behaviour
+    {
+        public GateMovementBehaviour() : base("gatemovement")
+        { 
+        }
+
+        public override bool Execute(Entity owner, World world, AdventureEngine.Scripts.Action action)
+        {
+            if (action is CanLeaveRoomAction clr &amp;&amp; clr.FromRoom == owner)
+            {
+                if (string.Compare(clr.Direction, "west", ignoreCase: true) == 0)
+                {
+                    world.Display("It really was a very long walk down that lane to get here. You've no desire to do that again.");
+                    return false;
+                }
+            }
+        }
+
+}
+
+					</pre>
+					<p>If the action being processed is
+						<code>CanLeaveRoom</code>
+						and the room being left is the one which owns this behaviour then check they wanted to go "west" (which would be off down the lane) and prevent it. This is basically the same logic being used to prevent movement from the kitchen to the patio.</p>
+					<p>The route through the front door is a little more complex. The puzzle here is to recognise the comment about the "lump" in the doormat and examine it. That reveals the lump to be a key, which can be picked up. Once the player is holding the key then they can pass through this door.</p>
+					<p>So we need two behaviours here. The first allows the key to become visible when examining the doormat:</p>
+					<pre class="code" data-enlighter-highlight="9-21" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class DoormatBehaviour : Behaviour
+{
+    public DoormatBehaviour() : base("doormat")
+    {
+    }
+
+    public override bool Execute(Entity owner, World world, AdventureEngine.Scripts.Action action)
+    {
+        if(action is HasExaminedItemAction hei)
+        {
+            var itm = world.Items.Where(i =&gt; i.Name == "key").First();
+            if (itm.Visible == false)
+            {
+                world.Display("The lump is a key..");
+                itm.Visible = true;
+            }
+            else
+            {
+                world.Display("There's no lump now - nothing else to find but some mud and dust.");
+            }
+        }
+
+        return true;
+    }
+}
+
+					</pre>
+					<p>This is attached to the "doormat" item. It watches for the
+						<code>HasExaminedItem</code>
+						action (as you have to have completed that step for this to work - and maybe in a more complex game the player might have lost their glasses, which makes examining not work properly?) And then it makes the "Key" item visible if it's hidden, or displays a message reminding the player this has already been done.</p>
+					<p>And the second checks if the player is carrying the key to decide if they can move through the door or not:</p>
+					<pre class="code" data-enlighter-highlight="9-27" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class FrontDoorLock : Behaviour
+{
+    public FrontDoorLock() : base("frontdoorlock")
+    {
+    }
+
+    public override bool Execute(Entity owner, World world, AdventureEngine.Scripts.Action action)
+    {
+        if (action is CanLeaveRoomAction clr)
+        {
+            var rm = (Room)owner;
+            var key = InputParser.MatchEntities(world.Player.Items, "key");
+
+            if (clr.FromRoom == rm &amp;&amp; clr.Direction == "east")
+            {
+                if (key == null)
+                {
+                    world.Display("The front door is locked. You'll need a key to get in.");
+                    return false;
+                }
+                else
+                {
+                    world.Display("You open the front door with the key you found.");
+                    return true;
+                }
+            }
+        }
+
+        return true;
+    }
+}
+
+					</pre>
+					<p>If the
+						<code>CanLeaveRoom</code>
+						action is being processed, and we're going from room that owns this script to the east, then the code checks if the player's inventory contains the key. If not, the action returns false to prevent the player moving. (The full code also includes a second check to see if the player is trying to move the other way through this door, and enforces the key for that as well, but for simplicity I've left that out of this snippet)</p>
+					<h2 x-data="" class="anchor">Making hidden routes appear
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The taxi room (and the route to it) don't appear until after the player has successfully made a phone call to the taxi company. This is a little more complex than the hidden key above, because the "call" command is something you can only do when you're both near the phone and holding the card with the phone number on it.</p>
+					<p>Having commands which are location-specific isn't complex. The code just needs to add and remove them as the player moves between locations:</p>
+					<pre class="code" data-enlighter-highlight="8-16" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class PhoneBehaviour : Behaviour
+{
+    public PhoneBehaviour() : base("phone")
+    {
+    }
+    public override bool Execute(Entity owner, World world, AdventureEngine.Scripts.Action action)
+    {
+        if(action is HasEnteredRoomAction)
+        {
+            world.Player.AddCommand("call");
+        }
+            
+        if(action is HasLeftRoomAction)
+        {
+            world.Player.RemoveCommand("call");
+        }
+
+        return true;
+    }
+}
+
+					</pre>
+					<p>This gets attached to the room containing the "phone" item. When the player enters they are given the command, and it's removed when they leave. That helps to make the behaviour of the phone more obvious, as this verb is only visible in the
+						<code>help</code>
+						output in places where it's actually useful.</p>
+					<p>And the
+						<code>Command</code>
+						to handle that verb can implement the logic for the puzzle:</p>
+					<pre class="code" data-enlighter-highlight="14-27" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class CallCommand : Command
+{
+    public CallCommand() : base("call", "call &lt;thing&gt; - phone someone, if you know the number.")
+    {
+    }
+    public override void Execute(World world, string[] parameters)
+    {
+        if(parameters.Length == 0 || parameters[0].Length == 0)
+        {
+            world.Display("Call what?");
+            return;
+        }
+
+        var card = InputParser.MatchEntities(world.Player.Items, "business card");
+        if (card != null &amp;&amp; string.Compare(parameters[0], "taxi", true) == 0)
+        {
+            world.Display("You phone the taxi company. They promise a car will arrive at the taxi waiting spot very soon.");
+            world.Display("In fact, pretty much before you've had a chance to say thanks and put the phone down, you hear the crunch of gravel outside.");
+
+            var taxiRoom = world.Rooms.Where(r =&gt; r.Name == "taxi").First();
+            taxiRoom.Visible = true;
+        }
+        else
+        {
+            world.Display("What number would you even dial?");
+        }
+    }
+}
+
+					</pre>
+					<p>In a situation where the game needed more general "phone" logic you might break the game logic here out to
+						<code>Behaviour</code>s, and have the
+						<code>Command</code>
+						trigger
+						<code>Action</code>s when it's executed. But this scenario is simple enough that's not necessary. It can check for the right item being in the player's inventory and the right instruction being issued, and then make the taxi visible on the map.</p>
+					<p>It's worth noting that this might be a place where some more general logic for synonyms might be helpful. The logic here expects the word "taxi" for example - and maybe "cab" should work too? You can implement that with
+						<code>or</code>
+						clauses in the logic above, but it's a more general problem across the codebase which would benefit from a general solution.</p>
+					<h2 x-data="" class="anchor">Interacting with NPCs
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading5" name="heading5">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>There are two places here where we need interaction with an NPC to trigger a response. (The same is true of items, but the NPCs here are the more interesting cases) The first instance here is the interactions with the old man, who can provide a cup and trade tea for the taxi card. His logic isn't complex, but he does multiple things so it's a bit longer:</p>
+					<pre class="code" data-enlighter-highlight="9-13,16-41,43-64" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public class OldManBehaviour : Behaviour
+{
+    public OldManBehaviour() : base("oldman")
+    {
+    }
+    public override bool Execute(Entity owner, World world, AdventureEngine.Scripts.Action action)
+    {
+        // enter room reaction
+        if(action is HasEnteredRoomAction her)
+        {
+            world.Display("The old man mumbles a greeting as you enter.");
+            return true;
+        }
+
+        // hello reaction
+        if(action is HasSaidAction hsa)
+        {
+            world.Display("In response, the old man mumbles something incomprehensible.");
+
+            if (hsa.Message.StartsWith("hello", StringComparison.OrdinalIgnoreCase) ||
+                hsa.Message.StartsWith("hi", StringComparison.OrdinalIgnoreCase))
+            {
+                var man = (Character)owner;
+                var cup = InputParser.MatchEntities(man.Items, "cup");
+
+                if (cup == null)
+                {
+                    world.Display("His mumbling includes something that looks like a mime of drinking from a cup.");
+                }
+                else
+                {
+                    world.Display("As he mumbles, he also hands you a cup. You think you make out the word 'tea' when he speaks.");
+                    man.Items.Remove(cup);
+                    world.Player.Items.Add(cup);
+                    cup.Character = world.Player;
+                }
+
+                return true;
+            }
+        }
+
+        // given tea - provide taxi card reaction
+        if (action is HasGivenItemAction hga)
+        {
+            if(hga.ToCharacter == owner &amp;&amp; hga.Item.Name.ToLower() == "tea")
+            {
+                var man = (Character)owner;
+
+                world.Display("Yet more mumbling greets you handing over the tea.");
+                world.Display("And it's followed by further excited mumbling as he presents you with a taxi card.");
+                world.Display("You could call a taxi with that! Now, where did you see a phone?");
+
+                var card = InputParser.MatchEntities(man.Items, "business card");
+
+                if (card != null)
+                {
+                    man.Items.Remove(card);
+                    world.Player.Items.Add(card);
+                    card.Character = world.Player;
+                }
+
+                return true;
+            }
+        }
+
+        return true;
+    }
+}
+
+					</pre>
+					<p>Firstly he respons with a clue when the player enters the room, by reacting to the
+						<code>HasEnteredRoomAction</code>. Secondly he responds to the
+						<code>HasSaidAction</code>
+						and checks if the player said "hello" or "hi" in response to the clue. If yes, then the logic moves the empty cup from the NPC's inventory to the player's. And finally, once the player has transformed the empty cup into a full cup of tea (in the kitchen's logic) the NPC will respond to the
+						<code>HasGivenItemAction</code>
+						for handing the tea to the man by moving the taxi card from the NPC's inventory to the players.</p>
+					<p>And the second instance of this interaction is ending the game by paying the taxi driver. That NPC has similar logic for providing clues when the player as entered the right room, and responding to
+						<code>HasGivenItemAction</code>
+						for the correct item. But in this case the result is setting the
+						<code>world.Game.Running</code>
+						flag to false after displaying some messages - ending the game.</p>
+					<h2 x-data="" class="anchor">Conclusions
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading6" name="heading6">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>So there we have it. A simple framework for a text adventure, with a simple example game to play. As noted in previous posts, all the source for this example is
+						<a href="https://github.com/jermdavis/BlogTextAdventure" target="_blank" rel="noopener">available on GitHub for you to tinker with</a>. (It will r<a href="https://github.com/features/codespaces" target="_blank" rel="noopener">un in a CodeSpace</a>
+						if you don't want to bother downloading) What might you make?</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Text adventures: A worked example+https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2025%2Ftextadventure-workedexample">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2025%2Ftextadventure-workedexample">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Text adventures: A worked example&amp;url=https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2025%2Ftextadventure-workedexample">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" data-no-validate="data-no-validate" href="mailto:someone@somewhere&amp;body=Text adventures: A worked example%20https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2025%2Ftextadventure-workedexample">On Email</a>
+						</li>
+						<li>⇒
+							<a class="opener" href="#">QR Code</a>
+						</li>
+						<li></li>
+					</ul>
+					<dialog class="qr">
+						<h3>Text adventures: A worked example</h3>
+						<qr-code contents="https://blog.jermdavis.dev/posts/2025/textadventure-workedexample">
+							<img src="/img/96x96.png" slot="icon">
+						</qr-code>
+						<button autofocus="autofocus">Close dialog</button>
+					</dialog>
+					<script>
+    const dialog = document.querySelector("dialog.qr");
+    const showButton = document.querySelector("a.opener");
+    const closeButton = document.querySelector("dialog.qr button");
+
+    showButton.addEventListener("click", e => {
+      dialog.showModal();
+      e.preventDefault();
+    });
+
+    closeButton.addEventListener("click", e => {
+      dialog.close();
+      e.preventDefault();
+    });
+
+					</script>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">A few bits of housekeeping
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">Making a map
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">Places you can't go
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">Making hidden routes appear
+										</a>
+									</li>
+									<li>
+										<a href="#heading5">Interacting with NPCs
+										</a>
+									</li>
+									<li>
+										<a href="#heading6">Conclusions
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2025</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2025 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/text-games/">
+									Text Games
+								</a>
+								<a href="/tags/c/">
+									C#
+								</a>
+								<a href="/tags/symposium/">
+									Symposium
+								</a>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/saas/">
+									SaaS
+								</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP
+								</a>
+								<a href="/tags/search/">
+									Search
+								</a>
+								<a href="/tags/presentation/">
+									Presentation
+								</a>
+								<a href="/tags/mvc/">
+									MVC
+								</a>
+								<a href="/tags/razor/">
+									Razor
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (250)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (217)</a>
+								<a href="/tags/c/">
+									C# (76)</a>
+								<a href="/tags/powershell/">
+									PowerShell (33)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/general/">
+									General (19)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+								<a href="/tags/net/">
+									.Net (15)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2025-12">2025 - December</a>
+								<a href="/posts/2025-11">2025 - November</a>
+								<a href="/posts/2025-10">2025 - October</a>
+								<a href="/posts/2025-09">2025 - September</a>
+								<a href="/posts/2025-08">2025 - August</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2025</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script src="/vendor/Mermaid/mermaid.10.6.1.min.js"></script>
+		<script type="text/javascript">
+            var config = {
+                logLevel: "fatal",
+                startOnLoad: true,
+                htmlLabels: true,
+                theme: (IsDarkMode() ? "dark" : "default"),
+                flowchart: {
+                    useMaxWidth: false
+                }
+            };
+            mermaid.initialize(config);
+
+            setTimeout(function () {
+                initProgressBar();
+            }, 250);
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
