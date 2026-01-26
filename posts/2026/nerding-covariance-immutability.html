@@ -1,0 +1,643 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2026/nerding-covariance-immutability">
+		<meta name="description" content="An interesting example of how immutability can enable covariance in C#">
+		<meta property="og:description" content="An interesting example of how immutability can enable covariance in C#">
+		<meta name="keywords" content="C#">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Nerding out about covariance and immutability</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta name="fediverse:creator" content="@jermdavis@mastodon.social">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Nerding out about covariance and immutability [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2026-01-26T00:00:00+0000">
+		<meta property="article:published_time" content="2026-01-26T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/nerding-covariance-immutability-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Nerding out about covariance and immutability' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Nerding out about covariance and immutability",
+        "url": "https://blog.jermdavis.dev/posts/2026/nerding-covariance-immutability",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/nerding-covariance-immutability-social.jpg",
+                "caption": "Logo image showing post title 'Nerding out about covariance and immutability' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2026-01-26T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2026/nerding-covariance-immutability">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		<script src="/vendor/qrcode/qrcode.min.js"></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2026/nerding-covariance-immutability</tt>
+				</div>
+				<h1>
+					Nerding out about covariance and immutability
+				</h1>
+				<h2>Fun with bits of C# I've never really made use of</h2>
+				<div class="meta">Published 26 January 2026</div>
+				<div class="tagList">
+					<a href="/tags/c/">
+						C#</a>
+					<span>~3 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<p>I've been working with C# most of my career, but every so often they add bits to the language which for some reason I've never really got to make use of. And "covariance" is one of those things. But I picked up a beta copy of a great new book recently (Eric Lippert's "<a href="https://www.manning.com/books/fabulous-adventures-in-data-structures-and-algorithms" target="_blank" rel="noopener">Fabulous Adventures in Data Structures and Algorithms</a>" from Manning) and it had a simple but fascinating example of a situation where this can work. It taught me something that maybe you might find interesting too...
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">Hang on, what is covariance?
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>As programmers in Object Oriented languages we're used to the idea that
+						<a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle" target="_blank" rel="noopener">a derived type can be cast back to it's parent</a>. So for example if you have a base class for
+						<code>Vehicle</code>
+						and you create concrete classes from that for
+						<code>Car</code>
+						and
+						<code>Bike</code>:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">abstract class Vehicle { }
+class Car : Vehicle {}
+class Bike : Vehicle {}
+
+					</pre>
+					<p>Then if you have an instance of
+						<code>Car</code>
+						it can always be assigned to a variable of type of
+						<code>Vehicle</code>:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">Car car = new();
+Vehicle vehicle = car;
+
+					</pre>
+					<p>But what happens if you have one of .Net's standard collection types instead of a single instance? Well in this scenario it's a tad more complicated, but being able to cast a collection like that is called
+						<a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/" target="_blank" rel="noopener">covariance</a>. C# does allow it, but only in very specific circumstances.</p>
+					<p>If you write the same sort of expression with collections it won't work:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">List&lt;Car&gt; cars = [new Car(), new Car(), new Car()];
+List&lt;Vehicle&gt; vehicles = cars;
+
+					</pre>
+					<p>This gets you a
+						<code>Cannot implicitly convert type</code>
+						error from the compiler. Why? Well imagine a scenario where that code did compile. You could do something like this:</p>
+					<pre class="code" data-enlighter-highlight="4" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">List&lt;Car&gt; cars = [new Car(), new Car(), new Car()];
+List&lt;Vehicle&gt; vehicles = cars;
+
+vehicles.Add(new Bike());
+
+					</pre>
+					<p>And that certainly can't work. Casting an object doesn't physically change its implementation, so a
+						<code>List&lt;&gt;</code>
+						collection which stores
+						<code>Car</code>
+						can't magically start to contain
+						<code>Bike</code>
+						even if it has been cast to
+						<code>List&lt;Vehicle&gt;</code>.</p>
+					<p>But the book describes an interesting scenario for a data structure where this can work. If the problems come from being able to add stuff to the collection, you can sidestep some of the problem with an approach using immutable data structures.</p>
+					<h2 x-data="" class="anchor">The basic collection
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The book gives a simple implementation example of a stack. The initial class looks like:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">interface IImStack&lt;T&gt; : IEnumerable&lt;T&gt;
+{
+    IImStack&lt;T&gt; Push(T item);
+    T Peek();
+    IImStack&lt;T&gt; Pop();
+    bool IsEmpty { get; }
+}
+
+class ImStack&lt;T&gt; : IImStack&lt;T&gt;
+{
+    private class EmptyStack : IImStack&lt;T&gt;
+    {
+        public EmptyStack() { }
+        public IImStack&lt;T&gt; Push(T item) =&gt; new ImStack&lt;T&gt;(item, this);
+        public T Peek() =&gt; throw new InvalidOperationException();
+        public IImStack&lt;T&gt; Pop() =&gt; throw new InvalidOperationException();
+        public bool IsEmpty =&gt; true;
+        public IEnumerator&lt;T&gt; GetEnumerator()
+        {
+            yield break;
+        }
+        IEnumerator IEnumerable.GetEnumerator() =&gt; GetEnumerator();
+    }
+    public static IImStack&lt;T&gt; Empty { get; } = new EmptyStack();
+    private readonly T item;
+    private readonly IImStack&lt;T&gt; tail;
+    private ImStack(T item, IImStack&lt;T&gt; tail)
+    {
+        this.item = item;
+        this.tail = tail;
+    }
+    public IImStack&lt;T&gt; Push(T item) =&gt; new ImStack&lt;T&gt;(item, this);
+    public T Peek() =&gt; item;
+    public IImStack&lt;T&gt; Pop() =&gt; tail;
+    public bool IsEmpty =&gt; false;
+    public IEnumerator&lt;T&gt; GetEnumerator()
+    {
+        for (IImStack&lt;T&gt; s = this; !s.IsEmpty; s = s.Pop())
+            yield return s.Peek();
+    }
+    IEnumerator IEnumerable.GetEnumerator() =&gt; GetEnumerator();
+}
+
+					</pre>
+					<p>There's an interface to describe what the collection can do, a main class for the collection type and a private child class to express the "collection is empty" special case of the interface.</p>
+					<p>It's immutable because there's no
+						<code>Array</code>
+						or
+						<code>List</code>
+						here - you can't change the collection in any given instance. Modifications come from returning a new object - where the original has been modified by the
+						<code>Pop()</code>
+						and
+						<code>Push()</code>
+						methods. Such as:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var carStack = ImStack&lt;Car&gt;
+                   .Empty
+                   .Push(new Car())
+                   .Push(new Car());
+
+					</pre>
+					<p>But so far this still suffers from the same problem as above - you can't cast this to
+						<code>ImStack&lt;Vehicle&gt;</code>
+						without getting compiler errors.</p>
+					<p>However the changes necessary to make this covariant are surprisingly small. (Well surprisingly small to me, at least...)</p>
+					<h2 x-data="" class="anchor">Making it covariant
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>You change the interface for
+						<code>IImStack</code>
+						to have
+						<code>out T</code>
+						as its generic type. The
+						<code>out</code>
+						keyword here tells C# that you plan to enable covariance for the type. But it's only applicable to interfaces, not the concrete classes. Then you remove the
+						<code>Push()</code>
+						method from the interface definition and from the
+						<code>ImStack&lt;&gt;</code>
+						class:</p>
+					<pre class="code" data-enlighter-highlight="1,3" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">interface IImStack&lt;out T&gt; : IEnumerable&lt;T&gt;
+{
+    //IImStack&lt;T&gt; Push(T item); -- removed this method from the interface
+    T Peek();
+    IImStack&lt;T&gt; Pop();
+    bool IsEmpty { get; }
+}
+
+					</pre>
+					<p>But the collection would be a bit useless without the ability to push new values onto the stack, so you replace it with a new static method for
+						<code>Push()</code>
+						instead:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">public static IImStack&lt;T&gt; Push(T item, IImStack&lt;T&gt; tail) =&gt; new ImStack&lt;T&gt;(item, tail);
+
+					</pre>
+					<p>That's separated the generic type parameter out - it can now be different between the core collection and the static method.</p>
+					<p>And finally we add an extension method which calls that static method to make usage of this revised
+						<code>Push()</code>
+						look seamless again:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">static class Extensions
+{
+    public static IImStack&lt;T&gt; Push&lt;T&gt;(this IImStack&lt;T&gt; stack, T item) =&gt; ImStack&lt;T&gt;.Push(item, stack);
+}
+
+					</pre>
+					<p>And with that in place, we can write:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">IImStack&lt;Car&gt; cars = ImStack&lt;Car&gt;.Empty.Push(new Car()).Push(new Car());
+		
+IImStack&lt;Vehicle&gt; vehicles = cars;
+
+IImStack&lt;Vehicle&gt; plusBike = vehicles.Push(new Bike());	
+
+					</pre>
+					<p>And this can compile and run. Using LinqPad's
+						<code>Dump()</code>
+						method to display the result, we now have a collection that starts off explicitly for the
+						<code>Car</code>
+						type but ends up containing both that and
+						<code>Bike</code>
+						after being cast to holding
+						<code>Vehicle</code>:</p>
+					<p>
+						<a target="_blank" href="/img/2026/01-CovariantCollection.png">
+							<img alt="A debug view of the covariant collection showing two Cars and one Bike object in the same collection" src="/img/2026/01-CovariantCollection.png">
+						</a>
+					</p>
+					<p>Covariance achieved!</p>
+					<h2 x-data="" class="anchor">Conclusions
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading4" name="heading4">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The book itself describes this concept of "factor the mutation out of the collection to enable covariance" as a less appreciated approach. And that seems true to me - I'd not seen this before. But it's fascinating, and is one of those things I'll be filing away at the back of my mind for the future...</p>
+					<p>Oh, and if this is interesting to you I'd recommend reading the
+						<a href="https://www.manning.com/books/fabulous-adventures-in-data-structures-and-algorithms" target="_blank" rel="noopener">book</a>
+						too.</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Nerding out about covariance and immutability+https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fnerding-covariance-immutability">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fnerding-covariance-immutability">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Nerding out about covariance and immutability&amp;url=https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fnerding-covariance-immutability">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" data-no-validate="data-no-validate" href="mailto:someone@somewhere&amp;body=Nerding out about covariance and immutability%20https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fnerding-covariance-immutability">On Email</a>
+						</li>
+						<li>⇒
+							<a class="opener" href="#">QR Code</a>
+						</li>
+						<li></li>
+					</ul>
+					<dialog class="qr">
+						<h3>Nerding out about covariance and immutability</h3>
+						<qr-code contents="https://blog.jermdavis.dev/posts/2026/nerding-covariance-immutability">
+							<img src="/img/96x96.png" slot="icon">
+						</qr-code>
+						<button autofocus="autofocus">Close dialog</button>
+					</dialog>
+					<script>
+    const dialog = document.querySelector("dialog.qr");
+    const showButton = document.querySelector("a.opener");
+    const closeButton = document.querySelector("dialog.qr button");
+
+    showButton.addEventListener("click", e => {
+      dialog.showModal();
+      e.preventDefault();
+    });
+
+    closeButton.addEventListener("click", e => {
+      dialog.close();
+      e.preventDefault();
+    });
+
+					</script>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">Hang on, what is covariance?
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">The basic collection
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">Making it covariant
+										</a>
+									</li>
+									<li>
+										<a href="#heading4">Conclusions
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2025</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2025 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2025 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/c/">
+									C#
+								</a>
+								<a href="/tags/content-hub/">
+									Content Hub
+								</a>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/text-adventures/">
+									Text Adventures
+								</a>
+								<a href="/tags/games/">
+									Games
+								</a>
+								<a href="/tags/symposium/">
+									Symposium
+								</a>
+								<a href="/tags/saas/">
+									SaaS
+								</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP
+								</a>
+								<a href="/tags/search/">
+									Search
+								</a>
+								<a href="/tags/presentation/">
+									Presentation
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (251)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (217)</a>
+								<a href="/tags/c/">
+									C# (77)</a>
+								<a href="/tags/powershell/">
+									PowerShell (33)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/general/">
+									General (19)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+								<a href="/tags/net/">
+									.Net (15)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2026-01">2026 - January</a>
+								<a href="/posts/2025-12">2025 - December</a>
+								<a href="/posts/2025-11">2025 - November</a>
+								<a href="/posts/2025-10">2025 - October</a>
+								<a href="/posts/2025-09">2025 - September</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2026</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
