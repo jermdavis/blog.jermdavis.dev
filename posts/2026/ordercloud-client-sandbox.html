@@ -1,0 +1,517 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2026/ordercloud-client-sandbox">
+		<meta name="description" content="An important thing to know if you're authenticating your code against a non-production OrderCloud instance">
+		<meta property="og:description" content="An important thing to know if you're authenticating your code against a non-production OrderCloud instance">
+		<meta name="keywords" content="Sitecore, OrderCloud, C#">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Coding against an OrderCloud sandbox</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta name="fediverse:creator" content="@jermdavis@mastodon.social">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Coding against an OrderCloud sandbox [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2026-02-23T00:00:00+0000">
+		<meta property="article:published_time" content="2026-02-23T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/ordercloud-client-sandbox-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Coding against an OrderCloud sandbox' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Coding against an OrderCloud sandbox",
+        "url": "https://blog.jermdavis.dev/posts/2026/ordercloud-client-sandbox",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/ordercloud-client-sandbox-social.jpg",
+                "caption": "Logo image showing post title 'Coding against an OrderCloud sandbox' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2026-02-23T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2026/ordercloud-client-sandbox">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		<script src="/vendor/qrcode/qrcode.min.js"></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2026/ordercloud-client-sandbox</tt>
+				</div>
+				<h1>
+					Coding against an OrderCloud sandbox
+				</h1>
+				<h2>I've tripped over this at least twice. You don't have to...</h2>
+				<div class="meta">Published 23 February 2026</div>
+				<div class="tagList">
+					<a href="/tags/sitecore/">
+						Sitecore</a>
+					<a href="/tags/ordercloud/">
+						OrderCloud</a>
+					<a href="/tags/c/">
+						C#</a>
+					<span>~2 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<p>If you're experimenting with OrderCloud then getting a sandbox instance is an important part of the discovery process. Unlike most of Sitecore's products, this one is available free to anyone (just
+						<a href="https://portal.ordercloud.io/register" target="_blank" rel="noopener">register in the portal</a>) - so it's easy to give it a try. But if you want to build an experiment against the sandbox instance you need your code to authenticate with it. And this has tripped me up a couple of times because it's not wildly well documented. So learn from my frustration...
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">The challenge
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>For us back-end devs there's a
+						<a href="https://www.nuget.org/packages/OrderCloud.SDK" target="_blank" rel="noopener">helpful Nuget package available</a>
+						to simplify connecting and calling methods against the APIs. Your code works with an
+						<code>OrderCloudClient</code>
+						object which manages all the business of authenticating the API calls. And if you
+						<a href="https://github.com/ordercloud-api/ordercloud-dotnet-sdk" target="_blank" rel="noopener">look a the Github repo for this library</a>
+						you'll see an example for connecting that looks like this:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var client = new OrderCloudClient(new OrderCloudClientConfig {
+    ClientId = "my-client-id",
+    
+    // client credentials grant flow:
+    ClientSecret = "my-client-secret"
+    
+    // OR password grant flow:
+    Username = u,
+    Password = p,
+    
+    Roles = new[] { ApiRole.OrderAdmin }
+});
+
+					</pre>
+					<p>But if you try to use this to connect as a user or a client on your sandbox instance it won't work... You'll get one of a variety of connection errors depending on exactly what credentials you send in the different fields it shows. And it's not entirely clear which of these are required in which circumstances. But broadly you're likely to see an
+						<code>invalid_client</code>
+						error if your account is on a sandbox.</p>
+					<h2 x-data="" class="anchor">The solution
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>It's pretty obvious when you stop to think about the error for a second - we've not told the client object which server to authenticate against - so it's probably defaulting to the production endpoints. And that's not where your data is...</p>
+					<p>But without a bit of googling it's not entirely obvious how you solve this. The repo's readme doesn't actually mention it, but there are two properties you need to set if you want to connect to a sandbox.</p>
+					<p>
+						<a href="https://github.com/ordercloud-api/ordercloud-dotnet-sdk/blob/63c81d1cd70068c70ac96f82227ddc6e71b1af6e/src/OrderCloud.SDK/OrderCloudClientConfig.cs#L37" target="_blank" rel="noopener">Looking at the source</a>
+						they are:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">/// &lt;summary&gt;
+/// The root URL of the OrderCloud API. You should not need to change this from the default.
+/// &lt;/summary&gt;
+public string ApiUrl { get; set; } = "https://api.ordercloud.io";
+/// &lt;summary&gt;
+/// The root URL of the OrderCloud authorization server. You should not need to change this from the default.
+/// &lt;/summary&gt;
+public string AuthUrl { get; set; } = "https://auth.ordercloud.io";
+
+					</pre>
+					<p>Ironically the source says you should not need to change these - but you do in this situation. And you have to set both of them to match your sandbox's location for it to work. And you can get the right value from the portal UI:</p>
+					<p>
+						<a target="_blank" href="/img/2026/02-PortalUI.png">
+							<img alt="The OrderCloud admin portal, showing the connection details required for a sandbox instance" src="/img/2026/02-PortalUI.png">
+						</a>
+					</p>
+					<p>The "BASE URL" here is the value that needs to be supplied for both of these properties.</p>
+					<p>So for my sandbox, and to connect successfully to a client, the connection example ends up looking more like: (with my secrets redacted, of course)</p>
+					<pre class="code" data-enlighter-highlight="2-3" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var client = new OrderCloudClient(new OrderCloudClientConfig {
+    ApiUrl = "https://westeurope-sandbox.ordercloud.io",
+    AuthUrl = "https://westeurope-sandbox.ordercloud.io",
+
+    ClientId = "11111111-2222-3333-4444-555555555555",
+
+    GrantType = GrantType.ClientCredentials,
+    ClientSecret = "1234567890abcdefhhijklmnopqrstuvxyz",
+
+    Roles = new[] { ApiRole.BuyerAdmin, }
+});
+
+					</pre>
+					<p>And that connects without any errors...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Coding against an OrderCloud sandbox+https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fordercloud-client-sandbox">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fordercloud-client-sandbox">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Coding against an OrderCloud sandbox&amp;url=https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fordercloud-client-sandbox">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" data-no-validate="data-no-validate" href="mailto:someone@somewhere&amp;body=Coding against an OrderCloud sandbox%20https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fordercloud-client-sandbox">On Email</a>
+						</li>
+						<li>⇒
+							<a class="opener" href="#">QR Code</a>
+						</li>
+						<li></li>
+					</ul>
+					<dialog class="qr">
+						<h3>Coding against an OrderCloud sandbox</h3>
+						<qr-code contents="https://blog.jermdavis.dev/posts/2026/ordercloud-client-sandbox">
+							<img src="/img/96x96.png" slot="icon">
+						</qr-code>
+						<button autofocus="autofocus">Close dialog</button>
+					</dialog>
+					<script>
+    const dialog = document.querySelector("dialog.qr");
+    const showButton = document.querySelector("a.opener");
+    const closeButton = document.querySelector("dialog.qr button");
+
+    showButton.addEventListener("click", e => {
+      dialog.showModal();
+      e.preventDefault();
+    });
+
+    closeButton.addEventListener("click", e => {
+      dialog.close();
+      e.preventDefault();
+    });
+
+					</script>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The challenge
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">The solution
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2026</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2026 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2026 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/ordercloud/">
+									OrderCloud
+								</a>
+								<a href="/tags/c/">
+									C#
+								</a>
+								<a href="/tags/sugcon/">
+									SUGCON
+								</a>
+								<a href="/tags/content-hub/">
+									Content Hub
+								</a>
+								<a href="/tags/text-adventures/">
+									Text Adventures
+								</a>
+								<a href="/tags/games/">
+									Games
+								</a>
+								<a href="/tags/symposium/">
+									Symposium
+								</a>
+								<a href="/tags/saas/">
+									SaaS
+								</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (253)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (217)</a>
+								<a href="/tags/c/">
+									C# (78)</a>
+								<a href="/tags/powershell/">
+									PowerShell (33)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/general/">
+									General (19)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+								<a href="/tags/net/">
+									.Net (15)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2026-02">2026 - February</a>
+								<a href="/posts/2026-01">2026 - January</a>
+								<a href="/posts/2025-12">2025 - December</a>
+								<a href="/posts/2025-11">2025 - November</a>
+								<a href="/posts/2025-10">2025 - October</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2026</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
