@@ -1,0 +1,591 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2026/ordercloud-groups">
+		<meta name="description" content="An example of how Groups in OrderCloud can be used to relate data about customer organisation to website users">
+		<meta property="og:description" content="An example of how Groups in OrderCloud can be used to relate data about customer organisation to website users">
+		<meta name="keywords" content="Sitecore, OrderCloud">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Using Groups in OrderCloud</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta name="fediverse:creator" content="@jermdavis@mastodon.social">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Using Groups in OrderCloud [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2026-03-23T00:00:00+0000">
+		<meta property="article:published_time" content="2026-03-23T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/ordercloud-groups-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Using Groups in OrderCloud' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Using Groups in OrderCloud",
+        "url": "https://blog.jermdavis.dev/posts/2026/ordercloud-groups",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/ordercloud-groups-social.jpg",
+                "caption": "Logo image showing post title 'Using Groups in OrderCloud' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2026-03-23T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2026/ordercloud-groups">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		<script src="/vendor/qrcode/qrcode.min.js"></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2026/ordercloud-groups</tt>
+				</div>
+				<h1>
+					Using Groups in OrderCloud
+				</h1>
+				<h2>A pattern that's been pointed out to me recently</h2>
+				<div class="meta">Published 23 March 2026</div>
+				<div class="tagList">
+					<a href="/tags/sitecore/">
+						Sitecore</a>
+					<a href="/tags/ordercloud/">
+						OrderCloud</a>
+					<span>~3 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<p>I've been looking at some information architecture stuff for OrderCloud recently, and came across a situation where "groups" were suggested as helpful for the business scenario I needed to model. There didn't seem to be a great deal of documentation about why you might want them for things like this, so I figured it might help others for me to write down what I was looking at. And why groups might be the right answer for you too...
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">The scenario
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>OrderCloud understands the ideas that product visibility and pricing can be set for particular sets of users. I've been looking at some B2B features for a shop where the broad model for shoppers looks like:</p>
+					<pre class="mermaid">flowchart LR
+  or["Organisations<br>(The overall company)"]
+  br["Branches<br>(A section of the company)"]
+  pro["Products"]
+  pr["Prices"]
+  us["Users"]
+
+  or ---&gt; br
+  br ---&gt; pro
+  br ---&gt; pr
+  br ---&gt; us
+
+					</pre>
+					<p>The pricing and product visibility for users is controlled by what Branch they are associated with, and an overall organisation that we're doing business with is made up of one or more of these branches.</p>
+					<h2 x-data="" class="anchor">Approaches
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>Initially when I looked at this I was thinking that (depending on the particular approach) either Organisations or Branches might be represented by the
+						<code>Buyer</code>
+						object in OrderCloud. It's the top level object which products and their prices can be assigned to. That might work as either:</p>
+					<ul>
+						<li>
+							<p>
+								<strong>A branch is a Buyer</strong>
+								<br>
+								If you don't need to explicitly model the "Organisation -&gt; Branch" relationship in the OrderCloud data then maybe you use a Buyer to model each of your branches. Assign the products and prices directly to the branch. And the Buyer can be marked with an extended properties field to say what organisation this Branch is part of.</p>
+						</li>
+						<li>
+							<p>
+								<strong>A branch is a Group</strong>
+								<br>
+								But if you do need to represent the relationship between an Organisation and its Branches then Groups might be useful. A group can sit between a Buyer and its price and assignment. So a Buyer can represent an Organisation and a Group can represent a Branch.</p>
+						</li>
+					</ul>
+					<p>However when I talked about this with people from Sitecore, they suggested that neither of these are a good idea in practice. They argue that the solution should have as few
+						<code>Buyer</code>
+						entities as possible. Creating one per Branch or Organisation is not a good plan. Ideally there should be a single one which basically represents the shop itself, rather than the individual customers.</p>
+					<p>So they explained a third approach, which is preferred:</p>
+					<ul>
+						<li>
+							<strong>Both organisations and branches are Groups</strong>
+							<br>
+							You can still model both the organisation and branch but they are both represented by groups. A single Buyer can exist for the overall shop. And each User is assigned to whatever set of groups is appropriate for them.</li>
+					</ul>
+					<p>What I'd not really thought about before (though it makes perfect sense) is that an OrderCloud
+						<code>User</code>
+						can be a member of
+						<em>multiple</em>
+						<code>Group</code>
+						entities. So we can use them to model more than one thing in our scenario. The extended properties of the groups can be used to store data that defines the details of these different types of entity. So a "Branch" might store flags about "what payment options are valid" for these users, while an Organisation might be used to allow a "Company Admin" user access to modify the company-level invoice billing address.</p>
+					<p>And the data model becomes something more like:</p>
+					<pre class="mermaid">flowchart LR
+  by["The shop<br>(A single Buyer)"]
+  or["Organisations<br>(Groups)"]
+  br["Branches<br>(Groups)"]
+  pro["Products"]
+  pr["Prices"]
+  us["Users"]  
+
+  or ---&gt; us
+  by ---&gt; or
+  by ---&gt; br
+  br ---&gt; pro
+  br ---&gt; pr
+  br ---&gt; us
+
+					</pre>
+					<p>So a user can inherit their pricing and visibility from their Branch group, and they can also be related to an Organisation group for access to whatever custom data it stores.</p>
+					<p>So how might that work in practice? It's mostly down to...</p>
+					<h2 x-data="" class="anchor">The APIs
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The data import process that pulls internal business data into OrderCloud can create a group for each Organisation and Branch. This can be driven by data in kept in the internal CRM/ERP or whatever bit of software us used to manage this stuff by the business. (And these could also be created by a registration process on the website as well if a self-serve approach is required) Each
+						<a href="https://api-docs.sitecore.com/ordercloud/user-groups/usergroups.create" target="_blank" rel="noopener">creation is a call to</a>:</p>
+					<pre class="code" data-enlighter-theme="droide" data-enlighter-language="text" style="width:100%; overflow:scroll;">POST https://api.ordercloud.io/v1/buyers/{buyerID}/usergroups
+{
+  "ID": "...",
+  "Name": "...",
+  "Description": "...",
+  "xp": { ... }
+}
+
+					</pre>
+					<p>The extended properties (<code>xp</code>) field here is going to store whatever project-specific properties your solution needs to keep for these entities - and they'd likely be different between the two types of groups.</p>
+					<p>When the import process is assigning products, it can use the Branch groups to attach products to.
+						<a href="https://api-docs.sitecore.com/ordercloud/products/products.saveassignment" target="_blank" rel="noopener">Those API calls looks like</a>:</p>
+					<pre class="code" data-enlighter-theme="droide" data-enlighter-language="text" style="width:100%; overflow:scroll;">POST https://api.ordercloud.io/v1/products/assignments
+{
+  "SellerID": "...",
+  "ProductID": "...",
+  "BuyerID": "...",
+  "UserGroupID": "...",
+  "PriceScheduleID": "..."
+}
+
+					</pre>
+					<p>The optional
+						<code>UserGroupID</code>
+						here allows the assignment of the product to be specific to one of our Branch groups, rather than global to the Buyer. It is worth noting that this does expand out the quantity of assignments that need making fairly significantly, however. Having looked at the idea that "not all of the Branches have special prices or visibility" in the data model for my project, we're also looking at some groups to represent the base "you just get the standard products and prices" that can be shared between multiple Organisations in order to reduce that import overhead.</p>
+					<p>Finally then, when registration attaches a new user to a Branch and Organisation
+						<a href="https://api-docs.sitecore.com/ordercloud/user-groups/usergroups.saveuserassignment" target="_blank" rel="noopener">it can call</a>:</p>
+					<pre class="code" data-enlighter-theme="droide" data-enlighter-language="text" style="width:100%; overflow:scroll;">POST https://api.ordercloud.io/v1/buyers/{buyerID}/usergroups/assignments
+{
+  "UserGroupID": "...",
+  "UserID": "..."
+}
+
+					</pre>
+					<p>And that will attach the user to each group. With that a call to
+						<code>https://api.ordercloud.io/v1/me/products</code>
+						will return only the products and prices inherited from their Branch group.</p>
+					<p>And aside from the product/price scenarios this approach allows, it's also potentially useful for security decisions in the website's head. Groups can be
+						<a href="https://community.sitecore.com/community/en/page-level-access-authorization-in-sitecore-ai-using-ordercloud-user-groups?id=community_blog&amp;sys_id=b176423c3b7a7e109f7441dc73e45a3d" target="_blank" rel="noopener">used to make access decisions in custom code</a>
+						as well.</p>
+					<p>So have a think about the power of Groups when you're looking into constructing your data model in OrderCloud.</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Using Groups in OrderCloud+https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fordercloud-groups">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fordercloud-groups">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Using Groups in OrderCloud&amp;url=https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fordercloud-groups">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" data-no-validate="data-no-validate" href="mailto:someone@somewhere&amp;body=Using Groups in OrderCloud%20https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fordercloud-groups">On Email</a>
+						</li>
+						<li>⇒
+							<a class="opener" href="#">QR Code</a>
+						</li>
+						<li></li>
+					</ul>
+					<dialog class="qr">
+						<h3>Using Groups in OrderCloud</h3>
+						<qr-code contents="https://blog.jermdavis.dev/posts/2026/ordercloud-groups">
+							<img src="/img/96x96.png" slot="icon">
+						</qr-code>
+						<button autofocus="autofocus">Close dialog</button>
+					</dialog>
+					<script>
+    const dialog = document.querySelector("dialog.qr");
+    const showButton = document.querySelector("a.opener");
+    const closeButton = document.querySelector("dialog.qr button");
+
+    showButton.addEventListener("click", e => {
+      dialog.showModal();
+      e.preventDefault();
+    });
+
+    closeButton.addEventListener("click", e => {
+      dialog.close();
+      e.preventDefault();
+    });
+
+					</script>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The scenario
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">Approaches
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">The APIs
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2026</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2026 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2026 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/ordercloud/">
+									OrderCloud
+								</a>
+								<a href="/tags/devops/">
+									DevOps
+								</a>
+								<a href="/tags/git/">
+									Git
+								</a>
+								<a href="/tags/c/">
+									C#
+								</a>
+								<a href="/tags/sugcon/">
+									SUGCON
+								</a>
+								<a href="/tags/content-hub/">
+									Content Hub
+								</a>
+								<a href="/tags/text-adventures/">
+									Text Adventures
+								</a>
+								<a href="/tags/games/">
+									Games
+								</a>
+								<a href="/tags/symposium/">
+									Symposium
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (254)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (217)</a>
+								<a href="/tags/c/">
+									C# (78)</a>
+								<a href="/tags/powershell/">
+									PowerShell (33)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/general/">
+									General (19)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+								<a href="/tags/net/">
+									.Net (15)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2026-03">2026 - March</a>
+								<a href="/posts/2026-02">2026 - February</a>
+								<a href="/posts/2026-01">2026 - January</a>
+								<a href="/posts/2025-12">2025 - December</a>
+								<a href="/posts/2025-11">2025 - November</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2026</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script src="/vendor/Mermaid/mermaid.10.6.1.min.js"></script>
+		<script type="text/javascript">
+            var config = {
+                logLevel: "fatal",
+                startOnLoad: true,
+                htmlLabels: true,
+                theme: (IsDarkMode() ? "dark" : "default"),
+                flowchart: {
+                    useMaxWidth: false
+                }
+            };
+            mermaid.initialize(config);
+
+            setTimeout(function () {
+                initProgressBar();
+            }, 250);
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
