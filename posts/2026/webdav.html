@@ -1,0 +1,606 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2026/webdav">
+		<meta name="description" content="First steps in remote file editing using WebDAV on Windows">
+		<meta property="og:description" content="First steps in remote file editing using WebDAV on Windows">
+		<meta name="keywords" content=".Net, C#, IIS">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Using WebDAV for remote file editing</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta name="fediverse:creator" content="@jermdavis@mastodon.social">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Using WebDAV for remote file editing [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2026-06-29T00:00:00+0000">
+		<meta property="article:published_time" content="2026-06-29T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/webdav-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Using WebDAV for remote file editing' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Using WebDAV for remote file editing",
+        "url": "https://blog.jermdavis.dev/posts/2026/webdav",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/webdav-social.jpg",
+                "caption": "Logo image showing post title 'Using WebDAV for remote file editing' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2026-06-29T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2026/webdav">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		<script src="/vendor/qrcode/qrcode.min.js"></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2026/webdav</tt>
+				</div>
+				<h1>
+					Using WebDAV for remote file editing
+				</h1>
+				<h2>When building a proper web UI is too much effort...</h2>
+				<div class="meta">Published 29 June 2026</div>
+				<div class="tagList">
+					<a href="/tags/net/">
+						.Net</a>
+					<a href="/tags/c/">
+						C#</a>
+					<a href="/tags/iis/">
+						IIS</a>
+					<span>~3 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<p>I often find myself building little .Net tools to help me with repetitive jobs. And fairly often these need some config data to drive their behaviour. If I have a tool that runs on my home server as a Scheduled Task then providing a way to edit that config remotely can be important. A web app is one way of solving this problem - but it tends to be fairly high effort. Remoting to the server is another, but network security can make that a challenge. So an alternative solution is to expose the config file via WebDAV so that a simple remote tool can use HTTP protocols to edit it. Here's a basic example of setting that up...
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">Broad outline
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The overall concept is fairly simple.
+						<a href="https://en.wikipedia.org/wiki/WebDAV" target="_blank" rel="noopener">WebDav</a>
+						gives a file editing API on top of HTTP. So you can expose the config to be modified as a file via IIS, and implement appropriate security to prevent unauthorised access. So an editor can be anywhere on the internet but still read and write the data, and allow remote changes.</p>
+					<pre class="mermaid">flowchart LR
+  ed[<b>Editor</b>
+						<br>Reads and writes config<br>data via WebDAV]
+  subgraph Server
+    IIS[<b>IIS</b>
+						<br>Provides WebDav service<br>to expose file]
+    File[<b>Config<br>File</b>]
+    Tool[<b>Some Tool</b>
+						<br>Reads the config file<br>when it runs]
+  end
+
+  ed &lt;--&gt; IIS
+  IIS &lt;--&gt; File
+  File --&gt; Tool
+
+					</pre>
+					<h2 x-data="" class="anchor">Setting up IIS
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>The file(s) you want to make available for editing need to exist in a folder somewhere on your webserver. Since this is going to be exposed for access from the outside you should make sure you've set sensible permissions. And you probably want to make sure that the folder doesn't contain any other files that shouldn't be visible externally.</p>
+					<p>So in my case, I tend to create a folder to hold just the config file to edit. That folder needs a couple of specific permissions applied:</p>
+					<ul>
+						<li>You need to add the
+							<code>IIS_IUSERS</code>
+							group with "read" access to your folder so that the webserver process can see the data.</li>
+						<li>You need to add the users who are going to edit the data with "modify" rights, so they can read and write the data.</li>
+					</ul>
+					<p>
+						<a target="_blank" href="/img/2026/06-SecurityPermissions.png">
+							<img alt="The security permissions dialog showing the settings for the data folder as described" width="400" src="/img/2026/06-SecurityPermissions.png">
+						</a>
+					</p>
+					<p>You also need to have another file in this folder: a
+						<code>web.config</code>
+						that ensures the appropriate verbs are allowed:</p>
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;configuration&gt;
+    &lt;system.webServer&gt;
+        &lt;security&gt;
+            &lt;requestFiltering&gt;
+                &lt;verbs&gt;
+                    &lt;add verb="DELETE" allowed="true" /&gt;
+                    &lt;add verb="PUT" allowed="true" /&gt;
+                    &lt;add verb="PROPFIND" allowed="true" /&gt;
+                &lt;/verbs&gt;
+            &lt;/requestFiltering&gt;
+        &lt;/security&gt;
+    &lt;/system.webServer&gt;
+&lt;/configuration&gt;
+
+					</pre>
+					<p>Depending on the file(s) you're working with, you may need to apply a mime-type mapping as well - if IIS doesn't know what type to apply to your data. That can be managed via the IIS UI.</p>
+					<p>Similarly, you may also want to remove the "powered by" header for security reasons. You can do that via the IIS Manager or set it directly in the
+						<code>web.config</code>
+						file:</p>
+					<pre class="code" data-enlighter-language="xml" style="width:100%; overflow:scroll;">...
+&lt;httpProtocol&gt;
+    &lt;customHeaders&gt;
+        &lt;remove name="X-Powered-By" /&gt;
+    &lt;/customHeaders&gt;
+&lt;/httpProtocol&gt;
+...
+
+					</pre>
+					<p>You also need to ensure your server has WebDAV features installed. You can do this with the "Add optional features" dialog in Windows Server:</p>
+					<p>
+						<a target="_blank" href="/img/2026/06-OptionalFeatures.png">
+							<img width="800" alt="The Windows Server dialog for adding optional features - with WebDAV enabled" src="/img/2026/06-OptionalFeatures.png">
+						</a>
+					</p>
+					<p>And then you need to configure IIS to enable WebDAV for your folder. First up, you need to ensure that "Windows Auth" is enabled for the site or folder in question. And you need to click the "WebDAV Authoring Rules" icon in the IIS Manager. The "Add Authoring Rule" link here gives you a dialog which can configure the core config:</p>
+					<p>
+						<a target="_blank" href="/img/2026/06-WebDAVSettingsDialog.png">
+							<img width="400" alt="The Authoring Rules dialog for configuring an WebDAV folder" src="/img/2026/06-WebDAVSettingsDialog.png">
+						</a>
+					</p>
+					<p>Ideally you specify the files you want users to be able to interact with. This is less of an issue if the only files in the folder are the editable ones, but it's still worth being as secure as you can. You should also be specific about which users (or groups) are allowed access here, to be as specific as possible about who has access.</p>
+					<p>And finally you need to specify the WebDAV permissions to grant. I've found that for read/write access to the file(s) you need to specify all three here.</p>
+					<p>Having added your rules here, you also need to ensure you've clicked "Enable WebDAV" on the "WebDAV Authoring Rules" page, to enable the feature on this site.</p>
+					<p>With those in place you should be able to access the file(s) remotely, if you have the relevant credentials.</p>
+					<h2 x-data="" class="anchor">Adding behaviour to a tool
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading3" name="heading3">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>If you're not using a pre-built editing tool to modify the exposed files then you can enable WebDAV access from a .Net app fairly easily with the
+						<code>WebDav.Client</code>
+						<a href="https://github.com/skazantsev/WebDavClient" target="_blank" rel="noopener">nuget package</a>.</p>
+					<p>That provides a client object, which you can set up as follows:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var creds = new NetworkCredential(username, password);
+
+var webdavParams = new WebDavClientParams()
+{
+	Credentials = creds,
+	PreAuthenticate = true
+};
+
+using var client = new WebDavClient(webdavParams);
+
+					</pre>
+					<p>That client uses a .Net
+						<code>WebClient</code>
+						under the surface, so you need to apply the same lifetime rules to this object that you would to a
+						<code>WebClient</code>. (Don't be creating and destroying them per-request - keep a single instance in place)</p>
+					<p>You can then do stuff like "test if you can access a file" with the
+						<code>Propfind()</code>
+						method:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var result = await client.Propfind(url);
+
+					</pre>
+					<p>That returns a bunch of metadata, including an
+						<code>IsSuccessful</code>
+						property that you can use to validate if the file exists and your access was successful.</p>
+					<p>You can get a stream to read the file with the
+						<code>GetRawFile()</code>
+						method:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">using (var stream = await Client.GetRawFile(yourUrl))
+
+					</pre>
+					<p>And save changes to the file by using a call to
+						<code>PutFile()</code>:</p>
+					<pre class="code" data-enlighter-language="csharp" style="width:100%; overflow:scroll;">var response = await Client.PutFile(yourUrl, stream);
+
+					</pre>
+					<p>Note that the operations you call here need to match up with the verbs you enabled in the
+						<code>web.config</code>
+						above, or you'll get errors from your code.</p>
+					<p>That's all the config and code required to basic read/write access to a remote file.</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Using WebDAV for remote file editing+https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fwebdav">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fwebdav">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Using WebDAV for remote file editing&amp;url=https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fwebdav">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" data-no-validate="data-no-validate" href="mailto:someone@somewhere&amp;body=Using WebDAV for remote file editing%20https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fwebdav">On Email</a>
+						</li>
+						<li>⇒
+							<a class="opener" href="#">QR Code</a>
+						</li>
+						<li></li>
+					</ul>
+					<dialog class="qr">
+						<h3>Using WebDAV for remote file editing</h3>
+						<qr-code contents="https://blog.jermdavis.dev/posts/2026/webdav">
+							<img src="/img/96x96.png" slot="icon">
+						</qr-code>
+						<button autofocus="autofocus">Close dialog</button>
+					</dialog>
+					<script>
+    const dialog = document.querySelector("dialog.qr");
+    const showButton = document.querySelector("a.opener");
+    const closeButton = document.querySelector("dialog.qr button");
+
+    showButton.addEventListener("click", e => {
+      dialog.showModal();
+      e.preventDefault();
+    });
+
+    closeButton.addEventListener("click", e => {
+      dialog.close();
+      e.preventDefault();
+    });
+
+					</script>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">Broad outline
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">Setting up IIS
+										</a>
+									</li>
+									<li>
+										<a href="#heading3">Adding behaviour to a tool
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2026</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2026 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2026 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/net/">
+									.Net
+								</a>
+								<a href="/tags/c/">
+									C#
+								</a>
+								<a href="/tags/iis/">
+									IIS
+								</a>
+								<a href="/tags/wpf/">
+									WPF
+								</a>
+								<a href="/tags/content-hub/">
+									Content Hub
+								</a>
+								<a href="/tags/ui/">
+									UI
+								</a>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/ordercloud/">
+									OrderCloud
+								</a>
+								<a href="/tags/windows-server-essentials/">
+									Windows Server Essentials
+								</a>
+								<a href="/tags/windows-11/">
+									Windows 11
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (257)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (217)</a>
+								<a href="/tags/c/">
+									C# (81)</a>
+								<a href="/tags/powershell/">
+									PowerShell (33)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/general/">
+									General (19)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/net/">
+									.Net (18)</a>
+								<a href="/tags/containers/">
+									Containers (17)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2026-06">2026 - June</a>
+								<a href="/posts/2026-05">2026 - May</a>
+								<a href="/posts/2026-04">2026 - April</a>
+								<a href="/posts/2026-03">2026 - March</a>
+								<a href="/posts/2026-02">2026 - February</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2026</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script src="/vendor/Mermaid/mermaid.10.6.1.min.js"></script>
+		<script type="text/javascript">
+            var config = {
+                logLevel: "fatal",
+                startOnLoad: true,
+                htmlLabels: true,
+                theme: (IsDarkMode() ? "dark" : "default"),
+                flowchart: {
+                    useMaxWidth: false
+                }
+            };
+            mermaid.initialize(config);
+
+            setTimeout(function () {
+                initProgressBar();
+            }, 250);
+        
+		</script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
