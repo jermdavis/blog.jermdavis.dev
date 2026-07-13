@@ -1,0 +1,579 @@
+﻿<!DOCTYPE html>
+<html lang="en-GB">
+	<head>
+		<script src="/js/theme.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com www.googletagmanager.com *.google-analytics.com; img-src 'self' data: *;style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="canonical" href="https://blog.jermdavis.dev/posts/2026/content-hub-asset-pickers">
+		<meta name="description" content="Setting up a visual asset picker for a field in a custom Sitecore Content Hub entity">
+		<meta property="og:description" content="Setting up a visual asset picker for a field in a custom Sitecore Content Hub entity">
+		<meta name="keywords" content="Sitecore, Content Hub, UI">
+		<meta name="author" content="Jeremy Davis">
+		<meta name="copyright" content="Jeremy Davis">
+		<title>Jeremy Davis - Asset pickers on your custom entities</title>
+		<meta name="robots" content="index, follow">
+		<link type="application/rss+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.rss">
+		<link type="application/atom+xml" rel="alternate" title="Jeremy Davis - Sitecore, C# and web development" href="/feed.atom">
+		<meta name="application-name" content="Jeremy Davis">
+		<meta name="msapplication-tooltip" content="Jeremy Davis">
+		<meta name="msapplication-starturl" content="/">
+		<link rel="manifest" href="/manifest.webmanifest">
+		<meta name="fediverse:creator" content="@jermdavis@mastodon.social">
+		<meta property="og:type" content="article">
+		<meta property="og:title" content="Asset pickers on your custom entities [by Jeremy Davis]">
+		<meta property="og:publish_date" content="2026-07-13T00:00:00+0000">
+		<meta property="article:published_time" content="2026-07-13T00:00:00+0000">
+		<meta property="og:image" content="https://blog.jermdavis.dev/img/featured/content-hub-asset-pickers-social.jpg">
+		<meta property="og:image:alt" content="Logo image showing post title 'Asset pickers on your custom entities' and author 'Jeremy Davis'">
+		<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "article",
+        "headline": "Asset pickers on your custom entities",
+        "url": "https://blog.jermdavis.dev/posts/2026/content-hub-asset-pickers",
+        "image": [
+            {
+                "@type": "ImageObject",
+                "contentUrl": "https://blog.jermdavis.dev/img/featured/content-hub-asset-pickers-social.jpg",
+                "caption": "Logo image showing post title 'Asset pickers on your custom entities' and author 'Jeremy Davis'"
+            }
+        ],
+        "datePublished": "2026-07-13T00:00:00+0000",
+        "author": [{
+            "@type": "Person",
+            "name": "Jeremy Davis",
+            "url": "https://jermdavis.dev/"
+        }]
+    }
+    
+		</script>
+		<meta property="og:url" content="https://blog.jermdavis.dev/posts/2026/content-hub-asset-pickers">
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+		<link href="/vendor/Enlighter/enlighterjs.min.css" rel="stylesheet">
+		<link href="/dist/main.css" rel="stylesheet">
+		<script src="/vendor/Cookies/cookies.min.js" defer=""></script>
+		<script src="/vendor/qrcode/qrcode.min.js"></script>
+	</head>
+	<body class="blog" x-bind:class="dk ? 'dark' : ''" id="top">
+		<div id="rp-bar"></div>
+		<div class="blogNavContainer" x-data="{ open: false }">
+			<div class="blogNav">
+				<div class="bannerContainer">
+					<div class="bannerRow">
+						<a href="/">
+							<img class="mt-2" width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+						</a>
+						<div class="mx-2">
+							<div class="text-3xl">Jeremy Davis</div>
+							<div class="text-lg">Sitecore, C# and web development</div>
+						</div>
+					</div>
+					<div class="nav navBurger">
+						<button @click="open = true" type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+							<span class="sr-only">Open menu</span>
+							<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+						</button>
+					</div>
+					<nav class="nav navItemSet">
+						<a href="/posts">Posts</a>
+						<a href="/tags">Tags</a>
+						<a href="/about">About</a>
+						<a href="/links">Useful Links</a>
+						<a href="/mvp">MVP</a>
+						<a href="/search">Search</a>
+						<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+							<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+							<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+						</button>
+						<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+							<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+						</button>
+					</nav>
+				</div>
+			</div>
+			<div class="mobileContainer">
+				<div style="display:none;" class="popupBox" x-show="open" x-transition="">
+					<div class="popupHead">
+						<div class="popupHeadInner">
+							<div class="titleRow">
+								<a href="/">
+									<img width="56" height="56" src="/img/Profile.jpg" alt="Jeremy Davis">
+								</a>
+								<div class="mx-2">
+									<div class="text-2xl">Jeremy Davis</div>
+									<div class="text-base">Sitecore, C# and web development</div>
+								</div>
+							</div>
+							<div class="nav menuRow">
+								<button @click="open = false" type="button">
+									<span class="sr-only">Close menu</span>
+									
+									<!-- Heroicon name: outline/x -->
+									<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav popupItemsOuter">
+						<nav class="gap-x-8">
+							<a href="/posts">Posts</a>
+							<a href="/tags">Tags</a>
+							<a href="/about">About</a>
+							<a href="/links">Useful Links</a>
+							<a href="/mvp">MVP</a>
+							<a href="/search">Search</a>
+							<button x-cloak="" x-on:click="Clicked('2')" x-show="$store.theme == '1'">
+								<img src="/img/Auto.png" width="32" height="32" alt="Auto" title="Automatic theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('3')" x-show="$store.theme == '2'">
+								<img src="/img/Light.png" width="32" height="32" alt="Auto" title="Light theme">
+							</button>
+							<button x-cloak="" x-on:click="Clicked('1')" x-show="$store.theme == '3'">
+								<img src="/img/Dark.png" width="32" height="32" alt="Auto" title="Dark theme">
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+		<header class="headerContainer" style="">
+			<div class="post-heading">
+				<div class="url printBanner">Article printed from:
+					<tt>https://blog.jermdavis.dev/posts/2026/content-hub-asset-pickers</tt>
+				</div>
+				<h1>
+					Asset pickers on your custom entities
+				</h1>
+				<h2>Thumbnails and filters to help your editors make good choices</h2>
+				<div class="meta">Published 13 July 2026</div>
+				<div class="tagList">
+					<a href="/tags/sitecore/">
+						Sitecore</a>
+					<a href="/tags/content-hub/">
+						Content Hub</a>
+					<a href="/tags/ui/">
+						UI</a>
+					<span>~3 min. read</span>
+				</div>
+			</div>
+		</header>
+		<div class="blogContainerOuter">
+			<div class="blogContainerInner">
+				<div class="leftCol content">
+					<p>If you're creating custom Entities in Content Hub then you're likely going to be setting up some fields which relate to image assets. There is a default picker for these relation fields, but it's not a great editorial experience most of the time. So having worked through how to set up something better, I'm writing it down as a crib-sheet for myself next time. And maybe it will help you too...
+						<!--more-->
+					</p>
+					<h2 x-data="" class="anchor">The challenge
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading1" name="heading1">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>If you set up an entity which has a relation to an asset, you'll have something along the lines of this in the schema:</p>
+					<p>
+						<a target="_blank" href="/img/2026/07-SchemaWithAnAssetRelation.png">
+							<img alt="The Content Hub entity schema editor, highlighting a many-to-many relation field to an M.Asset" src="/img/2026/07-SchemaWithAnAssetRelation.png">
+						</a>
+					</p>
+					<p>The default way to make that editable is to add an
+						<code>EntityDetails</code>
+						component to a details page for your Entity and enable that field as editable. So when you go to your page and click the "+" icon next to your field you get a dialog like this:</p>
+					<p>
+						<a target="_blank" href="/img/2026/07-DefaultReferenceFieldEditor.png">
+							<img alt="Content Hub's default entity-relation picker, showing its basic view with no thumbnails for assets" src="/img/2026/07-DefaultReferenceFieldEditor.png">
+						</a>
+					</p>
+					<p>So you can choose the items you want - but you can't see a preview of the images to help you choose easily, and you don't have a lot of fancy behaviour for filtering. A key issue you may have here is that your editor can pick anything that is an
+						<code>M.Asset</code>
+						- which might end up being a document, video or something else that isn't appropriate...</p>
+					<p>So what can we do to improve this?</p>
+					<h2 x-data="" class="anchor">Doing it better
+						<a title="click to copy url" x-on:click.prevent="copy($event.target)" href="#heading2" name="heading2">
+							<img src="/img/link.png">
+						</a>
+						<span>url copied!</span>
+					</h2>
+					<p>We can move the editing of our Asset-Relation field out of the basic details-page editor and onto another tab where we had could show a visual view of the assigned assets. And that can be configured with a search dialog which will show thumbnails of the assets, and can be filtered to only show the right types of assets.</p>
+					<p>You can use a
+						<code>Tabs</code>
+						component on the detail page to add a place to put your new selection. When you add one, the dialog includes another useful feature: You can add a "Permission" setting to control the visibility of the tab, to only users granted the "Update" permission on the entity:</p>
+					<p>
+						<a target="_blank" href="/img/2026/07-TabSettings.png">
+							<img alt="Settings for a new tab in the Content Hub UI, showing setting the permission to view the tab to Update" src="/img/2026/07-TabSettings.png">
+						</a>
+					</p>
+					<p>So if it's appropriate for your use case, you can have that entire tab hidden when the current user doesn't have the security rights to make use of the picker behaviour to change the value of your relation field.</p>
+					<p>With that tab in place there are three key components to add to it, which probably want laying out as shown:</p>
+					<p>
+						<a target="_blank" href="/img/2026/07-TabComponents.png">
+							<img alt="Content Hub's page layout editor, showing the components for the image selection tab - a search, an asset creation control and a selection control" src="/img/2026/07-TabComponents.png">
+						</a>
+					</p>
+					<ul>
+						<li>
+							<p>
+								<strong>A listing
+									<code>Search</code>
+									component</strong>
+								(Bottom center)<br>
+								Provides the listing of what assets are currently related via the field being edited - giving a nice visual view of what's been selected. Configuring this requires setting two filters. First, it needs a "fixed" filter that ties what's displayed to the field being managed:<br>
+								<a target="_blank" href="/img/2026/07-FixedFilter.png">
+									<img alt="The filter configuration for a search component showing a fixed filter for the current page's image field" src="/img/2026/07-FixedFilter.png">
+								</a>
+								<br>
+								The input type of "Page Entity" ties the search component to the current entity being displayed on the detail page, and then the filter type of "Relation" and picking the relevant field for the "Filter" dropdown connects it to the right field in your entity. You may also want to add a System filter for the correct entity type:<br>
+								<a target="_blank" href="/img/2026/07-SystemFilter.png">
+									<img alt="The filter UI showing the config for a system filter to restrict shown entities to M.Asset" src="/img/2026/07-SystemFilter.png">
+								</a>
+								<br>
+								And then you can configure the appropriate View(s) to show the field. Enabling the "Grid" view with a template showing the thumbnail and title. The operations for this view should probably include viewing the related details page:<br>
+								<a target="_blank" href="/img/2026/07-DetailsOperation.png">
+									<img alt="The UI for adding Operations to the display of a search, showing the click-for-details-page setup" src="/img/2026/07-DetailsOperation.png">
+								</a>
+								<br>
+								The key choices here are the "Is main click area operation" choice, which lets the user click on the card to view details, and the "Link" option, which picks the correct page to show the details of the asset. And they should also have the option to "Unlink" the related asset - which is Content Hub's phrase for removing this one from the selected things:<br>
+								<a target="_blank" href="/img/2026/07-UnlinkOperation.png">
+									<img alt="The UI for adding operations showing settings for unlinking the selected asset from the Image field" src="/img/2026/07-UnlinkOperation.png">
+								</a>
+								<br>
+								This just needs to be told which field the link is being removed from in the "Relations" dropdown.</p>
+						</li>
+						<li>
+							<p>
+								<strong>A
+									<code>Selection</code>
+									component</strong>
+								(Top left)<br>
+								Optional - but helpful. Allows the editor to select multiple related assets and do some operations on them all together.</p>
+						</li>
+						<li>
+							<p>
+								<strong>A
+									<code>Creation</code>
+									component</strong>
+								(Top right)<br>
+								This is what allows an editor to assign new assets to the field - giving them a visual picker. There are a couple of settings needed here. First is to tie this component to the search component above. That's done with the "General" tab:<br>
+								<a target="_blank" href="/img/2026/07-CreateGeneral.png">
+									<img alt="General settings for the creation component - linking it to the correct search component" src="/img/2026/07-CreateGeneral.png">
+								</a>
+								<br>
+								The "Linked search component" field needs the search component above selected. And then secondly it needs also to be tied to the search that's going to be used as the picker for adding new related entities. To do that, we need to enable the "Link Items" option, and connect it to the field being added to, and to a second search component:<br>
+								<a target="_blank" href="/img/2026/07-CreateLinkItems.png">
+									<img alt="Config for the linking items behaviour of the create component - specifying linking the Image field and the correct search filter" src="/img/2026/07-CreateLinkItems.png">
+								</a>
+								<br>
+							</p>
+						</li>
+						<li>
+							<p>
+								<strong>The picker
+									<code>Search</code>
+									component</strong>
+								(Sibling of
+								<code>Tabs</code>
+								component, Nested)<br>
+								To provide a search-driven picker, we can add a second search component to the Details page. This one should go at the root of the page, and it needs to be set as "Nested" (with the switch on the Settings for the component):<br>
+								<a target="_blank" href="/img/2026/07-NestedPickerSearch.png">
+									<img alt="The nested component for a search filter, shown in the page layout editing view" src="/img/2026/07-NestedPickerSearch.png">
+								</a>
+								<br>
+								This component needs setting up with just System filters - to restrict the list it can return to the specific group of entities you want. You likely want to pick the type of asset you require, that it's in the "approved" state for the DAM workflow and that it's part of the "Standard" content store:<br>
+								<a target="_blank" href="/img/2026/07-Filters.png">
+									<img alt="The system filters to restrict the search filter to assets with the right lifecycle status and other properties" src="/img/2026/07-Filters.png">
+								</a>
+								<br>
+								It will need one or more views enabled, and these will likely want a template that shows the thumbnail and the title. And it will probably want paging and sorting options configured, and then maybe some facets set up too. Those will be specific to what you want to display.</p>
+						</li>
+					</ul>
+					<p>And finally, you probably want to disable your original field (Maybe hide entirely? Maybe make non-editable if you're hiding the selection tab for people who can't change the field? Depends on your use case) in the Entity Details component too.</p>
+					<p>But with all that set up and configured, you'll have a tab where you can see the currently selected entities for your field:</p>
+					<p>
+						<a target="_blank" href="/img/2026/07-SelectedEntities.png">
+							<img alt="The completed related asset tab in the entity details view, showing the assets which have been related and the add button to link more" src="/img/2026/07-SelectedEntities.png">
+						</a>
+					</p>
+					<p>And if you click the "Add existing items" button you get a pop-over which lets you search, filter and see thumbnails of the choices available to pick from:</p>
+					<p>
+						<a target="_blank" href="/img/2026/07-AddingEntities.png">
+							<img alt="The search dialog opened by the add-more button, showing its filters and thumbnails" src="/img/2026/07-AddingEntities.png">
+						</a>
+					</p>
+					<p>And that's definitely more usable than the basic picker we started with...</p>
+					<a class="gotop" href="#top">↑ Back to top</a>
+					<ul class="shares">
+						<li>
+							<b>Feel like sharing?</b>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://bsky.app/intent/compose?text=Asset pickers on your custom entities+https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fcontent-hub-asset-pickers">On BlueSky</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fcontent-hub-asset-pickers">On LinkedIn</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" href="https://mastodonshare.com/?text=Asset pickers on your custom entities&amp;url=https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fcontent-hub-asset-pickers">On Mastodon</a>
+						</li>
+						<li>⇒
+							<a target="_blank" rel="nofollow noreferrer" data-no-validate="data-no-validate" href="mailto:someone@somewhere&amp;body=Asset pickers on your custom entities%20https%3A%2F%2Fblog.jermdavis.dev%2Fposts%2F2026%2Fcontent-hub-asset-pickers">On Email</a>
+						</li>
+						<li>⇒
+							<a class="opener" href="#">QR Code</a>
+						</li>
+						<li></li>
+					</ul>
+					<dialog class="qr">
+						<h3>Asset pickers on your custom entities</h3>
+						<qr-code contents="https://blog.jermdavis.dev/posts/2026/content-hub-asset-pickers">
+							<img src="/img/96x96.png" slot="icon">
+						</qr-code>
+						<button autofocus="autofocus">Close dialog</button>
+					</dialog>
+					<script>
+    const dialog = document.querySelector("dialog.qr");
+    const showButton = document.querySelector("a.opener");
+    const closeButton = document.querySelector("dialog.qr button");
+
+    showButton.addEventListener("click", e => {
+      dialog.showModal();
+      e.preventDefault();
+    });
+
+    closeButton.addEventListener("click", e => {
+      dialog.close();
+      e.preventDefault();
+    });
+
+					</script>
+				</div>
+				<div class="rightCol sidebar">
+					<div class="barContainer">
+						<section class="headingSummary">
+							<h3>Post Headings</h3>
+							<div>
+								<ol class="headings">
+									<li>
+										<a href="#heading1">The challenge
+										</a>
+									</li>
+									<li>
+										<a href="#heading2">Doing it better
+										</a>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<section class="mvp">
+							<h3>Sitecore MVP 2015-2026</h3>
+							<div>
+								<a href="/mvp">
+									<img class="l" src="/img/mvp/program.png" width="219" height="219" alt="2026 MVP Badge">
+									<img class="d" src="/img/mvp/program_d.png" width="219" height="219" alt="2026 MVP Badge">
+								</a>
+							</div>
+						</section>
+						<section class="recentTags">
+							<h3>Recent Tags</h3>
+							<div>
+								<a href="/tags/sitecore/">
+									Sitecore
+								</a>
+								<a href="/tags/content-hub/">
+									Content Hub
+								</a>
+								<a href="/tags/ui/">
+									UI
+								</a>
+								<a href="/tags/net/">
+									.Net
+								</a>
+								<a href="/tags/c/">
+									C#
+								</a>
+								<a href="/tags/iis/">
+									IIS
+								</a>
+								<a href="/tags/wpf/">
+									WPF
+								</a>
+								<a href="/tags/ordercloud/">
+									OrderCloud
+								</a>
+								<a href="/tags/windows-server-essentials/">
+									Windows Server Essentials
+								</a>
+								<a href="/tags/windows-11/">
+									Windows 11
+								</a>
+							</div>
+						</section>
+						<section class="topTags">
+							<h3>Top Tags</h3>
+							<div class="list">
+								<a href="/tags/sitecore/">
+									Sitecore (258)</a>
+								<a href="/tags/platform-dxp/">
+									Platform DXP (217)</a>
+								<a href="/tags/c/">
+									C# (81)</a>
+								<a href="/tags/powershell/">
+									PowerShell (33)</a>
+								<a href="/tags/installation/">
+									Installation (23)</a>
+								<a href="/tags/docker/">
+									Docker (20)</a>
+								<a href="/tags/general/">
+									General (19)</a>
+								<a href="/tags/solr/">
+									Solr (19)</a>
+								<a href="/tags/net/">
+									.Net (18)</a>
+								<a href="/tags/ui/">
+									UI (17)</a>
+							</div>
+							<div class="link">
+								<a href="/tags" role="button">All Tags &gt;</a>
+							</div>
+						</section>
+						<section class="months">
+							<h3>Recent Months</h3>
+							<div class="list">
+								<a href="/posts/2026-07">2026 - July</a>
+								<a href="/posts/2026-06">2026 - June</a>
+								<a href="/posts/2026-05">2026 - May</a>
+								<a href="/posts/2026-04">2026 - April</a>
+								<a href="/posts/2026-03">2026 - March</a>
+							</div>
+							<div class="link">
+								<a href="/posts" role="button">All Months &gt;</a>
+							</div>
+						</section>
+						<section class="socials">
+							<h3>Socials</h3>
+							<div>
+								<table>
+									<tbody>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													<img src="/img/bluesky.png" width="32" height="32" alt="Bluesky Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://bsky.app/profile/jermdavis.dev">
+													Bluesky
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													<img src="/img/linkedin.png" width="32" height="32" alt="LinkedIn Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://www.linkedin.com/in/djdavis/">
+													LinkedIn
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													<img src="/img/slack.png" width="32" height="32" alt="Sitecore Slack Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://sitecorechat.slack.com/team/U73KL641G">
+													Sitecore Slack
+												</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="icon">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													<img src="/img/mastodon.png" width="32" height="32" alt="Mastodon Logo">
+												</a>
+											</td>
+											<td class="title">
+												<a rel="me" target="_blank" href="https://mastodon.social/@jermdavis">
+													Mastodon
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footerContainer">
+			<div class="copyright">
+				<div>©
+					<a target="_blank" rel="noopener" href="https://jermdavis.dev/">Jeremy Davis</a>
+					2014-2026</div>
+			</div>
+			<div class="statiq">
+				<a href="/tools">Published using Statiq</a>
+				<br>
+			</div>
+			<ul class="feeds">
+				<li>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+					</svg>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.rss">RSS</a>
+				</li>
+				<li>
+					<a target="_blank" href="/feed.atom">Atom</a>
+				</li>
+			</ul>
+		</footer>
+		<div x-cloak="" class="cookieContainer" x-data="{ hide_banner: true }" x-init="hide_banner = docCookies.hasItem('hide_banner');" x-bind:class="{ 'hidden': hide_banner, 'fixed': !hide_banner }">
+			<div class="panel">
+				<div class="link">
+					<a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage" rel="noreferrer" target="_blank">This website uses Google Analytics, and its cookies.</a>
+				</div>
+				<button type="button" @click="hide_banner = true; docCookies.setItem('hide_banner', true, 'Fri, 31 Dec 9999 23:59:59 GMT', null, null, null, 'strict');" class="btn" aria-label="Dismiss">
+					Understood
+				</button>
+			</div>
+		</div>
+		<script src="/vendor/Alpine/alpine.3.13.3.min.js" defer=""></script>
+		<script src="/vendor/Enlighter/enlighterjs.min.js"></script>
+		<script type="text/javascript">
+            EnlighterJS.init('pre.code', 'code', {
+            theme: 'droide',
+            indent : 4,
+            linehover : false,
+            textOverflow: 'scroll',
+            toolbarTop: '',
+            toolbarBottom: ''
+        });
+        
+		</script>
+		<script defer="" src="/vendor/rp/rpbar-1.0.js"></script>
+		<script defer="" src="/js/post.js"></script>
+		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-JQ44ZR47YX"></script>
+		<script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JQ44ZR47YX');
+    
+		</script>
+	</body>
+</html>
